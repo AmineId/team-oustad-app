@@ -1,0 +1,406 @@
+import 'package:flutter/material.dart';
+import '../services/api_service.dart';
+import '../services/auth_service.dart';
+import 'admin_member_details_screen.dart';
+import 'admin_create_member_screen.dart';
+
+class AdminMembersScreen extends StatefulWidget {
+  const AdminMembersScreen({super.key});
+
+  @override
+  State<AdminMembersScreen> createState() => _AdminMembersScreenState();
+}
+
+class _AdminMembersScreenState extends State<AdminMembersScreen> {
+  final ApiService _apiService = ApiService.fromEnv();
+  final AuthService _authService = AuthService(ApiService.fromEnv());
+  final TextEditingController _searchController = TextEditingController();
+  
+  List<Map<String, dynamic>> _members = [];
+  List<Map<String, dynamic>> _filteredMembers = [];
+  bool _isLoading = true;
+  String _errorMessage = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMembers();
+    _searchController.addListener(_filterMembers);
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadMembers() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = '';
+    });
+
+    try {
+      final token = await _authService.loadToken();
+      if (token == null) {
+        setState(() {
+          _errorMessage = 'Token non disponible';
+          _isLoading = false;
+        });
+        return;
+      }
+
+      // Récupérer le profil de l'admin pour obtenir son gymId
+      final adminProfile = await _authService.getCachedUserProfile();
+      if (adminProfile == null) {
+        setState(() {
+          _errorMessage = 'Profil administrateur non disponible';
+          _isLoading = false;
+        });
+        return;
+      }
+
+      final adminGymId = adminProfile['gymId'] as int?;
+      print('Admin gymId: $adminGymId');
+
+      final users = await _apiService.getUsers(token);
+      
+      if (users != null) {
+        setState(() {
+          // Filtrer uniquement les membres de la même salle que l'admin
+          _members = users
+              .where((user) {
+                final isRoleMember = user['role'] == 'member';
+                final userGymId = user['gymId'] as int?;
+                final isSameGym = adminGymId == null || userGymId == adminGymId;
+                
+                print('User: ${user['fullName']}, gymId: $userGymId, isRoleMember: $isRoleMember, isSameGym: $isSameGym');
+                
+                return isRoleMember && isSameGym;
+              })
+              .map((user) => user as Map<String, dynamic>)
+              .toList();
+          _filteredMembers = _members;
+          _isLoading = false;
+          
+          print('Membres filtrés: ${_members.length}');
+        });
+      } else {
+        setState(() {
+          _errorMessage = 'Impossible de charger les membres';
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Erreur: $e';
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _filterMembers() {
+    final query = _searchController.text.toLowerCase();
+    setState(() {
+      if (query.isEmpty) {
+        _filteredMembers = _members;
+      } else {
+        _filteredMembers = _members.where((member) {
+          final fullName = (member['fullName'] as String? ?? '').toLowerCase();
+          final email = (member['email'] as String? ?? '').toLowerCase();
+          final uniqueCode = (member['uniqueCode'] as String? ?? '').toLowerCase();
+          return fullName.contains(query) || 
+                 email.contains(query) || 
+                 uniqueCode.contains(query);
+        }).toList();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          'Membres',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          // Naviguer vers l'écran de création de membre
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const AdminCreateMemberScreen(),
+            ),
+          );
+          // Recharger la liste si un membre a été créé
+          if (result == true) {
+            _loadMembers();
+          }
+        },
+        backgroundColor: const Color(0xFFe89547),
+        child: const Icon(Icons.person_add, color: Colors.white),
+      ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              const Color(0xFF1a1f2e),
+              const Color(0xFF2d3748),
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Barre de recherche
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: TextField(
+                  controller: _searchController,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    hintText: 'Rechercher un membre...',
+                    hintStyle: const TextStyle(color: Colors.white60),
+                    prefixIcon: const Icon(Icons.search, color: Color(0xFFe89547)),
+                    suffixIcon: _searchController.text.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear, color: Colors.white60),
+                            onPressed: () {
+                              _searchController.clear();
+                            },
+                          )
+                        : null,
+                    filled: true,
+                    fillColor: const Color(0xFF2d3748),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(24),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+              ),
+              
+              // Liste des membres
+              Expanded(
+                child: _isLoading
+                    ? const Center(
+                        child: CircularProgressIndicator(
+                          color: Color(0xFFe89547),
+                        ),
+                      )
+                    : _errorMessage.isNotEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(
+                                  Icons.error_outline,
+                                  color: Colors.red,
+                                  size: 48,
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  _errorMessage,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                                const SizedBox(height: 16),
+                                ElevatedButton(
+                                  onPressed: _loadMembers,
+                                  style: ElevatedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                                  ),
+                                  child: const Text('Réessayer'),
+                                ),
+                              ],
+                            ),
+                          )
+                        : _filteredMembers.isEmpty
+                            ? Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(
+                                      Icons.person_off_outlined,
+                                      color: Colors.white60,
+                                      size: 48,
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      _searchController.text.isNotEmpty
+                                          ? 'Aucun membre trouvé'
+                                          : 'Aucun membre',
+                                      style: const TextStyle(
+                                        color: Colors.white60,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : RefreshIndicator(
+                                onRefresh: _loadMembers,
+                                color: const Color(0xFFe89547),
+                                child: ListView.builder(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                                  itemCount: _filteredMembers.length,
+                                  itemBuilder: (context, index) {
+                                    final member = _filteredMembers[index];
+                                    return _MemberCard(
+                                      member: member,
+                                      onTap: () async {
+                                        // Naviguer vers les détails du membre
+                                        await Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => AdminMemberDetailsScreen(
+                                              memberId: member['id'] as int,
+                                            ),
+                                          ),
+                                        );
+                                        // Recharger la liste après retour
+                                        _loadMembers();
+                                      },
+                                    );
+                                  },
+                                ),
+                              ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MemberCard extends StatelessWidget {
+  final Map<String, dynamic> member;
+  final VoidCallback onTap;
+
+  const _MemberCard({
+    required this.member,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final fullName = member['fullName'] as String? ?? 'Sans nom';
+    final email = member['email'] as String? ?? '';
+    final uniqueCode = member['uniqueCode'] as String? ?? '';
+    
+    // Obtenir les initiales pour l'avatar
+    final initials = fullName
+        .split(' ')
+        .where((word) => word.isNotEmpty)
+        .take(2)
+        .map((word) => word[0].toUpperCase())
+        .join();
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      color: const Color(0xFF2d3748),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            children: [
+              // Avatar
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFFe89547).withValues(alpha: 0.2),
+                  border: Border.all(
+                    color: const Color(0xFFe89547),
+                    width: 2,
+                  ),
+                ),
+                child: Center(
+                  child: Text(
+                    initials,
+                    style: const TextStyle(
+                      color: Color(0xFFe89547),
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              
+              // Infos
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      fullName,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      email,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.7),
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFe89547).withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        uniqueCode,
+                        style: const TextStyle(
+                          color: Color(0xFFe89547),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              
+              // Icône flèche
+              const Icon(
+                Icons.arrow_forward_ios,
+                color: Colors.white60,
+                size: 16,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

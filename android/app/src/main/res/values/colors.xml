@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App Colors -->
+    <color name="primary">#e89547</color>
+    <color name="primary_dark">#c77a3a</color>
+    <color name="accent">#f4a261</color>
+    <color name="background_dark">#1a1f2e</color>
+    <color name="surface_dark">#2d3748</color>
+    <color name="text_primary">#ffffff</color>
+    <color name="text_secondary">#ffffff</color>
+    <color name="text_hint">#b3ffffff</color>
+	<color name="ic_launcher_background">#1a1f2e</color>
+</resources>
