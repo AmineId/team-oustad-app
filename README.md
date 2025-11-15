@@ -6,6 +6,9 @@ A Flutter mobile application for gym management with biometric authentication.
 
 - 🔐 **Biometric Authentication** - Fingerprint/Face ID login
 - 🔑 **Password Authentication** - Secure password-based login
+- 🔒 **Screenshot & Recording Prevention** - Enhanced security to prevent unauthorized screen capture
+  - **Android**: Screenshots and screen recordings are blocked
+  - **iOS**: Screenshot detection with content blurring in app switcher
 - 🎨 **Dark Theme** - Professional dark design with orange accents
 - 💾 **Persistent Settings** - Remember user preferences
 - 📱 **Cross-platform** - Android, iOS, Windows support
@@ -241,6 +244,24 @@ Press `F5` or click "Run > Start Debugging" to run the app.
 - Dart
 - Flutter Widget Snippets
 - Awesome Flutter Snippets
+
+## Security Features
+
+### Screenshot & Recording Prevention
+
+The app implements platform-specific security measures to protect sensitive user data:
+
+#### Android
+- **FLAG_SECURE**: The app uses Android's `WindowManager.LayoutParams.FLAG_SECURE` flag to prevent screenshots and screen recordings
+- When enabled, users cannot capture the screen using built-in screenshot tools or third-party screen recording apps
+- The screen will appear black in screenshots and recordings
+
+#### iOS
+- **Screenshot Detection**: The app detects when a user takes a screenshot and logs the event
+- **App Switcher Protection**: Content is automatically blurred when the app enters the background, preventing sensitive information from appearing in the app switcher
+- **Note**: iOS does not provide a way to completely prevent screenshots, but the app provides maximum available protection
+
+These security features are automatically enabled and require no additional configuration.
 
 ## Next Steps
 
