@@ -1,0 +1,30 @@
+{
+  "version_name": "1.0.0",
+  "version_code": 1,
+  "changelog": "Version initiale de Team Fitness\n- Authentification biométrique\n- Gestion des membres\n- Plannings d'entraînement\n- Notifications push\n- Mises à jour OTA",
+  "mandatory": false,
+  "min_required_version": "1.0.0",
+  "release_date": "2025-11-15",
+  "release_notes": {
+    "new_features": [
+      "Authentification biométrique automatique",
+      "Protection contre les screenshots",
+      "Système de notifications personnalisées",
+      "Mises à jour OTA automatiques"
+    ],
+    "improvements": [
+      "Interface utilisateur améliorée",
+      "Performance optimisée",
+      "Sécurité renforcée"
+    ],
+    "bug_fixes": [
+      "Corrections diverses"
+    ]
+  },
+  "build_info": {
+    "environment": "pprod",
+    "build_date": "2025-11-15T10:00:00Z",
+    "flutter_version": "3.24.5",
+    "dart_version": "3.5.4"
+  }
+}

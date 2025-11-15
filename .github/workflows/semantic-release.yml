@@ -1,0 +1,269 @@
+name: 🚀 Semantic Release
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+  workflow_dispatch:
+
+env:
+  FLUTTER_VERSION: '3.24.5'
+  JAVA_VERSION: '17'
+
+jobs:
+  release:
+    name: 🎯 Semantic Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: ☕ Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: 🐦 Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: 📦 Install semantic-release
+        run: |
+          npm install -g \
+            semantic-release@^22 \
+            @semantic-release/changelog@^6 \
+            @semantic-release/git@^10 \
+            @semantic-release/exec@^6 \
+            @semantic-release/github@^9 \
+            conventional-changelog-conventionalcommits@^7
+
+      - name: 📋 Run semantic-release (dry-run)
+        id: semantic_dry
+        run: |
+          npx semantic-release --dry-run --no-ci 2>&1 | tee semantic-dry-run.log
+          
+          # Extract next version
+          NEXT_VERSION=$(grep -oP "The next release version is \K[\d\.]+" semantic-dry-run.log || echo "")
+          
+          if [ -z "$NEXT_VERSION" ]; then
+            echo "ℹ️  No release will be created (no relevant commits)"
+            echo "skip_release=true" >> $GITHUB_OUTPUT
+          else
+            echo "📦 Next version will be: $NEXT_VERSION"
+            echo "next_version=$NEXT_VERSION" >> $GITHUB_OUTPUT
+            echo "skip_release=false" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🔍 Determine environment
+        id: env
+        if: steps.semantic_dry.outputs.skip_release != 'true'
+        run: |
+          BRANCH="${{ github.ref_name }}"
+          
+          if [[ "$BRANCH" == "main" ]]; then
+            ENV="production"
+            IS_PRERELEASE="false"
+          elif [[ "$BRANCH" == "staging" ]]; then
+            ENV="beta"
+            IS_PRERELEASE="true"
+          else
+            ENV="development"
+            IS_PRERELEASE="true"
+          fi
+          
+          echo "environment=$ENV" >> $GITHUB_OUTPUT
+          echo "is_prerelease=$IS_PRERELEASE" >> $GITHUB_OUTPUT
+          echo "🌍 Environment: $ENV (Prerelease: $IS_PRERELEASE)"
+
+      - name: 🔧 Configure Firebase
+        if: steps.semantic_dry.outputs.skip_release != 'true'
+        run: |
+          ENV="${{ steps.env.outputs.environment }}"
+          
+          if [[ "$ENV" == "production" ]]; then
+            cp android/app/google-services-prod.json android/app/google-services.json
+            echo "✅ Using production Firebase config"
+          else
+            cp android/app/google-services-pprod.json android/app/google-services.json
+            echo "✅ Using pre-production Firebase config"
+          fi
+
+      - name: 📦 Install Flutter dependencies
+        if: steps.semantic_dry.outputs.skip_release != 'true'
+        run: flutter pub get
+
+      - name: 🏗️ Build APK
+        if: steps.semantic_dry.outputs.skip_release != 'true'
+        run: |
+          ENV="${{ steps.env.outputs.environment }}"
+          
+          if [[ "$ENV" == "production" ]]; then
+            flutter build apk --release --dart-define=ENVIRONMENT=prod
+          else
+            flutter build apk --release --dart-define=ENVIRONMENT=pprod
+          fi
+          
+          echo "✅ APK built successfully"
+
+      - name: 🚀 Run semantic-release
+        if: steps.semantic_dry.outputs.skip_release != 'true'
+        run: npx semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 📤 Upload APK artifact
+        if: steps.semantic_dry.outputs.skip_release != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: apk-${{ steps.env.outputs.environment }}
+          path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30
+
+      - name: 📊 Summary
+        if: steps.semantic_dry.outputs.skip_release != 'true'
+        run: |
+          cat >> $GITHUB_STEP_SUMMARY << 'EOF'
+          ## 🎉 Release Summary
+          
+          - **Version:** ${{ steps.semantic_dry.outputs.next_version }}
+          - **Environment:** ${{ steps.env.outputs.environment }}
+          - **Branch:** ${{ github.ref_name }}
+          - **Prerelease:** ${{ steps.env.outputs.is_prerelease }}
+          
+          ### 📦 Artifacts
+          - APK built and uploaded
+          - GitHub Release created
+          - Changelog updated
+          - Version files updated
+          
+          ### 🔗 Links
+          - [Releases](https://github.com/${{ github.repository }}/releases)
+          - [Changelog](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md)
+          EOF
+
+      - name: ℹ️ No release
+        if: steps.semantic_dry.outputs.skip_release == 'true'
+        run: |
+          echo "ℹ️  No release created - no relevant commits since last release"
+          cat >> $GITHUB_STEP_SUMMARY << 'EOF'
+          ## ℹ️ No Release
+          
+          No relevant commits found since the last release.
+          
+          ### 💡 Tip: Use Conventional Commits
+          
+          ```
+          feat: add new feature      → minor release
+          fix: fix a bug             → patch release
+          perf: improve performance  → patch release
+          
+          feat!: breaking change     → major release
+          fix!: breaking fix         → major release
+          ```
+          
+          See: [Conventional Commits](https://www.conventionalcommits.org/)
+          EOF
+
+  deploy:
+    name: 🚀 Deploy to OTA
+    needs: release
+    runs-on: ubuntu-latest
+    if: success() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging')
+    environment:
+      name: ${{ github.ref == 'refs/heads/main' && 'production' || 'beta' }}
+      url: https://app.team-oustad.com/android/version.json
+    
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - name: 📥 Download APK
+        uses: actions/download-artifact@v4
+        with:
+          name: apk-${{ github.ref == 'refs/heads/main' && 'production' || 'beta' }}
+
+      - name: 📦 Read version metadata
+        id: version
+        run: |
+          VERSION_NAME=$(jq -r '.version_name' version-metadata.json)
+          VERSION_CODE=$(jq -r '.version_code' version-metadata.json)
+          CHANGELOG=$(jq -r '.changelog' version-metadata.json)
+          MANDATORY=$(jq -r '.mandatory' version-metadata.json)
+          MIN_VERSION=$(jq -r '.min_required_version' version-metadata.json)
+          
+          # Extract release notes
+          NEW_FEATURES=$(jq -r '.release_notes.new_features | join("\n")' version-metadata.json)
+          IMPROVEMENTS=$(jq -r '.release_notes.improvements | join("\n")' version-metadata.json)
+          BUG_FIXES=$(jq -r '.release_notes.bug_fixes | join("\n")' version-metadata.json)
+          
+          echo "version_name=$VERSION_NAME" >> $GITHUB_OUTPUT
+          echo "version_code=$VERSION_CODE" >> $GITHUB_OUTPUT
+          echo "changelog=$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "mandatory=$MANDATORY" >> $GITHUB_OUTPUT
+          echo "min_version=$MIN_VERSION" >> $GITHUB_OUTPUT
+
+      - name: 📤 Upload APK to OTA Server
+        env:
+          CHANNEL: ${{ github.ref == 'refs/heads/main' && 'production' || 'beta' }}
+        run: |
+          # Upload APK with metadata using Bearer token
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+            https://app.team-oustad.com/android/upload \
+            -H "Authorization: Bearer ${{ secrets.OTA_BEARER_TOKEN }}" \
+            -F "apk=@app-release.apk" \
+            -F "version_code=${{ steps.version.outputs.version_code }}" \
+            -F "version_name=${{ steps.version.outputs.version_name }}" \
+            -F "changelog=${{ steps.version.outputs.changelog }}" \
+            -F "mandatory=${{ steps.version.outputs.mandatory }}" \
+            -F "min_required_version=${{ steps.version.outputs.min_version }}" \
+            -F "channel=$CHANNEL")
+          
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | head -n-1)
+          
+          if [ "$HTTP_CODE" -eq 200 ]; then
+            echo "✅ APK uploaded successfully"
+            echo "$BODY" | jq '.'
+          else
+            echo "❌ Upload failed with status $HTTP_CODE"
+            echo "$BODY"
+            exit 1
+          fi
+
+      - name: ✅ Verify deployment
+        run: |
+          sleep 3
+          echo "🔍 Checking deployed version..."
+          curl -s https://app.team-oustad.com/android/version | jq '.'
+          
+          # Verify version matches
+          DEPLOYED_VERSION=$(curl -s https://app.team-oustad.com/android/version | jq -r '.version_code')
+          EXPECTED_VERSION="${{ steps.version.outputs.version_code }}"
+          
+          if [ "$DEPLOYED_VERSION" == "$EXPECTED_VERSION" ]; then
+            echo "✅ Deployment verified: version $DEPLOYED_VERSION"
+          else
+            echo "⚠️  Warning: Deployed version ($DEPLOYED_VERSION) doesn't match expected ($EXPECTED_VERSION)"
+          fi
