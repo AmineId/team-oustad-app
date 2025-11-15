@@ -119,15 +119,16 @@ class ResponsiveScaffold extends StatelessWidget {
                 // Logo/Header
                 Container(
                   padding: const EdgeInsets.all(24.0),
-                  child: const Column(
+                  child: Column(
                     children: [
-                      Icon(
-                        Icons.fitness_center,
-                        color: Color(0xFFe89547),
-                        size: 48,
+                      Image.asset(
+                        'assets/images/logo.png',
+                        width: 80,
+                        height: 80,
+                        fit: BoxFit.contain,
                       ),
-                      SizedBox(height: 12),
-                      Text(
+                      const SizedBox(height: 12),
+                      const Text(
                         'Team Fitness',
                         style: TextStyle(
                           color: Colors.white,

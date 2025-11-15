@@ -3,7 +3,14 @@ import '../services/api_service.dart';
 import '../services/auth_service.dart';
 
 class AdminCreateMemberScreen extends StatefulWidget {
-  const AdminCreateMemberScreen({super.key});
+  final VoidCallback? onBack;
+  final VoidCallback? onSuccess;
+
+  const AdminCreateMemberScreen({
+    super.key,
+    this.onBack,
+    this.onSuccess,
+  });
 
   @override
   State<AdminCreateMemberScreen> createState() => _AdminCreateMemberScreenState();
@@ -113,7 +120,11 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
         );
         
         // Retourner à l'écran précédent
-        Navigator.pop(context, true);
+        if (widget.onSuccess != null) {
+          widget.onSuccess!();
+        } else {
+          Navigator.pop(context, true);
+        }
       } else {
         setState(() {
           _errorMessage = 'Échec de la création du membre';
@@ -142,7 +153,13 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            if (widget.onBack != null) {
+              widget.onBack!();
+            } else {
+              Navigator.pop(context);
+            }
+          },
         ),
       ),
       body: Container(

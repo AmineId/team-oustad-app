@@ -4,10 +4,14 @@ import '../services/auth_service.dart';
 
 class AdminCreatePlanningScreen extends StatefulWidget {
   final int? preselectedMemberId;
+  final VoidCallback? onBack;
+  final VoidCallback? onSuccess;
   
   const AdminCreatePlanningScreen({
     super.key,
     this.preselectedMemberId,
+    this.onBack,
+    this.onSuccess,
   });
 
   @override
@@ -193,7 +197,11 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
       );
       
       if (!mounted) return;
-      Navigator.pop(context, true);
+      if (widget.onSuccess != null) {
+        widget.onSuccess!();
+      } else {
+        Navigator.pop(context, true);
+      }
     } catch (e) {
       _showError('Erreur: $e');
     } finally {
@@ -262,6 +270,16 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            if (widget.onBack != null) {
+              widget.onBack!();
+            } else {
+              Navigator.pop(context);
+            }
+          },
+        ),
         title: const Text(
           'Nouveau planning',
           style: TextStyle(

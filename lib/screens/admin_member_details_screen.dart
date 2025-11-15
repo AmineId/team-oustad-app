@@ -7,10 +7,12 @@ import 'admin_create_planning_screen.dart';
 
 class AdminMemberDetailsScreen extends StatefulWidget {
   final int memberId;
+  final VoidCallback? onBack;
 
   const AdminMemberDetailsScreen({
     super.key,
     required this.memberId,
+    this.onBack,
   });
 
   @override
@@ -186,6 +188,16 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            if (widget.onBack != null) {
+              widget.onBack!();
+            } else {
+              Navigator.pop(context);
+            }
+          },
+        ),
         title: const Text(
           'Détails du membre',
           style: TextStyle(

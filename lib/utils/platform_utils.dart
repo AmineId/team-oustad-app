@@ -32,9 +32,10 @@ class PlatformUtils {
 
   /// Get the current device type based on platform and screen size
   static DeviceType getDeviceType(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    
     if (isWeb) {
       // For web, determine based on screen size
-      final width = MediaQuery.of(context).size.width;
       if (width < 300) {
         return DeviceType.watch;
       } else if (width < 600) {
@@ -45,6 +46,10 @@ class PlatformUtils {
     } else if (isWatch(context)) {
       return DeviceType.watch;
     } else if (isDesktop) {
+      // Desktop platform - force desktop layout regardless of window size
+      // This ensures desktop app always shows desktop UI
+      // ignore: avoid_print
+      print('🖥️ Desktop detected - width: ${width}px');
       return DeviceType.desktop;
     } else {
       return DeviceType.mobile;

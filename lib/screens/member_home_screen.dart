@@ -8,6 +8,8 @@ import '../widgets/responsive_layout.dart';
 import 'login_screen.dart';
 import 'subscription_details_screen.dart';
 import 'edit_profile_screen.dart';
+import 'security_settings_screen.dart';
+import 'about_screen.dart';
 
 class MemberHomeScreen extends StatefulWidget {
   const MemberHomeScreen({super.key});
@@ -3211,6 +3213,32 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                 ),
               ),
               const SizedBox(height: 12),
+              _buildSettingsItem(
+                context,
+                'Paramètres',
+                Icons.settings,
+                () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SecuritySettingsPage(),
+                    ),
+                  );
+                },
+              ),
+              _buildSettingsItem(
+                context,
+                'À propos',
+                Icons.info_outline,
+                () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AboutScreen(),
+                    ),
+                  );
+                },
+              ),
               _buildSettingsItem(
                 context,
                 'Aide & Support',

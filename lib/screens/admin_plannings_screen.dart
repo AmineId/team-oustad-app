@@ -4,7 +4,10 @@ import '../services/auth_service.dart';
 import 'admin_create_planning_screen.dart';
 
 class AdminPlanningsScreen extends StatefulWidget {
-  const AdminPlanningsScreen({super.key});
+  final VoidCallback? onBack;
+  final VoidCallback? onCreatePlanning;
+
+  const AdminPlanningsScreen({super.key, this.onBack, this.onCreatePlanning});
 
   @override
   State<AdminPlanningsScreen> createState() => _AdminPlanningsScreenState();
@@ -50,22 +53,34 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
         return;
       }
 
-      // Charger les plannings actifs
-      final activePlannings = await _apiService.getPlannings(token, status: 'active');
+      // Charger tous les plannings sans filtre de statut d'abord
+      final allPlannings = await _apiService.getPlannings(token);
       
-      // Charger les plannings terminés
-      final completedPlannings = await _apiService.getPlannings(token, status: 'completed');
-      
-      // Charger les plannings annulés
-      final cancelledPlannings = await _apiService.getPlannings(token, status: 'cancelled');
+      if (allPlannings == null) {
+        setState(() {
+          _errorMessage = 'Impossible de charger les plannings';
+          _isLoading = false;
+        });
+        return;
+      }
+
+      // Séparer les plannings par statut
+      final planningsMap = allPlannings.map((p) => p as Map<String, dynamic>).toList();
       
       setState(() {
-        _activePlannings = activePlannings?.map((p) => p as Map<String, dynamic>).toList() ?? [];
-        _completedPlannings = completedPlannings?.map((p) => p as Map<String, dynamic>).toList() ?? [];
-        _cancelledPlannings = cancelledPlannings?.map((p) => p as Map<String, dynamic>).toList() ?? [];
+        _activePlannings = planningsMap
+            .where((p) => (p['status'] as String? ?? '').toLowerCase() == 'active')
+            .toList();
+        _completedPlannings = planningsMap
+            .where((p) => (p['status'] as String? ?? '').toLowerCase() == 'completed')
+            .toList();
+        _cancelledPlannings = planningsMap
+            .where((p) => (p['status'] as String? ?? '').toLowerCase() == 'cancelled')
+            .toList();
         _isLoading = false;
       });
     } catch (e) {
+      print('Erreur lors du chargement des plannings: $e');
       setState(() {
         _errorMessage = 'Erreur: $e';
         _isLoading = false;
@@ -103,6 +118,12 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: widget.onBack != null
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: widget.onBack,
+              )
+            : null,
         title: const Text(
           'Plannings',
           style: TextStyle(
@@ -111,21 +132,6 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
             color: Colors.white,
           ),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () async {
-              await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const AdminCreatePlanningScreen(),
-                ),
-              );
-              // Recharger après création
-              _loadPlannings();
-            },
-          ),
-        ],
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: const Color(0xFFe89547),
@@ -284,20 +290,23 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
                     ],
                   ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const AdminCreatePlanningScreen(),
-            ),
-          );
-          // Recharger après création
-          _loadPlannings();
+          if (widget.onCreatePlanning != null) {
+            widget.onCreatePlanning!();
+          } else {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const AdminCreatePlanningScreen(),
+              ),
+            );
+            // Recharger après création
+            _loadPlannings();
+          }
         },
         backgroundColor: const Color(0xFFe89547),
-        icon: const Icon(Icons.add),
-        label: const Text('Nouveau planning'),
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }

@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "1056504785579",
+    "project_id": "team-fitness-app-29fa1",
+    "storage_bucket": "team-fitness-app-29fa1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1056504785579:android:0c1d5c4f071446daebe5ee",
+        "android_client_info": {
+          "package_name": "com.teamoustad.pprod"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCvNA5wSyiKE-VHRz9EzZB07zV4WKBIvWw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1056504785579:android:9ccdd64c4d390ac7ebe5ee",
+        "android_client_info": {
+          "package_name": "team.fitness.team_fitness_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCvNA5wSyiKE-VHRz9EzZB07zV4WKBIvWw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

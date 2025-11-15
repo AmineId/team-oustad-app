@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'login_screen.dart';
 import 'admin_home_screen.dart';
 import 'member_home_screen.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
+import '../services/notification_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -29,6 +31,9 @@ class _SplashScreenState extends State<SplashScreen> {
     } catch (e) {
       _dbHealthy = false;
     }
+
+    // Vérifier si c'est le premier démarrage et proposer les notifications
+    await _checkFirstLaunchAndRequestNotifications();
 
     // After health check, if we have a stored JWT validate it and
     // navigate directly to Home when valid. Otherwise go to Login.
@@ -68,6 +73,101 @@ class _SplashScreenState extends State<SplashScreen> {
       MaterialPageRoute(
         builder: (context) => LoginScreen(initialDbHealthy: _dbHealthy),
       ),
+    );
+  }
+
+  Future<void> _checkFirstLaunchAndRequestNotifications() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final isFirstLaunch = prefs.getBool('first_launch') ?? true;
+      
+      if (isFirstLaunch) {
+        // Marquer que ce n'est plus le premier lancement
+        await prefs.setBool('first_launch', false);
+        
+        // Afficher le dialog de demande de notifications
+        if (mounted) {
+          await _showNotificationPermissionDialog();
+        }
+      }
+    } catch (e) {
+      // ignore: avoid_print
+      print('Erreur lors de la vérification du premier lancement: $e');
+    }
+  }
+
+  Future<void> _showNotificationPermissionDialog() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF2d3748),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF4CAF50).withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.notifications_active,
+                  color: Color(0xFF4CAF50),
+                  size: 28,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Text(
+                  'Notifications',
+                  style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          content: const Text(
+            'Souhaitez-vous recevoir des notifications pour rester informé des nouveautés, rappels d\'entraînement et messages importants ?',
+            style: TextStyle(color: Colors.white70, fontSize: 15),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text(
+                'Plus tard',
+                style: TextStyle(color: Colors.white60),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF4CAF50),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text(
+                'Activer',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+              onPressed: () async {
+                Navigator.of(context).pop();
+                // Demander les permissions
+                await NotificationService().requestPermissions();
+                
+                // Activer les notifications par défaut
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.setBool('notifications_enabled', true);
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 

@@ -38,9 +38,9 @@ components:
           type: string
           enum: [member, admin, owner]
           example: "member"
-        uniqueCode:
+        displayId:
           type: string
-          example: "ABC123"
+          example: "MEMBER-a8f3d9e2b1c4f567"
         gymId:
           type: integer
           example: 1
@@ -51,7 +51,7 @@ components:
         - email
         - fullName
         - role
-        - uniqueCode
+        - displayId
         - gymId
 
     Gym:
@@ -558,6 +558,369 @@ security:
   - bearerAuth: []
 
 paths:
+  /android/upload:
+    post:
+      tags:
+        - Android OTA Updates
+      summary: Upload APK with metadata
+      description: Upload a new APK file with version metadata (requires authentication)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - apk
+                - version_code
+                - version_name
+              properties:
+                apk:
+                  type: string
+                  format: binary
+                  description: APK file to upload
+                version_code:
+                  type: integer
+                  description: Version code (numeric, incremental)
+                  example: 2
+                version_name:
+                  type: string
+                  description: Version name (semantic versioning)
+                  example: "1.0.1"
+                changelog:
+                  type: string
+                  description: Changes in this version
+                  example: "Bug fixes and performance improvements"
+                min_supported_version:
+                  type: integer
+                  description: Minimum supported version code (for force update)
+                  example: 1
+                force_update:
+                  type: boolean
+                  description: Force users to update
+                  example: false
+                channel:
+                  type: string
+                  enum: [production, beta]
+                  description: Deployment channel
+                  example: production
+                  default: production
+      responses:
+        '200':
+          description: APK uploaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "APK uploaded successfully to production channel"
+                  version:
+                    type: object
+                    properties:
+                      version_code:
+                        type: integer
+                        example: 2
+                      version_name:
+                        type: string
+                        example: "1.0.1"
+                      download_url:
+                        type: string
+                        example: "https://app.team-oustad.com/android/app-release.apk"
+                      changelog:
+                        type: string
+                        example: "Bug fixes and performance improvements"
+                      min_supported_version:
+                        type: integer
+                        example: 1
+                      force_update:
+                        type: boolean
+                        example: false
+                      release_date:
+                        type: string
+                        format: date-time
+                        example: "2025-11-15T12:30:00.000Z"
+                      file_size:
+                        type: integer
+                        example: 25000000
+                      checksum:
+                        type: string
+                        example: "abc123def456..."
+                      channel:
+                        type: string
+                        example: "production"
+                  checksums:
+                    type: object
+                    properties:
+                      md5:
+                        type: string
+                        example: "d41d8cd98f00b204e9800998ecf8427e"
+                      sha256:
+                        type: string
+                        example: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        '400':
+          description: Invalid input or missing required fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "version_code and version_name are required"
+        '401':
+          description: Unauthorized - authentication required
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Authentication required"
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal server error"
+                  message:
+                    type: string
+
+  /android/check-update:
+    get:
+      tags:
+        - Android OTA Updates
+      summary: Check for available updates
+      description: Check if a new version is available for the Android app
+      parameters:
+        - in: query
+          name: current_version
+          required: true
+          schema:
+            type: integer
+          description: Current installed version code
+          example: 1
+        - in: query
+          name: channel
+          schema:
+            type: string
+            enum: [production, beta]
+          description: Update channel to check
+          example: production
+          default: production
+        - in: query
+          name: device_id
+          schema:
+            type: string
+          description: Device identifier (optional, for analytics)
+          example: "device-123"
+      responses:
+        '200':
+          description: Update availability information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  update_available:
+                    type: boolean
+                    example: true
+                  current_version:
+                    type: integer
+                    example: 1
+                  latest_version:
+                    type: object
+                    nullable: true
+                    properties:
+                      version_code:
+                        type: integer
+                        example: 2
+                      version_name:
+                        type: string
+                        example: "1.0.1"
+                      download_url:
+                        type: string
+                        example: "https://app.team-oustad.com/android/app-release.apk"
+                      changelog:
+                        type: string
+                        example: "Bug fixes and improvements"
+                      force_update:
+                        type: boolean
+                        example: false
+                      file_size:
+                        type: integer
+                        example: 25000000
+                      checksum:
+                        type: string
+                        example: "abc123..."
+                      release_date:
+                        type: string
+                        format: date-time
+        '400':
+          description: Missing or invalid parameters
+        '500':
+          description: Server error
+
+  /android/download:
+    get:
+      tags:
+        - Android OTA Updates
+      summary: Download APK
+      description: Download the latest APK file
+      responses:
+        '200':
+          description: APK file
+          content:
+            application/vnd.android.package-archive:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: APK file not found
+        '500':
+          description: Server error
+
+  /android/version:
+    get:
+      tags:
+        - Android OTA Updates
+      summary: Get version metadata
+      description: Get metadata for the current published version
+      responses:
+        '200':
+          description: Version metadata
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  version_code:
+                    type: integer
+                  version_name:
+                    type: string
+                  download_url:
+                    type: string
+                  changelog:
+                    type: string
+                  min_supported_version:
+                    type: integer
+                  force_update:
+                    type: boolean
+                  release_date:
+                    type: string
+                    format: date-time
+                  file_size:
+                    type: integer
+                  checksum:
+                    type: string
+        '500':
+          description: Server error
+
+  /android/checksum:
+    get:
+      tags:
+        - Android OTA Updates
+      summary: Calculate APK checksum
+      description: Calculate and return checksums for the current APK
+      responses:
+        '200':
+          description: Checksum information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  md5:
+                    type: string
+                  sha256:
+                    type: string
+                  file_size:
+                    type: integer
+        '404':
+          description: APK file not found
+        '500':
+          description: Server error
+
+  /android/beta/check-update:
+    get:
+      tags:
+        - Android OTA Updates - Beta Channel
+      summary: Check for beta updates
+      description: Check if a new beta version is available
+      parameters:
+        - in: query
+          name: current_version
+          required: true
+          schema:
+            type: integer
+          description: Current installed version code
+          example: 1
+        - in: query
+          name: device_id
+          schema:
+            type: string
+          description: Device identifier (optional)
+      responses:
+        '200':
+          description: Beta update availability information
+        '400':
+          description: Missing or invalid parameters
+        '500':
+          description: Server error
+
+  /android/beta/download:
+    get:
+      tags:
+        - Android OTA Updates - Beta Channel
+      summary: Download beta APK
+      description: Download the latest beta APK file
+      responses:
+        '200':
+          description: Beta APK file
+          content:
+            application/vnd.android.package-archive:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Beta APK file not found
+        '500':
+          description: Server error
+
+  /android/beta/version:
+    get:
+      tags:
+        - Android OTA Updates - Beta Channel
+      summary: Get beta version metadata
+      description: Get metadata for the current beta version
+      responses:
+        '200':
+          description: Beta version metadata
+        '500':
+          description: Server error
+
+  /android/beta/checksum:
+    get:
+      tags:
+        - Android OTA Updates - Beta Channel
+      summary: Calculate beta APK checksum
+      description: Calculate and return checksums for the beta APK
+      responses:
+        '200':
+          description: Beta checksum information
+        '404':
+          description: Beta APK file not found
+        '500':
+          description: Server error
+
   /health:
     get:
       summary: Health check
@@ -649,9 +1012,9 @@ paths:
                     type: string
                     enum: [owner, admin, member]
                     example: "member"
-                  uniqueCode:
+                  displayId:
                     type: string
-                    example: "ABC123"
+                    example: "MEMBER-a8f3d9e2b1c4f567"
                   gym:
                     $ref: '#/components/schemas/Gym'
                   activeSubscription:
@@ -704,7 +1067,7 @@ paths:
                 qrData:
                   type: string
                   description: QR code data to validate
-                  example: "{\"userId\":1,\"uniqueCode\":\"ABC123\",\"fullName\":\"John Doe\",\"role\":\"member\",\"gymName\":\"Downtown Fitness\",\"accessType\":\"gym_access\",\"timestamp\":\"2024-01-01T10:00:00.000Z\"}"
+                  example: "{\"userId\":1,\"displayId\":\"MEMBER-a8f3d9e2b1c4f567\",\"fullName\":\"John Doe\",\"role\":\"member\",\"gymName\":\"Downtown Fitness\",\"accessType\":\"gym_access\",\"timestamp\":\"2024-01-01T10:00:00.000Z\"}"
       responses:
         '200':
           description: QR code validated successfully
@@ -1218,9 +1581,9 @@ paths:
                     type: string
                     enum: [owner, admin, member]
                     example: "member"
-                  uniqueCode:
+                  displayId:
                     type: string
-                    example: "ABC123"
+                    example: "MEMBER-a8f3d9e2b1c4f567"
                   gym:
                     $ref: '#/components/schemas/Gym'
                   activeSubscription:
@@ -1379,6 +1742,196 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /users/{id}/profile-image:
+    put:
+      summary: Upload profile image for user
+      description: Upload or update a profile image for a user. Users can update their own profile, admins can update users in their gym, owners can update anyone.
+      tags: [Users, Images]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: User ID
+          example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - imageData
+              properties:
+                imageData:
+                  type: string
+                  description: Base64 encoded image data (with or without data URI prefix)
+                  example: "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQ..."
+      responses:
+        '200':
+          description: Profile image uploaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Photo de profil mise à jour avec succès"
+        '400':
+          description: Invalid image data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Données d'image invalides"
+        '403':
+          description: Insufficient permissions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Vous n'avez pas les permissions pour modifier cette photo de profil"
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "User with id 1 not found"
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    get:
+      summary: Get profile image for user
+      description: Retrieve the profile image for a user. Users can view their own profile image, admins can view images of users in their gym, owners can view all images. If no image is uploaded, returns a generated SVG avatar with user initials.
+      tags: [Users, Images]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: User ID
+          example: 1
+      responses:
+        '200':
+          description: Profile image (binary data or generated avatar)
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+            image/png:
+              schema:
+                type: string
+                format: binary
+            image/gif:
+              schema:
+                type: string
+                format: binary
+            image/svg+xml:
+              schema:
+                type: string
+                format: binary
+              description: Generated avatar with user initials if no profile image is uploaded
+        '403':
+          description: Insufficient permissions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Vous n'avez pas accès à cette photo de profil"
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "User with id 1 not found"
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      summary: Delete profile image for user
+      description: Delete the profile image for a user. Users can delete their own profile image, admins can delete images of users in their gym, owners can delete any image.
+      tags: [Users, Images]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: User ID
+          example: 1
+      responses:
+        '200':
+          description: Profile image deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Photo de profil supprimée avec succès"
+        '403':
+          description: Insufficient permissions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Vous n'avez pas les permissions pour supprimer cette photo de profil"
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "User with id 1 not found"
         '500':
           description: Server error
           content:
@@ -1825,9 +2378,9 @@ paths:
                         fullName:
                           type: string
                           example: "John Doe"
-                        uniqueCode:
+                        displayId:
                           type: string
-                          example: "ABC123"
+                          example: "MEMBER-a8f3d9e2b1c4f567"
                         createdAt:
                           type: string
                           format: date-time
@@ -3739,6 +4292,204 @@ paths:
                 $ref: '#/components/schemas/Error'
         '500':
           description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ==========================================
+  # Android OTA Updates
+  # ==========================================
+  /android/check-update:
+    get:
+      tags:
+        - Android OTA Updates
+      summary: Vérifier la disponibilité d'une mise à jour
+      description: Vérifie si une nouvelle version de l'application Android est disponible en comparant avec la version actuelle
+      parameters:
+        - in: query
+          name: current_version
+          required: true
+          schema:
+            type: integer
+            example: 1
+          description: Version actuelle installée (version_code)
+        - in: query
+          name: device_id
+          schema:
+            type: string
+            example: "device123abc"
+          description: Identifiant unique de l'appareil (optionnel, pour analytics)
+      responses:
+        '200':
+          description: Informations sur la mise à jour disponible
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  update_available:
+                    type: boolean
+                    example: true
+                  current_version:
+                    type: integer
+                    example: 1
+                  latest_version:
+                    type: object
+                    nullable: true
+                    properties:
+                      version_code:
+                        type: integer
+                        example: 2
+                      version_name:
+                        type: string
+                        example: "1.0.1"
+                      download_url:
+                        type: string
+                        example: "https://app.team-oustam.com/android/app-release.apk"
+                      changelog:
+                        type: string
+                        example: "Corrections de bugs et améliorations de performance"
+                      force_update:
+                        type: boolean
+                        example: false
+                      file_size:
+                        type: integer
+                        example: 25000000
+                      checksum:
+                        type: string
+                        example: "abc123def456789..."
+                      release_date:
+                        type: string
+                        format: date-time
+                        example: "2025-11-15T12:00:00Z"
+        '400':
+          description: Paramètre current_version manquant ou invalide
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Erreur serveur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /android/download:
+    get:
+      tags:
+        - Android OTA Updates
+      summary: Télécharger la dernière version APK
+      description: Télécharge le fichier APK de la dernière version disponible
+      parameters:
+        - in: query
+          name: version
+          schema:
+            type: integer
+            example: 2
+          description: Version spécifique à télécharger (optionnel)
+      responses:
+        '200':
+          description: Fichier APK
+          content:
+            application/vnd.android.package-archive:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Fichier APK non trouvé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Erreur serveur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /android/version:
+    get:
+      tags:
+        - Android OTA Updates
+      summary: Obtenir les informations de version
+      description: Retourne les métadonnées de la version actuelle disponible sur le serveur
+      responses:
+        '200':
+          description: Informations de version
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  version_code:
+                    type: integer
+                    example: 2
+                  version_name:
+                    type: string
+                    example: "1.0.1"
+                  download_url:
+                    type: string
+                    example: "https://app.team-oustam.com/android/app-release.apk"
+                  changelog:
+                    type: string
+                    example: "Corrections de bugs et améliorations"
+                  min_supported_version:
+                    type: integer
+                    example: 1
+                  force_update:
+                    type: boolean
+                    example: false
+                  release_date:
+                    type: string
+                    format: date-time
+                    example: "2025-11-15T12:00:00Z"
+                  file_size:
+                    type: integer
+                    example: 25000000
+                  checksum:
+                    type: string
+                    example: "abc123def456789..."
+        '500':
+          description: Erreur serveur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /android/checksum:
+    get:
+      tags:
+        - Android OTA Updates
+      summary: Calculer le checksum de l'APK actuel
+      description: Calcule et retourne les checksums MD5 et SHA256 du fichier APK actuellement disponible
+      responses:
+        '200':
+          description: Checksums calculés
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  md5:
+                    type: string
+                    example: "5d41402abc4b2a76b9719d911017c592"
+                  sha256:
+                    type: string
+                    example: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                  file_size:
+                    type: integer
+                    example: 25000000
+        '404':
+          description: Fichier APK non trouvé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Erreur serveur
           content:
             application/json:
               schema:

@@ -1,6 +1,6 @@
 # mobile-app# Team Fitness App 🏋️
 
-A Flutter mobile application for gym management with biometric authentication.
+A Flutter application for gym management with comprehensive multi-platform support and responsive design.
 
 ## Features
 
@@ -8,7 +8,10 @@ A Flutter mobile application for gym management with biometric authentication.
 - 🔑 **Password Authentication** - Secure password-based login
 - 🎨 **Dark Theme** - Professional dark design with orange accents
 - 💾 **Persistent Settings** - Remember user preferences
-- 📱 **Cross-platform** - Android, iOS, Windows support
+- 📱 **Multi-platform** - Android, iOS, Windows, macOS, Linux, Web, and Smartwatch support
+- 📐 **Responsive Design** - Adaptive UI for all screen sizes (watch to desktop)
+- 🖥️ **Desktop-Optimized** - Side navigation, multi-column layouts, enhanced UX
+- ⌚ **Watch-Optimized** - Compact UI for smartwatch displays
 
 ## Prerequisites
 
@@ -36,6 +39,15 @@ A Flutter mobile application for gym management with biometric authentication.
 
 ## Running the App
 
+### 🌐 Automatic API Configuration
+
+The app automatically detects the platform and uses the correct API URL:
+- **Desktop/Web**: `http://localhost:3000` (automatic)
+- **Android Emulator**: `http://10.0.2.2:3000` (automatic)
+- **Custom URL**: Use `-Url` parameter (see examples below)
+
+See **[API_CONFIGURATION.md](./API_CONFIGURATION.md)** and **[GUIDE_RAPIDE_MULTI_PLATEFORME.md](./GUIDE_RAPIDE_MULTI_PLATEFORME.md)** for details.
+
 ### Quick Start (PowerShell Scripts)
 
 ```powershell
@@ -45,11 +57,18 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 # Install dependencies
 .\scripts.ps1 install
 
-# Launch emulator
-.\scripts.ps1 launch
+# Run on Windows (uses localhost automatically)
+.\scripts.ps1 run-windows
 
-# Run app
-.\scripts.ps1 run-android
+# Run on Web (uses localhost automatically)
+.\scripts.ps1 run-web
+
+# Run on Android Emulator (uses 10.0.2.2 automatically)
+.\scripts.ps1 launch          # Launch emulator first
+.\scripts.ps1 run-android     # Run app
+
+# Use custom API URL if needed
+.\scripts.ps1 run-windows -Url http://192.168.1.100:3000
 ```
 
 ### Using Make (if you have Make installed)
@@ -147,26 +166,51 @@ flutter build windows --release
 ```
 Output: `build\windows\runner\Release\team_fitness_app.exe`
 
+## Responsive Design 🎨
+
+The app automatically adapts to different screen sizes:
+- **Desktop (>600px)**: Side navigation, multi-column layouts (3-4 columns)
+- **Mobile (300-600px)**: Bottom navigation, 2-column layouts
+- **Smartwatch (<300px)**: Compact single-column layouts
+
+See [RESPONSIVE_DESIGN.md](./RESPONSIVE_DESIGN.md) for detailed documentation.
+
 ## Project Structure
 
 ```
 team_fitness_app/
 ├── lib/
-│   ├── main.dart                    # App entry point with theme config
-│   └── screens/
-│       ├── login_screen.dart        # Login screen with biometric auth
-│       └── home_screen.dart         # Home screen after login
+│   ├── main.dart                           # App entry point
+│   ├── utils/
+│   │   └── platform_utils.dart             # Platform detection
+│   ├── widgets/
+│   │   ├── responsive_layout.dart          # Responsive scaffold
+│   │   ├── responsive_grid.dart            # Responsive grids
+│   │   ├── responsive_card.dart            # Responsive components
+│   │   ├── desktop_widgets.dart            # Desktop-optimized widgets
+│   │   └── watch_widgets.dart              # Watch-optimized widgets
+│   ├── screens/
+│   │   ├── login_screen.dart               # Login with biometric auth
+│   │   ├── admin_home_screen.dart          # Admin dashboard
+│   │   ├── member_home_screen.dart         # Member dashboard
+│   │   └── ...                             # Other screens
+│   └── services/                           # API, auth, notifications
 ├── assets/
-│   └── images/
-│       └── logo.png                 # App logo
-├── android/                         # Android specific code
-├── ios/                            # iOS specific code
-├── windows/                        # Windows specific code
-├── test/                           # Unit and widget tests
-├── pubspec.yaml                    # Dependencies and assets
-├── scripts.ps1                     # PowerShell helper scripts
-├── Makefile                        # Make commands
-└── README.md                       # This file
+│   └── images/                             # App assets
+├── android/                                # Android specific code
+├── ios/                                    # iOS specific code
+├── windows/                                # Windows specific code
+├── macos/                                  # macOS specific code
+├── linux/                                  # Linux specific code
+├── web/                                    # Web specific code
+├── test/                                   # Unit and widget tests
+├── RESPONSIVE_DESIGN.md                    # Responsive design guide
+├── IMPLEMENTATION_SUMMARY.md               # Technical implementation details
+├── VISUAL_GUIDE.md                         # Visual layout examples
+├── pubspec.yaml                            # Dependencies and assets
+├── scripts.ps1                             # PowerShell helper scripts
+├── Makefile                                # Make commands
+└── README.md                               # This file
 ```
 
 ## Configuration
@@ -217,19 +261,28 @@ If the app loses connection to the emulator:
 |---------|-------------|
 | `.\scripts.ps1 install` | Install dependencies |
 | `.\scripts.ps1 run` | Run on default device |
-| `.\scripts.ps1 run-android` | Run on Android emulator |
-| `.\scripts.ps1 run-windows` | Run on Windows |
+| `.\scripts.ps1 run-android` | Run on Android emulator (10.0.2.2 auto) |
+| `.\scripts.ps1 run-windows` | Run on Windows (localhost auto) |
+| `.\scripts.ps1 run-web` | Run on Web (localhost auto) |
+| `.\scripts.ps1 run-ios` | Run on iOS Simulator (localhost auto) |
 | `.\scripts.ps1 emulators` | List emulators |
 | `.\scripts.ps1 launch` | Launch Pixel 9 Pro emulator |
 | `.\scripts.ps1 devices` | Show connected devices |
 | `.\scripts.ps1 clean` | Clean build files |
 | `.\scripts.ps1 build-apk` | Build release APK |
 | `.\scripts.ps1 build-appbundle` | Build App Bundle |
+| `.\scripts.ps1 build-windows` | Build Windows executable |
+| `.\scripts.ps1 build-web` | Build Web application |
 | `.\scripts.ps1 analyze` | Analyze code |
 | `.\scripts.ps1 format` | Format code |
 | `.\scripts.ps1 test` | Run tests |
 | `.\scripts.ps1 upgrade` | Upgrade dependencies |
 | `.\scripts.ps1 doctor` | Check Flutter setup |
+
+**All commands support `-Url` parameter** to override the default API URL:
+```powershell
+.\scripts.ps1 run-windows -Url http://192.168.1.100:3000
+```
 
 ## VS Code Integration
 
@@ -242,14 +295,27 @@ Press `F5` or click "Run > Start Debugging" to run the app.
 - Flutter Widget Snippets
 - Awesome Flutter Snippets
 
+## Documentation 📚
+
+### Design & UI
+- **[RESPONSIVE_DESIGN.md](./RESPONSIVE_DESIGN.md)** - Comprehensive guide to responsive design system
+- **[IMPLEMENTATION_SUMMARY.md](./IMPLEMENTATION_SUMMARY.md)** - Technical implementation details
+- **[VISUAL_GUIDE.md](./VISUAL_GUIDE.md)** - Visual examples of layouts across platforms
+
+### API & Configuration
+- **[API_CONFIGURATION.md](./API_CONFIGURATION.md)** - Complete API URL configuration guide
+- **[GUIDE_RAPIDE_MULTI_PLATEFORME.md](./GUIDE_RAPIDE_MULTI_PLATEFORME.md)** - Quick start guide (French)
+- **[RESUME_CHANGEMENTS.md](./RESUME_CHANGEMENTS.md)** - Summary of recent changes (French)
+
 ## Next Steps
 
-- [ ] Add more screens (profile, settings, workout tracking)
-- [ ] Implement backend API integration
-- [ ] Add database for local storage
-- [ ] Implement workout plans feature
-- [ ] Add progress tracking charts
-- [ ] Enable push notifications
+- [x] Multi-platform responsive design
+- [x] Desktop optimization with side navigation
+- [x] Smartwatch support with compact UI
+- [ ] Backend API integration enhancements
+- [ ] Advanced workout tracking features
+- [ ] Progress charts and analytics
+- [ ] Enhanced push notifications
 
 ## License
 

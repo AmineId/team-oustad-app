@@ -1,27 +1,81 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
+import '../config/app_config.dart';
 
 /// Simple API client for the Team Fitness Express+Prisma backend.
 ///
-/// The base URL is read from the Dart define `API_BASE_URL` (useful for
-/// emulator vs device). Default: http://10.0.2.2:3000
+/// The base URL is determined by:
+/// 1. ENVIRONMENT variable (pprod, prod, dev) - recommended
+/// 2. API_BASE_URL variable - for custom URLs
+/// 3. Platform-specific defaults (localhost or 10.0.2.2)
+///
+/// Environments:
+/// - dev: http://localhost:3000 (default)
+/// - pprod: https://api-pprod.team-oustad.com
+/// - prod: https://api.team-oustad.com
 class ApiService {
   final Uri baseUri;
 
   ApiService(this.baseUri);
 
-  factory ApiService.fromEnv() {
-    // Read raw value from --dart-define. Developers may supply a host:port
-    // or a full URL. Normalize to a proper URI with scheme.
-    var raw = const String.fromEnvironment(
-      'API_BASE_URL',
-      // Default to emulator-friendly host with scheme to avoid Uri.parse issues
-      defaultValue: 'http://10.0.2.2:3000',
-    );
+  /// Get default API URL based on platform (for dev environment)
+  static String _getDefaultApiUrl() {
+    // If running on web, use localhost
+    if (kIsWeb) {
+      return 'http://localhost:3000';
+    }
+    
+    // If running on desktop (Windows, macOS, Linux), use localhost
+    if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+      return 'http://localhost:3000';
+    }
+    
+    // For Android emulator, use special IP
+    if (Platform.isAndroid) {
+      return 'http://10.0.2.2:3000';
+    }
+    
+    // For iOS simulator/device, use localhost (works in simulator)
+    if (Platform.isIOS) {
+      return 'http://localhost:3000';
+    }
+    
+    // Fallback to localhost for unknown platforms
+    return 'http://localhost:3000';
+  }
 
-    return ApiService(Uri.parse(raw));
+  factory ApiService.fromEnv() {
+    String apiUrl;
+    
+    // Priority 1: Check for ENVIRONMENT variable (pprod, prod, dev)
+    const environment = String.fromEnvironment('ENVIRONMENT', defaultValue: '');
+    
+    if (environment.isNotEmpty) {
+      final config = AppConfig.fromEnvironment();
+      apiUrl = config.apiBaseUrl;
+      // ignore: avoid_print
+      print('🌐 ApiService: Using ${config.environment} environment → $apiUrl');
+    } else {
+      // Priority 2: Check for custom API_BASE_URL
+      const customUrl = String.fromEnvironment('API_BASE_URL', defaultValue: '');
+      
+      if (customUrl.isNotEmpty) {
+        apiUrl = customUrl;
+        // ignore: avoid_print
+        print('🌐 ApiService: Using custom API_BASE_URL → $apiUrl');
+      } else {
+        // Priority 3: Use platform-specific default (dev)
+        apiUrl = _getDefaultApiUrl();
+        // ignore: avoid_print
+        print('🌐 ApiService: Using platform-specific dev URL → $apiUrl');
+      }
+    }
+
+    return ApiService(Uri.parse(apiUrl));
   }
 
   /// Health check - returns true when backend is reachable and returns 200.
@@ -857,6 +911,51 @@ class ApiService {
     } catch (e) {
       // ignore: avoid_print
       print('Error updating user profile: $e');
+      rethrow;
+    }
+  }
+
+  /// Upload profile image for user
+  /// PUT /users/{userId}/profile-image
+  Future<Map<String, dynamic>?> uploadProfileImage(
+    int userId,
+    String imageDataBase64,
+    String token, {
+    Duration timeout = const Duration(seconds: 15),
+  }) async {
+    final uri = baseUri.resolve('/users/$userId/profile-image');
+    
+    try {
+      // ignore: avoid_print
+      print('ApiService.uploadProfileImage -> $uri');
+      final resp = await http
+          .put(
+            uri,
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+            body: jsonEncode({'imageData': imageDataBase64}),
+          )
+          .timeout(timeout);
+      
+      if (resp.statusCode == 200) {
+        try {
+          final body = jsonDecode(resp.body);
+          return body as Map<String, dynamic>;
+        } catch (e) {
+          // ignore: avoid_print
+          print('Error parsing upload image response: $e');
+          return null;
+        }
+      } else {
+        // ignore: avoid_print
+        print('Failed to upload profile image: ${resp.statusCode} - ${resp.body}');
+        throw Exception('Failed to upload profile image: ${resp.statusCode}');
+      }
+    } catch (e) {
+      // ignore: avoid_print
+      print('Error uploading profile image: $e');
       rethrow;
     }
   }

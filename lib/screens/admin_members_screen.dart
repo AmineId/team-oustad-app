@@ -5,7 +5,11 @@ import 'admin_member_details_screen.dart';
 import 'admin_create_member_screen.dart';
 
 class AdminMembersScreen extends StatefulWidget {
-  const AdminMembersScreen({super.key});
+  final VoidCallback? onBack;
+  final Function(int memberId)? onMemberTap;
+  final VoidCallback? onCreateMember;
+
+  const AdminMembersScreen({super.key, this.onBack, this.onMemberTap, this.onCreateMember});
 
   @override
   State<AdminMembersScreen> createState() => _AdminMembersScreenState();
@@ -121,6 +125,12 @@ class _AdminMembersScreenState extends State<AdminMembersScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: widget.onBack != null
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: widget.onBack,
+              )
+            : null,
         title: const Text(
           'Membres',
           style: TextStyle(
@@ -132,20 +142,25 @@ class _AdminMembersScreenState extends State<AdminMembersScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          // Naviguer vers l'écran de création de membre
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const AdminCreateMemberScreen(),
-            ),
-          );
-          // Recharger la liste si un membre a été créé
-          if (result == true) {
-            _loadMembers();
+          if (widget.onCreateMember != null) {
+            // Utiliser le callback si fourni (navigation interne)
+            widget.onCreateMember!();
+          } else {
+            // Naviguer vers l'écran de création de membre (navigation classique)
+            final result = await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const AdminCreateMemberScreen(),
+              ),
+            );
+            // Recharger la liste si un membre a été créé
+            if (result == true) {
+              _loadMembers();
+            }
           }
         },
         backgroundColor: const Color(0xFFe89547),
-        child: const Icon(Icons.person_add, color: Colors.white),
+        child: const Icon(Icons.add, color: Colors.white),
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -261,17 +276,23 @@ class _AdminMembersScreenState extends State<AdminMembersScreen> {
                                     return _MemberCard(
                                       member: member,
                                       onTap: () async {
-                                        // Naviguer vers les détails du membre
-                                        await Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => AdminMemberDetailsScreen(
-                                              memberId: member['id'] as int,
+                                        final memberId = member['id'] as int;
+                                        if (widget.onMemberTap != null) {
+                                          // Utiliser le callback si fourni (navigation interne)
+                                          widget.onMemberTap!(memberId);
+                                        } else {
+                                          // Naviguer vers les détails du membre (navigation classique)
+                                          await Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => AdminMemberDetailsScreen(
+                                                memberId: memberId,
+                                              ),
                                             ),
-                                          ),
-                                        );
-                                        // Recharger la liste après retour
-                                        _loadMembers();
+                                          );
+                                          // Recharger la liste après retour
+                                          _loadMembers();
+                                        }
                                       },
                                     );
                                   },

@@ -85,16 +85,32 @@ class AuthService {
     }
   }
 
-  /// Check if current user is an admin or owner
+  /// Check if current user is an admin (NOT owner)
   Future<bool> isAdmin() async {
     final userType = await getUserType();
-    return userType == 'admin' || userType == 'owner';
+    return userType == 'admin';
   }
 
   /// Check if current user is an owner (super admin)
   Future<bool> isOwner() async {
     final userType = await getUserType();
     return userType == 'owner';
+  }
+
+  /// Check if current user is an admin OR owner (has admin access)
+  Future<bool> hasAdminAccess() async {
+    final userType = await getUserType();
+    return userType == 'admin' || userType == 'owner';
+  }
+
+  Future<bool> hasStoredCredentials() async {
+    try {
+      final email = await _secureStorage.read(key: 'auth_email');
+      final pwd = await _secureStorage.read(key: 'auth_password');
+      return email != null && pwd != null;
+    } catch (_) {
+      return false;
+    }
   }
 
   Future<Map<String, String>?> loadCredentials() async {

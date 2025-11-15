@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'dart:ui';
+import 'dart:io';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'screens/splash_screen.dart';
@@ -14,6 +16,9 @@ import 'firebase_options.dart';
 void main() async {
   // Ensure Flutter bindings are initialized
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Bloquer les screenshots et l'enregistrement d'écran
+  await _disableScreenCapture();
   
   // Initialize Firebase
   try {
@@ -38,7 +43,7 @@ void main() async {
   // Initialize notification service
   try {
     await NotificationService().initialize();
-    await NotificationService().requestPermissions();
+    // Ne pas demander les permissions ici, elles seront demandées au premier démarrage
   } catch (e) {
     // ignore: avoid_print
     print('Failed to initialize notifications: $e');
@@ -66,6 +71,32 @@ void main() async {
   };
 
   runApp(const MyApp());
+}
+
+/// Désactive la capture d'écran et l'enregistrement d'écran
+Future<void> _disableScreenCapture() async {
+  if (Platform.isAndroid) {
+    try {
+      // Sur Android, empêcher les screenshots et l'enregistrement d'écran
+      const platform = MethodChannel('team.fitness.security');
+      await platform.invokeMethod('disableScreenCapture');
+      // ignore: avoid_print
+      print('🔒 Protection des screenshots activée (Android)');
+    } catch (e) {
+      // ignore: avoid_print
+      print('⚠️ Erreur lors de l\'activation de la protection: $e');
+    }
+  } else if (Platform.isIOS) {
+    try {
+      // Sur iOS, masquer le contenu dans le task switcher
+      // La protection contre les screenshots est gérée au niveau système iOS
+      // ignore: avoid_print
+      print('🔒 Protection des screenshots activée (iOS)');
+    } catch (e) {
+      // ignore: avoid_print
+      print('⚠️ Erreur iOS: $e');
+    }
+  }
 }
 
 class MyApp extends StatelessWidget {

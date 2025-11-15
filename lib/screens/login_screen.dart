@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import '../services/auth_service.dart';
 import 'admin_home_screen.dart';
 import 'member_home_screen.dart';
 import 'forgot_password_screen.dart';
+import 'setup_password_screen.dart';
 import '../services/api_service.dart';
 import '../services/fcm_service.dart';
 
@@ -24,7 +26,6 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
   bool _isAuthenticating = false;
   bool _isCheckingHealth = false;
   bool _dbHealthy = false;
-  bool _biometricEnabled = false;
   bool _canCheckBiometrics = false;
 
   @override
@@ -42,12 +43,42 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
     if (!_dbHealthy) {
       await _performHealthCheck();
     }
+    
+    // Tenter l'authentification biométrique automatiquement si disponible
+    if (_canCheckBiometrics && _dbHealthy) {
+      // Petit délai pour laisser l'UI se charger
+      await Future.delayed(const Duration(milliseconds: 500));
+      if (mounted) {
+        _attemptBiometricLogin();
+      }
+    }
   }
 
   Future<void> _checkBiometricAvailability() async {
     _canCheckBiometrics = await _authService.canCheckBiometrics();
-    _biometricEnabled = await _authService.isBiometricEnabled();
     if (mounted) setState(() {});
+  }
+
+  Future<void> _attemptBiometricLogin() async {
+    // Ne rien faire si déjà en cours d'authentification
+    if (_isAuthenticating) return;
+    
+    // Vérifier qu'il y a des credentials sauvegardés
+    final hasCredentials = await _authService.hasStoredCredentials();
+    if (!hasCredentials) return;
+    
+    setState(() => _isAuthenticating = true);
+    
+    final status = await _authService.authenticateWithBiometrics();
+    
+    if (!mounted) return;
+    
+    setState(() => _isAuthenticating = false);
+    
+    if (status == AuthStatus.success) {
+      _goToHome();
+    }
+    // Si échec, ne pas afficher d'erreur, laisser l'utilisateur se connecter manuellement
   }
 
   Future<void> _performHealthCheck() async {
@@ -105,15 +136,23 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
       }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            message,
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.white),
+          content: Row(
+            children: [
+              const Icon(Icons.error_outline, color: Color(0xFFFF6B6B), size: 24),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  message,
+                  style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
+                ),
+              ),
+            ],
           ),
-          backgroundColor: Colors.red.shade400,
+          backgroundColor: const Color(0xFF2d1f1f),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(12),
+            side: const BorderSide(color: Color(0xFFFF6B6B), width: 1),
           ),
           margin: EdgeInsets.only(
             bottom: MediaQuery.of(context).size.height - 200,
@@ -133,15 +172,23 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
     if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text(
-            'Veuillez remplir tous les champs',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.white),
+          content: const Row(
+            children: [
+              Icon(Icons.error_outline, color: Color(0xFFFF6B6B), size: 24),
+              SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Veuillez remplir tous les champs',
+                  style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
+                ),
+              ),
+            ],
           ),
-          backgroundColor: Colors.red.shade400,
+          backgroundColor: Color(0xFF2d1f1f),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(color: Color(0xFFFF6B6B), width: 1),
           ),
           margin: EdgeInsets.only(
             bottom: MediaQuery.of(context).size.height - 200,
@@ -203,23 +250,27 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
           // Don't block login if FCM token sending fails
         }
         
-        if (_canCheckBiometrics && !_biometricEnabled) {
-          await _askEnableBiometric();
-        } else {
-          _goToHome();
-        }
+        _goToHome();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text(
-              'Email ou mot de passe incorrect',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white),
+            content: const Row(
+              children: [
+                Icon(Icons.error_outline, color: Color(0xFFFF6B6B), size: 24),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Email ou mot de passe incorrect',
+                    style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
+                  ),
+                ),
+              ],
             ),
-            backgroundColor: Colors.red.shade400,
+            backgroundColor: Color(0xFF2d1f1f),
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(color: Color(0xFFFF6B6B), width: 1),
             ),
             margin: EdgeInsets.only(
               bottom: MediaQuery.of(context).size.height - 200,
@@ -233,15 +284,23 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              'Erreur: $e',
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white),
+            content: Row(
+              children: [
+                const Icon(Icons.error_outline, color: Color(0xFFFF6B6B), size: 24),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Erreur: $e',
+                    style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
+                  ),
+                ),
+              ],
             ),
-            backgroundColor: Colors.red.shade400,
+            backgroundColor: const Color(0xFF2d1f1f),
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(12),
+              side: const BorderSide(color: Color(0xFFFF6B6B), width: 1),
             ),
             margin: EdgeInsets.only(
               bottom: MediaQuery.of(context).size.height - 200,
@@ -282,106 +341,6 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
     );
   }
 
-  Future<void> _askEnableBiometric() async {
-    final choice = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: const Text('Activer l\'authentification biométrique ?'),
-        content: const Text(
-          'Voulez-vous activer l\'authentification biométrique pour des connexions plus rapides ?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            ),
-            child: const Text('Non'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            ),
-            child: const Text('Oui'),
-          ),
-        ],
-      ),
-    );
-
-    if (choice == true) {
-      setState(() => _isAuthenticating = true);
-
-      final enrolled = await _authService.promptBiometric(
-          localizedReason: 'Authentifiez-vous pour activer la biométrie');
-
-      if (!mounted) return;
-
-      setState(() => _isAuthenticating = false);
-
-      if (enrolled) {
-        await _authService.setBiometricEnabled(true);
-
-        // Clean input by removing null bytes and control characters
-        final email = _emailController.text.trim().replaceAll(RegExp(r'[\x00-\x08\x0B-\x0C\x0E-\x1F]'), '');
-        final pwd = _passwordController.text.replaceAll(RegExp(r'[\x00-\x08\x0B-\x0C\x0E-\x1F]'), '');
-        if (email.isNotEmpty && pwd.isNotEmpty) {
-          await _authService.saveCredentials(email, pwd);
-        }
-
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text(
-                'Biométrie activée',
-                textAlign: TextAlign.center,
-              ),
-              backgroundColor: Colors.green.shade600,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24),
-              ),
-              margin: EdgeInsets.only(
-                bottom: MediaQuery.of(context).size.height - 200,
-                left: 20,
-                right: 20,
-              ),
-            ),
-          );
-        }
-      } else {
-        await _authService.setBiometricEnabled(false);
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text(
-                'Activation biométrique échouée',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.white),
-              ),
-              backgroundColor: Colors.red.shade400,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24),
-              ),
-              margin: EdgeInsets.only(
-                bottom: MediaQuery.of(context).size.height - 200,
-                left: 20,
-                right: 20,
-              ),
-            ),
-          );
-        }
-      }
-
-      _goToHome();
-    } else {
-      await _authService.setBiometricEnabled(false);
-      _goToHome();
-    }
-  }
-
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
@@ -411,31 +370,105 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
         child: SafeArea(
           child: LayoutBuilder(
             builder: (context, constraints) {
-              final isDesktop = constraints.maxWidth > 600;
+              final isDesktop = constraints.maxWidth > 900;
+              final isTablet = constraints.maxWidth > 600 && constraints.maxWidth <= 900;
               final isWatch = constraints.maxWidth < 300;
               
+              if (_isCheckingHealth) {
+                return const Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(color: Color(0xFFe89547)),
+                      SizedBox(height: 16),
+                      Text(
+                        'Vérification de la connexion...',
+                        style: TextStyle(color: Colors.white70, fontSize: 16),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                );
+              }
+              
+              if (isDesktop) {
+                // Desktop layout: split screen
+                return Row(
+                  children: [
+                    // Left side - Branding
+                    Expanded(
+                      flex: 5,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              const Color(0xFF2d3748),
+                              const Color(0xFF1a1f2e),
+                            ],
+                          ),
+                        ),
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Image.asset(
+                                'assets/images/logo.png',
+                                width: 300,
+                                height: 300,
+                                fit: BoxFit.contain,
+                              ),
+                              const SizedBox(height: 24),
+                              const Text(
+                                'Team Fitness',
+                                style: TextStyle(
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFFe89547),
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              const Text(
+                                'Gestion de votre salle de sport',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.white60,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Right side - Login form
+                    Expanded(
+                      flex: 4,
+                      child: Center(
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.all(48.0),
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 400),
+                            child: _dbHealthy 
+                                ? _buildOnlineContent(context, isDesktop: true)
+                                : _buildOfflineContent(context, isDesktop: true),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              }
+              
+              // Tablet or mobile layout
               Widget content = Padding(
                 padding: EdgeInsets.all(isWatch ? 12.0 : 24.0),
-                child: _isCheckingHealth
-                    ? const Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            CircularProgressIndicator(color: Color(0xFFe89547)),
-                            SizedBox(height: 16),
-                            Text(
-                              'Vérification de la connexion...',
-                              style: TextStyle(color: Colors.white70, fontSize: 16),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
-                      )
-                    : (_dbHealthy ? _buildOnlineContent(context) : _buildOfflineContent(context)),
+                child: _dbHealthy 
+                    ? _buildOnlineContent(context)
+                    : _buildOfflineContent(context),
               );
               
-              // On desktop, center content with max width
-              if (isDesktop) {
+              if (isTablet) {
                 content = Center(
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 500),
@@ -452,10 +485,12 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
     );
   }
 
-  Widget _buildOfflineContent(BuildContext context) {
+  Widget _buildOfflineContent(BuildContext context, {bool isDesktop = false}) {
     return SingleChildScrollView(
       child: ConstrainedBox(
-        constraints: BoxConstraints(minHeight: MediaQuery.of(context).size.height - 48),
+        constraints: isDesktop 
+            ? const BoxConstraints(minHeight: 400)
+            : BoxConstraints(minHeight: MediaQuery.of(context).size.height - 48),
         child: IntrinsicHeight(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -514,33 +549,37 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
     );
   }
 
-  Widget _buildOnlineContent(BuildContext context) {
+  Widget _buildOnlineContent(BuildContext context, {bool isDesktop = false}) {
     return SingleChildScrollView(
       child: ConstrainedBox(
-        constraints: BoxConstraints(minHeight: MediaQuery.of(context).size.height - 48),
+        constraints: isDesktop 
+            ? const BoxConstraints(minHeight: 400)
+            : BoxConstraints(minHeight: MediaQuery.of(context).size.height - 48),
         child: IntrinsicHeight(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Image.asset(
-                'assets/images/logo.png',
-                width: 240,
-                height: 240,
-                fit: BoxFit.contain,
-              ),
-              const SizedBox(height: 32),
-              const Text(
-                'Bienvenue\nConnectez-vous',
-                textAlign: TextAlign.center,
+              if (!isDesktop) ...[
+                Image.asset(
+                  'assets/images/logo.png',
+                  width: 240,
+                  height: 240,
+                  fit: BoxFit.contain,
+                ),
+                const SizedBox(height: 32),
+              ],
+              Text(
+                isDesktop ? 'Connexion' : 'Bienvenue\nConnectez-vous',
+                textAlign: isDesktop ? TextAlign.left : TextAlign.center,
                 style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.white70,
+                  fontSize: isDesktop ? 28 : 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
                 ),
               ),
               const SizedBox(height: 32),
-              if (_biometricEnabled && _canCheckBiometrics) ...[
+              if (_canCheckBiometrics) ...[
                 ElevatedButton.icon(
                   icon: const Icon(Icons.fingerprint, size: 28),
                   label: const Text(
@@ -555,16 +594,6 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                 ),
                 const SizedBox(height: 16),
                 const Text('ou utilisez votre mot de passe', style: TextStyle(color: Colors.white60)),
-                const SizedBox(height: 16),
-              ] else if (!_biometricEnabled && _canCheckBiometrics) ...[
-                const Text(
-                  'Se connecter avec votre mot de passe.\nVous pourrez activer la biométrie après.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.white60),
-                ),
-                const SizedBox(height: 16),
-              ] else ...[
-                const Text('Biométrie non disponible sur cet appareil', style: TextStyle(color: Colors.white60)),
                 const SizedBox(height: 16),
               ],
               TextField(
@@ -601,6 +630,53 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                       ? const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(strokeWidth: 2))
                       : const Text('Se connecter', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 ),
+              ),
+              const SizedBox(height: 16),
+              
+              // Bouton Première connexion
+              OutlinedButton.icon(
+                onPressed: _isAuthenticating ? null : () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const SetupPasswordScreen(),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.person_add, color: Color(0xFFe89547)),
+                label: const Text(
+                  'Première connexion',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFFe89547),
+                  ),
+                ),
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 56),
+                  side: const BorderSide(color: Color(0xFFe89547), width: 2),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
+              ),
+              const SizedBox(height: 24),
+              
+              // Version info
+              FutureBuilder<PackageInfo>(
+                future: PackageInfo.fromPlatform(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    final version = snapshot.data!.version;
+                    final build = snapshot.data!.buildNumber;
+                    return Text(
+                      'Version $version (Build $build)',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.white.withOpacity(0.5),
+                      ),
+                      textAlign: TextAlign.center,
+                    );
+                  }
+                  return const SizedBox.shrink();
+                },
               ),
             ],
           ),
