@@ -61,7 +61,7 @@ jobs:
           npx semantic-release --dry-run --no-ci 2>&1 | tee semantic-dry-run.log
           
           # Extract next version (including prerelease suffixes like -beta.1)
-          NEXT_VERSION=$(grep -oP "The next release version is \K[\d\.]+-?[\w\.]*" semantic-dry-run.log || echo "")
+          NEXT_VERSION=$(grep -oP "next release version is \K[\d\.]+-?[\w\.]*" semantic-dry-run.log || echo "")
           
           if [ -z "$NEXT_VERSION" ]; then
             echo "ℹ️  No release will be created (no relevant commits)"
