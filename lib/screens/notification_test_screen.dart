@@ -31,8 +31,14 @@ class NotificationTestScreen extends StatelessWidget {
             ],
           ),
         ),
-        child: ListView(
-          padding: const EdgeInsets.all(16),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isDesktop = constraints.maxWidth > 600;
+            final isWatch = constraints.maxWidth < 300;
+            final padding = isWatch ? 8.0 : (isDesktop ? 24.0 : 16.0);
+            
+            Widget content = ListView(
+              padding: EdgeInsets.all(padding),
           children: [
             // Notification immédiate
             _buildNotificationCard(
@@ -133,51 +139,103 @@ class NotificationTestScreen extends StatelessWidget {
               },
             ),
 
-            const SizedBox(height: 24),
+                const SizedBox(height: 24),
 
-            // Actions
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () async {
-                      final pending = await notificationService.getPendingNotifications();
-                      if (!context.mounted) return;
-                      _showDialog(
-                        context,
-                        'Notifications en attente',
-                        'Nombre: ${pending.length}\n\n${pending.map((n) => '- ${n.title}').join('\n')}',
-                      );
-                    },
-                    icon: const Icon(Icons.list),
-                    label: const Text('Voir en attente'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2d3748),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () async {
-                      await notificationService.cancelAllNotifications();
-                      if (!context.mounted) return;
-                      _showSnackBar(context, 'Toutes les notifications annulées');
-                    },
-                    icon: const Icon(Icons.clear_all),
-                    label: const Text('Tout annuler'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red.shade700,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                  ),
-                ),
+                // Actions
+                isWatch
+                    ? Column(
+                        children: [
+                          ElevatedButton.icon(
+                            onPressed: () async {
+                              final pending = await notificationService.getPendingNotifications();
+                              if (!context.mounted) return;
+                              _showDialog(
+                                context,
+                                'Notifications en attente',
+                                'Nombre: ${pending.length}\n\n${pending.map((n) => '- ${n.title}').join('\n')}',
+                              );
+                            },
+                            icon: const Icon(Icons.list, size: 16),
+                            label: const Text('Voir en attente', style: TextStyle(fontSize: 11)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF2d3748),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          ElevatedButton.icon(
+                            onPressed: () async {
+                              await notificationService.cancelAllNotifications();
+                              if (!context.mounted) return;
+                              _showSnackBar(context, 'Toutes les notifications annulées');
+                            },
+                            icon: const Icon(Icons.clear_all, size: 16),
+                            label: const Text('Tout annuler', style: TextStyle(fontSize: 11)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red.shade700,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                            ),
+                          ),
+                        ],
+                      )
+                    : Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: () async {
+                                final pending = await notificationService.getPendingNotifications();
+                                if (!context.mounted) return;
+                                _showDialog(
+                                  context,
+                                  'Notifications en attente',
+                                  'Nombre: ${pending.length}\n\n${pending.map((n) => '- ${n.title}').join('\n')}',
+                                );
+                              },
+                              icon: const Icon(Icons.list),
+                              label: const Text('Voir en attente'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF2d3748),
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: () async {
+                                await notificationService.cancelAllNotifications();
+                                if (!context.mounted) return;
+                                _showSnackBar(context, 'Toutes les notifications annulées');
+                              },
+                              icon: const Icon(Icons.clear_all),
+                              label: const Text('Tout annuler'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red.shade700,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
               ],
-            ),
-          ],
+            );
+            
+            // Desktop: center content with max width
+            if (isDesktop) {
+              content = Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 800),
+                  child: content,
+                ),
+              );
+            }
+            
+            return content;
+          },
         ),
       ),
     );
@@ -191,63 +249,74 @@ class NotificationTestScreen extends StatelessWidget {
     required VoidCallback onTap,
     String? body,
   }) {
-    return Card(
-      color: const Color(0xFF2d3748),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFe89547).withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  icon,
-                  color: const Color(0xFFe89547),
-                  size: 28,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      body ?? description,
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.7),
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Icon(
-                Icons.arrow_forward_ios,
-                color: Color(0xFFe89547),
-                size: 16,
-              ),
-            ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWatch = constraints.maxWidth < 300;
+        final padding = isWatch ? 8.0 : 16.0;
+        final iconSize = isWatch ? 20.0 : 28.0;
+        final iconPadding = isWatch ? 8.0 : 12.0;
+        final titleSize = isWatch ? 12.0 : 16.0;
+        final descSize = isWatch ? 10.0 : 14.0;
+        
+        return Card(
+          color: const Color(0xFF2d3748),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(isWatch ? 8 : 12),
           ),
-        ),
-      ),
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(isWatch ? 8 : 12),
+            child: Padding(
+              padding: EdgeInsets.all(padding),
+              child: Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(iconPadding),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFe89547).withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(isWatch ? 8 : 12),
+                    ),
+                    child: Icon(
+                      icon,
+                      color: const Color(0xFFe89547),
+                      size: iconSize,
+                    ),
+                  ),
+                  SizedBox(width: isWatch ? 8 : 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: titleSize,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          body ?? description,
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.7),
+                            fontSize: descSize,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    color: const Color(0xFFe89547),
+                    size: isWatch ? 12 : 16,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 

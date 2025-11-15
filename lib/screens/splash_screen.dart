@@ -86,42 +86,54 @@ class _SplashScreenState extends State<SplashScreen> {
           ),
         ),
         child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Logo
-              Image.asset(
-                'assets/images/logo.png',
-                width: 300,
-                height: 300,
-                fit: BoxFit.contain,
-              ),
-              const SizedBox(height: 32),
-              const Text(
-                'Votre partenaire fitness',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.white70,
-                ),
-              ),
-              const SizedBox(height: 48),
-              // Indicateur de chargement avec texte
-              const Column(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final isWatch = constraints.maxWidth < 300;
+              final isDesktop = constraints.maxWidth > 600;
+              
+              final logoSize = isWatch ? 100.0 : (isDesktop ? 400.0 : 300.0);
+              final fontSize = isWatch ? 11.0 : (isDesktop ? 20.0 : 16.0);
+              final spacing = isWatch ? 16.0 : 32.0;
+              
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  CircularProgressIndicator(
-                    color: Color(0xFFe89547),
+                  // Logo
+                  Image.asset(
+                    'assets/images/logo.png',
+                    width: logoSize,
+                    height: logoSize,
+                    fit: BoxFit.contain,
                   ),
-                  SizedBox(height: 16),
+                  SizedBox(height: spacing),
                   Text(
-                    'Vérification de la connexion...',
+                    'Votre partenaire fitness',
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: fontSize,
                       color: Colors.white70,
                     ),
                   ),
+                  SizedBox(height: spacing + 16),
+                  // Indicateur de chargement avec texte
+                  Column(
+                    children: [
+                      CircularProgressIndicator(
+                        color: const Color(0xFFe89547),
+                        strokeWidth: isWatch ? 2.0 : 4.0,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Vérification de la connexion...',
+                        style: TextStyle(
+                          fontSize: isWatch ? 10 : 14,
+                          color: Colors.white70,
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
-              ),
-            ],
+              );
+            },
           ),
         ),
       ),
