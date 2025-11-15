@@ -41,28 +41,27 @@ android {
     }
     
     // Copy google-services.json based on ENVIRONMENT dart-define
-    applicationVariants.all { variant ->
-        variant.preBuildProvider.configure {
-            doFirst {
-                // Récupérer la variable ENVIRONMENT depuis dart-define
-                val dartDefines = project.property("dart-defines")?.toString() ?: ""
-                val environment = if (dartDefines.contains("ENVIRONMENT=pprod")) {
-                    "pprod"
-                } else if (dartDefines.contains("ENVIRONMENT=prod")) {
-                    "prod"
-                } else {
-                    "dev"
-                }
-                
-                val sourceFile = file("google-services-${environment}.json")
-                val targetFile = file("google-services.json")
-                
-                if (sourceFile.exists()) {
-                    sourceFile.copyTo(targetFile, overwrite = true)
-                    println("✅ Using google-services-${environment}.json")
-                } else {
-                    println("⚠️ Warning: google-services-${environment}.json not found, using default")
-                }
+    applicationVariants.all {
+        val variant = this
+        variant.preBuildProvider.get().doFirst {
+            // Récupérer la variable ENVIRONMENT depuis dart-define
+            val dartDefines = project.property("dart-defines")?.toString() ?: ""
+            val environment = if (dartDefines.contains("ENVIRONMENT=pprod")) {
+                "pprod"
+            } else if (dartDefines.contains("ENVIRONMENT=prod")) {
+                "prod"
+            } else {
+                "dev"
+            }
+            
+            val sourceFile = file("google-services-${environment}.json")
+            val targetFile = file("google-services.json")
+            
+            if (sourceFile.exists()) {
+                sourceFile.copyTo(targetFile, overwrite = true)
+                println("✅ Using google-services-${environment}.json")
+            } else {
+                println("⚠️ Warning: google-services-${environment}.json not found, using default")
             }
         }
     }
