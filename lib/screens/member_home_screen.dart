@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../services/auth_service.dart';
 import '../services/api_service.dart';
 import '../widgets/gym_details_bottom_sheet.dart';
+import '../widgets/responsive_layout.dart';
 import 'login_screen.dart';
 import 'subscription_details_screen.dart';
 import 'edit_profile_screen.dart';
@@ -34,50 +35,37 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          _titles[_currentIndex],
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
+    return ResponsiveScaffold(
+      title: _titles[_currentIndex],
+      navigationItems: const [
+        NavigationItem(
+          icon: Icons.home_outlined,
+          activeIcon: Icons.home,
+          label: 'Accueil',
         ),
-      ),
+        NavigationItem(
+          icon: Icons.qr_code_2_outlined,
+          activeIcon: Icons.qr_code_2,
+          label: 'Ma Carte',
+        ),
+        NavigationItem(
+          icon: Icons.fitness_center_outlined,
+          activeIcon: Icons.fitness_center,
+          label: 'Mon Planning',
+        ),
+        NavigationItem(
+          icon: Icons.person_outline,
+          activeIcon: Icons.person,
+          label: 'Mon Profil',
+        ),
+      ],
+      currentIndex: _currentIndex,
+      onNavigationChanged: (index) {
+        setState(() {
+          _currentIndex = index;
+        });
+      },
       body: _pages[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: const Color(0xFF1a1f2e),
-        selectedItemColor: const Color(0xFFe89547),
-        unselectedItemColor: Colors.white60,
-        selectedFontSize: 12,
-        unselectedFontSize: 12,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Accueil',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.qr_code_2),
-            label: 'Ma Carte',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.fitness_center),
-            label: 'Mon Planning',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Mon Profil',
-          ),
-        ],
-      ),
     );
   }
 }

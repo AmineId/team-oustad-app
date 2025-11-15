@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../services/api_service.dart';
+import '../widgets/responsive_layout.dart';
 import 'login_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -29,54 +30,37 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          _titles[_currentIndex],
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
+    return ResponsiveScaffold(
+      title: _titles[_currentIndex],
+      navigationItems: const [
+        NavigationItem(
+          icon: Icons.home_outlined,
+          activeIcon: Icons.home,
+          label: 'Accueil',
         ),
-      ),
+        NavigationItem(
+          icon: Icons.search_outlined,
+          activeIcon: Icons.search,
+          label: 'Recherche',
+        ),
+        NavigationItem(
+          icon: Icons.person_add_outlined,
+          activeIcon: Icons.person_add,
+          label: 'Ajouter',
+        ),
+        NavigationItem(
+          icon: Icons.person_outline,
+          activeIcon: Icons.person,
+          label: 'Profile',
+        ),
+      ],
+      currentIndex: _currentIndex,
+      onNavigationChanged: (index) {
+        setState(() {
+          _currentIndex = index;
+        });
+      },
       body: _pages[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: const Color(0xFF1a1f2e),
-        selectedItemColor: const Color(0xFFe89547),
-        unselectedItemColor: Colors.white60,
-        selectedFontSize: 12,
-        unselectedFontSize: 12,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home),
-            label: 'Accueil',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search_outlined),
-            activeIcon: Icon(Icons.search),
-            label: 'Recherche',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_add_outlined),
-            activeIcon: Icon(Icons.person_add),
-            label: 'Ajouter',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
-      ),
     );
   }
 }

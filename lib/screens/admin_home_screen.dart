@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../services/api_service.dart';
+import '../widgets/responsive_layout.dart';
 import 'login_screen.dart';
 import 'admin_create_member_screen.dart';
 
@@ -264,86 +265,66 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     );
   }
 
+  List<NavigationItem> get _navigationItems => _isOwner
+      ? const [
+          NavigationItem(
+            icon: Icons.home_outlined,
+            activeIcon: Icons.home,
+            label: 'Accueil',
+          ),
+          NavigationItem(
+            icon: Icons.settings_outlined,
+            activeIcon: Icons.settings,
+            label: 'Gestion',
+          ),
+          NavigationItem(
+            icon: Icons.admin_panel_settings_outlined,
+            activeIcon: Icons.admin_panel_settings,
+            label: 'Gestion Globale',
+          ),
+          NavigationItem(
+            icon: Icons.person_outline,
+            activeIcon: Icons.person,
+            label: 'Profile',
+          ),
+        ]
+      : const [
+          NavigationItem(
+            icon: Icons.home_outlined,
+            activeIcon: Icons.home,
+            label: 'Accueil',
+          ),
+          NavigationItem(
+            icon: Icons.settings_outlined,
+            activeIcon: Icons.settings,
+            label: 'Gestion',
+          ),
+          NavigationItem(
+            icon: Icons.person_outline,
+            activeIcon: Icons.person,
+            label: 'Profile',
+          ),
+        ];
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: Row(
-          children: [
-            const SizedBox(width: 8),
-            // Bouton QR Code (pour admin et owner)
-            IconButton(
-              icon: const Icon(Icons.qr_code_2, size: 28),
-              onPressed: _showQrCode,
-              tooltip: 'Mon QR Code',
-            ),
-          ],
-        ),
-        leadingWidth: 70,
-        title: Text(
-          _titles[_currentIndex],
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-      ),
+    return ResponsiveScaffold(
+      title: _titles[_currentIndex],
+      navigationItems: _navigationItems,
+      currentIndex: _currentIndex,
+      onNavigationChanged: (index) {
+        setState(() {
+          _currentIndex = index;
+        });
+      },
       body: _pages[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: const Color(0xFF1a1f2e),
-        selectedItemColor: const Color(0xFFe89547),
-        unselectedItemColor: Colors.white60,
-        selectedFontSize: 12,
-        unselectedFontSize: 12,
-        items: _isOwner
-            ? const [
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.home_outlined),
-                  activeIcon: Icon(Icons.home),
-                  label: 'Accueil',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.settings_outlined),
-                  activeIcon: Icon(Icons.settings),
-                  label: 'Gestion',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.admin_panel_settings_outlined),
-                  activeIcon: Icon(Icons.admin_panel_settings),
-                  label: 'Gestion Globale',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.person_outline),
-                  activeIcon: Icon(Icons.person),
-                  label: 'Profile',
-                ),
-              ]
-            : const [
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.home_outlined),
-                  activeIcon: Icon(Icons.home),
-                  label: 'Accueil',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.settings_outlined),
-                  activeIcon: Icon(Icons.settings),
-                  label: 'Gestion',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.person_outline),
-                  activeIcon: Icon(Icons.person),
-                  label: 'Profile',
-                ),
-              ],
-      ),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.qr_code_2),
+          onPressed: _showQrCode,
+          tooltip: 'Mon QR Code',
+        ),
+      ],
     );
   }
 }
@@ -368,106 +349,165 @@ class AccueilPage extends StatelessWidget {
       child: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Bienvenue !',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Tableau de bord',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.white60,
-                ),
-              ),
-              const SizedBox(height: 32),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final isDesktop = constraints.maxWidth > 600;
+              final isWatch = constraints.maxWidth < 300;
               
-              // Statistiques
-              Row(
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: _StatCard(
-                      icon: Icons.people,
-                      title: 'Membres',
-                      value: '156',
-                      color: const Color(0xFFe89547),
+                  Text(
+                    'Bienvenue !',
+                    style: TextStyle(
+                      fontSize: isWatch ? 18 : (isDesktop ? 32 : 28),
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _StatCard(
-                      icon: Icons.fitness_center,
-                      title: 'Actifs',
-                      value: '89',
-                      color: Colors.green,
+                  SizedBox(height: isWatch ? 4 : 8),
+                  Text(
+                    'Tableau de bord',
+                    style: TextStyle(
+                      fontSize: isWatch ? 12 : (isDesktop ? 18 : 16),
+                      color: Colors.white60,
                     ),
                   ),
+                  SizedBox(height: isWatch ? 16 : 32),
+                  
+                  // Statistiques - responsive grid
+                  _buildStatsGrid(isDesktop, isWatch),
+                  
+                  SizedBox(height: isWatch ? 16 : 32),
+                  
+                  // Actions rapides
+                  Text(
+                    'Actions rapides',
+                    style: TextStyle(
+                      fontSize: isWatch ? 14 : (isDesktop ? 24 : 20),
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  SizedBox(height: isWatch ? 8 : 16),
+                  _buildQuickActions(isDesktop, isWatch),
                 ],
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: _StatCard(
-                      icon: Icons.calendar_today,
-                      title: 'Aujourd\'hui',
-                      value: '23',
-                      color: Colors.blue,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _StatCard(
-                      icon: Icons.trending_up,
-                      title: 'Revenus',
-                      value: '12.5K',
-                      color: Colors.purple,
-                    ),
-                  ),
-                ],
-              ),
-              
-              const SizedBox(height: 32),
-              
-              // Actions rapides
-              const Text(
-                'Actions rapides',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 16),
-              _QuickActionButton(
-                icon: Icons.person_add,
-                title: 'Nouveau membre',
-                onTap: () {},
-              ),
-              const SizedBox(height: 12),
-              _QuickActionButton(
-                icon: Icons.payment,
-                title: 'Enregistrer un paiement',
-                onTap: () {},
-              ),
-              const SizedBox(height: 12),
-              _QuickActionButton(
-                icon: Icons.qr_code_scanner,
-                title: 'Scanner une carte',
-                onTap: () {},
-              ),
-            ],
+              );
+            },
           ),
         ),
       ),
     );
+  }
+
+  Widget _buildStatsGrid(bool isDesktop, bool isWatch) {
+    final stats = [
+      _StatCard(
+        icon: Icons.people,
+        title: 'Membres',
+        value: '156',
+        color: const Color(0xFFe89547),
+      ),
+      _StatCard(
+        icon: Icons.fitness_center,
+        title: 'Actifs',
+        value: '89',
+        color: Colors.green,
+      ),
+      _StatCard(
+        icon: Icons.calendar_today,
+        title: 'Aujourd\'hui',
+        value: '23',
+        color: Colors.blue,
+      ),
+      _StatCard(
+        icon: Icons.trending_up,
+        title: 'Revenus',
+        value: '12.5K',
+        color: Colors.purple,
+      ),
+    ];
+
+    if (isWatch) {
+      // Watch: single column
+      return Column(
+        children: stats.map((stat) => Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: stat,
+        )).toList(),
+      );
+    } else if (isDesktop) {
+      // Desktop: 4 columns
+      return Row(
+        children: stats.map((stat) => Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: stat,
+          ),
+        )).toList(),
+      );
+    } else {
+      // Mobile: 2x2 grid
+      return Column(
+        children: [
+          Row(
+            children: [
+              Expanded(child: stats[0]),
+              const SizedBox(width: 16),
+              Expanded(child: stats[1]),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(child: stats[2]),
+              const SizedBox(width: 16),
+              Expanded(child: stats[3]),
+            ],
+          ),
+        ],
+      );
+    }
+  }
+
+  Widget _buildQuickActions(bool isDesktop, bool isWatch) {
+    final actions = [
+      _QuickActionButton(
+        icon: Icons.person_add,
+        title: 'Nouveau membre',
+        onTap: () {},
+      ),
+      _QuickActionButton(
+        icon: Icons.payment,
+        title: 'Enregistrer un paiement',
+        onTap: () {},
+      ),
+      _QuickActionButton(
+        icon: Icons.qr_code_scanner,
+        title: 'Scanner une carte',
+        onTap: () {},
+      ),
+    ];
+
+    if (isDesktop) {
+      // Desktop: 3 columns
+      return Row(
+        children: actions.map((action) => Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: action,
+          ),
+        )).toList(),
+      );
+    } else {
+      // Mobile & Watch: single column
+      return Column(
+        children: actions.map((action) => Padding(
+          padding: EdgeInsets.only(bottom: isWatch ? 8 : 12),
+          child: action,
+        )).toList(),
+      );
+    }
   }
 }
 
@@ -486,36 +526,71 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF2d3748),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: color, size: 32),
-          const SizedBox(height: 12),
-          Text(
-            title,
-            style: const TextStyle(
-              color: Colors.white60,
-              fontSize: 12,
-            ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWatch = constraints.maxWidth < 150;
+        
+        return Container(
+          padding: EdgeInsets.all(isWatch ? 8 : 16),
+          decoration: BoxDecoration(
+            color: const Color(0xFF2d3748),
+            borderRadius: BorderRadius.circular(isWatch ? 8 : 16),
+            border: Border.all(color: color.withValues(alpha: 0.3)),
           ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
+          child: isWatch
+              ? Row(
+                  children: [
+                    Icon(icon, color: color, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            style: const TextStyle(
+                              color: Colors.white60,
+                              fontSize: 9,
+                            ),
+                          ),
+                          Text(
+                            value,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(icon, color: color, size: 32),
+                    const SizedBox(height: 12),
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: Colors.white60,
+                        fontSize: 12,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      value,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+        );
+      },
     );
   }
 }
@@ -533,39 +608,54 @@ class _QuickActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(24),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: const Color(0xFF2d3748),
-          borderRadius: BorderRadius.circular(24),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: const Color(0xFFe89547).withValues(alpha: 0.2),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, color: const Color(0xFFe89547)),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWatch = constraints.maxWidth < 300;
+        
+        return InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(isWatch ? 8 : 24),
+          child: Container(
+            padding: EdgeInsets.all(isWatch ? 8 : 16),
+            decoration: BoxDecoration(
+              color: const Color(0xFF2d3748),
+              borderRadius: BorderRadius.circular(isWatch ? 8 : 24),
             ),
-            const SizedBox(width: 16),
-            Text(
-              title,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
+            child: Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(isWatch ? 8 : 24),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFe89547).withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    icon,
+                    color: const Color(0xFFe89547),
+                    size: isWatch ? 16 : 24,
+                  ),
+                ),
+                SizedBox(width: isWatch ? 8 : 16),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: isWatch ? 11 : 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                Icon(
+                  Icons.arrow_forward_ios,
+                  color: Colors.white60,
+                  size: isWatch ? 12 : 16,
+                ),
+              ],
             ),
-            const Spacer(),
-            const Icon(Icons.arrow_forward_ios, color: Colors.white60, size: 16),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
