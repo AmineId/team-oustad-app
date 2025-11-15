@@ -409,24 +409,43 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
           ),
         ),
         child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: _isCheckingHealth
-                ? const Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        CircularProgressIndicator(color: Color(0xFFe89547)),
-                        SizedBox(height: 16),
-                        Text(
-                          'Vérification de la connexion à la base de données...',
-                          style: TextStyle(color: Colors.white70, fontSize: 16),
-                          textAlign: TextAlign.center,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final isDesktop = constraints.maxWidth > 600;
+              final isWatch = constraints.maxWidth < 300;
+              
+              Widget content = Padding(
+                padding: EdgeInsets.all(isWatch ? 12.0 : 24.0),
+                child: _isCheckingHealth
+                    ? const Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            CircularProgressIndicator(color: Color(0xFFe89547)),
+                            SizedBox(height: 16),
+                            Text(
+                              'Vérification de la connexion...',
+                              style: TextStyle(color: Colors.white70, fontSize: 16),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  )
-                : (_dbHealthy ? _buildOnlineContent(context) : _buildOfflineContent(context)),
+                      )
+                    : (_dbHealthy ? _buildOnlineContent(context) : _buildOfflineContent(context)),
+              );
+              
+              // On desktop, center content with max width
+              if (isDesktop) {
+                content = Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 500),
+                    child: content,
+                  ),
+                );
+              }
+              
+              return content;
+            },
           ),
         ),
       ),
