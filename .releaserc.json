@@ -59,7 +59,7 @@
       "@semantic-release/exec",
       {
         "verifyReleaseCmd": "echo 'Version: ${nextRelease.version}'",
-        "prepareCmd": "node scripts/update-version-metadata.js ${nextRelease.version} ${nextRelease.notes}",
+        "prepareCmd": "echo '${nextRelease.notes}' > /tmp/release-notes.txt && node scripts/update-version-metadata.js ${nextRelease.version} /tmp/release-notes.txt",
         "publishCmd": "echo 'Published version ${nextRelease.version}'"
       }
     ],

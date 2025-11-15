@@ -3,10 +3,16 @@ const path = require('path');
 
 /**
  * Update version-metadata.json and pubspec.yaml with new version from semantic-release
- * Usage: node update-version-metadata.js <version> <release-notes>
+ * Usage: node update-version-metadata.js <version> <release-notes-file>
  */
 
-const [, , version, releaseNotes = ''] = process.argv;
+const [, , version, releaseNotesFile] = process.argv;
+
+// Read release notes from file if provided
+let releaseNotes = '';
+if (releaseNotesFile && fs.existsSync(releaseNotesFile)) {
+  releaseNotes = fs.readFileSync(releaseNotesFile, 'utf8');
+}
 
 if (!version) {
   console.error('❌ Version is required');
