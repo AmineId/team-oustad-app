@@ -1,29 +1,29 @@
 {
-  "version_name": "1.0.0",
-  "version_code": 1,
-  "changelog": "Version initiale de Team Fitness\n- Authentification biométrique\n- Gestion des membres\n- Plannings d'entraînement\n- Notifications push\n- Mises à jour OTA",
+  "version_name": "1.0.0-beta.1",
+  "version_code": 2,
+  "changelog": "New features: configure semantic release with bearer token authentication for OTA deployment ([864d6f1](https://github.com/TeamFitness/mobile-app/commit/864d6f1ad44fe46f65ec5e6b2d0f62a597378d37))\nBug fixes: capture prerelease versions in semantic-release workflow ([d567e57](https://github.com/TeamFitness/mobile-app/commit/d567e5760dd97ffcdb4a2ef7da42b6bcda5ace3b))\nImprovements: remove redundant Firebase config logic from Gradle (handled by CI/CD) ([78aa666](https://github.com/TeamFitness/mobile-app/commit/78aa666fb6e5b4074995452d64c5f7a2e4c38efe))",
   "mandatory": false,
   "min_required_version": "1.0.0",
   "release_date": "2025-11-15",
   "release_notes": {
     "new_features": [
-      "Authentification biométrique automatique",
-      "Protection contre les screenshots",
-      "Système de notifications personnalisées",
-      "Mises à jour OTA automatiques"
+      "configure semantic release with bearer token authentication for OTA deployment ([864d6f1](https://github.com/TeamFitness/mobile-app/commit/864d6f1ad44fe46f65ec5e6b2d0f62a597378d37))",
+      "team app initial commit ([dd6d563](https://github.com/TeamFitness/mobile-app/commit/dd6d5638a0db2b9cd22a0b9ae99a09673707b6db)), closes [#1](https://github.com/TeamFitness/mobile-app/issues/1)"
     ],
     "improvements": [
-      "Interface utilisateur améliorée",
-      "Performance optimisée",
-      "Sécurité renforcée"
+      "remove redundant Firebase config logic from Gradle (handled by CI/CD) ([78aa666](https://github.com/TeamFitness/mobile-app/commit/78aa666fb6e5b4074995452d64c5f7a2e4c38efe))"
     ],
     "bug_fixes": [
-      "Corrections diverses"
+      "capture prerelease versions in semantic-release workflow ([d567e57](https://github.com/TeamFitness/mobile-app/commit/d567e5760dd97ffcdb4a2ef7da42b6bcda5ace3b))",
+      "correct Kotlin syntax in build.gradle.kts for applicationVariants ([adb1847](https://github.com/TeamFitness/mobile-app/commit/adb1847dc67c626bbe3b8efbac583cb81b57e799))",
+      "improve version extraction regex in semantic-release workflow ([fee5cfa](https://github.com/TeamFitness/mobile-app/commit/fee5cfa050cd9b5927daa8dbfa1b9e0caf51210f))",
+      "pass release notes via temp file to avoid shell syntax errors ([8a62408](https://github.com/TeamFitness/mobile-app/commit/8a6240815ebb33f7ad07b30e59d9b3abf117e59a))",
+      "updated node version ([4e708a6](https://github.com/TeamFitness/mobile-app/commit/4e708a64707f29a7c579705574f369aad54f7c59))"
     ]
   },
   "build_info": {
     "environment": "pprod",
-    "build_date": "2025-11-15T10:00:00Z",
+    "build_date": "2025-11-15T23:52:13.882Z",
     "flutter_version": "3.24.5",
     "dart_version": "3.5.4"
   }
