@@ -2,77 +2,42 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
 import '../config/app_config.dart';
 
 /// Simple API client for the Team Fitness Express+Prisma backend.
 ///
 /// The base URL is determined by:
-/// 1. ENVIRONMENT variable (pprod, prod, dev) - recommended
-/// 2. API_BASE_URL variable - for custom URLs
-/// 3. Platform-specific defaults (localhost or 10.0.2.2)
+/// 1. API_BASE_URL variable - for custom URLs (optional override)
+/// 2. ENVIRONMENT variable (pprod, prod, dev) - uses AppConfig
 ///
 /// Environments:
-/// - dev: http://localhost:3000 (default)
+/// - dev: http://localhost:3000 (or http://10.0.2.2:3000 for Android)
 /// - pprod: https://api-pprod.team-oustad.com (pre-production/beta)
 /// - prod: https://api.team-oustad.com (production)
+///
+/// Note: Builds should always define ENVIRONMENT variable via --dart-define.
 class ApiService {
   final Uri baseUri;
 
   ApiService(this.baseUri);
 
-  /// Get default API URL based on platform (for dev environment)
-  static String _getDefaultApiUrl() {
-    // If running on web, use localhost
-    if (kIsWeb) {
-      return 'http://localhost:3000';
-    }
-    
-    // If running on desktop (Windows, macOS, Linux), use localhost
-    if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
-      return 'http://localhost:3000';
-    }
-    
-    // For Android emulator, use special IP
-    if (Platform.isAndroid) {
-      return 'http://10.0.2.2:3000';
-    }
-    
-    // For iOS simulator/device, use localhost (works in simulator)
-    if (Platform.isIOS) {
-      return 'http://localhost:3000';
-    }
-    
-    // Fallback to localhost for unknown platforms
-    return 'http://localhost:3000';
-  }
-
   factory ApiService.fromEnv() {
     String apiUrl;
     
-    // Priority 1: Check for ENVIRONMENT variable (pprod, prod, dev)
-    const environment = String.fromEnvironment('ENVIRONMENT', defaultValue: '');
+    // Priority 1: Check for custom API_BASE_URL (optional override)
+    const customUrl = String.fromEnvironment('API_BASE_URL', defaultValue: '');
     
-    if (environment.isNotEmpty) {
+    if (customUrl.isNotEmpty) {
+      apiUrl = customUrl;
+      // ignore: avoid_print
+      print('🌐 ApiService: Using custom API_BASE_URL → $apiUrl');
+    } else {
+      // Priority 2: Use ENVIRONMENT variable with AppConfig
       final config = AppConfig.fromEnvironment();
       apiUrl = config.apiBaseUrl;
       // ignore: avoid_print
       print('🌐 ApiService: Using ${config.environment} environment → $apiUrl');
-    } else {
-      // Priority 2: Check for custom API_BASE_URL
-      const customUrl = String.fromEnvironment('API_BASE_URL', defaultValue: '');
-      
-      if (customUrl.isNotEmpty) {
-        apiUrl = customUrl;
-        // ignore: avoid_print
-        print('🌐 ApiService: Using custom API_BASE_URL → $apiUrl');
-      } else {
-        // Priority 3: Use platform-specific default (dev)
-        apiUrl = _getDefaultApiUrl();
-        // ignore: avoid_print
-        print('🌐 ApiService: Using platform-specific dev URL → $apiUrl');
-      }
     }
 
     return ApiService(Uri.parse(apiUrl));

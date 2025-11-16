@@ -1,3 +1,6 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
+
 /// Application configuration for different environments
 class AppConfig {
   /// Environment name (dev, pprod, prod)
@@ -24,10 +27,19 @@ class AppConfig {
     required this.supportEmail,
   });
 
-  /// Development environment (localhost)
-  static const dev = AppConfig(
+  /// Get platform-specific dev URL
+  static String _getPlatformDevUrl() {
+    // Android emulator needs special IP, others use localhost
+    if (!kIsWeb && Platform.isAndroid) {
+      return 'http://10.0.2.2:3000';
+    }
+    return 'http://localhost:3000';
+  }
+
+  /// Development environment (localhost or platform-specific)
+  static AppConfig get dev => AppConfig(
     environment: 'dev',
-    apiBaseUrl: 'http://localhost:3000',
+    apiBaseUrl: _getPlatformDevUrl(),
     supportEmail: 'support@example.com',
   );
 
