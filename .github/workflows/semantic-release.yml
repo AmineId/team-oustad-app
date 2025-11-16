@@ -19,6 +19,9 @@ jobs:
       contents: write
       issues: write
       pull-requests: write
+
+    outputs:
+      environment: ${{ steps.env.outputs.environment }}
     
     steps:
       - name: 📥 Checkout
@@ -205,12 +208,12 @@ jobs:
       - name: 📥 Download APK
         uses: actions/download-artifact@v4
         with:
-          name: apk-${{ github.ref == 'refs/heads/main' && 'production' || 'beta' }}
+          name: apk-${{ needs.release.outputs.environment }}
 
       - name: 📥 Download version metadata
         uses: actions/download-artifact@v4
         with:
-          name: version-metadata-${{ github.ref == 'refs/heads/main' && 'production' || 'beta' }}
+          name: version-metadata-${{ needs.release.outputs.environment }}
 
       - name: 📊 Read version metadata
         id: version
@@ -234,12 +237,15 @@ jobs:
 
       - name: 📤 Upload APK to OTA Server
         env:
-          CHANNEL: ${{ github.ref == 'refs/heads/main' && 'production' || 'beta' }}
+          CHANNEL: ${{ github.ref == 'refs/heads/main' && 'release' || 'beta' }}
         run: |
-          # Upload APK with metadata using Bearer token
+          echo "📤 Uploading APK to $CHANNEL channel..."
+          echo "📦 APK size: $(du -h app-release.apk | cut -f1)"
+          
           RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
-            https://app.team-oustad.com/android/upload \
+            "https://app.team-oustad.com/android/upload" \
             -H "Authorization: Bearer ${{ secrets.OTA_BEARER_TOKEN }}" \
+            -H "Accept: application/json" \
             -F "apk=@app-release.apk" \
             -F "version_code=${{ steps.version.outputs.version_code }}" \
             -F "version_name=${{ steps.version.outputs.version_name }}" \
