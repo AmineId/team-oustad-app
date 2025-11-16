@@ -56,6 +56,13 @@ jobs:
             @semantic-release/git@^10 @semantic-release/exec@^6 \
             @semantic-release/github@^9 conventional-changelog-conventionalcommits@^7
 
+      - name: 🧹 Clean old builds
+        run: |
+          echo "📁 Files in build/ before cleanup:"
+          ls -lah build/ 2>/dev/null || echo "No build directory"
+          rm -rf build/
+          echo "✅ Build directory cleaned"
+
       - name: 🚀 Run semantic-release
         run: npx semantic-release
         env:
