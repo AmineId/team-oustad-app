@@ -47,7 +47,7 @@ Go to: **Settings → Environments**
 4. Fill in:
    - **Bump type**: patch/minor/major
    - **Changelog**: Description of changes
-   - **Mandatory**: Is update required?
+   - **Force Update**: Is update required? (forces users to update)
    - **New features**: Comma-separated list
    - **Improvements**: Comma-separated list
    - **Bug fixes**: Comma-separated list

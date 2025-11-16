@@ -34,14 +34,14 @@ class AppConfig {
   /// Pre-production environment
   static const pprod = AppConfig(
     environment: 'pprod',
-    apiBaseUrl: 'https://app.team-oustad.com',
+    apiBaseUrl: 'https://api-pprod.team-oustad.com',
     supportEmail: 'support@team-oustad.com',
   );
 
   /// Production environment
   static const prod = AppConfig(
     environment: 'prod',
-    apiBaseUrl: 'https://app.team-oustad.com',
+    apiBaseUrl: 'https://api.team-oustad.com',
     supportEmail: 'support@team-oustad.com',
   );
 

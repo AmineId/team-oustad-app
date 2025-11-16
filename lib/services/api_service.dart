@@ -15,8 +15,8 @@ import '../config/app_config.dart';
 ///
 /// Environments:
 /// - dev: http://localhost:3000 (default)
-/// - pprod: https://api-pprod.team-oustad.com
-/// - prod: https://api.team-oustad.com
+/// - pprod: https://api-pprod.team-oustad.com (pre-production/beta)
+/// - prod: https://api.team-oustad.com (production)
 class ApiService {
   final Uri baseUri;
 

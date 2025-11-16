@@ -212,13 +212,13 @@ jobs:
         with:
           name: version-metadata-${{ github.ref == 'refs/heads/main' && 'production' || 'beta' }}
 
-      - name: 📦 Read version metadata
+      - name: 📊 Read version metadata
         id: version
         run: |
           VERSION_NAME=$(jq -r '.version_name' version-metadata.json)
           VERSION_CODE=$(jq -r '.version_code' version-metadata.json)
-          MANDATORY=$(jq -r '.mandatory' version-metadata.json)
-          MIN_VERSION=$(jq -r '.min_required_version' version-metadata.json)
+          FORCE_UPDATE=$(jq -r '.force_update // false' version-metadata.json)
+          MIN_SUPPORTED_VERSION=$(jq -r '.min_supported_version // "1"' version-metadata.json)
           
           # Use heredoc for changelog to handle special characters
           {
@@ -229,8 +229,8 @@ jobs:
           
           echo "version_name=$VERSION_NAME" >> $GITHUB_OUTPUT
           echo "version_code=$VERSION_CODE" >> $GITHUB_OUTPUT
-          echo "mandatory=$MANDATORY" >> $GITHUB_OUTPUT
-          echo "min_version=$MIN_VERSION" >> $GITHUB_OUTPUT
+          echo "force_update=$FORCE_UPDATE" >> $GITHUB_OUTPUT
+          echo "min_supported_version=$MIN_SUPPORTED_VERSION" >> $GITHUB_OUTPUT
 
       - name: 📤 Upload APK to OTA Server
         env:
@@ -244,8 +244,8 @@ jobs:
             -F "version_code=${{ steps.version.outputs.version_code }}" \
             -F "version_name=${{ steps.version.outputs.version_name }}" \
             -F "changelog=${{ steps.version.outputs.changelog }}" \
-            -F "mandatory=${{ steps.version.outputs.mandatory }}" \
-            -F "min_required_version=${{ steps.version.outputs.min_version }}" \
+            -F "force_update=${{ steps.version.outputs.force_update }}" \
+            -F "min_supported_version=${{ steps.version.outputs.min_supported_version }}" \
             -F "channel=$CHANNEL")
           
           HTTP_CODE=$(echo "$RESPONSE" | tail -n1)

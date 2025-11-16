@@ -53,12 +53,16 @@ class OTAUpdateService {
         
         // Récupérer les informations de la dernière version
         final versionData = data['latest_version'];
+        if (versionData == null) {
+          return null; // Pas de données de version
+        }
+        
         final latestVersion = versionData['version_name'] as String;
         final latestBuildNumber = versionData['version_code'] as int;
         final downloadUrl = versionData['download_url'] as String;
         final changelog = versionData['changelog'] as String? ?? 'Nouvelles fonctionnalités et corrections';
-        final isMandatory = versionData['mandatory'] as bool? ?? false;
-        final minRequiredVersion = versionData['min_required_version'] as String?;
+        final forceUpdate = versionData['force_update'] as bool? ?? false;
+        final minSupportedVersion = versionData['min_supported_version'] as int?;
 
         // Retourner les informations de mise à jour
         return UpdateInfo(
@@ -68,8 +72,8 @@ class OTAUpdateService {
           latestBuildNumber: latestBuildNumber,
           downloadUrl: downloadUrl,
           changelog: changelog,
-          isMandatory: isMandatory,
-          minRequiredVersion: minRequiredVersion,
+          forceUpdate: forceUpdate,
+          minSupportedVersion: minSupportedVersion,
         );
       }
 
@@ -226,8 +230,8 @@ class UpdateInfo {
   final int latestBuildNumber;
   final String downloadUrl;
   final String changelog;
-  final bool isMandatory;
-  final String? minRequiredVersion;
+  final bool forceUpdate;
+  final int? minSupportedVersion;
 
   UpdateInfo({
     required this.currentVersion,
@@ -236,8 +240,8 @@ class UpdateInfo {
     required this.latestBuildNumber,
     required this.downloadUrl,
     required this.changelog,
-    required this.isMandatory,
-    this.minRequiredVersion,
+    required this.forceUpdate,
+    this.minSupportedVersion,
   });
 
   /// Construit une info de mise à jour depuis JSON
@@ -249,32 +253,20 @@ class UpdateInfo {
       latestBuildNumber: json['buildNumber'] as int,
       downloadUrl: json['downloadUrl'] as String,
       changelog: json['changelog'] as String? ?? 'Nouvelles fonctionnalités',
-      isMandatory: json['mandatory'] as bool? ?? false,
-      minRequiredVersion: json['minRequiredVersion'] as String?,
+      forceUpdate: json['force_update'] as bool? ?? false,
+      minSupportedVersion: json['min_supported_version'] as int?,
     );
   }
 
-  /// Détermine si la mise à jour est critique
+  /// Détermine si la mise à jour est critique (force l'utilisateur à mettre à jour)
   bool get isCritical {
-    if (minRequiredVersion == null) return isMandatory;
+    if (minSupportedVersion == null) return forceUpdate;
     
-    // Comparer la version actuelle avec la version minimale requise
-    return _compareVersions(currentVersion, minRequiredVersion!) < 0;
+    // Comparer le build number actuel avec la version minimale supportée
+    return currentBuildNumber < minSupportedVersion!;
   }
 
-  /// Compare deux versions (retourne -1 si v1 < v2, 0 si égales, 1 si v1 > v2)
-  int _compareVersions(String v1, String v2) {
-    final parts1 = v1.split('.').map(int.parse).toList();
-    final parts2 = v2.split('.').map(int.parse).toList();
-    
-    for (var i = 0; i < 3; i++) {
-      final p1 = i < parts1.length ? parts1[i] : 0;
-      final p2 = i < parts2.length ? parts2[i] : 0;
-      
-      if (p1 < p2) return -1;
-      if (p1 > p2) return 1;
-    }
-    
-    return 0;
-  }
+  /// Alias pour la compatibilité (deprecated)
+  @Deprecated('Use forceUpdate instead')
+  bool get isMandatory => forceUpdate;
 }

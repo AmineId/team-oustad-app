@@ -58,7 +58,7 @@ if (-not $Version -or $BuildNumber -eq 0) {
         
         Write-Host "   ✅ Métadonnées chargées:" -ForegroundColor Green
         Write-Host "      Version: $Version (Build $BuildNumber)" -ForegroundColor Gray
-        Write-Host "      Obligatoire: $($metadata.mandatory)" -ForegroundColor Gray
+        Write-Host "      Obligatoire: $($metadata.force_update)" -ForegroundColor Gray
         Write-Host "      Date: $($metadata.release_date)" -ForegroundColor Gray
         
         # Mettre à jour la date de build

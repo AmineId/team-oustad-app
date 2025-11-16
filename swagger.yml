@@ -599,7 +599,7 @@ paths:
                   example: 1
                 force_update:
                   type: boolean
-                  description: Force users to update
+                  description: Force users to update (mandatory update)
                   example: false
                 channel:
                   type: string

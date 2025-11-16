@@ -22,11 +22,16 @@ void main() async {
   
   // Initialize Firebase
   try {
+    // Afficher l'environnement détecté
+    const environment = String.fromEnvironment('ENVIRONMENT', defaultValue: 'dev');
+    // ignore: avoid_print
+    print('🌍 Environment detected: $environment');
+    
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
     // ignore: avoid_print
-    print('✅ Firebase initialized');
+    print('✅ Firebase initialized for $environment environment');
     
     // Set up background message handler
     FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
