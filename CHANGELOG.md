@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.4](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.3...v1.0.0-beta.4) (2025-11-16)
+
+
+### ✨ New Features
+
+* Add environment-aware OTA update URL- OTA service now detects ENVIRONMENT and uses appropriate update check URL- pprod uses /check-update-beta endpoint- prod uses /check-update endpoint- dev uses localhost for testing ([eecc601](https://github.com/TeamFitness/mobile-app/commit/eecc6010ae8edbfdab0279635eb792ecd157d935))
+
 ## [1.0.0-beta.3](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.2...v1.0.0-beta.3) (2025-11-16)
 
 
