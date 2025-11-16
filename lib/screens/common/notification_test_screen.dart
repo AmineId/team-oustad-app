@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../services/notification_service.dart';
+import '../../core/services/notification_service.dart';
 
 /// Écran de test et démonstration des notifications
 class NotificationTestScreen extends StatelessWidget {

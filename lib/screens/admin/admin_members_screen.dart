@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../services/api_service.dart';
-import '../services/auth_service.dart';
+import '../../core/services/api_service.dart';
+import '../../core/services/auth_service.dart';
 import 'admin_member_details_screen.dart';
 import 'admin_create_member_screen.dart';
 

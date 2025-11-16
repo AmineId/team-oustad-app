@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../services/api_service.dart';
-import '../services/auth_service.dart';
+import '../../core/services/api_service.dart';
+import '../../core/services/auth_service.dart';
 
 class AdminGymsListScreen extends StatefulWidget {
   const AdminGymsListScreen({super.key});

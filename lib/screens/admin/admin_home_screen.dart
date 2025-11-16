@@ -1,16 +1,16 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import '../services/auth_service.dart';
-import '../services/api_service.dart';
-import '../widgets/responsive_layout.dart';
-import 'login_screen.dart';
+import '../../core/services/auth_service.dart';
+import '../../core/services/api_service.dart';
+import '../../widgets/responsive/responsive_layout.dart';
+import '../auth/login_screen.dart';
 import 'admin_create_member_screen.dart';
 import 'admin_members_screen.dart';
 import 'admin_plannings_screen.dart';
 import 'admin_member_details_screen.dart';
 import 'admin_create_planning_screen.dart';
-import 'security_settings_screen.dart';
-import 'about_screen.dart';
+import '../common/security_settings_screen.dart';
+import '../common/about_screen.dart';
 
 class AdminHomeScreen extends StatefulWidget {
   const AdminHomeScreen({super.key});

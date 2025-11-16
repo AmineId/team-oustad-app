@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import '../services/auth_service.dart';
-import 'admin_home_screen.dart';
-import 'member_home_screen.dart';
+import '../../core/services/auth_service.dart';
+import '../admin/admin_home_screen.dart';
+import '../member/member_home_screen.dart';
 import 'forgot_password_screen.dart';
 import 'setup_password_screen.dart';
-import '../services/api_service.dart';
-import '../services/fcm_service.dart';
+import '../../core/services/api_service.dart';
+import '../../core/services/fcm_service.dart';
 
 class LoginScreen extends StatefulWidget {
   final bool? initialDbHealthy;
