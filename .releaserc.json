@@ -58,7 +58,7 @@
     [
       "@semantic-release/exec",
       {
-        "prepareCmd": "node scripts/update-version-metadata.js ${nextRelease.version}"
+        "prepareCmd": "echo '${nextRelease.notes}' > /tmp/release-notes.md && node scripts/update-version-metadata.js ${nextRelease.version} /tmp/release-notes.md"
       }
     ],
     [
