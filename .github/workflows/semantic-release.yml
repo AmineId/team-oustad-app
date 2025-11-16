@@ -95,6 +95,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.ref }}
+          fetch-depth: 0
+      
+      - name: 🔄 Pull latest changes from semantic-release
+        run: |
+          git pull origin ${{ github.ref_name }}
 
       - name: ☕ Setup Java
         uses: actions/setup-java@v4
@@ -120,8 +125,61 @@ jobs:
       - name: 📦 Get dependencies
         run: flutter pub get
 
+      - name: 🔍 Verify version before build
+        run: |
+          echo "📋 Version information before build:"
+          echo "----------------------------------------"
+          echo "pubspec.yaml version:"
+          grep "^version:" pubspec.yaml
+          echo ""
+          echo "version-metadata.json:"
+          cat version-metadata.json | jq '{version_name, version_code}'
+          echo "----------------------------------------"
+
       - name: 🏗️ Build APK
         run: flutter build apk --release --dart-define=ENVIRONMENT=${{ needs.version.outputs.dart_env }}
+
+      - name: 🔍 Extract and verify APK version
+        run: |
+          echo "📦 Extracting version from built APK..."
+          
+          # Install aapt if not available
+          sudo apt-get update -qq
+          sudo apt-get install -y aapt
+          
+          # Extract version info from APK
+          APK_PATH="build/app/outputs/flutter-apk/app-release.apk"
+          APK_VERSION_CODE=$(aapt dump badging "$APK_PATH" | grep "versionCode" | sed -n "s/.*versionCode='\([0-9]*\)'.*/\1/p")
+          APK_VERSION_NAME=$(aapt dump badging "$APK_PATH" | grep "versionName" | sed -n "s/.*versionName='\([^']*\)'.*/\1/p")
+          
+          echo "✅ APK Version Information:"
+          echo "   Version Name: $APK_VERSION_NAME"
+          echo "   Version Code: $APK_VERSION_CODE"
+          echo ""
+          
+          # Read expected version from metadata
+          EXPECTED_VERSION_NAME=$(jq -r '.version_name' version-metadata.json)
+          EXPECTED_VERSION_CODE=$(jq -r '.version_code' version-metadata.json)
+          
+          echo "📋 Expected from version-metadata.json:"
+          echo "   Version Name: $EXPECTED_VERSION_NAME"
+          echo "   Version Code: $EXPECTED_VERSION_CODE"
+          echo ""
+          
+          # Verify versions match
+          if [ "$APK_VERSION_CODE" != "$EXPECTED_VERSION_CODE" ]; then
+            echo "❌ ERROR: Version code mismatch!"
+            echo "   APK has version code $APK_VERSION_CODE but metadata expects $EXPECTED_VERSION_CODE"
+            exit 1
+          fi
+          
+          if [ "$APK_VERSION_NAME" != "$EXPECTED_VERSION_NAME" ]; then
+            echo "❌ ERROR: Version name mismatch!"
+            echo "   APK has version name $APK_VERSION_NAME but metadata expects $EXPECTED_VERSION_NAME"
+            exit 1
+          fi
+          
+          echo "✅ Version verification passed! APK matches metadata."
 
       - name: 📤 Upload artifacts
         uses: actions/upload-artifact@v4
@@ -152,6 +210,24 @@ jobs:
         run: |
           jq -r 'to_entries | map("\(.key)=\(.value)") | .[]' version-metadata.json >> $GITHUB_OUTPUT
           echo "channel=${{ needs.version.outputs.environment }}" >> $GITHUB_OUTPUT
+      
+      - name: 🔍 Verify APK version before upload
+        run: |
+          # Install aapt to read APK info
+          sudo apt-get update -qq
+          sudo apt-get install -y aapt
+          
+          APK_VERSION_CODE=$(aapt dump badging app-release.apk | grep "versionCode" | sed -n "s/.*versionCode='\([0-9]*\)'.*/\1/p")
+          APK_VERSION_NAME=$(aapt dump badging app-release.apk | grep "versionName" | sed -n "s/.*versionName='\([^']*\)'.*/\1/p")
+          
+          echo "📦 APK to be uploaded:"
+          echo "   File: app-release.apk"
+          echo "   Size: $(du -h app-release.apk | cut -f1)"
+          echo "   Version Name: $APK_VERSION_NAME"
+          echo "   Version Code: $APK_VERSION_CODE"
+          echo ""
+          echo "📋 Metadata to be uploaded:"
+          cat version-metadata.json | jq '{version_name, version_code, changelog, force_update}'
 
       - name: 📤 Upload to OTA
         run: |
