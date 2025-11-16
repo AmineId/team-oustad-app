@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:open_file/open_file.dart';
 import 'dart:convert';
 
 /// Service de mise à jour OTA (Over-The-Air)
@@ -177,23 +178,21 @@ class OTAUpdateService {
     if (!Platform.isAndroid) return;
 
     try {
-      // Sur Android, on utilise un intent pour installer l'APK
-      // Cela nécessite le package android_intent_plus ou similar
-      // Pour l'instant, on log juste le chemin
-      debugPrint('📦 APK prêt à être installé: $filePath');
-      debugPrint('💡 L\'utilisateur doit installer manuellement l\'APK');
+      debugPrint('📦 Ouverture de l\'installateur APK: $filePath');
       
-      // TODO: Implémenter l'installation automatique avec android_intent_plus
-      // Example:
-      // final AndroidIntent intent = AndroidIntent(
-      //   action: 'android.intent.action.VIEW',
-      //   data: 'file://$filePath',
-      //   type: 'application/vnd.android.package-archive',
-      //   flags: [Flag.FLAG_ACTIVITY_NEW_TASK],
-      // );
-      // await intent.launch();
+      // Utiliser open_file pour ouvrir l'installateur Android
+      final result = await OpenFile.open(
+        filePath,
+        type: 'application/vnd.android.package-archive',
+      );
+      
+      if (result.type == ResultType.done) {
+        debugPrint('✅ Installateur APK ouvert avec succès');
+      } else {
+        debugPrint('⚠️ Résultat de l\'ouverture: ${result.type} - ${result.message}');
+      }
     } catch (e) {
-      debugPrint('❌ Erreur lors de l\'installation: $e');
+      debugPrint('❌ Erreur lors de l\'ouverture de l\'installateur: $e');
     }
   }
 

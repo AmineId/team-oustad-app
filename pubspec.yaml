@@ -68,6 +68,9 @@ dependencies:
   
   # Path provider for file downloads
   path_provider: ^2.1.5
+  
+  # Open files for OTA APK installation
+  open_file: ^3.5.9
 
 dev_dependencies:
   flutter_test:
