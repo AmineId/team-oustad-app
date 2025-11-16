@@ -14,10 +14,27 @@ class OTAUpdateService {
   OTAUpdateService._internal();
 
   // URL du serveur qui héberge les informations de mise à jour
-  static const String _updateCheckUrl = String.fromEnvironment(
-    'UPDATE_CHECK_URL',
-    defaultValue: 'https://app.team-oustad.com/android/check-update',
-  );
+  // Détermine automatiquement l'URL selon l'environnement
+  static String get _updateCheckUrl {
+    const environment = String.fromEnvironment('ENVIRONMENT', defaultValue: 'dev');
+    
+    // Si une URL custom est définie, l'utiliser en priorité
+    const customUrl = String.fromEnvironment('UPDATE_CHECK_URL', defaultValue: '');
+    if (customUrl.isNotEmpty) {
+      return customUrl;
+    }
+    
+    // Sinon, déterminer selon l'environnement
+    switch (environment) {
+      case 'pprod':
+        return 'https://app.team-oustad.com/android/beta/check-update';
+      case 'prod':
+        return 'https://app.team-oustad.com/android/check-update';
+      case 'dev':
+      default:
+        return 'http://localhost:3000/android/check-update';
+    }
+  }
 
   bool _isChecking = false;
   bool _isDownloading = false;
