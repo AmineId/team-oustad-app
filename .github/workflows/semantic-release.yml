@@ -115,31 +115,12 @@ jobs:
         if: steps.semantic_dry.outputs.skip_release != 'true'
         run: flutter pub get
 
-      - name: 🔄 Update version files
-        if: steps.semantic_dry.outputs.skip_release != 'true'
-        run: |
-          NEXT_VERSION="${{ steps.semantic_dry.outputs.next_version }}"
-          echo "📝 Updating version to: $NEXT_VERSION"
-          node scripts/update-version-metadata.js "$NEXT_VERSION"
-
-      - name: 🏗️ Build APK
-        if: steps.semantic_dry.outputs.skip_release != 'true'
-        run: |
-          ENV="${{ steps.env.outputs.environment }}"
-          
-          if [[ "$ENV" == "production" ]]; then
-            flutter build apk --release --dart-define=ENVIRONMENT=prod
-          else
-            flutter build apk --release --dart-define=ENVIRONMENT=pprod
-          fi
-          
-          echo "✅ APK built successfully"
-
       - name: 🚀 Run semantic-release
         if: steps.semantic_dry.outputs.skip_release != 'true'
         run: npx semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ENVIRONMENT: ${{ steps.env.outputs.environment == 'production' && 'prod' || 'pprod' }}
 
       - name: 📤 Upload APK artifact
         if: steps.semantic_dry.outputs.skip_release != 'true'
