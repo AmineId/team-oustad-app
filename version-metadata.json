@@ -1,14 +1,13 @@
 {
-  "version_name": "1.0.0-beta.7",
-  "version_code": 8,
-  "changelog": "New features: auto install updates 804b3fd",
+  "version_name": "1.0.0-beta.8",
+  "version_code": 9,
+  "changelog": "New features: improve OTA update dialog UX f1111fb",
   "force_update": false,
   "min_supported_version": 1,
   "release_date": "2025-11-16",
   "release_notes": {
     "new_features": [
-      "auto install updates ([804b3fd](https://github.com/TeamFitness/mobile-app/commit/804b3fd079d2bba632555aac416c6c1c23097449))",
-      "improve OTA update UX and member QR code display ([cf01923](https://github.com/TeamFitness/mobile-app/commit/cf01923ef188c48c01fdb08551c9e0c9b36f7ede))"
+      "improve OTA update dialog UX ([f1111fb](https://github.com/TeamFitness/mobile-app/commit/f1111fbdf223f3d510be0db3326209f927e159a8))"
     ],
     "improvements": [
       "reorganize project structure and clean up unnecessary files ([fe5fe15](https://github.com/TeamFitness/mobile-app/commit/fe5fe153a870adee01689bf5adc8cf2fac0ee10a))"
@@ -19,7 +18,7 @@
   },
   "build_info": {
     "environment": "pprod",
-    "build_date": "2025-11-16T17:59:39.443Z",
+    "build_date": "2025-11-16T18:20:15.523Z",
     "flutter_version": "3.24.5",
     "dart_version": "3.5.4"
   }
