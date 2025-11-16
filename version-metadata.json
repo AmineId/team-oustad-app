@@ -1,7 +1,7 @@
 {
-  "version_name": "1.0.0-beta.5",
-  "version_code": 6,
-  "changelog": "Bug fixes: broken imports after project structure reorganization #5 6da9fc5 • Improvements: reorganize project structure and clean up unnecessary files fe5fe15",
+  "version_name": "1.0.0-beta.6",
+  "version_code": 7,
+  "changelog": "Bug fixes: **ci:** fix artifact download and OTA upload in semantic-release workflow 243a062",
   "force_update": false,
   "min_supported_version": 1,
   "release_date": "2025-11-16",
@@ -13,14 +13,12 @@
       "reorganize project structure and clean up unnecessary files ([fe5fe15](https://github.com/TeamFitness/mobile-app/commit/fe5fe153a870adee01689bf5adc8cf2fac0ee10a))"
     ],
     "bug_fixes": [
-      "broken imports after project structure reorganization ([#5](https://github.com/TeamFitness/mobile-app/issues/5)) ([6da9fc5](https://github.com/TeamFitness/mobile-app/commit/6da9fc53d96ab030880fc99e564b23b9ccd1ad34))",
-      "Consolidate URL configuration to eliminate redundant platform detection ([#6](https://github.com/TeamFitness/mobile-app/issues/6)) ([45f600f](https://github.com/TeamFitness/mobile-app/commit/45f600fccfc5db27b6ad763192cc77d1f758194f))",
-      "correct import paths in responsive widgets after project restructure ([#7](https://github.com/TeamFitness/mobile-app/issues/7)) ([7ad375f](https://github.com/TeamFitness/mobile-app/commit/7ad375f77fee2cb11ccec01103a987f5fdf32670))"
+      "**ci:** fix artifact download and OTA upload in semantic-release workflow ([243a062](https://github.com/TeamFitness/mobile-app/commit/243a062329e544bcee2b86d2f73f45a4191fb566))"
     ]
   },
   "build_info": {
     "environment": "pprod",
-    "build_date": "2025-11-16T11:22:53.251Z",
+    "build_date": "2025-11-16T17:29:17.062Z",
     "flutter_version": "3.24.5",
     "dart_version": "3.5.4"
   }
