@@ -183,7 +183,10 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('OK', style: TextStyle(color: Color(0xFF2196F3))),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
+            child: const Text('OK', style: TextStyle(color: Color(0xFF2196F3), fontSize: 16)),
           ),
         ],
       ),
@@ -275,18 +278,22 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
           if (!updateInfo.isMandatory)
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Plus tard', style: TextStyle(color: Colors.white60)),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              ),
+              child: const Text('Plus tard', style: TextStyle(color: Colors.white60, fontSize: 16)),
             ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF2196F3),
               foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
             onPressed: () {
               Navigator.pop(context);
               _startUpdateDownload(updateInfo);
             },
-            child: const Text('Mettre à jour'),
+            child: const Text('Mettre à jour', style: TextStyle(fontSize: 16)),
           ),
         ],
       ),

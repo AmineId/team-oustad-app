@@ -138,7 +138,7 @@ jobs:
         if: steps.semantic_dry.outputs.skip_release != 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: apk-${{ steps.env.outputs.environment }}
+          name: apk-${{ steps.env.outputs.environment }}-${{ github.run_id }}
           path: build/app/outputs/flutter-apk/app-release.apk
           retention-days: 30
 
@@ -146,7 +146,7 @@ jobs:
         if: steps.semantic_dry.outputs.skip_release != 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: version-metadata-${{ steps.env.outputs.environment }}
+          name: version-metadata-${{ steps.env.outputs.environment }}-${{ github.run_id }}
           path: version-metadata.json
           retention-days: 30
 
@@ -208,12 +208,12 @@ jobs:
       - name: 📥 Download APK
         uses: actions/download-artifact@v4
         with:
-          name: apk-${{ needs.release.outputs.environment }}
+          name: apk-${{ needs.release.outputs.environment }}-${{ github.run_id }}
 
       - name: 📥 Download version metadata
         uses: actions/download-artifact@v4
         with:
-          name: version-metadata-${{ needs.release.outputs.environment }}
+          name: version-metadata-${{ needs.release.outputs.environment }}-${{ github.run_id }}
 
       - name: 📊 Read version metadata
         id: version
@@ -237,7 +237,7 @@ jobs:
 
       - name: 📤 Upload APK to OTA Server
         env:
-          CHANNEL: ${{ github.ref == 'refs/heads/main' && 'release' || 'beta' }}
+          CHANNEL: ${{ github.ref == 'refs/heads/main' && 'production' || 'beta' }}
         run: |
           echo "📤 Uploading APK to $CHANNEL channel..."
           echo "📦 APK size: $(du -h app-release.apk | cut -f1)"
@@ -267,13 +267,23 @@ jobs:
           fi
 
       - name: ✅ Verify deployment
+        env:
+          CHANNEL: ${{ github.ref == 'refs/heads/main' && 'production' || 'beta' }}
         run: |
           sleep 3
-          echo "🔍 Checking deployed version..."
-          curl -s https://app.team-oustad.com/android/version | jq '.'
+          
+          # Determine version URL based on channel
+          if [ "$CHANNEL" == "production" ]; then
+            VERSION_URL="https://app.team-oustad.com/android/version"
+          else
+            VERSION_URL="https://app.team-oustad.com/android/beta/version"
+          fi
+          
+          echo "🔍 Checking deployed version from $VERSION_URL..."
+          curl -s "$VERSION_URL" | jq '.'
           
           # Verify version matches
-          DEPLOYED_VERSION=$(curl -s https://app.team-oustad.com/android/version | jq -r '.version_code')
+          DEPLOYED_VERSION=$(curl -s "$VERSION_URL" | jq -r '.version_code')
           EXPECTED_VERSION="${{ steps.version.outputs.version_code }}"
           
           if [ "$DEPLOYED_VERSION" == "$EXPECTED_VERSION" ]; then

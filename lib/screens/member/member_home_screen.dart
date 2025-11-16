@@ -1252,54 +1252,204 @@ class MemberQrCodePage extends StatefulWidget {
 class _MemberQrCodePageState extends State<MemberQrCodePage> {
   final AuthService _authService = AuthService(ApiService.fromEnv());
   final ApiService _apiService = ApiService.fromEnv();
-  
-  List<int>? _qrImageBytes;
-  Map<String, dynamic>? _profileData;
-  bool _isLoading = true;
-  String? _errorMessage;
 
-  @override
-  void initState() {
-    super.initState();
-    _loadQrCode();
-  }
+  Future<void> _showQrCode() async {
+    // Récupérer l'ID de l'utilisateur depuis le cache
+    final profileData = await _authService.getCachedUserProfile();
+    if (profileData == null) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Une erreur est survenue'),
+          backgroundColor: Colors.red,
+          action: SnackBarAction(
+            label: 'Réessayer',
+            textColor: const Color(0xFFe89547),
+            onPressed: _showQrCode,
+          ),
+        ),
+      );
+      return;
+    }
 
-  Future<void> _loadQrCode() async {
+    final userId = profileData['id'] as int;
+    final token = await _authService.loadToken();
+    if (token == null) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Une erreur est survenue'),
+          backgroundColor: Colors.red,
+          action: SnackBarAction(
+            label: 'Réessayer',
+            textColor: const Color(0xFFe89547),
+            onPressed: _showQrCode,
+          ),
+        ),
+      );
+      return;
+    }
+
+    // Afficher le dialog avec loading
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: const Color(0xFF2d3748),
+        title: const Text(
+          'Mon QR Code',
+          style: TextStyle(color: Colors.white),
+        ),
+        content: SizedBox(
+          width: 250,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(
+                height: 200,
+                child: Center(
+                  child: CircularProgressIndicator(
+                    color: Color(0xFFe89547),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Chargement du QR code...',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.7),
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
     try {
-      final profileData = await _authService.getCachedUserProfile();
-      if (profileData == null) {
-        setState(() {
-          _errorMessage = 'Profil non trouvé';
-          _isLoading = false;
-        });
-        return;
-      }
-
-      final userId = profileData['id'] as int;
-      final token = await _authService.loadToken();
-      if (token == null) {
-        setState(() {
-          _errorMessage = 'Session expirée';
-          _isLoading = false;
-        });
-        return;
-      }
-
-      final qrBytes = await _apiService.getUserQrCode(userId, token);
+      // Charger le QR code
+      final qrImageBytes = await _apiService.getUserQrCode(userId, token);
       
-      setState(() {
-        _profileData = profileData;
-        _qrImageBytes = qrBytes;
-        _isLoading = false;
-        if (qrBytes == null) {
-          _errorMessage = 'Impossible de charger le QR code';
-        }
-      });
+      if (!mounted) return;
+      
+      // Fermer le dialog de loading
+      Navigator.of(context).pop();
+      
+      if (qrImageBytes == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Une erreur est survenue'),
+            backgroundColor: Colors.red,
+            action: SnackBarAction(
+              label: 'Réessayer',
+              textColor: const Color(0xFFe89547),
+              onPressed: _showQrCode,
+            ),
+          ),
+        );
+        return;
+      }
+
+      // Afficher le QR code
+      showDialog(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          backgroundColor: const Color(0xFF2d3748),
+          title: const Text(
+            'Mon QR Code',
+            style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Image.memory(
+                  Uint8List.fromList(qrImageBytes),
+                  width: 220,
+                  height: 220,
+                  fit: BoxFit.contain,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                profileData['fullName'] ?? 'Utilisateur',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFe89547).withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: const Color(0xFFe89547).withValues(alpha: 0.5),
+                    width: 1,
+                  ),
+                ),
+                child: Text(
+                  profileData['displayId'] ?? '',
+                  style: const TextStyle(
+                    color: Color(0xFFe89547),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 2,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Présentez ce code à l\'entrée',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.6),
+                  fontSize: 13,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              ),
+              child: const Text(
+                'Fermer',
+                style: TextStyle(color: Color(0xFFe89547), fontSize: 16),
+              ),
+            ),
+          ],
+        ),
+      );
     } catch (e) {
-      setState(() {
-        _errorMessage = 'Erreur: $e';
-        _isLoading = false;
-      });
+      if (!mounted) return;
+      
+      // Fermer le dialog de loading s'il est ouvert
+      Navigator.of(context).pop();
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erreur: $e'),
+          backgroundColor: Colors.red,
+          action: SnackBarAction(
+            label: 'Réessayer',
+            textColor: const Color(0xFFe89547),
+            onPressed: _showQrCode,
+          ),
+        ),
+      );
     }
   }
 
@@ -1340,94 +1490,29 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
               ),
               const SizedBox(height: 40),
               
-              // QR Code
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFFe89547).withValues(alpha: 0.7),
-                      blurRadius: 20,
-                      spreadRadius: 5,
-                    ),
-                  ],
+              // Bouton pour afficher le QR Code
+              ElevatedButton.icon(
+                onPressed: _showQrCode,
+                icon: const Icon(Icons.qr_code_2, size: 32),
+                label: const Text(
+                  'Afficher mon QR Code',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                 ),
-                child: Column(
-                  children: [
-                    _isLoading
-                      ? SizedBox(
-                          width: 250,
-                          height: 250,
-                          child: const Center(
-                            child: CircularProgressIndicator(
-                              color: Color(0xFFe89547),
-                            ),
-                          ),
-                        )
-                      : _errorMessage != null
-                        ? SizedBox(
-                            width: 250,
-                            height: 250,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(
-                                  Icons.error_outline,
-                                  size: 60,
-                                  color: Colors.red,
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  _errorMessage!,
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                    color: Colors.black87,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
-                                ElevatedButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      _isLoading = true;
-                                      _errorMessage = null;
-                                    });
-                                    _loadQrCode();
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFFe89547),
-                                  ),
-                                  child: const Text('Réessayer'),
-                                ),
-                              ],
-                            ),
-                          )
-                        : Image.memory(
-                            Uint8List.fromList(_qrImageBytes!),
-                            width: 250,
-                            height: 250,
-                            fit: BoxFit.contain,
-                          ),
-                    const SizedBox(height: 16),
-                    Text(
-                      _profileData != null
-                        ? 'ID: ${_profileData!['uniqueCode'] ?? 'N/A'}'
-                        : 'ID: ...',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                  ],
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFe89547),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  elevation: 8,
+                  shadowColor: const Color(0xFFe89547).withValues(alpha: 0.5),
                 ),
               ),
               const SizedBox(height: 40),
               
               Text(
-                'Présentez ce code au personnel\npour enregistrer votre présence',
+                'Présentez votre QR code au personnel\npour enregistrer votre présence',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 14,
