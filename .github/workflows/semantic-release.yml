@@ -139,6 +139,14 @@ jobs:
           path: build/app/outputs/flutter-apk/app-release.apk
           retention-days: 30
 
+      - name: 📤 Upload version metadata
+        if: steps.semantic_dry.outputs.skip_release != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: version-metadata-${{ steps.env.outputs.environment }}
+          path: version-metadata.json
+          retention-days: 30
+
       - name: 📊 Summary
         if: steps.semantic_dry.outputs.skip_release != 'true'
         run: |
@@ -194,33 +202,33 @@ jobs:
       url: https://app.team-oustad.com/android/version.json
     
     steps:
-      - name: 📥 Checkout
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.ref }}
-
       - name: 📥 Download APK
         uses: actions/download-artifact@v4
         with:
           name: apk-${{ github.ref == 'refs/heads/main' && 'production' || 'beta' }}
+
+      - name: 📥 Download version metadata
+        uses: actions/download-artifact@v4
+        with:
+          name: version-metadata-${{ github.ref == 'refs/heads/main' && 'production' || 'beta' }}
 
       - name: 📦 Read version metadata
         id: version
         run: |
           VERSION_NAME=$(jq -r '.version_name' version-metadata.json)
           VERSION_CODE=$(jq -r '.version_code' version-metadata.json)
-          CHANGELOG=$(jq -r '.changelog' version-metadata.json)
           MANDATORY=$(jq -r '.mandatory' version-metadata.json)
           MIN_VERSION=$(jq -r '.min_required_version' version-metadata.json)
           
-          # Extract release notes
-          NEW_FEATURES=$(jq -r '.release_notes.new_features | join("\n")' version-metadata.json)
-          IMPROVEMENTS=$(jq -r '.release_notes.improvements | join("\n")' version-metadata.json)
-          BUG_FIXES=$(jq -r '.release_notes.bug_fixes | join("\n")' version-metadata.json)
+          # Use heredoc for changelog to handle special characters
+          {
+            echo 'changelog<<EOF'
+            jq -r '.changelog' version-metadata.json
+            echo 'EOF'
+          } >> $GITHUB_OUTPUT
           
           echo "version_name=$VERSION_NAME" >> $GITHUB_OUTPUT
           echo "version_code=$VERSION_CODE" >> $GITHUB_OUTPUT
-          echo "changelog=$CHANGELOG" >> $GITHUB_OUTPUT
           echo "mandatory=$MANDATORY" >> $GITHUB_OUTPUT
           echo "min_version=$MIN_VERSION" >> $GITHUB_OUTPUT
 

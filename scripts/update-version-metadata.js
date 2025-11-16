@@ -83,12 +83,26 @@ const parseReleaseNotes = (notes) => {
 
 const releaseNotesData = parseReleaseNotes(releaseNotes);
 
-// Create simple changelog (first line of each section)
-const changelog = [
-  releaseNotesData.new_features.length > 0 ? `New features: ${releaseNotesData.new_features[0]}` : '',
-  releaseNotesData.bug_fixes.length > 0 ? `Bug fixes: ${releaseNotesData.bug_fixes[0]}` : '',
-  releaseNotesData.improvements.length > 0 ? `Improvements: ${releaseNotesData.improvements[0]}` : ''
-].filter(Boolean).join('\n') || 'Version update';
+// Remove markdown links and special characters from changelog text
+const cleanText = (text) => {
+  return text
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Remove markdown links [text](url) -> text
+    .replace(/[()[\]]/g, '') // Remove remaining parentheses and brackets
+    .trim();
+};
+
+// Create simple changelog (first line of each section, cleaned)
+const changelogParts = [];
+if (releaseNotesData.new_features.length > 0) {
+  changelogParts.push(`New features: ${cleanText(releaseNotesData.new_features[0])}`);
+}
+if (releaseNotesData.bug_fixes.length > 0) {
+  changelogParts.push(`Bug fixes: ${cleanText(releaseNotesData.bug_fixes[0])}`);
+}
+if (releaseNotesData.improvements.length > 0) {
+  changelogParts.push(`Improvements: ${cleanText(releaseNotesData.improvements[0])}`);
+}
+const changelog = changelogParts.join(' • ') || 'Version update';
 
 // Update metadata
 metadata.version_name = version;
