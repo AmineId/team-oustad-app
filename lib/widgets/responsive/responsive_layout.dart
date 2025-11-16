@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../utils/platform_utils.dart';
+import 'package:team_fitness_app/core/utils/platform_utils.dart';
 
 /// A widget that builds different layouts based on device type
 class ResponsiveLayout extends StatelessWidget {

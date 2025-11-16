@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../utils/platform_utils.dart';
+import 'package:team_fitness_app/core/utils/platform_utils.dart';
 
 /// A responsive grid that adapts column count based on screen size
 class ResponsiveGrid extends StatelessWidget {
