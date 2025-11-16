@@ -58,15 +58,7 @@
     [
       "@semantic-release/exec",
       {
-        "verifyReleaseCmd": "echo 'Version: ${nextRelease.version}'",
-        "prepareCmd": "node scripts/update-version-metadata.js ${nextRelease.version}",
-        "publishCmd": "echo 'Published version ${nextRelease.version}'"
-      }
-    ],
-    [
-      "@semantic-release/exec",
-      {
-        "publishCmd": "flutter clean && flutter pub get && flutter build apk --release --dart-define=ENVIRONMENT=${process.env.ENVIRONMENT}"
+        "prepareCmd": "node scripts/update-version-metadata.js ${nextRelease.version}"
       }
     ],
     [
@@ -83,13 +75,6 @@
     [
       "@semantic-release/github",
       {
-        "assets": [
-          {
-            "path": "build/app/outputs/flutter-apk/app-release.apk",
-            "label": "Team Fitness v${nextRelease.version} (APK)",
-            "name": "team-fitness-${nextRelease.version}.apk"
-          }
-        ],
         "successComment": false,
         "failTitle": false,
         "labels": ["released"],

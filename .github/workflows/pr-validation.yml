@@ -1,0 +1,52 @@
+name: ✅ PR Validation
+
+on:
+  pull_request:
+    branches:
+      - main
+      - staging
+
+env:
+  FLUTTER_VERSION: '3.35.7'
+  JAVA_VERSION: '17'
+
+jobs:
+  validate:
+    name: 🔍 Validate Package
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: ☕ Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: 🐦 Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: 📦 Get dependencies
+        run: flutter pub get
+
+      - name: 🔍 Analyze code
+        run: flutter analyze --fatal-infos
+
+      - name: ✅ Run tests
+        run: flutter test
+
+      - name: 🏗️ Test build (Android)
+        run: flutter build apk --debug --dart-define=ENVIRONMENT=pprod
+
+      - name: ✅ Validation passed
+        run: |
+          echo "✅ All checks passed!" >> $GITHUB_STEP_SUMMARY
+          echo "- Code analysis: ✅" >> $GITHUB_STEP_SUMMARY
+          echo "- Tests: ✅" >> $GITHUB_STEP_SUMMARY
+          echo "- Build: ✅" >> $GITHUB_STEP_SUMMARY
