@@ -115,6 +115,13 @@ jobs:
         if: steps.semantic_dry.outputs.skip_release != 'true'
         run: flutter pub get
 
+      - name: 🔄 Update version files
+        if: steps.semantic_dry.outputs.skip_release != 'true'
+        run: |
+          NEXT_VERSION="${{ steps.semantic_dry.outputs.next_version }}"
+          echo "📝 Updating version to: $NEXT_VERSION"
+          node scripts/update-version-metadata.js "$NEXT_VERSION"
+
       - name: 🏗️ Build APK
         if: steps.semantic_dry.outputs.skip_release != 'true'
         run: |
@@ -240,6 +247,8 @@ jobs:
           CHANNEL: ${{ github.ref == 'refs/heads/main' && 'production' || 'beta' }}
         run: |
           echo "📤 Uploading APK to $CHANNEL channel..."
+          echo "📁 Current directory contents:"
+          ls -lah
           echo "📦 APK size: $(du -h app-release.apk | cut -f1)"
           
           RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
