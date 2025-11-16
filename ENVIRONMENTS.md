@@ -138,15 +138,17 @@ if (config.isDevelopment) {
 
 L'API Service détermine l'URL dans cet ordre :
 
-1. **Variable ENVIRONMENT** (`--dart-define=ENVIRONMENT=pprod`)
-   - Si définie, utilise la configuration correspondante (pprod/prod/dev)
+1. **Variable API_BASE_URL** (`--dart-define=API_BASE_URL=http://...`)
+   - Permet de surcharger avec une URL personnalisée pour tous les environnements
 
-2. **Variable API_BASE_URL** (`--dart-define=API_BASE_URL=http://...`)
-   - Permet de surcharger avec une URL personnalisée
+2. **Variable ENVIRONMENT** (`--dart-define=ENVIRONMENT=pprod|prod|dev`)
+   - Utilise la configuration correspondante via `AppConfig`
+   - `dev`: URL adaptée à la plateforme (Android: `10.0.2.2:3000`, autres: `localhost:3000`)
+   - `pprod`: `https://api-pprod.team-oustad.com`
+   - `prod`: `https://api.team-oustad.com`
+   - **Par défaut**: `dev` si non spécifié
 
-3. **Défaut selon la plateforme**
-   - Android Emulator: `http://10.0.2.2:3000`
-   - Desktop/Web/iOS: `http://localhost:3000`
+**Note**: Les builds doivent toujours définir la variable `ENVIRONMENT` via `--dart-define`.
 
 ## 📦 Builds de Production
 
