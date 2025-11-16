@@ -104,98 +104,7 @@ class _SplashScreenState extends State<SplashScreen> {
     showDialog(
       context: context,
       barrierDismissible: !updateInfo.forceUpdate,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF2d3748),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: const Color(0xFF2196F3).withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(
-                Icons.system_update,
-                color: Color(0xFF2196F3),
-                size: 28,
-              ),
-            ),
-            const SizedBox(width: 12),
-            const Expanded(
-              child: Text(
-                'Mise à jour disponible',
-                style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (updateInfo.forceUpdate)
-              Container(
-                padding: const EdgeInsets.all(12),
-                margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFF6B6B).withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: const Color(0xFFFF6B6B).withValues(alpha: 0.5)),
-                ),
-                child: const Row(
-                  children: [
-                    Icon(Icons.warning, color: Color(0xFFFF6B6B), size: 20),
-                    SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'Cette mise à jour est obligatoire',
-                        style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            Text(
-              'Version: ${updateInfo.currentVersion} → ${updateInfo.latestVersion}',
-              style: const TextStyle(color: Colors.white70, fontSize: 14),
-            ),
-            const SizedBox(height: 12),
-            const Text(
-              'Nouveautés :',
-              style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              updateInfo.changelog,
-              style: const TextStyle(color: Colors.white70, fontSize: 14),
-            ),
-          ],
-        ),
-        actions: [
-          if (!updateInfo.forceUpdate)
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              ),
-              child: const Text('Plus tard', style: TextStyle(color: Colors.white60, fontSize: 16)),
-            ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF2196F3),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            ),
-            onPressed: () {
-              Navigator.pop(context);
-              // Rediriger vers les paramètres de sécurité pour gérer le téléchargement
-              // ou implémenter le téléchargement ici directement
-            },
-            child: const Text('Mettre à jour', style: TextStyle(fontSize: 16)),
-          ),
-        ],
-      ),
+      builder: (context) => _OTAUpdateDialog(updateInfo: updateInfo),
     );
   }
 
@@ -360,6 +269,182 @@ class _SplashScreenState extends State<SplashScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+// Dialog widget pour afficher et gérer la mise à jour OTA
+class _OTAUpdateDialog extends StatefulWidget {
+  final dynamic updateInfo;
+
+  const _OTAUpdateDialog({required this.updateInfo});
+
+  @override
+  State<_OTAUpdateDialog> createState() => _OTAUpdateDialogState();
+}
+
+class _OTAUpdateDialogState extends State<_OTAUpdateDialog> {
+  bool _isDownloading = false;
+  double _downloadProgress = 0.0;
+
+  Future<void> _startDownload() async {
+    setState(() {
+      _isDownloading = true;
+      _downloadProgress = 0.0;
+    });
+
+    try {
+      final otaService = OTAUpdateService();
+      final success = await otaService.downloadAndInstallUpdate(
+        widget.updateInfo,
+        onProgress: (progress) {
+          if (mounted) {
+            setState(() {
+              _downloadProgress = progress;
+            });
+          }
+        },
+      );
+
+      if (!mounted) return;
+
+      if (success) {
+        // L'installateur Android s'est ouvert automatiquement
+        Navigator.pop(context);
+      } else {
+        setState(() {
+          _isDownloading = false;
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Erreur lors du téléchargement'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isDownloading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: const Color(0xFF2d3748),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      title: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF2196F3).withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(
+              Icons.system_update,
+              color: Color(0xFF2196F3),
+              size: 28,
+            ),
+          ),
+          const SizedBox(width: 12),
+          const Expanded(
+            child: Text(
+              'Mise à jour disponible',
+              style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (widget.updateInfo.forceUpdate)
+            Container(
+              padding: const EdgeInsets.all(12),
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFF6B6B).withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: const Color(0xFFFF6B6B).withValues(alpha: 0.5)),
+              ),
+              child: const Row(
+                children: [
+                  Icon(Icons.warning, color: Color(0xFFFF6B6B), size: 20),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Cette mise à jour est obligatoire',
+                      style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          Text(
+            'Version: ${widget.updateInfo.currentVersion} → ${widget.updateInfo.latestVersion}',
+            style: const TextStyle(color: Colors.white70, fontSize: 14),
+          ),
+          const SizedBox(height: 12),
+          const Text(
+            'Nouveautés :',
+            style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            widget.updateInfo.changelog,
+            style: const TextStyle(color: Colors.white70, fontSize: 14),
+          ),
+          if (_isDownloading) ...[
+            const SizedBox(height: 20),
+            LinearProgressIndicator(
+              value: _downloadProgress,
+              backgroundColor: Colors.white12,
+              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF2196F3)),
+              minHeight: 8,
+              borderRadius: BorderRadius.circular(4),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Téléchargement en cours... ${(_downloadProgress * 100).toStringAsFixed(0)}%',
+              style: const TextStyle(color: Colors.white70, fontSize: 13),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ],
+      ),
+      actions: [
+        if (!_isDownloading && !widget.updateInfo.forceUpdate)
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
+            child: const Text('Plus tard', style: TextStyle(color: Colors.white60, fontSize: 16)),
+          ),
+        if (!_isDownloading)
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF2196F3),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
+            onPressed: _startDownload,
+            child: const Text('Mettre à jour', style: TextStyle(fontSize: 16)),
+          ),
+      ],
     );
   }
 }
