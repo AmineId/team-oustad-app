@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.5](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.4...v1.0.0-beta.5) (2025-11-16)
+
+
+### 🐛 Bug Fixes
+
+* broken imports after project structure reorganization ([#5](https://github.com/TeamFitness/mobile-app/issues/5)) ([6da9fc5](https://github.com/TeamFitness/mobile-app/commit/6da9fc53d96ab030880fc99e564b23b9ccd1ad34))
+* Consolidate URL configuration to eliminate redundant platform detection ([#6](https://github.com/TeamFitness/mobile-app/issues/6)) ([45f600f](https://github.com/TeamFitness/mobile-app/commit/45f600fccfc5db27b6ad763192cc77d1f758194f))
+* correct import paths in responsive widgets after project restructure ([#7](https://github.com/TeamFitness/mobile-app/issues/7)) ([7ad375f](https://github.com/TeamFitness/mobile-app/commit/7ad375f77fee2cb11ccec01103a987f5fdf32670))
+
+
+### ♻️ Code Refactoring
+
+* reorganize project structure and clean up unnecessary files ([fe5fe15](https://github.com/TeamFitness/mobile-app/commit/fe5fe153a870adee01689bf5adc8cf2fac0ee10a))
+
 ## [1.0.0-beta.4](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.3...v1.0.0-beta.4) (2025-11-16)
 
 
