@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../utils/platform_utils.dart';
+import 'package:team_fitness_app/core/utils/platform_utils.dart';
 
 /// A card widget that adapts its styling based on device type
 class ResponsiveCard extends StatelessWidget {
