@@ -1,15 +1,15 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../services/auth_service.dart';
-import '../services/api_service.dart';
-import '../widgets/gym_details_bottom_sheet.dart';
-import '../widgets/responsive_layout.dart';
-import 'login_screen.dart';
+import '../../core/services/auth_service.dart';
+import '../../core/services/api_service.dart';
+import '../../widgets/common/gym_details_bottom_sheet.dart';
+import '../../widgets/responsive/responsive_layout.dart';
+import '../auth/login_screen.dart';
 import 'subscription_details_screen.dart';
 import 'edit_profile_screen.dart';
-import 'security_settings_screen.dart';
-import 'about_screen.dart';
+import '../common/security_settings_screen.dart';
+import '../common/about_screen.dart';
 
 class MemberHomeScreen extends StatefulWidget {
   const MemberHomeScreen({super.key});

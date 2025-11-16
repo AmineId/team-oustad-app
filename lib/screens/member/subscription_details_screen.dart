@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import '../services/api_service.dart';
-import '../services/auth_service.dart';
+import '../../core/services/api_service.dart';
+import '../../core/services/auth_service.dart';
 
 class SubscriptionDetailsScreen extends StatefulWidget {
   final Map<String, dynamic>? subscriptionData;

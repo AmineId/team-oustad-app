@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../services/api_service.dart';
-import '../services/auth_service.dart';
+import '../../core/services/api_service.dart';
+import '../../core/services/auth_service.dart';
 
 class GymDetailsBottomSheet extends StatefulWidget {
   final Map<String, dynamic> gym;

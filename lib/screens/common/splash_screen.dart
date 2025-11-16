@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'login_screen.dart';
-import 'admin_home_screen.dart';
-import 'member_home_screen.dart';
-import '../services/api_service.dart';
-import '../services/auth_service.dart';
-import '../services/notification_service.dart';
+import '../auth/login_screen.dart';
+import '../admin/admin_home_screen.dart';
+import '../member/member_home_screen.dart';
+import '../../core/services/api_service.dart';
+import '../../core/services/auth_service.dart';
+import '../../core/services/notification_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});

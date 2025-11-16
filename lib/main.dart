@@ -4,13 +4,9 @@ import 'dart:ui';
 import 'dart:io';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'screens/splash_screen.dart';
-import 'screens/admin_members_screen.dart';
-import 'screens/admin_plannings_screen.dart';
-import 'services/api_service.dart';
-import 'services/error_reporter.dart';
-import 'services/notification_service.dart';
-import 'services/fcm_service.dart';
+import 'screens/common/common_screens.dart';
+import 'screens/admin/admin_screens.dart';
+import 'core/services/services.dart';
 import 'firebase_options.dart';
 
 void main() async {
