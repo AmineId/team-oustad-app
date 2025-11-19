@@ -258,7 +258,7 @@ class _AdminCreateAdminScreenState extends State<AdminCreateAdminScreen> {
                               onChanged: (value) {
                                 setState(() => _sendSetupEmail = value ?? false);
                               },
-                              activeColor: const Color(0xFFe89547),
+                              fillColor: WidgetStateProperty.all(const Color(0xFFe89547)),
                             ),
                             const Expanded(
                               child: Text(
@@ -356,3 +356,4 @@ class _AdminCreateAdminScreenState extends State<AdminCreateAdminScreen> {
     );
   }
 }
+

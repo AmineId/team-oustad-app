@@ -1,6 +1,4 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
 
@@ -30,7 +28,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late TextEditingController _addressController;
   
   bool _isLoading = false;
-  List<Map<String, dynamic>> _placeSuggestions = [];
 
   @override
   void initState() {
@@ -157,33 +154,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (mounted) {
         setState(() => _isLoading = false);
       }
-    }
-  }
-
-  Future<void> _fetchPlaceSuggestions(String input) async {
-    const apiKey = 'AIzaSyCu6rik9wyOBofUQ9m0l8WqrcNGTjZTpUk';
-    final url = Uri.parse(
-      'https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${Uri.encodeComponent(input)}&key=$apiKey&language=fr',
-    );
-
-    try {
-      final response = await http.get(url);
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data['status'] == 'OK') {
-          setState(() {
-            _placeSuggestions = List<Map<String, dynamic>>.from(
-              data['predictions'].map((prediction) => {
-                'description': prediction['description'],
-                'place_id': prediction['place_id'],
-              }),
-            );
-          });
-        }
-      }
-    } catch (e) {
-      // ignore: avoid_print
-      print('Error fetching place suggestions: $e');
     }
   }
 
@@ -315,7 +285,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                _buildGooglePlacesField(),
+                _buildAddressField(),
                 const SizedBox(height: 32),
 
                 // Save button
@@ -382,90 +352,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
-  Widget _buildGooglePlacesField() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        TextFormField(
-          controller: _addressController,
-          onChanged: (value) {
-            if (value.length > 2) {
-              _fetchPlaceSuggestions(value);
-            } else {
-              setState(() {
-                _placeSuggestions = [];
-              });
-            }
-          },
-          style: const TextStyle(color: Colors.white),
-          decoration: InputDecoration(
-            labelText: 'Adresse',
-            labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
-            prefixIcon: const Icon(Icons.location_on, color: Color(0xFFe89547)),
-            filled: true,
-            fillColor: const Color(0xFF2d3748),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                color: Colors.white.withValues(alpha: 0.1),
-                width: 1,
-              ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: Color(0xFFe89547),
-                width: 2,
-              ),
-            ),
-          ),
-        ),
-        if (_placeSuggestions.isNotEmpty)
-          Container(
-            margin: const EdgeInsets.only(top: 4),
-            decoration: BoxDecoration(
-              color: const Color(0xFF2d3748),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.1),
-                width: 1,
-              ),
-            ),
-            child: ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: _placeSuggestions.length,
-              itemBuilder: (context, index) {
-                final suggestion = _placeSuggestions[index];
-                return ListTile(
-                  dense: true,
-                  leading: const Icon(
-                    Icons.location_on,
-                    color: Color(0xFFe89547),
-                    size: 20,
-                  ),
-                  title: Text(
-                    suggestion['description'] ?? '',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                    ),
-                  ),
-                  onTap: () {
-                    setState(() {
-                      _addressController.text = suggestion['description'] ?? '';
-                      _placeSuggestions = [];
-                    });
-                  },
-                );
-              },
-            ),
-          ),
-      ],
+  Widget _buildAddressField() {
+    return _buildTextField(
+      controller: _addressController,
+      label: 'Adresse',
+      icon: Icons.location_on,
     );
   }
 

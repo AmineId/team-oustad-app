@@ -48,7 +48,7 @@ class _AboutScreenState extends State<AboutScreen> {
       });
     } catch (e) {
       // ignore: avoid_print
-      print('Error loading version info: $e');
+      debugPrint('Error loading version info: $e');
       // Fallback to basic info
       final packageInfo = await PackageInfo.fromPlatform();
       setState(() {
@@ -130,7 +130,7 @@ class _AboutScreenState extends State<AboutScreen> {
                           color: const Color(0xFF2d3748),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: const Color(0xFFe89547).withOpacity(0.3),
+                            color: const Color(0xFFe89547).withValues(alpha: 0.3),
                           ),
                         ),
                         child: Text(
@@ -149,7 +149,7 @@ class _AboutScreenState extends State<AboutScreen> {
                           'Publié le $_releaseDate',
                           style: TextStyle(
                             fontSize: 13,
-                            color: Colors.white.withOpacity(0.6),
+                            color: Colors.white.withValues(alpha: 0.6),
                           ),
                         ),
                       ],
@@ -188,7 +188,7 @@ class _AboutScreenState extends State<AboutScreen> {
                                 'Gérez vos membres, plannings d\'entraînement, présences et bien plus encore.',
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color: Colors.white.withOpacity(0.8),
+                                  color: Colors.white.withValues(alpha: 0.8),
                                   height: 1.5,
                                 ),
                               ),
@@ -260,7 +260,7 @@ class _AboutScreenState extends State<AboutScreen> {
                                 'Team Oustad © ${DateTime.now().year}',
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color: Colors.white.withOpacity(0.8),
+                                  color: Colors.white.withValues(alpha: 0.8),
                                 ),
                               ),
                             ],
@@ -275,7 +275,7 @@ class _AboutScreenState extends State<AboutScreen> {
                         'Tous droits réservés',
                         style: TextStyle(
                           fontSize: 12,
-                          color: Colors.white.withOpacity(0.5),
+                          color: Colors.white.withValues(alpha: 0.5),
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -338,7 +338,7 @@ class _AboutScreenState extends State<AboutScreen> {
                       item,
                       style: TextStyle(
                         fontSize: 14,
-                        color: Colors.white.withOpacity(0.8),
+                        color: Colors.white.withValues(alpha: 0.8),
                         height: 1.5,
                       ),
                     ),
@@ -352,3 +352,4 @@ class _AboutScreenState extends State<AboutScreen> {
     );
   }
 }
+

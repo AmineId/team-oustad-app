@@ -66,7 +66,7 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
       }
     } catch (e) {
       // ignore: avoid_print
-      print('Error loading payment history: $e');
+      debugPrint('Error loading payment history: $e');
       // Charger des données fictives en cas d'erreur
       _loadMockPayments();
     }
@@ -498,3 +498,4 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
     );
   }
 }
+

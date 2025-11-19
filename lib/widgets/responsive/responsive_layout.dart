@@ -69,10 +69,10 @@ class ResponsiveScaffold extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: Theme.of(context).appBarTheme.titleTextStyle?.color,
           ),
         ),
         actions: actions,
@@ -82,11 +82,12 @@ class ResponsiveScaffold extends StatelessWidget {
         currentIndex: currentIndex,
         onTap: onNavigationChanged,
         type: BottomNavigationBarType.fixed,
-        backgroundColor: const Color(0xFF1a1f2e),
-        selectedItemColor: const Color(0xFFe89547),
-        unselectedItemColor: Colors.white60,
+        backgroundColor: Theme.of(context).bottomNavigationBarTheme.backgroundColor,
+        selectedItemColor: Theme.of(context).bottomNavigationBarTheme.selectedItemColor,
+        unselectedItemColor: Theme.of(context).bottomNavigationBarTheme.unselectedItemColor,
         selectedFontSize: 12,
         unselectedFontSize: 12,
+        elevation: 8,
         items: navigationItems
             .map((item) => BottomNavigationBarItem(
                   icon: Icon(item.icon),
@@ -109,7 +110,7 @@ class ResponsiveScaffold extends StatelessWidget {
               color: const Color(0xFF1a1f2e),
               border: Border(
                 right: BorderSide(
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withValues(alpha: 0.1),
                   width: 1,
                 ),
               ),
@@ -164,7 +165,7 @@ class ResponsiveScaffold extends StatelessWidget {
                           ),
                         ),
                         selected: isSelected,
-                        selectedTileColor: const Color(0xFFe89547).withOpacity(0.1),
+                        selectedTileColor: const Color(0xFFe89547).withValues(alpha: 0.1),
                         onTap: () => onNavigationChanged(index),
                       );
                     },
@@ -184,7 +185,7 @@ class ResponsiveScaffold extends StatelessWidget {
                     color: const Color(0xFF1a1f2e),
                     border: Border(
                       bottom: BorderSide(
-                        color: Colors.white.withOpacity(0.1),
+                        color: Colors.white.withValues(alpha: 0.1),
                         width: 1,
                       ),
                     ),
@@ -292,3 +293,4 @@ class NavigationItem {
     required this.label,
   });
 }
+

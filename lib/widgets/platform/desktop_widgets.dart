@@ -26,10 +26,10 @@ class DesktopStatCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF2d3748),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -46,7 +46,7 @@ class DesktopStatCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.2),
+                    color: Colors.green.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -119,7 +119,7 @@ class DesktopActionCard extends StatelessWidget {
           color: const Color(0xFF2d3748),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
           ),
         ),
         child: Column(
@@ -128,7 +128,7 @@ class DesktopActionCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFFe89547).withOpacity(0.2),
+                color: const Color(0xFFe89547).withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, color: const Color(0xFFe89547), size: 32),
@@ -198,7 +198,7 @@ class DesktopDataTable extends StatelessWidget {
         color: const Color(0xFF2d3748),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
         ),
       ),
       child: Column(
@@ -237,7 +237,7 @@ class DesktopDataTable extends StatelessWidget {
                 decoration: BoxDecoration(
                   border: Border(
                     bottom: BorderSide(
-                      color: Colors.white.withOpacity(0.05),
+                      color: Colors.white.withValues(alpha: 0.05),
                     ),
                   ),
                 ),
@@ -284,7 +284,7 @@ class DesktopSearchBar extends StatelessWidget {
         color: const Color(0xFF2d3748),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
         ),
       ),
       child: Row(
@@ -316,3 +316,4 @@ class DesktopSearchBar extends StatelessWidget {
     );
   }
 }
+

@@ -49,7 +49,7 @@ class PlatformUtils {
       // Desktop platform - force desktop layout regardless of window size
       // This ensures desktop app always shows desktop UI
       // ignore: avoid_print
-      print('🖥️ Desktop detected - width: ${width}px');
+      debugPrint('🖥️ Desktop detected - width: ${width}px');
       return DeviceType.desktop;
     } else {
       return DeviceType.mobile;
@@ -110,3 +110,4 @@ class PlatformUtils {
     }
   }
 }
+

@@ -2,7 +2,10 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/services/api_service.dart';
+import '../../core/theme/theme.dart';
 import '../../widgets/responsive/responsive_layout.dart';
+import '../../widgets/common/common_widgets.dart';
+import '../../main.dart';
 import '../auth/login_screen.dart';
 import 'admin_create_member_screen.dart';
 import 'admin_members_screen.dart';
@@ -308,6 +311,14 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Récupérer le ThemeProvider
+    ThemeProvider? themeProvider;
+    try {
+      themeProvider = ThemeProviderScope.of(context);
+    } catch (e) {
+      // Si ThemeProviderScope n'est pas trouvé, on continue sans
+    }
+    
     return ResponsiveScaffold(
       title: _titles[_currentIndex],
       navigationItems: _navigationItems,
@@ -319,6 +330,8 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       },
       body: _pages[_currentIndex],
       actions: [
+        if (themeProvider != null)
+          ThemeToggleButton(themeProvider: themeProvider),
         IconButton(
           icon: const Icon(Icons.qr_code_2),
           onPressed: _showQrCode,
@@ -3756,7 +3769,7 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
                           children: [
                             Checkbox(
                               value: _sendSetupEmail,
-                              activeColor: const Color(0xFFe89547),
+                              fillColor: WidgetStateProperty.all(const Color(0xFFe89547)),
                               onChanged: (value) {
                                 setState(() {
                                   _sendSetupEmail = value ?? true;
@@ -4097,3 +4110,4 @@ class _GymCreateViewState extends State<_GymCreateView> {
     );
   }
 }
+

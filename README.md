@@ -2,6 +2,16 @@
 
 A Flutter application for gym management with comprehensive multi-platform support and responsive design.
 
+## 🎨 Nouveau Design System (v1.0.0-beta.13+)
+
+L'application dispose maintenant d'un **design system moderne et minimaliste** avec :
+- ✨ **Mode Clair/Sombre** : Basculement fluide entre thèmes
+- 🎯 **UI Cohérente** : Tous les composants suivent le même design
+- 📱 **Composants Modernes** : ModernButton, ModernCard, ModernTextField, StatusBadge
+- 💾 **Préférences Persistantes** : Le choix du thème est sauvegardé
+
+👉 Voir [DESIGN_SYSTEM_UPDATE.md](DESIGN_SYSTEM_UPDATE.md) et [THEME_SYSTEM_GUIDE.md](THEME_SYSTEM_GUIDE.md) pour plus d'informations.
+
 ## Features
 
 - 🔐 **Biometric Authentication** - Fingerprint/Face ID login

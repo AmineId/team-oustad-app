@@ -23,7 +23,7 @@ class WatchStatCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF2d3748),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -210,3 +210,4 @@ class WatchHeader extends StatelessWidget {
     );
   }
 }
+

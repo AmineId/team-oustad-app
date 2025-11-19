@@ -7,6 +7,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'screens/common/common_screens.dart';
 import 'screens/admin/admin_screens.dart';
 import 'core/services/services.dart';
+import 'core/theme/theme.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -21,19 +22,19 @@ void main() async {
     // Afficher l'environnement détecté
     const environment = String.fromEnvironment('ENVIRONMENT', defaultValue: 'dev');
     // ignore: avoid_print
-    print('🌍 Environment detected: $environment');
+    debugPrint('🌍 Environment detected: $environment');
     
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
     // ignore: avoid_print
-    print('✅ Firebase initialized for $environment environment');
+    debugPrint('✅ Firebase initialized for $environment environment');
     
     // Set up background message handler
     FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
   } catch (e) {
     // ignore: avoid_print
-    print('⚠️ Firebase initialization failed: $e');
+    debugPrint('⚠️ Firebase initialization failed: $e');
     // Continue without Firebase if configuration is missing
   }
   
@@ -47,7 +48,7 @@ void main() async {
     // Ne pas demander les permissions ici, elles seront demandées au premier démarrage
   } catch (e) {
     // ignore: avoid_print
-    print('Failed to initialize notifications: $e');
+    debugPrint('Failed to initialize notifications: $e');
   }
   
   // Initialize FCM service
@@ -55,7 +56,7 @@ void main() async {
     await FCMService().initialize();
   } catch (e) {
     // ignore: avoid_print
-    print('Failed to initialize FCM: $e');
+    debugPrint('Failed to initialize FCM: $e');
   }
 
   // Flutter framework errors
@@ -82,78 +83,88 @@ Future<void> _disableScreenCapture() async {
       const platform = MethodChannel('team.fitness.security');
       await platform.invokeMethod('disableScreenCapture');
       // ignore: avoid_print
-      print('🔒 Protection des screenshots activée (Android)');
+      debugPrint('🔒 Protection des screenshots activée (Android)');
     } catch (e) {
       // ignore: avoid_print
-      print('⚠️ Erreur lors de l\'activation de la protection: $e');
+      debugPrint('⚠️ Erreur lors de l\'activation de la protection: $e');
     }
   } else if (Platform.isIOS) {
     try {
       // Sur iOS, masquer le contenu dans le task switcher
       // La protection contre les screenshots est gérée au niveau système iOS
       // ignore: avoid_print
-      print('🔒 Protection des screenshots activée (iOS)');
+      debugPrint('🔒 Protection des screenshots activée (iOS)');
     } catch (e) {
       // ignore: avoid_print
-      print('⚠️ Erreur iOS: $e');
+      debugPrint('⚠️ Erreur iOS: $e');
     }
   }
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
   @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  late ThemeProvider _themeProvider;
+
+  @override
+  void initState() {
+    super.initState();
+    _themeProvider = ThemeProvider();
+    _themeProvider.addListener(() {
+      setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _themeProvider.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Team Fitness App',
-      theme: ThemeData(
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF1a1f2e),
-        colorScheme: ColorScheme.dark(
-          primary: const Color(0xFFe89547), // Orange/gold color
-          secondary: const Color(0xFFf4a261),
-          surface: const Color(0xFF2d3748),
-          onPrimary: Colors.white,
-          onSecondary: Colors.white,
-          onSurface: Colors.white,
-        ),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFF1a1f2e),
-          elevation: 0,
-          centerTitle: true,
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFe89547),
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        ),
-        inputDecorationTheme: InputDecorationTheme(
-          filled: true,
-          fillColor: const Color(0xFF2d3748),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide.none,
-          ),
-          labelStyle: const TextStyle(color: Colors.white70),
-        ),
-        textTheme: const TextTheme(
-          bodyLarge: TextStyle(color: Colors.white),
-          bodyMedium: TextStyle(color: Colors.white),
-          bodySmall: TextStyle(color: Colors.white70),
-        ),
-        useMaterial3: true,
+    return ThemeProviderScope(
+      themeProvider: _themeProvider,
+      child: MaterialApp(
+        title: 'Team Fitness App',
+        theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
+        themeMode: _themeProvider.themeMode,
+        debugShowCheckedModeBanner: false,
+        home: const SplashScreen(),
+        routes: {
+          '/admin/members': (context) => const AdminMembersScreen(),
+          '/admin/plannings': (context) => const AdminPlanningsScreen(),
+        },
       ),
-      home: const SplashScreen(),
-      routes: {
-        '/admin/members': (context) => const AdminMembersScreen(),
-        '/admin/plannings': (context) => const AdminPlanningsScreen(),
-      },
     );
   }
 }
+
+// Widget pour fournir le ThemeProvider dans l'arbre
+class ThemeProviderScope extends InheritedWidget {
+  final ThemeProvider themeProvider;
+
+  const ThemeProviderScope({
+    super.key,
+    required this.themeProvider,
+    required super.child,
+  });
+
+  static ThemeProvider of(BuildContext context) {
+    final scope = context.dependOnInheritedWidgetOfExactType<ThemeProviderScope>();
+    assert(scope != null, 'No ThemeProviderScope found in context');
+    return scope!.themeProvider;
+  }
+
+  @override
+  bool updateShouldNotify(ThemeProviderScope oldWidget) {
+    return themeProvider != oldWidget.themeProvider;
+  }
+}
+

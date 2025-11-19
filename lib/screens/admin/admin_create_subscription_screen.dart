@@ -38,7 +38,7 @@ class _AdminCreateSubscriptionScreenState extends State<AdminCreateSubscriptionS
 
     try {
       final types = await _apiService.getSubscriptionTypes();
-      print('🎯 Types d\'abonnement chargés: $types');
+      debugPrint('🎯 Types d\'abonnement chargés: $types');
       
       if (types != null) {
         setState(() {
@@ -66,11 +66,11 @@ class _AdminCreateSubscriptionScreenState extends State<AdminCreateSubscriptionS
     }
 
     // ignore: avoid_print
-    print('🎯 Création abonnement:');
+    debugPrint('🎯 Création abonnement:');
     // ignore: avoid_print
-    print('   - memberId: ${widget.memberId}');
+    debugPrint('   - memberId: ${widget.memberId}');
     // ignore: avoid_print
-    print('   - subscriptionTypeId: $_selectedSubscriptionTypeId');
+    debugPrint('   - subscriptionTypeId: $_selectedSubscriptionTypeId');
 
     setState(() {
       _isCreating = true;
@@ -87,7 +87,7 @@ class _AdminCreateSubscriptionScreenState extends State<AdminCreateSubscriptionS
       }
 
       // ignore: avoid_print
-      print('📤 Envoi de la requête API...');
+      debugPrint('📤 Envoi de la requête API...');
       final result = await _apiService.createSubscription(
         widget.memberId,
         _selectedSubscriptionTypeId!,
@@ -95,7 +95,7 @@ class _AdminCreateSubscriptionScreenState extends State<AdminCreateSubscriptionS
       );
 
       // ignore: avoid_print
-      print('📥 Réponse API: $result');
+      debugPrint('📥 Réponse API: $result');
 
       if (!mounted) return;
       
@@ -105,7 +105,7 @@ class _AdminCreateSubscriptionScreenState extends State<AdminCreateSubscriptionS
 
       if (result != null) {
         // ignore: avoid_print
-        print('✅ Abonnement créé avec succès');
+        debugPrint('✅ Abonnement créé avec succès');
         
         // Afficher un message de succès
         await showDialog(
@@ -146,12 +146,12 @@ class _AdminCreateSubscriptionScreenState extends State<AdminCreateSubscriptionS
         Navigator.pop(context, true);
       } else {
         // ignore: avoid_print
-        print('❌ Résultat null');
+        debugPrint('❌ Résultat null');
         _showErrorDialog('Erreur lors de la création de l\'abonnement');
       }
     } catch (e) {
       // ignore: avoid_print
-      print('❌ Exception: $e');
+      debugPrint('❌ Exception: $e');
       setState(() {
         _isCreating = false;
       });
@@ -446,3 +446,4 @@ class _AdminCreateSubscriptionScreenState extends State<AdminCreateSubscriptionS
     );
   }
 }
+

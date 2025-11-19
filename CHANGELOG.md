@@ -8,6 +8,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.0-beta.13](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.12...v1.0.0-beta.13) (2025-11-19)
 
+### 🎨 Added - Design System Moderne
+
+#### Système de Thème
+* Ajout du support mode clair/sombre avec basculement fluide
+* Nouveau `ThemeProvider` avec sauvegarde des préférences utilisateur
+* Palette de couleurs complète pour les deux thèmes
+* Système de typographie standardisé (H1-H6, body, caption, etc.)
+
+#### Nouveaux Composants UI
+* `ModernButton` : Bouton standardisé avec 5 variantes (primary, secondary, text, danger, success)
+* `ModernCard` : Card moderne avec bordures arrondies et ombres adaptatives
+* `ModernTextField` : Input field cohérent avec le design system
+* `StatusBadge` : Badge de statut avec 5 types (success, error, warning, info, primary)
+* `ThemeToggleButton` : Bouton animé pour basculer entre thèmes
+
+#### Structure de Thème
+* `lib/core/theme/app_colors.dart` : Palette de couleurs complète
+* `lib/core/theme/app_text_styles.dart` : Styles de texte standardisés
+* `lib/core/theme/app_theme.dart` : Configuration des thèmes clair/sombre
+* `lib/core/theme/theme_provider.dart` : Gestion du changement de thème
+* `lib/core/theme/theme.dart` : Export centralisé
+
+#### Mise à Jour des Écrans
+* Ajout du bouton de changement de thème dans `AdminHomeScreen`
+* Ajout du bouton de changement de thème dans `MemberHomeScreen`
+
+#### Documentation
+* `THEME_SYSTEM_GUIDE.md` : Guide complet d'utilisation du système de thème
+* `DESIGN_SYSTEM_UPDATE.md` : Documentation des changements et nouveautés
+* `test-design-system.ps1` : Script de test du nouveau design system
 
 ### 🐛 Bug Fixes
 

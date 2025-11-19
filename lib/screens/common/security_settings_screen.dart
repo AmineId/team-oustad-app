@@ -200,7 +200,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
     
     showDialog(
       context: context,
-      barrierDismissible: !updateInfo.isMandatory,
+      barrierDismissible: !updateInfo.forceUpdate,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF2d3748),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -241,7 +241,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (updateInfo.isMandatory)
+            if (updateInfo.forceUpdate)
               Container(
                 padding: const EdgeInsets.all(12),
                 margin: const EdgeInsets.only(bottom: 16),
@@ -275,7 +275,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
           ],
         ),
         actions: [
-          if (!updateInfo.isMandatory)
+          if (!updateInfo.forceUpdate)
             TextButton(
               onPressed: () => Navigator.pop(context),
               style: TextButton.styleFrom(
@@ -602,7 +602,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                                             Switch(
                                               value: _notificationsEnabled,
                                               onChanged: _toggleNotifications,
-                                              activeColor: const Color(0xFF4CAF50),
+                                              activeTrackColor: const Color(0xFF4CAF50),
                                               inactiveThumbColor: Colors.white60,
                                             ),
                                           ],
@@ -695,3 +695,4 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
     );
   }
 }
+

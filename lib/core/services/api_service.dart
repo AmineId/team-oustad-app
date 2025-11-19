@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../config/app_config.dart';
 
@@ -31,13 +31,13 @@ class ApiService {
     if (customUrl.isNotEmpty) {
       apiUrl = customUrl;
       // ignore: avoid_print
-      print('🌐 ApiService: Using custom API_BASE_URL → $apiUrl');
+      debugPrint('🌐 ApiService: Using custom API_BASE_URL → $apiUrl');
     } else {
       // Priority 2: Use ENVIRONMENT variable with AppConfig
       final config = AppConfig.fromEnvironment();
       apiUrl = config.apiBaseUrl;
       // ignore: avoid_print
-      print('🌐 ApiService: Using ${config.environment} environment → $apiUrl');
+      debugPrint('🌐 ApiService: Using ${config.environment} environment → $apiUrl');
     }
 
     return ApiService(Uri.parse(apiUrl));
@@ -49,12 +49,12 @@ class ApiService {
     try {
       // Helpful debug log while developing
       // ignore: avoid_print
-      print('ApiService.healthCheck -> $uri (timeout: ${timeout.inSeconds}s)');
+      debugPrint('ApiService.healthCheck -> $uri (timeout: ${timeout.inSeconds}s)');
       final resp = await http.get(uri);
       return resp.statusCode == 200;
     } catch (exception) {
       // ignore: avoid_print
-      print('Health check failed: $exception');
+      debugPrint('Health check failed: $exception');
       return false;
     }
   }
@@ -76,15 +76,15 @@ class ApiService {
       final cleanPassword = _cleanString(password);
       
       // ignore: avoid_print
-      print('ApiService.login -> $uri with email: $cleanEmail');
+      debugPrint('ApiService.login -> $uri with email: $cleanEmail');
       
       final resp = await http
           .post(uri, headers: {'Content-Type': 'application/json'}, body: jsonEncode({'email': cleanEmail, 'password': cleanPassword})).timeout(timeout);
       
       // ignore: avoid_print
-      print('ApiService.login response status: ${resp.statusCode}');
+      debugPrint('ApiService.login response status: ${resp.statusCode}');
       // ignore: avoid_print
-      print('ApiService.login response body: ${resp.body}');
+      debugPrint('ApiService.login response body: ${resp.body}');
       
       if (resp.statusCode == 200) {
         try {
@@ -99,11 +99,11 @@ class ApiService {
             if (user['type'] != null) {
               userType = user['type'] as String;
               // ignore: avoid_print
-              print('ApiService.login extracted type from user object: $userType');
+              debugPrint('ApiService.login extracted type from user object: $userType');
             } else if (user['role'] != null) {
               userType = user['role'] as String;
               // ignore: avoid_print
-              print('ApiService.login extracted role from user object: $userType');
+              debugPrint('ApiService.login extracted role from user object: $userType');
             } else {
               // Priorité 2: Fallback vers JWT decode
               try {
@@ -120,17 +120,22 @@ class ApiService {
                   if (payloadMap['type'] != null) {
                     userType = payloadMap['type'] as String;
                     // ignore: avoid_print
-                    print('ApiService.login extracted type from JWT: $userType');
+                    debugPrint('ApiService.login extracted type from JWT: $userType');
                   }
                 }
               } catch (jwtError) {
                 // ignore: avoid_print
-                print('ApiService.login JWT decode error: $jwtError');
+                debugPrint('ApiService.login JWT decode error: $jwtError');
               }
             }
             
             // ignore: avoid_print
-            print('ApiService.login final userType: $userType');
+            debugPrint('ApiService.login final userType: $userType');
+            
+            // Extract lastLoginAt from user object to check if it's first login
+            final lastLoginAt = user['lastLoginAt'] as String?;
+            // ignore: avoid_print
+            debugPrint('ApiService.login lastLoginAt: $lastLoginAt');
             
             return {
               'token': body['token'] as String,
@@ -139,18 +144,19 @@ class ApiService {
               'email': user['email'] as String,
               'fullName': user['fullName'] as String,
               'gymId': user['gymId']?.toString(),
+              'lastLoginAt': lastLoginAt,
             };
           }
         } catch (e) {
           // ignore: avoid_print
-          print('ApiService.login parse error: $e');
+          debugPrint('ApiService.login parse error: $e');
           return null;
         }
       }
       return null;
     } catch (e) {
       // ignore: avoid_print
-      print('ApiService.login exception: $e');
+      debugPrint('ApiService.login exception: $e');
       return null;
     }
   }
@@ -510,34 +516,176 @@ class ApiService {
     final uri = baseUri.resolve('/auth/me');
     try {
       // ignore: avoid_print
-      print('ApiService.getUserProfile -> $uri');
+      debugPrint('ApiService.getUserProfile -> $uri');
       
       final resp = await http
           .get(uri, headers: {'Authorization': 'Bearer $token'})
           .timeout(timeout);
       
       // ignore: avoid_print
-      print('ApiService.getUserProfile response status: ${resp.statusCode}');
+      debugPrint('ApiService.getUserProfile response status: ${resp.statusCode}');
       // ignore: avoid_print
-      print('ApiService.getUserProfile response body: ${resp.body}');
+      debugPrint('ApiService.getUserProfile response body: ${resp.body}');
       
       if (resp.statusCode == 200) {
         try {
           final body = jsonDecode(resp.body);
           // ignore: avoid_print
-          print('ApiService.getUserProfile parsed body: $body');
+          debugPrint('ApiService.getUserProfile parsed body: $body');
           return body as Map<String, dynamic>;
         } catch (e) {
           // ignore: avoid_print
-          print('ApiService.getUserProfile parse error: $e');
+          debugPrint('ApiService.getUserProfile parse error: $e');
           return null;
         }
       }
       return null;
     } catch (e) {
       // ignore: avoid_print
-      print('ApiService.getUserProfile exception: $e');
+      debugPrint('ApiService.getUserProfile exception: $e');
       return null;
+    }
+  }
+
+  // ==================== MEMBERS MANAGEMENT ====================
+
+  /// Update member profile (birthDate, phone, profession, fitnessLevel, profileImage).
+  Future<Map<String, dynamic>?> updateMemberProfile(
+    int memberId,
+    Map<String, dynamic> profileData,
+    String token, {
+    Duration timeout = const Duration(seconds: 10),
+  }) async {
+    final uri = baseUri.resolve('/members/$memberId/profile');
+    try {
+      // ignore: avoid_print
+      debugPrint('ApiService.updateMemberProfile -> $uri');
+      // ignore: avoid_print
+      debugPrint('ApiService.updateMemberProfile data: $profileData');
+      
+      final resp = await http
+          .put(
+            uri,
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
+            body: jsonEncode(profileData),
+          )
+          .timeout(timeout);
+      
+      // ignore: avoid_print
+      debugPrint('ApiService.updateMemberProfile response status: ${resp.statusCode}');
+      // ignore: avoid_print
+      debugPrint('ApiService.updateMemberProfile response body: ${resp.body}');
+      
+      if (resp.statusCode == 200) {
+        try {
+          final body = jsonDecode(resp.body);
+          return body as Map<String, dynamic>;
+        } catch (e) {
+          // ignore: avoid_print
+          debugPrint('ApiService.updateMemberProfile parse error: $e');
+          return null;
+        }
+      }
+      return {'error': 'Status code: ${resp.statusCode}'};
+    } catch (e) {
+      // ignore: avoid_print
+      debugPrint('ApiService.updateMemberProfile exception: $e');
+      return {'error': e.toString()};
+    }
+  }
+
+  /// Create member measurement (weight, waist, height).
+  Future<Map<String, dynamic>?> createMemberMeasurement(
+    int memberId,
+    Map<String, dynamic> measurementData,
+    String token, {
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
+    final uri = baseUri.resolve('/members/$memberId/measurements');
+    try {
+      // ignore: avoid_print
+      debugPrint('ApiService.createMemberMeasurement -> $uri');
+      // ignore: avoid_print
+      debugPrint('ApiService.createMemberMeasurement data: $measurementData');
+      
+      final resp = await http
+          .post(
+            uri,
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
+            body: jsonEncode(measurementData),
+          )
+          .timeout(timeout);
+      
+      // ignore: avoid_print
+      debugPrint('ApiService.createMemberMeasurement response status: ${resp.statusCode}');
+      
+      if (resp.statusCode == 201 || resp.statusCode == 200) {
+        try {
+          final body = jsonDecode(resp.body);
+          return body as Map<String, dynamic>;
+        } catch (e) {
+          // ignore: avoid_print
+          debugPrint('ApiService.createMemberMeasurement parse error: $e');
+          return null;
+        }
+      }
+      return {'error': 'Status code: ${resp.statusCode}'};
+    } catch (e) {
+      // ignore: avoid_print
+      debugPrint('ApiService.createMemberMeasurement exception: $e');
+      return {'error': e.toString()};
+    }
+  }
+
+  /// Create member goal (title, description, startWeight, startWaist).
+  Future<Map<String, dynamic>?> createMemberGoal(
+    int memberId,
+    Map<String, dynamic> goalData,
+    String token, {
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
+    final uri = baseUri.resolve('/members/$memberId/goals');
+    try {
+      // ignore: avoid_print
+      debugPrint('ApiService.createMemberGoal -> $uri');
+      // ignore: avoid_print
+      debugPrint('ApiService.createMemberGoal data: $goalData');
+      
+      final resp = await http
+          .post(
+            uri,
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
+            body: jsonEncode(goalData),
+          )
+          .timeout(timeout);
+      
+      // ignore: avoid_print
+      debugPrint('ApiService.createMemberGoal response status: ${resp.statusCode}');
+      
+      if (resp.statusCode == 201 || resp.statusCode == 200) {
+        try {
+          final body = jsonDecode(resp.body);
+          return body as Map<String, dynamic>;
+        } catch (e) {
+          // ignore: avoid_print
+          debugPrint('ApiService.createMemberGoal parse error: $e');
+          return null;
+        }
+      }
+      return {'error': 'Status code: ${resp.statusCode}'};
+    } catch (e) {
+      // ignore: avoid_print
+      debugPrint('ApiService.createMemberGoal exception: $e');
+      return {'error': e.toString()};
     }
   }
 
@@ -787,7 +935,7 @@ class ApiService {
     
     try {
       // ignore: avoid_print
-      print('ApiService.getMemberPlannings -> $uri');
+      debugPrint('ApiService.getMemberPlannings -> $uri');
       final resp = await http
           .get(uri, headers: {'Authorization': 'Bearer $token'})
           .timeout(timeout);
@@ -799,7 +947,7 @@ class ApiService {
       }
     } catch (e) {
       // ignore: avoid_print
-      print('Error getting member plannings: $e');
+      debugPrint('Error getting member plannings: $e');
       rethrow;
     }
   }
@@ -815,7 +963,7 @@ class ApiService {
     
     try {
       // ignore: avoid_print
-      print('ApiService.getNextPlanningDay -> $uri');
+      debugPrint('ApiService.getNextPlanningDay -> $uri');
       final resp = await http
           .get(uri, headers: {'Authorization': 'Bearer $token'})
           .timeout(timeout);
@@ -830,7 +978,7 @@ class ApiService {
       }
     } catch (e) {
       // ignore: avoid_print
-      print('Error getting next planning day: $e');
+      debugPrint('Error getting next planning day: $e');
       return null;
     }
   }
@@ -847,7 +995,7 @@ class ApiService {
     
     try {
       // ignore: avoid_print
-      print('ApiService.updateUserProfile -> $uri');
+      debugPrint('ApiService.updateUserProfile -> $uri');
       final resp = await http
           .put(
             uri,
@@ -865,17 +1013,17 @@ class ApiService {
           return body as Map<String, dynamic>;
         } catch (e) {
           // ignore: avoid_print
-          print('Error parsing update response: $e');
+          debugPrint('Error parsing update response: $e');
           return null;
         }
       } else {
         // ignore: avoid_print
-        print('Failed to update profile: ${resp.statusCode} - ${resp.body}');
+        debugPrint('Failed to update profile: ${resp.statusCode} - ${resp.body}');
         throw Exception('Failed to update profile: ${resp.statusCode}');
       }
     } catch (e) {
       // ignore: avoid_print
-      print('Error updating user profile: $e');
+      debugPrint('Error updating user profile: $e');
       rethrow;
     }
   }
@@ -892,7 +1040,7 @@ class ApiService {
     
     try {
       // ignore: avoid_print
-      print('ApiService.uploadProfileImage -> $uri');
+      debugPrint('ApiService.uploadProfileImage -> $uri');
       final resp = await http
           .put(
             uri,
@@ -910,17 +1058,17 @@ class ApiService {
           return body as Map<String, dynamic>;
         } catch (e) {
           // ignore: avoid_print
-          print('Error parsing upload image response: $e');
+          debugPrint('Error parsing upload image response: $e');
           return null;
         }
       } else {
         // ignore: avoid_print
-        print('Failed to upload profile image: ${resp.statusCode} - ${resp.body}');
+        debugPrint('Failed to upload profile image: ${resp.statusCode} - ${resp.body}');
         throw Exception('Failed to upload profile image: ${resp.statusCode}');
       }
     } catch (e) {
       // ignore: avoid_print
-      print('Error uploading profile image: $e');
+      debugPrint('Error uploading profile image: $e');
       rethrow;
     }
   }
@@ -940,11 +1088,11 @@ class ApiService {
     
     try {
       // ignore: avoid_print
-      print('ApiService.updateUserFCMToken -> $uri');
+      debugPrint('ApiService.updateUserFCMToken -> $uri');
       // ignore: avoid_print
-      print('  FCM Token: $fcmToken');
+      debugPrint('  FCM Token: $fcmToken');
       // ignore: avoid_print
-      print('  JWT: Bearer ${token.substring(0, 30)}...');
+      debugPrint('  JWT: Bearer ${token.substring(0, 30)}...');
       
       // Décoder le JWT pour voir ce qu'il contient
       try {
@@ -954,11 +1102,11 @@ class ApiService {
           final normalized = base64Url.normalize(payload);
           final payloadString = utf8.decode(base64Url.decode(normalized));
           // ignore: avoid_print
-          print('  JWT Payload: $payloadString');
+          debugPrint('  JWT Payload: $payloadString');
         }
       } catch (e) {
         // ignore: avoid_print
-        print('  Erreur décodage JWT: $e');
+        debugPrint('  Erreur décodage JWT: $e');
       }
       
       final resp = await http
@@ -973,9 +1121,9 @@ class ApiService {
           .timeout(timeout);
       
       // ignore: avoid_print
-      print('updateUserFCMToken status: ${resp.statusCode}');
+      debugPrint('updateUserFCMToken status: ${resp.statusCode}');
       // ignore: avoid_print
-      print('updateUserFCMToken response: ${resp.body}');
+      debugPrint('updateUserFCMToken response: ${resp.body}');
       
       if (resp.statusCode == 200) {
         try {
@@ -987,7 +1135,7 @@ class ApiService {
       return null;
     } catch (e) {
       // ignore: avoid_print
-      print('❌ Error updating FCM token: $e');
+      debugPrint('❌ Error updating FCM token: $e');
       return null;
     }
   }
@@ -1026,7 +1174,7 @@ class ApiService {
       return resp.statusCode == 200;
     } catch (e) {
       // ignore: avoid_print
-      print('Error sending push notification: $e');
+      debugPrint('Error sending push notification: $e');
       return false;
     }
   }
@@ -1065,7 +1213,7 @@ class ApiService {
       return resp.statusCode == 200;
     } catch (e) {
       // ignore: avoid_print
-      print('Error sending bulk push notifications: $e');
+      debugPrint('Error sending bulk push notifications: $e');
       return false;
     }
   }
@@ -1104,7 +1252,7 @@ class ApiService {
       return resp.statusCode == 200;
     } catch (e) {
       // ignore: avoid_print
-      print('Error sending gym push notification: $e');
+      debugPrint('Error sending gym push notification: $e');
       return false;
     }
   }
@@ -1127,9 +1275,9 @@ class ApiService {
       };
 
       // ignore: avoid_print
-      print('ApiService.requestExerciseHelp -> $uri');
+      debugPrint('ApiService.requestExerciseHelp -> $uri');
       // ignore: avoid_print
-      print('  Exercise: $exerciseName');
+      debugPrint('  Exercise: $exerciseName');
 
       final resp = await http
           .post(
@@ -1143,12 +1291,12 @@ class ApiService {
           .timeout(timeout);
       
       // ignore: avoid_print
-      print('requestExerciseHelp status: ${resp.statusCode}');
+      debugPrint('requestExerciseHelp status: ${resp.statusCode}');
       
       return resp.statusCode == 200;
     } catch (e) {
       // ignore: avoid_print
-      print('Error requesting exercise help: $e');
+      debugPrint('Error requesting exercise help: $e');
       return false;
     }
   }
@@ -1173,9 +1321,9 @@ class ApiService {
       };
 
       // ignore: avoid_print
-      print('ApiService.respondToHelpRequest -> $uri');
+      debugPrint('ApiService.respondToHelpRequest -> $uri');
       // ignore: avoid_print
-      print('  Member: $memberId, Response: $response');
+      debugPrint('  Member: $memberId, Response: $response');
 
       final resp = await http
           .post(
@@ -1189,12 +1337,12 @@ class ApiService {
           .timeout(timeout);
       
       // ignore: avoid_print
-      print('respondToHelpRequest status: ${resp.statusCode}');
+      debugPrint('respondToHelpRequest status: ${resp.statusCode}');
       
       return resp.statusCode == 200;
     } catch (e) {
       // ignore: avoid_print
-      print('Error responding to help request: $e');
+      debugPrint('Error responding to help request: $e');
       return false;
     }
   }
@@ -1238,15 +1386,15 @@ class ApiService {
     final uri = baseUri.resolve('/users/$userId');
     try {
       // ignore: avoid_print
-      print('ApiService.getUserById -> $uri');
+      debugPrint('ApiService.getUserById -> $uri');
       final resp = await http
           .get(uri, headers: {'Authorization': 'Bearer $token'})
           .timeout(timeout);
       
       // ignore: avoid_print
-      print('getUserById status: ${resp.statusCode}');
+      debugPrint('getUserById status: ${resp.statusCode}');
       // ignore: avoid_print
-      print('getUserById body: ${resp.body}');
+      debugPrint('getUserById body: ${resp.body}');
       
       if (resp.statusCode == 200) {
         try {
@@ -1255,17 +1403,17 @@ class ApiService {
           return body as Map<String, dynamic>;
         } catch (e) {
           // ignore: avoid_print
-          print('Error parsing user response: $e');
+          debugPrint('Error parsing user response: $e');
           return null;
         }
       } else {
         // ignore: avoid_print
-        print('getUserById failed with status ${resp.statusCode}: ${resp.body}');
+        debugPrint('getUserById failed with status ${resp.statusCode}: ${resp.body}');
         return null;
       }
     } catch (e) {
       // ignore: avoid_print
-      print('getUserById exception: $e');
+      debugPrint('getUserById exception: $e');
       return null;
     }
   }
@@ -1295,9 +1443,9 @@ class ApiService {
       };
 
       // ignore: avoid_print
-      print('ApiService.createMember -> $uri');
+      debugPrint('ApiService.createMember -> $uri');
       // ignore: avoid_print
-      print('  Body: $body');
+      debugPrint('  Body: $body');
 
       final resp = await http
           .post(
@@ -1311,9 +1459,9 @@ class ApiService {
           .timeout(timeout);
       
       // ignore: avoid_print
-      print('createMember status: ${resp.statusCode}');
+      debugPrint('createMember status: ${resp.statusCode}');
       // ignore: avoid_print
-      print('createMember response: ${resp.body}');
+      debugPrint('createMember response: ${resp.body}');
       
       if (resp.statusCode == 201) {
         try {
@@ -1321,14 +1469,14 @@ class ApiService {
           return responseBody as Map<String, dynamic>;
         } catch (e) {
           // ignore: avoid_print
-          print('Error parsing response: $e');
+          debugPrint('Error parsing response: $e');
           return null;
         }
       }
       return null;
     } catch (e) {
       // ignore: avoid_print
-      print('Error creating member: $e');
+      debugPrint('Error creating member: $e');
       return null;
     }
   }
@@ -1396,53 +1544,53 @@ class ApiService {
     
     try {
       // ignore: avoid_print
-      print('🔍 Fetching subscription types from: $uri');
+      debugPrint('🔍 Fetching subscription types from: $uri');
       
       final resp = await http.get(uri).timeout(timeout);
       
       // ignore: avoid_print
-      print('📥 Response status: ${resp.statusCode}');
+      debugPrint('📥 Response status: ${resp.statusCode}');
       // ignore: avoid_print
-      print('📥 Response body type: ${resp.body.runtimeType}');
+      debugPrint('📥 Response body type: ${resp.body.runtimeType}');
       
       if (resp.statusCode == 200) {
         try {
           final body = jsonDecode(resp.body);
           
           // ignore: avoid_print
-          print('🔍 Decoded body type: ${body.runtimeType}');
+          debugPrint('🔍 Decoded body type: ${body.runtimeType}');
           // ignore: avoid_print
-          print('🔍 Body keys: ${body is Map ? body.keys.toList() : "not a map"}');
+          debugPrint('🔍 Body keys: ${body is Map ? body.keys.toList() : "not a map"}');
           
           // Check if the body is a Map with 'subscriptionTypes' key
           if (body is Map && body.containsKey('subscriptionTypes')) {
             final types = body['subscriptionTypes'] as List<dynamic>;
             // ignore: avoid_print
-            print('✅ Found ${types.length} subscription types');
+            debugPrint('✅ Found ${types.length} subscription types');
             return types;
           } else if (body is List) {
             // API might return array directly
             // ignore: avoid_print
-            print('✅ Got direct array with ${body.length} subscription types');
+            debugPrint('✅ Got direct array with ${body.length} subscription types');
             return body;
           } else {
             // ignore: avoid_print
-            print('❌ Unexpected response structure: $body');
+            debugPrint('❌ Unexpected response structure: $body');
             return null;
           }
         } catch (e) {
           // ignore: avoid_print
-          print('❌ Error parsing response: $e');
+          debugPrint('❌ Error parsing response: $e');
           return null;
         }
       } else {
         // ignore: avoid_print
-        print('❌ Non-200 status code: ${resp.statusCode}');
+        debugPrint('❌ Non-200 status code: ${resp.statusCode}');
         return null;
       }
     } catch (e) {
       // ignore: avoid_print
-      print('❌ Exception fetching subscription types: $e');
+      debugPrint('❌ Exception fetching subscription types: $e');
       return null;
     }
   }
@@ -1682,9 +1830,9 @@ class ApiService {
       };
 
       // ignore: avoid_print
-      print('ApiService.createSubscription -> $uri');
+      debugPrint('ApiService.createSubscription -> $uri');
       // ignore: avoid_print
-      print('Body: $body');
+      debugPrint('Body: $body');
 
       final resp = await http
           .post(
@@ -1698,9 +1846,9 @@ class ApiService {
           .timeout(timeout);
       
       // ignore: avoid_print
-      print('createSubscription status: ${resp.statusCode}');
+      debugPrint('createSubscription status: ${resp.statusCode}');
       // ignore: avoid_print
-      print('createSubscription body: ${resp.body}');
+      debugPrint('createSubscription body: ${resp.body}');
       
       if (resp.statusCode == 201) {
         try {
@@ -1708,17 +1856,17 @@ class ApiService {
           return responseBody as Map<String, dynamic>;
         } catch (e) {
           // ignore: avoid_print
-          print('Error parsing subscription response: $e');
+          debugPrint('Error parsing subscription response: $e');
           return null;
         }
       } else {
         // ignore: avoid_print
-        print('createSubscription failed with status ${resp.statusCode}: ${resp.body}');
+        debugPrint('createSubscription failed with status ${resp.statusCode}: ${resp.body}');
         return null;
       }
     } catch (e) {
       // ignore: avoid_print
-      print('createSubscription exception: $e');
+      debugPrint('createSubscription exception: $e');
       return null;
     }
   }
@@ -2023,20 +2171,21 @@ class ApiService {
     final uri = baseUri.resolve('/plannings/$planningId');
     try {
       // ignore: avoid_print
-      print('ApiService.deletePlanning -> $uri');
+      debugPrint('ApiService.deletePlanning -> $uri');
       
       final resp = await http
           .delete(uri, headers: {'Authorization': 'Bearer $token'})
           .timeout(timeout);
       
       // ignore: avoid_print
-      print('deletePlanning status: ${resp.statusCode}');
+      debugPrint('deletePlanning status: ${resp.statusCode}');
       
       return resp.statusCode == 200 || resp.statusCode == 204;
     } catch (e) {
       // ignore: avoid_print
-      print('Error deleting planning: $e');
+      debugPrint('Error deleting planning: $e');
       return false;
     }
   }
 }
+

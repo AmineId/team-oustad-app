@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/services/api_service.dart';
-import '../../widgets/common/gym_details_bottom_sheet.dart';
+import '../../widgets/common/common_widgets.dart';
 import '../../widgets/responsive/responsive_layout.dart';
+import '../../main.dart';
 import '../auth/login_screen.dart';
 import 'subscription_details_screen.dart';
 import 'edit_profile_screen.dart';
@@ -22,10 +23,10 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
   int _currentIndex = 0;
 
   final List<Widget> _pages = [
-    const MemberDashboardPage(),
-    const MemberQrCodePage(),
-    const MemberPlanningPage(),
-    const MemberProfilePage(),
+    MemberDashboardPage(),
+    MemberQrCodePage(),
+    MemberPlanningPage(),
+    MemberProfilePage(),
   ];
 
   final List<String> _titles = [
@@ -37,9 +38,12 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Récupérer le ThemeProvider
+    final themeProvider = ThemeProviderScope.of(context);
+    
     return ResponsiveScaffold(
       title: _titles[_currentIndex],
-      navigationItems: const [
+      navigationItems: [
         NavigationItem(
           icon: Icons.home_outlined,
           activeIcon: Icons.home,
@@ -68,6 +72,9 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
         });
       },
       body: _pages[_currentIndex],
+      actions: [
+        ThemeToggleButton(themeProvider: themeProvider),
+      ],
     );
   }
 }
@@ -115,11 +122,11 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
       if (token == null) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
+            SnackBar(
               content: Text(
                 'Session expirée, veuillez vous reconnecter',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(color: Theme.of(context).textTheme.bodyLarge!.color),
               ),
               backgroundColor: Colors.red,
             ),
@@ -133,11 +140,11 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text(
               '✓ Données mises à jour',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+              style: TextStyle(color: Theme.of(context).textTheme.bodyLarge!.color, fontWeight: FontWeight.w500),
             ),
             backgroundColor: Colors.green,
             duration: Duration(seconds: 2),
@@ -163,25 +170,16 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            const Color(0xFF1a1f2e),
-            const Color(0xFF2d3748),
-          ],
-        ),
-      ),
+      color: Theme.of(context).scaffoldBackgroundColor,
       child: RefreshIndicator(
         onRefresh: _refreshDashboard,
-        color: const Color(0xFFe89547),
+        color: Theme.of(context).colorScheme.primary,
         notificationPredicate: (notification) => !_isRefreshing,
         child: SingleChildScrollView(
           physics: _isRefreshing 
-            ? const NeverScrollableScrollPhysics() 
-            : const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(16.0),
+            ? NeverScrollableScrollPhysics() 
+            : AlwaysScrollableScrollPhysics(),
+          padding: EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -189,6 +187,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
             FutureBuilder<Map<String, dynamic>?>(
               future: _authService.getCachedUserProfile(),
               builder: (context, snapshot) {
+                final theme = Theme.of(context);
                 final profileData = snapshot.data;
                 final fullName = profileData?['fullName'] ?? 'Membre';
                 
@@ -212,7 +211,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                 
                 if (status == 'active') {
                   statusText = 'Votre abonnement est actif';
-                  statusColor = Colors.white;
+                  statusColor = theme.colorScheme.onPrimary;
                 } else if (status == 'expired') {
                   statusText = 'Votre abonnement a expiré';
                   statusColor = Colors.red.shade200;
@@ -222,25 +221,25 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                 }
                 
                 return Card(
-                  color: const Color(0xFFe89547),
+                  color: theme.colorScheme.primary,
                   elevation: 4,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.all(20.0),
+                    padding: EdgeInsets.all(20.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           'Bienvenue, $fullName !',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: theme.colorScheme.onPrimary,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8),
                         Text(
                           statusText,
                           style: TextStyle(
@@ -249,16 +248,16 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                           ),
                         ),
                         if (expiresAt != null) ...[
-                          const SizedBox(height: 12),
+                          SizedBox(height: 12),
                           Row(
                             children: [
-                              const Icon(Icons.check_circle, color: Colors.white, size: 20),
-                              const SizedBox(width: 8),
+                              Icon(Icons.check_circle, color: Theme.of(context).textTheme.bodyLarge!.color, size: 20),
+                              SizedBox(width: 8),
                               Text(
                                 'Expire le: ${_formatDate(expiresAt)}',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 14,
-                                  color: Colors.white,
+                                  color: Theme.of(context).textTheme.bodyLarge!.color,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -271,44 +270,44 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                 );
               },
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24),
 
               // Gym information
-              const Text(
+              Text(
                 'Ma Salle de Sport',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: Theme.of(context).textTheme.bodyLarge!.color,
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               _buildGymCard(context),
-              const SizedBox(height: 24),
+              SizedBox(height: 24),
 
               // Next workout section
-              const Text(
+              Text(
                 'Mon Prochain Entraînement',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: Theme.of(context).textTheme.bodyLarge!.color,
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               _buildNextWorkoutCard(),
-              const SizedBox(height: 24),
+              SizedBox(height: 24),
 
             // Stats cards
-            const Text(
+            Text(
               'Mes Statistiques',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: Theme.of(context).textTheme.bodyLarge!.color,
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             Row(
               children: [
                 Expanded(
@@ -319,7 +318,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                     Colors.blue,
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12),
                 Expanded(
                   child: _buildStatCard(
                     'Total visites',
@@ -343,15 +342,15 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Card(
-            color: const Color(0xFF2d3748),
+            color: Theme.of(context).cardTheme.color,
             elevation: 4,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
-            child: const Padding(
+            child: Padding(
               padding: EdgeInsets.all(20.0),
               child: Center(
-                child: CircularProgressIndicator(color: Color(0xFFe89547)),
+                child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary),
               ),
             ),
           );
@@ -359,36 +358,36 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
 
         if (snapshot.hasError || snapshot.data == null) {
           return Card(
-            color: const Color(0xFF2d3748),
+            color: Theme.of(context).cardTheme.color,
             elevation: 4,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
             child: Padding(
-              padding: const EdgeInsets.all(20.0),
+              padding: EdgeInsets.all(20.0),
               child: Column(
                 children: [
                   Icon(
                     Icons.fitness_center,
                     size: 48,
-                    color: Colors.white.withValues(alpha: 0.7),
+                    color: Theme.of(context).textTheme.bodyMedium!.color,
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   Text(
                     'Aucun entraînement prévu',
                     style: TextStyle(
                       fontSize: 16,
-                      color: Colors.white.withValues(alpha: 0.7),
+                      color: Theme.of(context).textTheme.bodyMedium!.color,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4),
                   Text(
                     'Votre coach vous assignera bientôt un programme',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 13,
-                      color: Colors.white.withValues(alpha: 0.7),
+                      color: Theme.of(context).textTheme.bodyMedium!.color,
                     ),
                   ),
                 ],
@@ -416,7 +415,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
         } else {
           // Formater la date pour afficher "Prochain : DD/MM"
           workoutStatus = 'Prochain entraînement';
-          statusColor = const Color(0xFFe89547);
+          statusColor = Theme.of(context).colorScheme.primary;
           statusIcon = Icons.schedule;
           
           if (date != null) {
@@ -431,13 +430,13 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
         }
 
         return Card(
-          color: const Color(0xFF2d3748),
+          color: Theme.of(context).cardTheme.color,
           elevation: 4,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
           child: Padding(
-            padding: const EdgeInsets.all(20.0),
+            padding: EdgeInsets.all(20.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -445,7 +444,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(12),
+                        padding: EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: statusColor.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(12),
@@ -456,24 +455,24 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                           size: 28,
                         ),
                       ),
-                      const SizedBox(width: 16),
+                      SizedBox(width: 16),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               planning?['title'] ?? 'Mon Entraînement',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                                color: Theme.of(context).textTheme.bodyLarge!.color,
                               ),
                             ),
-                            const SizedBox(height: 4),
+                            SizedBox(height: 4),
                             Row(
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.symmetric(
+                                  padding: EdgeInsets.symmetric(
                                     horizontal: 8,
                                     vertical: 4,
                                   ),
@@ -503,9 +502,9 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                   ),
                   
                   if (exercises.isNotEmpty) ...[
-                    const SizedBox(height: 16),
-                    const Divider(color: Colors.white24),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16),
+                    Divider(color: Theme.of(context).dividerColor),
+                    SizedBox(height: 16),
                     
                     // Exercises preview (show first 3)
                     ...exercises.take(3).map((ex) {
@@ -515,24 +514,24 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                       final reps = exerciseData['reps'] as int?;
                       
                       return Padding(
-                        padding: const EdgeInsets.only(bottom: 12.0),
+                        padding: EdgeInsets.only(bottom: 12.0),
                         child: Row(
                           children: [
                             Container(
                               width: 8,
                               height: 8,
-                              decoration: const BoxDecoration(
-                                color: Color(0xFFe89547),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.primary,
                                 shape: BoxShape.circle,
                               ),
                             ),
-                            const SizedBox(width: 12),
+                            SizedBox(width: 12),
                             Expanded(
                               child: Text(
                                 exercise?['name'] ?? 'Exercice',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 15,
-                                  color: Colors.white,
+                                  color: Theme.of(context).textTheme.bodyLarge!.color,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -542,7 +541,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                                 '$sets × $reps',
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color: Colors.white.withValues(alpha: 0.7),
+                                  color: Theme.of(context).textTheme.bodyMedium!.color,
                                 ),
                               ),
                           ],
@@ -551,27 +550,27 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                     }),
                     
                     if (exercises.length > 3) ...[
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4),
                       Text(
                         '+${exercises.length - 3} autres exercices',
                         style: TextStyle(
                           fontSize: 13,
-                          color: const Color(0xFFe89547),
+                          color: Theme.of(context).colorScheme.primary,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16),
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
                         onPressed: () => _showNextWorkoutPopup(data),
-                        icon: const Icon(Icons.visibility, size: 18),
-                        label: const Text('Voir les détails'),
+                        icon: Icon(Icons.visibility, size: 18),
+                        label: Text('Voir les détails'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFe89547),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                          backgroundColor: Theme.of(context).colorScheme.primary,
+                          foregroundColor: Theme.of(context).textTheme.bodyLarge!.color,
+                          padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
@@ -602,13 +601,13 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
       return nextDay;
     } catch (e) {
       // ignore: avoid_print
-      print('Error loading next workout: $e');
+      debugPrint('Error loading next workout: $e');
       return null;
     }
   }
 
   String _getDayName(int dayOfWeek) {
-    const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+    final days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
     return days[dayOfWeek % 7];
   }
 
@@ -642,9 +641,9 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
         return Dialog(
           backgroundColor: Colors.transparent,
           child: Container(
-            constraints: const BoxConstraints(maxHeight: 600),
+            constraints: BoxConstraints(maxHeight: 600),
             decoration: BoxDecoration(
-              color: const Color(0xFF1a202c),
+              color: Theme.of(context).cardTheme.color,
               borderRadius: BorderRadius.circular(20),
             ),
             child: Column(
@@ -652,9 +651,9 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
               children: [
                 // Header
                 Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF2d3748),
+                  padding: EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).cardTheme.color!,
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(20),
                       topRight: Radius.circular(20),
@@ -663,36 +662,36 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                   child: Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(10),
+                        padding: EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFe89547).withValues(alpha: 0.2),
+                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.fitness_center,
-                          color: Color(0xFFe89547),
+                          color: Theme.of(context).colorScheme.primary,
                           size: 24,
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               planning?['title'] ?? 'Mon Entraînement',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                                color: Theme.of(context).textTheme.bodyLarge!.color,
                               ),
                             ),
-                            const SizedBox(height: 4),
+                            SizedBox(height: 4),
                             Text(
                               '${exercises.length} exercice${exercises.length > 1 ? 's' : ''} • $workoutStatus',
                               style: TextStyle(
                                 fontSize: 13,
-                                color: Colors.white.withValues(alpha: 0.7),
+                                color: Theme.of(context).textTheme.bodyMedium!.color,
                               ),
                             ),
                           ],
@@ -700,7 +699,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                       ),
                       IconButton(
                         onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.close, color: Colors.white),
+                        icon: Icon(Icons.close, color: Theme.of(context).textTheme.bodyLarge!.color),
                       ),
                     ],
                   ),
@@ -708,13 +707,13 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                 // Exercises list
                 Flexible(
                   child: exercises.isEmpty
-                      ? const Center(
+                      ? Center(
                           child: Padding(
                             padding: EdgeInsets.all(32.0),
                             child: Text(
                               'Aucun exercice prévu',
                               style: TextStyle(
-                                color: Colors.white54,
+                                color: Theme.of(context).textTheme.bodyMedium!.color!.withValues(alpha: 0.7),
                                 fontSize: 16,
                               ),
                             ),
@@ -722,7 +721,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                         )
                       : ListView.builder(
                           shrinkWrap: true,
-                          padding: const EdgeInsets.all(20),
+                          padding: EdgeInsets.all(20),
                           itemCount: exercises.length,
                           itemBuilder: (context, index) {
                             final exerciseData = exercises[index] as Map<String, dynamic>;
@@ -734,13 +733,13 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                             final notes = exerciseData['notes'] as String?;
 
                             return Card(
-                              color: const Color(0xFF2d3748),
-                              margin: const EdgeInsets.only(bottom: 12),
+                              color: Theme.of(context).cardTheme.color,
+                              margin: EdgeInsets.only(bottom: 12),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Padding(
-                                padding: const EdgeInsets.all(16.0),
+                                padding: EdgeInsets.all(16.0),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -750,35 +749,35 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                                           width: 32,
                                           height: 32,
                                           decoration: BoxDecoration(
-                                            color: const Color(0xFFe89547).withValues(alpha: 0.2),
+                                            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
                                             borderRadius: BorderRadius.circular(8),
                                           ),
                                           child: Center(
                                             child: Text(
                                               '${index + 1}',
-                                              style: const TextStyle(
-                                                color: Color(0xFFe89547),
+                                              style: TextStyle(
+                                                color: Theme.of(context).colorScheme.primary,
                                                 fontWeight: FontWeight.bold,
                                                 fontSize: 14,
                                               ),
                                             ),
                                           ),
                                         ),
-                                        const SizedBox(width: 12),
+                                        SizedBox(width: 12),
                                         Expanded(
                                           child: Text(
                                             exercise?['name'] ?? 'Exercice',
-                                            style: const TextStyle(
+                                            style: TextStyle(
                                               fontSize: 16,
                                               fontWeight: FontWeight.bold,
-                                              color: Colors.white,
+                                              color: Theme.of(context).textTheme.bodyLarge!.color,
                                             ),
                                           ),
                                         ),
                                       ],
                                     ),
                                     if (sets != null || reps != null || weight != null) ...[
-                                      const SizedBox(height: 12),
+                                      SizedBox(height: 12),
                                       Wrap(
                                         spacing: 12,
                                         runSpacing: 8,
@@ -793,11 +792,11 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                                       ),
                                     ],
                                     if (notes != null && notes.isNotEmpty) ...[
-                                      const SizedBox(height: 12),
+                                      SizedBox(height: 12),
                                       Container(
-                                        padding: const EdgeInsets.all(12),
+                                        padding: EdgeInsets.all(12),
                                         decoration: BoxDecoration(
-                                          color: Colors.white.withValues(alpha: 0.05),
+                                          color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.05),
                                           borderRadius: BorderRadius.circular(8),
                                         ),
                                         child: Row(
@@ -805,15 +804,15 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                                             Icon(
                                               Icons.note,
                                               size: 16,
-                                              color: Colors.white.withValues(alpha: 0.7),
+                                              color: Theme.of(context).textTheme.bodyMedium!.color,
                                             ),
-                                            const SizedBox(width: 8),
+                                            SizedBox(width: 8),
                                             Expanded(
                                               child: Text(
                                                 notes,
                                                 style: TextStyle(
                                                   fontSize: 13,
-                                                  color: Colors.white.withValues(alpha: 0.7),
+                                                  color: Theme.of(context).textTheme.bodyMedium!.color,
                                                 ),
                                               ),
                                             ),
@@ -821,7 +820,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                                         ),
                                       ),
                                     ],
-                                    const SizedBox(height: 12),
+                                    SizedBox(height: 12),
                                     SizedBox(
                                       width: double.infinity,
                                       child: OutlinedButton.icon(
@@ -829,12 +828,12 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                                           Navigator.pop(context);
                                           _requestHelp(exercise?['name'] ?? 'Exercice');
                                         },
-                                        icon: const Icon(Icons.help_outline, size: 18),
-                                        label: const Text('Demander de l\'aide'),
+                                        icon: Icon(Icons.help_outline, size: 18),
+                                        label: Text('Demander de l\'aide'),
                                         style: OutlinedButton.styleFrom(
-                                          foregroundColor: const Color(0xFFe89547),
-                                          side: const BorderSide(color: Color(0xFFe89547)),
-                                          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                                          foregroundColor: Theme.of(context).colorScheme.primary,
+                                          side: BorderSide(color: Theme.of(context).colorScheme.primary),
+                                          padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
                                           shape: RoundedRectangleBorder(
                                             borderRadius: BorderRadius.circular(8),
                                           ),
@@ -858,28 +857,28 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
 
   Widget _buildInfoChip(String label, String value, IconData icon) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.1),
+        color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: const Color(0xFFe89547)),
-          const SizedBox(width: 6),
+          Icon(icon, size: 16, color: Theme.of(context).colorScheme.primary),
+          SizedBox(width: 6),
           Text(
             '$label: ',
             style: TextStyle(
               fontSize: 13,
-              color: Colors.white.withValues(alpha: 0.7),
+              color: Theme.of(context).textTheme.bodyMedium!.color,
             ),
           ),
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
-              color: Colors.white,
+              color: Theme.of(context).textTheme.bodyLarge!.color,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -894,30 +893,30 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: const Color(0xFF2d3748),
-          title: const Text(
+          backgroundColor: Theme.of(context).cardTheme.color,
+          title: Text(
             'Demander de l\'aide',
-            style: TextStyle(color: Colors.white),
+            style: TextStyle(color: Theme.of(context).textTheme.bodyLarge!.color),
           ),
           content: Text(
             'Voulez-vous demander de l\'aide pour l\'exercice "$exerciseName" ?',
-            style: const TextStyle(color: Colors.white70),
+            style: TextStyle(color: Theme.of(context).textTheme.bodyMedium!.color!),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
               style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
-              child: const Text('Annuler'),
+              child: Text('Annuler'),
             ),
             ElevatedButton(
               onPressed: () => Navigator.pop(context, true),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFe89547),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
-              child: const Text('Confirmer'),
+              child: Text('Confirmer'),
             ),
           ],
         );
@@ -931,7 +930,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
       if (token == null) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
+            SnackBar(
               content: Text('Erreur: Non authentifié'),
               backgroundColor: Colors.red,
             ),
@@ -974,42 +973,42 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
         backgroundColor: Colors.red,
         action: SnackBarAction(
           label: 'Réessayer',
-          textColor: const Color(0xFFe89547),
+          textColor: Theme.of(context).colorScheme.primary,
           onPressed: onRetry,
         ),
-        duration: const Duration(seconds: 4),
+        duration: Duration(seconds: 4),
       ),
     );
   }
 
   Widget _buildStatCard(String label, String value, IconData icon, Color color) {
     return Card(
-      color: const Color(0xFF2d3748),
+      color: Theme.of(context).cardTheme.color,
       elevation: 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(16.0),
         child: Column(
           children: [
             Icon(icon, color: color, size: 32),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             Text(
               value,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: Theme.of(context).textTheme.bodyLarge!.color,
               ),
             ),
-            const SizedBox(height: 4),
+            SizedBox(height: 4),
             Text(
               label,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 12,
-                color: Colors.white.withValues(alpha: 0.7),
+                color: Theme.of(context).textTheme.bodyMedium!.color,
               ),
             ),
           ],
@@ -1024,11 +1023,11 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Card(
-            color: const Color(0xFF2d3748),
+            color: Theme.of(context).cardTheme.color,
             child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: const Center(
-                child: CircularProgressIndicator(color: Color(0xFFe89547)),
+              padding: EdgeInsets.all(20.0),
+              child: Center(
+                child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary),
               ),
             ),
           );
@@ -1037,19 +1036,19 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
         final gym = snapshot.data?['gym'] as Map<String, dynamic>?;
         if (gym == null) {
           return Card(
-            color: const Color(0xFF2d3748),
+            color: Theme.of(context).cardTheme.color,
             child: Padding(
-              padding: const EdgeInsets.all(20.0),
+              padding: EdgeInsets.all(20.0),
               child: Text(
                 'Aucune salle assignée',
-                style: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
+                style: TextStyle(color: Theme.of(context).textTheme.bodyMedium!.color),
               ),
             ),
           );
         }
 
         return Card(
-          color: const Color(0xFF2d3748),
+          color: Theme.of(context).cardTheme.color,
           elevation: 4,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
@@ -1058,52 +1057,52 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
             onTap: () => _showGymDetails(context, gym),
             borderRadius: BorderRadius.circular(16),
             child: Padding(
-              padding: const EdgeInsets.all(20.0),
+              padding: EdgeInsets.all(20.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(12),
+                        padding: EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFe89547).withValues(alpha: 0.7),
+                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.7),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.fitness_center,
-                          color: Color(0xFFe89547),
+                          color: Theme.of(context).colorScheme.primary,
                           size: 32,
                         ),
                       ),
-                      const SizedBox(width: 16),
+                      SizedBox(width: 16),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               gym['name'] ?? 'Ma Salle',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                                color: Theme.of(context).textTheme.bodyLarge!.color,
                               ),
                             ),
-                            const SizedBox(height: 4),
+                            SizedBox(height: 4),
                             Row(
                               children: [
                                 Icon(
                                   Icons.location_on,
                                   size: 14,
-                                  color: Colors.white.withValues(alpha: 0.7),
+                                  color: Theme.of(context).textTheme.bodyMedium!.color,
                                 ),
-                                const SizedBox(width: 4),
+                                SizedBox(width: 4),
                                 Expanded(
                                   child: Text(
                                     gym['address'] ?? 'Adresse non disponible',
                                     style: TextStyle(
                                       fontSize: 13,
-                                      color: Colors.white.withValues(alpha: 0.7),
+                                      color: Theme.of(context).textTheme.bodyMedium!.color,
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -1114,14 +1113,14 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                           ],
                         ),
                       ),
-                      const Icon(
+                      Icon(
                         Icons.arrow_forward_ios,
-                        color: Colors.white60,
+                        color: Theme.of(context).textTheme.bodyMedium!.color!.withValues(alpha: 0.8),
                         size: 20,
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
                   
                   Row(
                     children: [
@@ -1133,7 +1132,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                           onTap: null,
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8),
                       Expanded(
                         child: _buildGymInfoChip(
                           Icons.navigation,
@@ -1160,7 +1159,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
     if (address.isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text('Adresse non disponible'),
             backgroundColor: Colors.red,
           ),
@@ -1196,7 +1195,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
 
   Widget _buildGymInfoChip(IconData icon, String label, Color color, {VoidCallback? onTap}) {
     final chip = Container(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(8),
@@ -1205,7 +1204,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(icon, size: 16, color: color),
-          const SizedBox(width: 6),
+          SizedBox(width: 6),
           Text(
             label,
             style: TextStyle(
@@ -1232,8 +1231,8 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
   void _showGymDetails(BuildContext context, Map<String, dynamic> gym) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF2d3748),
-      shape: const RoundedRectangleBorder(
+      backgroundColor: Theme.of(context).cardTheme.color,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) => GymDetailsBottomSheet(gym: gym),
@@ -1252,275 +1251,309 @@ class MemberQrCodePage extends StatefulWidget {
 class _MemberQrCodePageState extends State<MemberQrCodePage> {
   final AuthService _authService = AuthService(ApiService.fromEnv());
   final ApiService _apiService = ApiService.fromEnv();
+  bool _showQrCode = false;
+  bool _isLoading = false;
+  List<int>? _qrImageBytes;
+  Map<String, dynamic>? _profileData;
 
-  Future<void> _showQrCode() async {
-    // Récupérer l'ID de l'utilisateur depuis le cache
+  @override
+  void initState() {
+    super.initState();
+    _loadProfileData();
+  }
+
+  Future<void> _loadProfileData() async {
     final profileData = await _authService.getCachedUserProfile();
-    if (profileData == null) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Une erreur est survenue'),
-          backgroundColor: Colors.red,
-          action: SnackBarAction(
-            label: 'Réessayer',
-            textColor: const Color(0xFFe89547),
-            onPressed: _showQrCode,
-          ),
-        ),
-      );
+    if (mounted) {
+      setState(() {
+        _profileData = profileData;
+      });
+    }
+  }
+
+  Future<void> _toggleQrCode() async {
+    if (_showQrCode) {
+      // Hide QR code
+      setState(() {
+        _showQrCode = false;
+      });
       return;
     }
 
-    final userId = profileData['id'] as int;
-    final token = await _authService.loadToken();
-    if (token == null) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Une erreur est survenue'),
-          backgroundColor: Colors.red,
-          action: SnackBarAction(
-            label: 'Réessayer',
-            textColor: const Color(0xFFe89547),
-            onPressed: _showQrCode,
-          ),
-        ),
-      );
-      return;
-    }
+    // Show QR code - load it if not already loaded
+    if (_qrImageBytes == null) {
+      setState(() {
+        _isLoading = true;
+      });
 
-    // Afficher le dialog avec loading
-    if (!mounted) return;
-    showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: const Color(0xFF2d3748),
-        title: const Text(
-          'Mon QR Code',
-          style: TextStyle(color: Colors.white),
-        ),
-        content: SizedBox(
-          width: 250,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(
-                height: 200,
-                child: Center(
-                  child: CircularProgressIndicator(
-                    color: Color(0xFFe89547),
-                  ),
-                ),
+      try {
+        final profileData = await _authService.getCachedUserProfile();
+        if (profileData == null) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Une erreur est survenue'),
+              backgroundColor: Colors.red,
+              action: SnackBarAction(
+                label: 'Réessayer',
+                textColor: Theme.of(context).colorScheme.primary,
+                onPressed: _toggleQrCode,
               ),
-              const SizedBox(height: 16),
-              Text(
-                'Chargement du QR code...',
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.7),
-                  fontSize: 14,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+            ),
+          );
+          setState(() {
+            _isLoading = false;
+          });
+          return;
+        }
 
-    try {
-      // Charger le QR code
-      final qrImageBytes = await _apiService.getUserQrCode(userId, token);
-      
-      if (!mounted) return;
-      
-      // Fermer le dialog de loading
-      Navigator.of(context).pop();
-      
-      if (qrImageBytes == null) {
+        final userId = profileData['id'] as int;
+        final token = await _authService.loadToken();
+        if (token == null) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Une erreur est survenue'),
+              backgroundColor: Colors.red,
+              action: SnackBarAction(
+                label: 'Réessayer',
+                textColor: Theme.of(context).colorScheme.primary,
+                onPressed: _toggleQrCode,
+              ),
+            ),
+          );
+          setState(() {
+            _isLoading = false;
+          });
+          return;
+        }
+
+        // Charger le QR code
+        final qrImageBytes = await _apiService.getUserQrCode(userId, token);
+        
+        if (!mounted) return;
+        
+        if (qrImageBytes == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Une erreur est survenue'),
+              backgroundColor: Colors.red,
+              action: SnackBarAction(
+                label: 'Réessayer',
+                textColor: Theme.of(context).colorScheme.primary,
+                onPressed: _toggleQrCode,
+              ),
+            ),
+          );
+          setState(() {
+            _isLoading = false;
+          });
+          return;
+        }
+
+        setState(() {
+          _qrImageBytes = qrImageBytes;
+          _showQrCode = true;
+          _isLoading = false;
+        });
+      } catch (e) {
+        if (!mounted) return;
+        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Une erreur est survenue'),
+            content: Text('Erreur: $e'),
             backgroundColor: Colors.red,
             action: SnackBarAction(
               label: 'Réessayer',
-              textColor: const Color(0xFFe89547),
-              onPressed: _showQrCode,
+              textColor: Theme.of(context).colorScheme.primary,
+              onPressed: _toggleQrCode,
             ),
           ),
         );
-        return;
+        setState(() {
+          _isLoading = false;
+        });
       }
-
-      // Afficher le QR code
-      showDialog(
-        context: context,
-        builder: (dialogContext) => AlertDialog(
-          backgroundColor: const Color(0xFF2d3748),
-          title: const Text(
-            'Mon QR Code',
-            style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Image.memory(
-                  Uint8List.fromList(qrImageBytes),
-                  width: 220,
-                  height: 220,
-                  fit: BoxFit.contain,
-                ),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                profileData['fullName'] ?? 'Utilisateur',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFe89547).withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: const Color(0xFFe89547).withValues(alpha: 0.5),
-                    width: 1,
-                  ),
-                ),
-                child: Text(
-                  profileData['displayId'] ?? '',
-                  style: const TextStyle(
-                    color: Color(0xFFe89547),
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 2,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Présentez ce code à l\'entrée',
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.6),
-                  fontSize: 13,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              ),
-              child: const Text(
-                'Fermer',
-                style: TextStyle(color: Color(0xFFe89547), fontSize: 16),
-              ),
-            ),
-          ],
-        ),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      
-      // Fermer le dialog de loading s'il est ouvert
-      Navigator.of(context).pop();
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Erreur: $e'),
-          backgroundColor: Colors.red,
-          action: SnackBarAction(
-            label: 'Réessayer',
-            textColor: const Color(0xFFe89547),
-            onPressed: _showQrCode,
-          ),
-        ),
-      );
+    } else {
+      // Already loaded, just show it
+      setState(() {
+        _showQrCode = true;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            const Color(0xFF1a1f2e),
-            const Color(0xFF2d3748),
-          ],
-        ),
-      ),
+      color: theme.scaffoldBackgroundColor,
       child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(24.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text(
+              Text(
                 'Ma Carte Membre',
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: Theme.of(context).textTheme.bodyLarge!.color,
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               Text(
                 'Scannez ce code à l\'entrée',
                 style: TextStyle(
                   fontSize: 16,
-                  color: Colors.white.withValues(alpha: 0.7),
+                  color: Theme.of(context).textTheme.bodyMedium!.color,
                 ),
               ),
-              const SizedBox(height: 40),
-              
-              // Bouton pour afficher le QR Code
+              SizedBox(height: 40),
+            
+            // Show QR Code or Button
+            if (_isLoading)
+              Container(
+                padding: EdgeInsets.all(40),
+                child: Column(
+                  children: [
+                    CircularProgressIndicator(
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    SizedBox(height: 20),
+                    Text(
+                      'Chargement du QR code...',
+                      style: TextStyle(
+                        color: Theme.of(context).textTheme.bodyMedium!.color!,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else if (_showQrCode && _qrImageBytes != null)
+              Column(
+                children: [
+                  Card(
+                    color: Theme.of(context).cardTheme.color,
+                    elevation: 8,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.all(24.0),
+                      child: Column(
+                        children: [
+                          Container(
+                            padding: EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).textTheme.bodyLarge!.color,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Image.memory(
+                              Uint8List.fromList(_qrImageBytes!),
+                              width: 250,
+                              height: 250,
+                              fit: BoxFit.contain,
+                            ),
+                          ),
+                          SizedBox(height: 24),
+                          Text(
+                            _profileData?['fullName'] ?? 'Utilisateur',
+                            style: TextStyle(
+                              color: Theme.of(context).textTheme.bodyLarge!.color,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          SizedBox(height: 12),
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
+                                width: 1.5,
+                              ),
+                            ),
+                            child: Text(
+                              _profileData?['displayId'] ?? '',
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.primary,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 3,
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            'Présentez ce code à l\'entrée',
+                            style: TextStyle(
+                              color: Theme.of(context).textTheme.bodyMedium!.color!.withValues(alpha: 0.8),
+                              fontSize: 14,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 24),
+                  OutlinedButton.icon(
+                    onPressed: _toggleQrCode,
+                    icon: Icon(Icons.visibility_off, size: 24),
+                    label: Text(
+                      'Masquer le QR Code',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Theme.of(context).colorScheme.primary,
+                      side: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2),
+                      padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                  ),
+                ],
+              )
+            else
               ElevatedButton.icon(
-                onPressed: _showQrCode,
-                icon: const Icon(Icons.qr_code_2, size: 32),
-                label: const Text(
+                onPressed: _toggleQrCode,
+                icon: Icon(Icons.qr_code_2, size: 32),
+                label: Text(
                   'Afficher mon QR Code',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFe89547),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  foregroundColor: Theme.of(context).textTheme.bodyLarge!.color,
+                  padding: EdgeInsets.symmetric(horizontal: 32, vertical: 20),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
                   elevation: 8,
-                  shadowColor: const Color(0xFFe89547).withValues(alpha: 0.5),
+                  shadowColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
                 ),
               ),
-              const SizedBox(height: 40),
-              
+            
+            if (!_showQrCode && !_isLoading) ...[
+              SizedBox(height: 40),
               Text(
                 'Présentez votre QR code au personnel\npour enregistrer votre présence',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 14,
-                  color: Colors.white.withValues(alpha: 0.7),
+                  color: Theme.of(context).textTheme.bodyMedium!.color,
                 ),
               ),
             ],
-          ),
+          ],
+        ),
         ),
       ),
     );
@@ -1533,95 +1566,88 @@ class MemberSubscriptionPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            const Color(0xFF1a1f2e),
-            const Color(0xFF2d3748),
-          ],
-        ),
-      ),
+      color: theme.scaffoldBackgroundColor,
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Current subscription card
             Card(
-              color: const Color(0xFFe89547),
+              color: Theme.of(context).colorScheme.primary,
               elevation: 4,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Padding(
-                padding: const EdgeInsets.all(20.0),
+                padding: EdgeInsets.all(20.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
+                        Text(
                           'Abonnement Premium',
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: Theme.of(context).textTheme.bodyLarge!.color,
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
                             color: Colors.green,
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          child: const Text(
+                          child: Text(
                             'ACTIF',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: Theme.of(context).textTheme.bodyLarge!.color,
                             ),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
-                    _buildSubscriptionDetail('Type', 'Mensuel'),
-                    _buildSubscriptionDetail('Prix', '50 € / mois'),
-                    _buildSubscriptionDetail('Date de début', '1 Nov 2025'),
-                    _buildSubscriptionDetail('Date d\'expiration', '31 Déc 2025'),
+                    SizedBox(height: 16),
+                    _buildSubscriptionDetail(context, 'Type', 'Mensuel'),
+                    _buildSubscriptionDetail(context, 'Prix', '50 € / mois'),
+                    _buildSubscriptionDetail(context, 'Date de début', '1 Nov 2025'),
+                    _buildSubscriptionDetail(context, 'Date d\'expiration', '31 Déc 2025'),
                   ],
                 ),
               ),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24),
 
             // Payment history
-            const Text(
+            Text(
               'Historique des Paiements',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: Theme.of(context).textTheme.bodyLarge!.color,
               ),
             ),
-            const SizedBox(height: 16),
-            _buildPaymentItem('Nov 2025', '50 €', '1 Nov 2025', true),
-            _buildPaymentItem('Oct 2025', '50 €', '1 Oct 2025', true),
-            _buildPaymentItem('Sep 2025', '50 €', '1 Sep 2025', true),
+            SizedBox(height: 16),
+            _buildPaymentItem(context, 'Nov 2025', '50 €', '1 Nov 2025', true),
+            _buildPaymentItem(context, 'Oct 2025', '50 €', '1 Oct 2025', true),
+            _buildPaymentItem(context, 'Sep 2025', '50 €', '1 Sep 2025', true),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSubscriptionDetail(String label, String value) {
+  Widget _buildSubscriptionDetail(BuildContext context, String label, String value) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
+      padding: EdgeInsets.only(bottom: 8.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -1629,15 +1655,15 @@ class MemberSubscriptionPage extends StatelessWidget {
             label,
             style: TextStyle(
               fontSize: 14,
-              color: Colors.white.withValues(alpha: 0.7),
+              color: Theme.of(context).textTheme.bodyMedium!.color,
             ),
           ),
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: Theme.of(context).textTheme.bodyLarge!.color,
             ),
           ),
         ],
@@ -1645,17 +1671,17 @@ class MemberSubscriptionPage extends StatelessWidget {
     );
   }
 
-  Widget _buildPaymentItem(String month, String amount, String date, bool paid) {
+  Widget _buildPaymentItem(BuildContext context, String month, String amount, String date, bool paid) {
     return Card(
-      color: const Color(0xFF2d3748),
+      color: Theme.of(context).cardTheme.color,
       elevation: 2,
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
       child: ListTile(
         leading: Container(
-          padding: const EdgeInsets.all(8),
+          padding: EdgeInsets.all(8),
           decoration: BoxDecoration(
             color: paid ? Colors.green.withValues(alpha: 0.7) : Colors.red.withValues(alpha: 0.7),
             borderRadius: BorderRadius.circular(8),
@@ -1668,25 +1694,25 @@ class MemberSubscriptionPage extends StatelessWidget {
         ),
         title: Text(
           month,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: Theme.of(context).textTheme.bodyLarge!.color,
           ),
         ),
         subtitle: Text(
           date,
           style: TextStyle(
             fontSize: 12,
-            color: Colors.white.withValues(alpha: 0.7),
+            color: Theme.of(context).textTheme.bodyMedium!.color,
           ),
         ),
         trailing: Text(
           amount,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
-            color: Color(0xFFe89547),
+            color: Theme.of(context).colorScheme.primary,
           ),
         ),
       ),
@@ -1717,10 +1743,10 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
         backgroundColor: Colors.red,
         action: SnackBarAction(
           label: 'Réessayer',
-          textColor: const Color(0xFFe89547),
+          textColor: Theme.of(context).colorScheme.primary,
           onPressed: onRetry,
         ),
-        duration: const Duration(seconds: 4),
+        duration: Duration(seconds: 4),
       ),
     );
   }
@@ -1756,14 +1782,14 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
 
       final memberId = profileData['id'] as int;
       // ignore: avoid_print
-      print('🔍 Loading plannings for member ID: $memberId');
+      debugPrint('🔍 Loading plannings for member ID: $memberId');
       
       final response = await _apiService.getMemberPlannings(memberId, token);
       
       // ignore: avoid_print
-      print('📊 Plannings response: $response');
+      debugPrint('📊 Plannings response: $response');
       // ignore: avoid_print
-      print('📊 Number of plannings: ${(response['plannings'] as List<dynamic>?)?.length ?? 0}');
+      debugPrint('📊 Number of plannings: ${(response['plannings'] as List<dynamic>?)?.length ?? 0}');
       
       setState(() {
         _plannings = response['plannings'] as List<dynamic>?;
@@ -1772,7 +1798,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
       });
     } catch (e) {
       // ignore: avoid_print
-      print('❌ Error loading plannings: $e');
+      debugPrint('❌ Error loading plannings: $e');
       setState(() {
         _errorMessage = 'Erreur: $e';
         _isLoading = false;
@@ -1788,20 +1814,20 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
       
       if (token == null || profileData == null) {
         // ignore: avoid_print
-        print('❌ Today workout: No token or profile');
+        debugPrint('❌ Today workout: No token or profile');
         return null;
       }
 
       final memberId = profileData['id'] as int;
       // ignore: avoid_print
-      print('🔍 Loading today workout for member ID: $memberId');
+      debugPrint('🔍 Loading today workout for member ID: $memberId');
       
       final nextDay = await _apiService.getNextPlanningDay(memberId, token);
       
       // ignore: avoid_print
-      print('📊 Today workout response: $nextDay');
+      debugPrint('📊 Today workout response: $nextDay');
       // ignore: avoid_print
-      print('📊 Is today: ${nextDay?['isToday']}');
+      debugPrint('📊 Is today: ${nextDay?['isToday']}');
       
       // Only return if it's today
       if (nextDay != null && nextDay['isToday'] == true) {
@@ -1809,11 +1835,11 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
       }
       
       // ignore: avoid_print
-      print('ℹ️ No workout for today');
+      debugPrint('ℹ️ No workout for today');
       return null;
     } catch (e) {
       // ignore: avoid_print
-      print('❌ Error loading today workout: $e');
+      debugPrint('❌ Error loading today workout: $e');
       return null;
     }
   }
@@ -1828,59 +1854,54 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
     }
   }
 
-  String _getDayName(int dayOfWeek) {
-    const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
-    return days[dayOfWeek % 7];
-  }
-
   Widget _buildTodayWorkoutCard(Map<String, dynamic> data) {
     final planning = data['planning'] as Map<String, dynamic>?;
     final day = data['day'] as Map<String, dynamic>?;
     final exercises = day?['exercises'] as List<dynamic>? ?? [];
 
     return Card(
-        color: const Color(0xFF2d3748),
+        color: Theme.of(context).cardTheme.color,
         elevation: 4,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: Color(0xFFe89547), width: 2),
+          side: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(20.0),
+          padding: EdgeInsets.all(20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(12),
+                    padding: EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: Colors.green.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.play_circle_outline,
                       color: Colors.green,
                       size: 28,
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  SizedBox(width: 16),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           planning?['title'] ?? 'Mon Entraînement',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: Theme.of(context).textTheme.bodyLarge!.color,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        SizedBox(height: 4),
                         Container(
-                          padding: const EdgeInsets.symmetric(
+                          padding: EdgeInsets.symmetric(
                             horizontal: 8,
                             vertical: 4,
                           ),
@@ -1892,7 +1913,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                               width: 1,
                             ),
                           ),
-                          child: const Text(
+                          child: Text(
                             'Aujourd\'hui',
                             style: TextStyle(
                               fontSize: 12,
@@ -1906,37 +1927,37 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                   ),
                 ],
               ),
-            const SizedBox(height: 16),
-            const Divider(color: Colors.white24),
-            const SizedBox(height: 12),
+            SizedBox(height: 16),
+            Divider(color: Theme.of(context).dividerColor),
+            SizedBox(height: 12),
             Row(
               children: [
                 Icon(
                   Icons.fitness_center,
                   size: 18,
-                  color: Colors.white.withValues(alpha: 0.7),
+                  color: Theme.of(context).textTheme.bodyMedium!.color,
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: 8),
                 Text(
                   '${exercises.length} exercice${exercises.length > 1 ? 's' : ''} prévu${exercises.length > 1 ? 's' : ''}',
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.white.withValues(alpha: 0.7),
+                    color: Theme.of(context).textTheme.bodyMedium!.color,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: () => _showTodayWorkoutPopup(data),
-                icon: const Icon(Icons.visibility, size: 18),
-                label: const Text('Voir les détails'),
+                icon: Icon(Icons.visibility, size: 18),
+                label: Text('Voir les détails'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFe89547),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  foregroundColor: Theme.of(context).textTheme.bodyLarge!.color,
+                  padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -1960,9 +1981,9 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
         return Dialog(
           backgroundColor: Colors.transparent,
           child: Container(
-            constraints: const BoxConstraints(maxHeight: 600),
+            constraints: BoxConstraints(maxHeight: 600),
             decoration: BoxDecoration(
-              color: const Color(0xFF1a202c),
+              color: Theme.of(context).cardTheme.color,
               borderRadius: BorderRadius.circular(20),
             ),
             child: Column(
@@ -1970,9 +1991,9 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
               children: [
                 // Header
                 Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF2d3748),
+                  padding: EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).cardTheme.color!,
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(20),
                       topRight: Radius.circular(20),
@@ -1981,36 +2002,36 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                   child: Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(10),
+                        padding: EdgeInsets.all(10),
                         decoration: BoxDecoration(
                           color: Colors.green.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.fitness_center,
                           color: Colors.green,
                           size: 24,
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               planning?['title'] ?? 'Mon Entraînement',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                                color: Theme.of(context).textTheme.bodyLarge!.color,
                               ),
                             ),
-                            const SizedBox(height: 4),
+                            SizedBox(height: 4),
                             Text(
                               '${exercises.length} exercice${exercises.length > 1 ? 's' : ''} • Aujourd\'hui',
                               style: TextStyle(
                                 fontSize: 13,
-                                color: Colors.white.withValues(alpha: 0.7),
+                                color: Theme.of(context).textTheme.bodyMedium!.color,
                               ),
                             ),
                           ],
@@ -2018,7 +2039,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                       ),
                       IconButton(
                         onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.close, color: Colors.white),
+                        icon: Icon(Icons.close, color: Theme.of(context).textTheme.bodyLarge!.color),
                       ),
                     ],
                   ),
@@ -2026,13 +2047,13 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                 // Exercises list
                 Flexible(
                   child: exercises.isEmpty
-                      ? const Center(
+                      ? Center(
                           child: Padding(
                             padding: EdgeInsets.all(32.0),
                             child: Text(
                               'Aucun exercice prévu',
                               style: TextStyle(
-                                color: Colors.white54,
+                                color: Theme.of(context).textTheme.bodyMedium!.color!.withValues(alpha: 0.7),
                                 fontSize: 16,
                               ),
                             ),
@@ -2040,7 +2061,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                         )
                       : ListView.builder(
                           shrinkWrap: true,
-                          padding: const EdgeInsets.all(16),
+                          padding: EdgeInsets.all(16),
                           itemCount: exercises.length,
                           itemBuilder: (context, index) {
                             final exerciseData = exercises[index] as Map<String, dynamic>;
@@ -2051,10 +2072,10 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                             final notes = exerciseData['notes'] as String?;
 
                             return Container(
-                              margin: const EdgeInsets.only(bottom: 12),
-                              padding: const EdgeInsets.all(16),
+                              margin: EdgeInsets.only(bottom: 12),
+                              padding: EdgeInsets.all(16),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF2d3748),
+                                color: Theme.of(context).cardTheme.color,
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Column(
@@ -2063,34 +2084,34 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                   Row(
                                     children: [
                                       Container(
-                                        padding: const EdgeInsets.all(8),
+                                        padding: EdgeInsets.all(8),
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFFe89547).withValues(alpha: 0.2),
+                                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
                                           borderRadius: BorderRadius.circular(8),
                                         ),
                                         child: Text(
                                           '${index + 1}',
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             fontSize: 14,
                                             fontWeight: FontWeight.bold,
-                                            color: Color(0xFFe89547),
+                                            color: Theme.of(context).colorScheme.primary,
                                           ),
                                         ),
                                       ),
-                                      const SizedBox(width: 12),
+                                      SizedBox(width: 12),
                                       Expanded(
                                         child: Text(
                                           exercise?['name'] ?? 'Exercice',
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold,
-                                            color: Colors.white,
+                                            color: Theme.of(context).textTheme.bodyLarge!.color,
                                           ),
                                         ),
                                       ),
                                     ],
                                   ),
-                                  const SizedBox(height: 12),
+                                  SizedBox(height: 12),
                                   Wrap(
                                     spacing: 12,
                                     runSpacing: 8,
@@ -2104,11 +2125,11 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                     ],
                                   ),
                                   if (notes != null && notes.isNotEmpty) ...[
-                                    const SizedBox(height: 12),
+                                    SizedBox(height: 12),
                                     Container(
-                                      padding: const EdgeInsets.all(10),
+                                      padding: EdgeInsets.all(10),
                                       decoration: BoxDecoration(
-                                        color: const Color(0xFF1a202c),
+                                        color: Theme.of(context).cardTheme.color,
                                         borderRadius: BorderRadius.circular(8),
                                       ),
                                       child: Row(
@@ -2118,13 +2139,13 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                             size: 16,
                                             color: Colors.blue.shade300,
                                           ),
-                                          const SizedBox(width: 8),
+                                          SizedBox(width: 8),
                                           Expanded(
                                             child: Text(
                                               notes,
                                               style: TextStyle(
                                                 fontSize: 13,
-                                                color: Colors.white.withValues(alpha: 0.7),
+                                                color: Theme.of(context).textTheme.bodyMedium!.color,
                                                 fontStyle: FontStyle.italic,
                                               ),
                                             ),
@@ -2133,7 +2154,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                       ),
                                     ),
                                   ],
-                                  const SizedBox(height: 12),
+                                  SizedBox(height: 12),
                                   SizedBox(
                                     width: double.infinity,
                                     child: OutlinedButton.icon(
@@ -2141,15 +2162,15 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                         Navigator.pop(context);
                                         _requestHelp(exercise?['name'] ?? 'Exercice');
                                       },
-                                      icon: const Icon(Icons.help_outline, size: 18),
-                                      label: const Text('Demander aide'),
+                                      icon: Icon(Icons.help_outline, size: 18),
+                                      label: Text('Demander aide'),
                                       style: OutlinedButton.styleFrom(
-                                        foregroundColor: const Color(0xFFe89547),
-                                        side: const BorderSide(color: Color(0xFFe89547)),
+                                        foregroundColor: Theme.of(context).colorScheme.primary,
+                                        side: BorderSide(color: Theme.of(context).colorScheme.primary),
                                         shape: RoundedRectangleBorder(
                                           borderRadius: BorderRadius.circular(8),
                                         ),
-                                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                                        padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
                                       ),
                                     ),
                                   ),
@@ -2210,24 +2231,15 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            const Color(0xFF1a1f2e),
-            const Color(0xFF2d3748),
-          ],
-        ),
-      ),
+      color: Theme.of(context).scaffoldBackgroundColor,
       child: RefreshIndicator(
         onRefresh: _loadPlannings,
-        color: const Color(0xFFe89547),
+        color: Theme.of(context).colorScheme.primary,
         notificationPredicate: (notification) => !_isRefreshing,
         child: _isLoading
-            ? const Center(
+            ? Center(
                 child: CircularProgressIndicator(
-                  color: Color(0xFFe89547),
+                  color: Theme.of(context).colorScheme.primary,
                 ),
               )
             : _errorMessage != null
@@ -2240,22 +2252,22 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                           size: 60,
                           color: Colors.red.shade300,
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16),
                         Text(
                           _errorMessage!,
-                          style: const TextStyle(
-                            color: Colors.white,
+                          style: TextStyle(
+                            color: Theme.of(context).textTheme.bodyLarge!.color,
                             fontSize: 16,
                           ),
                           textAlign: TextAlign.center,
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16),
                         ElevatedButton(
                           onPressed: _loadPlannings,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFe89547),
+                            backgroundColor: Theme.of(context).colorScheme.primary,
                           ),
-                          child: const Text('Réessayer'),
+                          child: Text('Réessayer'),
                         ),
                       ],
                     ),
@@ -2268,22 +2280,22 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                             Icon(
                               Icons.fitness_center,
                               size: 80,
-                              color: Colors.white.withValues(alpha: 0.7),
+                              color: Theme.of(context).textTheme.bodyMedium!.color,
                             ),
-                            const SizedBox(height: 16),
+                            SizedBox(height: 16),
                             Text(
                               'Aucun planning disponible',
                               style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.7),
+                                color: Theme.of(context).textTheme.bodyMedium!.color,
                                 fontSize: 18,
                               ),
                             ),
-                            const SizedBox(height: 8),
+                            SizedBox(height: 8),
                             Text(
                               'Votre coach vous assignera bientôt\nun programme d\'entraînement',
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.7),
+                                color: Theme.of(context).textTheme.bodyMedium!.color,
                                 fontSize: 14,
                               ),
                             ),
@@ -2291,45 +2303,45 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                         ),
                       )
                     : ListView(
-                        padding: const EdgeInsets.all(16.0),
+                        padding: EdgeInsets.all(16.0),
                         children: [
                           // Today's workout section
                           FutureBuilder<Map<String, dynamic>?>(
                             future: _loadTodayWorkout(),
                             builder: (context, snapshot) {
                               if (snapshot.connectionState == ConnectionState.waiting) {
-                                return const SizedBox.shrink();
+                                return SizedBox.shrink();
                               }
                               
                               if (snapshot.data != null) {
                                 return Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text(
+                                    Text(
                                       '🔥 Entraînement du jour',
                                       style: TextStyle(
                                         fontSize: 20,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.white,
+                                        color: Theme.of(context).textTheme.bodyLarge!.color,
                                       ),
                                     ),
-                                    const SizedBox(height: 12),
+                                    SizedBox(height: 12),
                                     _buildTodayWorkoutCard(snapshot.data!),
-                                    const SizedBox(height: 24),
-                                    const Text(
+                                    SizedBox(height: 24),
+                                    Text(
                                       'Mes Plannings',
                                       style: TextStyle(
                                         fontSize: 20,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.white,
+                                        color: Theme.of(context).textTheme.bodyLarge!.color,
                                       ),
                                     ),
-                                    const SizedBox(height: 12),
+                                    SizedBox(height: 12),
                                   ],
                                 );
                               }
                               
-                              return const SizedBox.shrink();
+                              return SizedBox.shrink();
                             },
                           ),
                           // All plannings
@@ -2356,14 +2368,14 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
     final bool isUpcoming = _isPlanningUpcoming(startDate);
 
     return Card(
-      color: const Color(0xFF2d3748),
+      color: Theme.of(context).cardTheme.color,
       elevation: 4,
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: EdgeInsets.only(bottom: 16),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -2373,17 +2385,17 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                   Expanded(
                     child: Text(
                       title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: Theme.of(context).textTheme.bodyLarge!.color,
                       ),
                     ),
                   ),
                   if (isUpcoming)
                     Container(
-                      margin: const EdgeInsets.only(right: 8),
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      margin: EdgeInsets.only(right: 8),
+                      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                       decoration: BoxDecoration(
                         color: Colors.orange.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(12),
@@ -2392,7 +2404,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                           width: 1,
                         ),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
@@ -2413,7 +2425,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                       ),
                     ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: _getStatusColor(status).withValues(alpha: 0.7),
                       borderRadius: BorderRadius.circular(12),
@@ -2434,16 +2446,16 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                 ],
               ),
               if (description != null) ...[
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 Text(
                   description,
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.white.withValues(alpha: 0.7),
+                    color: Theme.of(context).textTheme.bodyMedium!.color,
                   ),
                 ),
               ],
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               
               // Dates
               Row(
@@ -2451,41 +2463,41 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                   Icon(
                     Icons.calendar_today,
                     size: 16,
-                    color: Colors.white.withValues(alpha: 0.7),
+                    color: Theme.of(context).textTheme.bodyMedium!.color,
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   Text(
                     'Du ${_formatDateSimple(startDate)} au ${_formatDateSimple(endDate)}',
                     style: TextStyle(
                       fontSize: 13,
-                      color: Colors.white.withValues(alpha: 0.7),
+                      color: Theme.of(context).textTheme.bodyMedium!.color,
                     ),
                   ),
                 ],
               ),
               
               if (coach != null) ...[
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 Row(
                   children: [
                     Icon(
                       Icons.person,
                       size: 16,
-                      color: Colors.white.withValues(alpha: 0.7),
+                      color: Theme.of(context).textTheme.bodyMedium!.color,
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8),
                     Text(
                       'Coach: ${coach['fullName'] ?? 'N/A'}',
                       style: TextStyle(
                         fontSize: 13,
-                        color: Colors.white.withValues(alpha: 0.7),
+                        color: Theme.of(context).textTheme.bodyMedium!.color,
                       ),
                     ),
                   ],
                 ),
               ],
               
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               
               // Days summary
               Row(
@@ -2493,21 +2505,21 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                   Icon(
                     Icons.fitness_center,
                     size: 16,
-                    color: const Color(0xFFe89547),
+                    color: Theme.of(context).colorScheme.primary,
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   Text(
                     '${days.length} jour${days.length > 1 ? 's' : ''} d\'entraînement',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 13,
-                      color: Color(0xFFe89547),
+                      color: Theme.of(context).colorScheme.primary,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  const Spacer(),
-                  const Icon(
+                  Spacer(),
+                  Icon(
                     Icons.arrow_forward_ios,
-                    color: Colors.white60,
+                    color: Theme.of(context).textTheme.bodyMedium!.color!.withValues(alpha: 0.8),
                     size: 16,
                   ),
                 ],
@@ -2518,280 +2530,6 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
     );
   }
 
-  void _showPlanningDetails(Map<String, dynamic> planning) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: const Color(0xFF2d3748),
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.9,
-        minChildSize: 0.5,
-        maxChildSize: 0.95,
-        expand: false,
-        builder: (context, scrollController) {
-          final title = planning['title'] as String? ?? 'Planning';
-          final description = planning['description'] as String?;
-          final days = planning['days'] as List<dynamic>? ?? [];
-          
-          return Container(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFe89547).withValues(alpha: 0.7),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(
-                        Icons.fitness_center,
-                        color: Color(0xFFe89547),
-                        size: 28,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            title,
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                          if (description != null)
-                            Text(
-                              description,
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.white.withValues(alpha: 0.7),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                
-                // Days list
-                Expanded(
-                  child: days.isEmpty
-                      ? Center(
-                          child: Text(
-                            'Aucun exercice programmé',
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.7),
-                              fontSize: 16,
-                            ),
-                          ),
-                        )
-                      : ListView.builder(
-                          controller: scrollController,
-                          itemCount: days.length,
-                          itemBuilder: (context, index) {
-                            final day = days[index] as Map<String, dynamic>;
-                            return _buildDayCard(day);
-                          },
-                        ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildDayCard(Map<String, dynamic> day, {bool isToday = false}) {
-    final dayOfWeek = day['dayOfWeek'] as int;
-    final exercises = day['exercises'] as List<dynamic>? ?? [];
-    final date = day['date'] as String?;
-    
-    // Vérifier si c'est aujourd'hui en comparant les dates
-    bool isDayToday = isToday;
-    if (!isDayToday && date != null) {
-      try {
-        final parsedDate = DateTime.parse(date);
-        final now = DateTime.now();
-        isDayToday = parsedDate.year == now.year &&
-                     parsedDate.month == now.month &&
-                     parsedDate.day == now.day;
-      } catch (_) {
-        // Ignore parsing errors
-      }
-    }
-    
-    return Card(
-      color: const Color(0xFF1a1f2e),
-      elevation: 2,
-      margin: const EdgeInsets.only(bottom: 16),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: ExpansionTile(
-        tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: Container(
-          width: 50,
-          height: 50,
-          decoration: BoxDecoration(
-            color: const Color(0xFFe89547).withValues(alpha: 0.7),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Center(
-            child: Text(
-              _getDayName(dayOfWeek).substring(0, 3).toUpperCase(),
-              style: const TextStyle(
-                color: Color(0xFFe89547),
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-              ),
-            ),
-          ),
-        ),
-        title: Text(
-          _getDayName(dayOfWeek),
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-        subtitle: Text(
-          '${exercises.length} exercice${exercises.length > 1 ? 's' : ''}',
-          style: TextStyle(
-            fontSize: 13,
-            color: Colors.white.withValues(alpha: 0.7),
-          ),
-        ),
-        iconColor: const Color(0xFFe89547),
-        collapsedIconColor: Colors.white60,
-        children: exercises.map((ex) {
-          final exerciseData = ex as Map<String, dynamic>;
-          final exercise = exerciseData['exercise'] as Map<String, dynamic>?;
-          final sets = exerciseData['sets'] as int?;
-          final reps = exerciseData['reps'] as int?;
-          final weight = exerciseData['weight'] as num?;
-          final notes = exerciseData['notes'] as String?;
-          
-          return Container(
-            margin: const EdgeInsets.only(left: 16, right: 16, bottom: 12),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFF2d3748),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 8,
-                      height: 8,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFe89547),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        exercise?['name'] ?? 'Exercice',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                
-                // Exercise details
-                Wrap(
-                  spacing: 16,
-                  runSpacing: 8,
-                  children: [
-                    if (sets != null)
-                      _buildExerciseDetail(Icons.repeat, '$sets séries'),
-                    if (reps != null)
-                      _buildExerciseDetail(Icons.fitness_center, '$reps reps'),
-                    if (weight != null && weight > 0)
-                      _buildExerciseDetail(Icons.monitor_weight, '$weight kg'),
-                  ],
-                ),
-                
-                if (notes != null && notes.isNotEmpty) ...[
-                  const SizedBox(height: 12),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF1a1f2e),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.info_outline,
-                          size: 16,
-                          color: Colors.blue.shade300,
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            notes,
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.white.withValues(alpha: 0.7),
-                              fontStyle: FontStyle.italic,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-                
-                // Help request button (only show if it's today's workout)
-                if (isDayToday) ...[
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: () => _requestHelp(exercise?['name'] ?? 'Exercice'),
-                      icon: const Icon(Icons.help_outline, size: 18),
-                      label: const Text('Demander aide'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFFe89547),
-                        side: const BorderSide(color: Color(0xFFe89547)),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                      ),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-
   Widget _buildExerciseDetail(IconData icon, String text) {
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -2799,14 +2537,14 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
         Icon(
           icon,
           size: 16,
-          color: const Color(0xFFe89547),
+          color: Theme.of(context).colorScheme.primary,
         ),
-        const SizedBox(width: 6),
+        SizedBox(width: 6),
         Text(
           text,
           style: TextStyle(
             fontSize: 13,
-            color: Colors.white.withValues(alpha: 0.7),
+            color: Theme.of(context).textTheme.bodyMedium!.color,
           ),
         ),
       ],
@@ -2822,7 +2560,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Session expirée'),
+            content: Text('Session expirée'),
             backgroundColor: Colors.red.shade400,
           ),
         );
@@ -2832,33 +2570,35 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
       final memberName = profileData['fullName'] as String? ?? 'Un membre';
       
       // Show confirmation dialog
+      if (!mounted) return;
+      
       final confirm = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          backgroundColor: const Color(0xFF2d3748),
-          title: const Text(
+          backgroundColor: Theme.of(context).cardTheme.color,
+          title: Text(
             'Demander de l\'aide',
-            style: TextStyle(color: Colors.white),
+            style: TextStyle(color: Theme.of(context).textTheme.bodyLarge!.color),
           ),
           content: Text(
             'Voulez-vous notifier les coachs de votre salle pour obtenir de l\'aide avec "$exerciseName" ?',
-            style: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
+            style: TextStyle(color: Theme.of(context).textTheme.bodyMedium!.color),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
               style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
-              child: const Text('Annuler'),
+              child: Text('Annuler'),
             ),
             ElevatedButton(
               onPressed: () => Navigator.of(context).pop(true),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFe89547),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
-              child: const Text('Confirmer'),
+              child: Text('Confirmer'),
             ),
           ],
         ),
@@ -2869,7 +2609,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
       // Show loading
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Row(
             children: [
               SizedBox(
@@ -2877,7 +2617,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                 height: 20,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
                 ),
               ),
               SizedBox(width: 16),
@@ -2900,9 +2640,9 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Row(
+            content: Row(
               children: [
-                Icon(Icons.check_circle, color: Colors.white),
+                Icon(Icons.check_circle, color: Theme.of(context).textTheme.bodyLarge!.color),
                 SizedBox(width: 12),
                 Expanded(
                   child: Text('Les coachs ont été notifiés ! Ils viendront vous aider.'),
@@ -2910,7 +2650,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
               ],
             ),
             backgroundColor: Colors.green.shade600,
-            duration: const Duration(seconds: 4),
+            duration: Duration(seconds: 4),
           ),
         );
       } else {
@@ -2921,7 +2661,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
       }
     } catch (e) {
       // ignore: avoid_print
-      print('Error requesting help: $e');
+      debugPrint('Error requesting help: $e');
       if (!mounted) return;
       _showErrorWithRetry(
         'Une erreur est survenue',
@@ -3025,14 +2765,14 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color(0xFF1a1f2e),
-              const Color(0xFF2d3748),
+              Theme.of(context).scaffoldBackgroundColor,
+              Theme.of(context).cardTheme.color!,
             ],
           ),
         ),
-        child: const Center(
+        child: Center(
           child: CircularProgressIndicator(
-            color: Color(0xFFe89547),
+            color: Theme.of(context).colorScheme.primary,
           ),
         ),
       );
@@ -3069,18 +2809,18 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color(0xFF1a1f2e),
-            const Color(0xFF2d3748),
+            Theme.of(context).scaffoldBackgroundColor,
+            Theme.of(context).cardTheme.color!,
           ],
         ),
       ),
       child: RefreshIndicator(
         onRefresh: _refreshProfileData,
-        color: const Color(0xFFe89547),
+        color: Theme.of(context).colorScheme.primary,
         notificationPredicate: (notification) => !_isRefreshing,
         child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(16.0),
+          physics: AlwaysScrollableScrollPhysics(),
+          padding: EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -3089,14 +2829,14 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                 onTap: () => _navigateToEditProfile(context),
                 child: Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(24.0),
+                  padding: EdgeInsets.all(24.0),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        const Color(0xFF2d3748),
-                        const Color(0xFF2d3748).withValues(alpha: 0.8),
+                        Theme.of(context).cardTheme.color!,
+                        Theme.of(context).cardTheme.color!.withValues(alpha: 0.8),
                       ],
                     ),
                     borderRadius: BorderRadius.circular(16),
@@ -3107,81 +2847,81 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                         children: [
                           CircleAvatar(
                             radius: 50,
-                            backgroundColor: const Color(0xFFe89547),
-                            child: const Icon(Icons.person, size: 50, color: Colors.white),
+                            backgroundColor: Theme.of(context).colorScheme.primary,
+                            child: Icon(Icons.person, size: 50, color: Theme.of(context).textTheme.bodyLarge!.color),
                           ),
                           Positioned(
                             bottom: 0,
                             right: 0,
                             child: Container(
-                              padding: const EdgeInsets.all(6),
+                              padding: EdgeInsets.all(6),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF1a1f2e),
+                                color: Theme.of(context).scaffoldBackgroundColor,
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: const Color(0xFFe89547),
+                                  color: Theme.of(context).colorScheme.primary,
                                   width: 2,
                                 ),
                               ),
-                              child: const Icon(
+                              child: Icon(
                                 Icons.edit,
                                 size: 16,
-                                color: Color(0xFFe89547),
+                                color: Theme.of(context).colorScheme.primary,
                               ),
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16),
                       Text(
                         fullName,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: Theme.of(context).textTheme.bodyLarge!.color,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8),
                       Text(
                         email,
                         style: TextStyle(
                           fontSize: 14,
-                          color: Colors.white.withValues(alpha: 0.7),
+                          color: Theme.of(context).textTheme.bodyMedium!.color,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8),
                       Text(
                         'Membre depuis: $joinedAt',
                         style: TextStyle(
                           fontSize: 12,
-                          color: Colors.white.withValues(alpha: 0.5),
+                          color: Theme.of(context).textTheme.bodyMedium!.color!.withValues(alpha: 0.7),
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFe89547).withValues(alpha: 0.2),
+                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: const Color(0xFFe89547).withValues(alpha: 0.5),
+                            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
                             width: 1,
                           ),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
-                          children: const [
+                          children: [
                             Icon(
                               Icons.edit,
                               size: 16,
-                              color: Color(0xFFe89547),
+                              color: Theme.of(context).colorScheme.primary,
                             ),
                             SizedBox(width: 6),
                             Text(
                               'Modifier le profil',
                               style: TextStyle(
                                 fontSize: 13,
-                                color: Color(0xFFe89547),
+                                color: Theme.of(context).colorScheme.primary,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -3192,18 +2932,18 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24),
 
               // Subscription section
-              const Text(
+              Text(
                 'Mon Abonnement',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: Theme.of(context).textTheme.bodyLarge!.color,
                 ),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               InkWell(
                 onTap: () {
                   Navigator.push(
@@ -3216,13 +2956,13 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                   );
                 },
                 child: Card(
-                  color: const Color(0xFFe89547),
+                  color: Theme.of(context).colorScheme.primary,
                   elevation: 4,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.all(20.0),
+                    padding: EdgeInsets.all(20.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -3232,44 +2972,44 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                             Expanded(
                               child: Text(
                                 subscriptionType == 'premium' ? 'Abonnement Premium' : 'Abonnement Standard',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                                  color: Theme.of(context).textTheme.bodyLarge!.color,
                                 ),
                               ),
                             ),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                               decoration: BoxDecoration(
                                 color: subscriptionStatus == 'active' ? Colors.green : Colors.red,
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Text(
                                 subscriptionStatus.toUpperCase(),
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                                  color: Theme.of(context).textTheme.bodyLarge!.color,
                                 ),
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 16),
-                        _buildSubscriptionDetail('Type', billingPeriod == 'monthly' ? 'Mensuel' : 'Annuel'),
-                        _buildSubscriptionDetail('Prix', '$price € / ${billingPeriod == 'monthly' ? 'mois' : 'an'}'),
-                        _buildSubscriptionDetail('Date de début', startDate),
-                        _buildSubscriptionDetail('Expire le', expiresAt),
-                        const SizedBox(height: 12),
+                        SizedBox(height: 16),
+                        _buildSubscriptionDetail(context, 'Type', billingPeriod == 'monthly' ? 'Mensuel' : 'Annuel'),
+                        _buildSubscriptionDetail(context, 'Prix', '$price € / ${billingPeriod == 'monthly' ? 'mois' : 'an'}'),
+                        _buildSubscriptionDetail(context, 'Date de début', startDate),
+                        _buildSubscriptionDetail(context, 'Expire le', expiresAt),
+                        SizedBox(height: 12),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.end,
-                          children: const [
+                          children: [
                             Text(
                               'Voir les détails',
                               style: TextStyle(
                                 fontSize: 14,
-                                color: Colors.white70,
+                                color: Theme.of(context).textTheme.bodyMedium!.color!,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -3277,7 +3017,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                             Icon(
                               Icons.arrow_forward_ios,
                               size: 14,
-                              color: Colors.white70,
+                              color: Theme.of(context).textTheme.bodyMedium!.color!,
                             ),
                           ],
                         ),
@@ -3286,18 +3026,18 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24),
 
               // Settings options
-              const Text(
+              Text(
                 'Paramètres',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: Theme.of(context).textTheme.bodyLarge!.color,
                 ),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               _buildSettingsItem(
                 context,
                 'Paramètres',
@@ -3306,7 +3046,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const SecuritySettingsPage(),
+                      builder: (context) => SecuritySettingsPage(),
                     ),
                   );
                 },
@@ -3319,7 +3059,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const AboutScreen(),
+                      builder: (context) => AboutScreen(),
                     ),
                   );
                 },
@@ -3330,7 +3070,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                 Icons.help_outline,
                 () {},
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               
               // Logout button
               Card(
@@ -3340,28 +3080,28 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: ListTile(
-                  leading: const Icon(Icons.logout, color: Colors.white),
-                  title: const Text(
+                  leading: Icon(Icons.logout, color: Theme.of(context).textTheme.bodyLarge!.color),
+                  title: Text(
                     'Se déconnecter',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: Theme.of(context).textTheme.bodyLarge!.color,
                     ),
                   ),
-                  trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 16),
+                  trailing: Icon(Icons.arrow_forward_ios, color: Theme.of(context).textTheme.bodyLarge!.color, size: 16),
                   onTap: () async {
                     await _authService.clearAll();
                     if (context.mounted) {
                       Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute(builder: (context) => const LoginScreen()),
+                        MaterialPageRoute(builder: (context) => LoginScreen()),
                         (route) => false,
                       );
                     }
                   },
                 ),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24),
             ],
           ),
         ),
@@ -3369,9 +3109,9 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
     );
   }
 
-  Widget _buildSubscriptionDetail(String label, String value) {
+  Widget _buildSubscriptionDetail(BuildContext context, String label, String value) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
+      padding: EdgeInsets.only(bottom: 8.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -3379,15 +3119,15 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
             label,
             style: TextStyle(
               fontSize: 14,
-              color: Colors.white.withValues(alpha: 0.7),
+              color: Theme.of(context).textTheme.bodyMedium!.color,
             ),
           ),
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: Theme.of(context).textTheme.bodyLarge!.color,
             ),
           ),
         ],
@@ -3402,32 +3142,33 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
     VoidCallback onTap,
   ) {
     return Card(
-      color: const Color(0xFF2d3748),
+      color: Theme.of(context).cardTheme.color,
       elevation: 2,
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
       child: ListTile(
         leading: Container(
-          padding: const EdgeInsets.all(8),
+          padding: EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: const Color(0xFFe89547).withValues(alpha: 0.7),
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.7),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(icon, color: const Color(0xFFe89547), size: 24),
+          child: Icon(icon, color: Theme.of(context).colorScheme.primary, size: 24),
         ),
         title: Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w500,
-            color: Colors.white,
+            color: Theme.of(context).textTheme.bodyLarge!.color,
           ),
         ),
-        trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white60, size: 16),
+        trailing: Icon(Icons.arrow_forward_ios, color: Theme.of(context).textTheme.bodyMedium!.color!.withValues(alpha: 0.8), size: 16),
         onTap: onTap,
       ),
     );
   }
 }
+

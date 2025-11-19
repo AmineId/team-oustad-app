@@ -255,7 +255,7 @@ class _AdminGymOpeningHoursScreenState extends State<AdminGymOpeningHoursScreen>
                                       const SizedBox(width: 8),
                                       Switch(
                                         value: isClosed,
-                                        activeColor: Colors.red,
+                                        activeTrackColor: Colors.red,
                                         onChanged: (value) {
                                           setState(() {
                                             _hoursData[index]['isClosed'] = value;

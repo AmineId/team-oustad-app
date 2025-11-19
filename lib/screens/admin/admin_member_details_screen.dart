@@ -54,11 +54,11 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
       // Charger les infos du membre (prioritaire)
       Map<String, dynamic>? member;
       try {
-        print('Chargement du membre avec ID: ${widget.memberId}');
+        debugPrint('Chargement du membre avec ID: ${widget.memberId}');
         member = await _apiService.getUserById(widget.memberId, token);
-        print('Réponse API pour le membre: $member');
+        debugPrint('Réponse API pour le membre: $member');
       } catch (e) {
-        print('Erreur lors du chargement du membre: $e');
+        debugPrint('Erreur lors du chargement du membre: $e');
         setState(() {
           _errorMessage = 'Erreur de connexion: ${e.toString()}';
           _isLoading = false;
@@ -68,7 +68,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
 
       // Si le membre n'existe pas, on arrête ici
       if (member == null) {
-        print('Membre null retourné par l\'API pour ID: ${widget.memberId}');
+        debugPrint('Membre null retourné par l\'API pour ID: ${widget.memberId}');
         setState(() {
           _errorMessage = 'Membre introuvable (ID: ${widget.memberId})';
           _isLoading = false;
@@ -102,7 +102,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                 allPayments.addAll(payments);
               }
             } catch (e) {
-              print('Erreur lors du chargement des paiements de l\'abonnement ${subscription['id']}: $e');
+              debugPrint('Erreur lors du chargement des paiements de l\'abonnement ${subscription['id']}: $e');
             }
           }
           
@@ -114,10 +114,10 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
             return dateB.compareTo(dateA);
           });
         }
-        print('Abonnements chargés: ${subscriptions.length}');
-        print('Paiements totaux chargés: ${allPayments.length}');
+        debugPrint('Abonnements chargés: ${subscriptions.length}');
+        debugPrint('Paiements totaux chargés: ${allPayments.length}');
       } catch (e) {
-        print('Erreur lors du chargement des abonnements: $e');
+        debugPrint('Erreur lors du chargement des abonnements: $e');
         // On continue même si les abonnements ne chargent pas
       }
       
@@ -130,9 +130,9 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
               .map((p) => p as Map<String, dynamic>)
               .toList();
         }
-        print('Plannings chargés: ${plannings.length}');
+        debugPrint('Plannings chargés: ${plannings.length}');
       } catch (e) {
-        print('Erreur lors du chargement des plannings: $e');
+        debugPrint('Erreur lors du chargement des plannings: $e');
         // On continue même si les plannings ne chargent pas
       }
       
@@ -1017,7 +1017,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                             ],
                           ),
                         );
-                      }).toList(),
+                      }),
                     
                     const SizedBox(height: 24),
                     

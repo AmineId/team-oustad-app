@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'notification_service.dart';
 import 'api_service.dart';
 
@@ -30,13 +31,13 @@ class FCMService {
     } catch (e) {
       // Firebase pas encore initialisé, attendre un peu
       // ignore: avoid_print
-      print('⚠️ Firebase pas encore prêt, attente...');
+      debugPrint('⚠️ Firebase pas encore prêt, attente...');
       await Future.delayed(const Duration(milliseconds: 500));
       try {
         Firebase.app(); // Vérifier à nouveau
       } catch (e2) {
         // ignore: avoid_print
-        print('❌ Firebase toujours pas initialisé: $e2');
+        debugPrint('❌ Firebase toujours pas initialisé: $e2');
         rethrow;
       }
     }
@@ -67,10 +68,10 @@ class FCMService {
         final messaging = await _getMessaging();
         _fcmToken = await messaging.getToken();
         // ignore: avoid_print
-        print('📱 FCM Token récupéré: $_fcmToken');
+        debugPrint('📱 FCM Token récupéré: $_fcmToken');
       } catch (e) {
         // ignore: avoid_print
-        print('❌ Erreur récupération token FCM: $e');
+        debugPrint('❌ Erreur récupération token FCM: $e');
       }
     }
 
@@ -97,22 +98,22 @@ class FCMService {
 
       if (settings.authorizationStatus == AuthorizationStatus.authorized) {
         // ignore: avoid_print
-        print('✅ FCM permissions accordées');
+        debugPrint('✅ FCM permissions accordées');
       } else {
         // ignore: avoid_print
-        print('⚠️ FCM permissions refusées');
+        debugPrint('⚠️ FCM permissions refusées');
       }
 
       // Obtenir le token FCM
       _fcmToken = await messaging.getToken();
       // ignore: avoid_print
-      print('📱 FCM Token: $_fcmToken');
+      debugPrint('📱 FCM Token: $_fcmToken');
 
       // Écouter les changements de token
       messaging.onTokenRefresh.listen((newToken) {
         _fcmToken = newToken;
         // ignore: avoid_print
-        print('🔄 Nouveau FCM Token: $newToken');
+        debugPrint('🔄 Nouveau FCM Token: $newToken');
         // TODO: Envoyer le nouveau token au serveur
         _sendTokenToServer(newToken);
       });
@@ -126,7 +127,7 @@ class FCMService {
       _initialized = true;
     } catch (e) {
       // ignore: avoid_print
-      print('❌ Erreur initialisation FCM: $e');
+      debugPrint('❌ Erreur initialisation FCM: $e');
     }
   }
 
@@ -150,13 +151,13 @@ class FCMService {
   /// Gère les messages reçus quand l'app est au premier plan
   Future<void> _handleForegroundMessage(RemoteMessage message) async {
     // ignore: avoid_print
-    print('📨 Message reçu au premier plan: ${message.messageId}');
+    debugPrint('📨 Message reçu au premier plan: ${message.messageId}');
     // ignore: avoid_print
-    print('   Titre: ${message.notification?.title}');
+    debugPrint('   Titre: ${message.notification?.title}');
     // ignore: avoid_print
-    print('   Corps: ${message.notification?.body}');
+    debugPrint('   Corps: ${message.notification?.body}');
     // ignore: avoid_print
-    print('   Data: ${message.data}');
+    debugPrint('   Data: ${message.data}');
 
     // Vérifier si c'est une demande d'aide
     final type = message.data['type'] as String?;
@@ -192,7 +193,7 @@ class FCMService {
   ) async {
     if (_currentUserToken == null) {
       // ignore: avoid_print
-      print('❌ Pas de token utilisateur disponible');
+      debugPrint('❌ Pas de token utilisateur disponible');
       await _localNotifications.showNotification(
         id: DateTime.now().millisecondsSinceEpoch,
         title: '❌ Erreur',
@@ -203,7 +204,7 @@ class FCMService {
 
     try {
       // ignore: avoid_print
-      print('📤 Envoi de la réponse: $response pour le membre $memberId sur exercice: $exerciseName');
+      debugPrint('📤 Envoi de la réponse: $response pour le membre $memberId sur exercice: $exerciseName');
       
       final success = await _apiService.respondToHelpRequest(
         memberId,
@@ -214,8 +215,8 @@ class FCMService {
 
       if (success) {
         // ignore: avoid_print
-        print('✅ Réponse envoyée avec succès au serveur');
-        print('   Le serveur devrait maintenant envoyer une notification FCM au membre $memberId');
+        debugPrint('✅ Réponse envoyée avec succès au serveur');
+        debugPrint('   Le serveur devrait maintenant envoyer une notification FCM au membre $memberId');
         
         // Afficher une notification de confirmation à l'admin
         final responseText = response == 'coming' ? 'J\'arrive 🏃' : 'Occupé ⏰';
@@ -226,7 +227,7 @@ class FCMService {
         );
       } else {
         // ignore: avoid_print
-        print('❌ Échec de l\'envoi de la réponse - Le serveur a retourné une erreur');
+        debugPrint('❌ Échec de l\'envoi de la réponse - Le serveur a retourné une erreur');
         await _localNotifications.showNotification(
           id: DateTime.now().millisecondsSinceEpoch,
           title: '❌ Échec',
@@ -235,7 +236,7 @@ class FCMService {
       }
     } catch (e) {
       // ignore: avoid_print
-      print('❌ Erreur lors de l\'envoi de la réponse: $e');
+      debugPrint('❌ Erreur lors de l\'envoi de la réponse: $e');
       await _localNotifications.showNotification(
         id: DateTime.now().millisecondsSinceEpoch,
         title: '❌ Erreur',
@@ -248,9 +249,9 @@ class FCMService {
   /// (app en arrière-plan ou fermée)
   void _handleBackgroundMessage(RemoteMessage message) {
     // ignore: avoid_print
-    print('📨 App ouverte depuis notification: ${message.messageId}');
+    debugPrint('📨 App ouverte depuis notification: ${message.messageId}');
     // ignore: avoid_print
-    print('   Data: ${message.data}');
+    debugPrint('   Data: ${message.data}');
     
     // TODO: Naviguer vers l'écran approprié selon message.data
     _handleNotificationTap(message.data);
@@ -262,7 +263,7 @@ class FCMService {
     final message = await messaging.getInitialMessage();
     if (message != null) {
       // ignore: avoid_print
-      print('📨 App démarrée depuis notification: ${message.messageId}');
+      debugPrint('📨 App démarrée depuis notification: ${message.messageId}');
       _handleBackgroundMessage(message);
     }
   }
@@ -297,10 +298,10 @@ class FCMService {
       // TODO: Implémenter l'envoi au serveur
       // await ApiService.fromEnv().updateUserFCMToken(userId, token);
       // ignore: avoid_print
-      print('✅ Token FCM envoyé au serveur');
+      debugPrint('✅ Token FCM envoyé au serveur');
     } catch (e) {
       // ignore: avoid_print
-      print('❌ Erreur envoi token au serveur: $e');
+      debugPrint('❌ Erreur envoi token au serveur: $e');
     }
   }
 
@@ -310,10 +311,10 @@ class FCMService {
       final messaging = await _getMessaging();
       await messaging.subscribeToTopic(topic);
       // ignore: avoid_print
-      print('✅ Abonné au topic: $topic');
+      debugPrint('✅ Abonné au topic: $topic');
     } catch (e) {
       // ignore: avoid_print
-      print('❌ Erreur abonnement au topic $topic: $e');
+      debugPrint('❌ Erreur abonnement au topic $topic: $e');
     }
   }
 
@@ -323,10 +324,10 @@ class FCMService {
       final messaging = await _getMessaging();
       await messaging.unsubscribeFromTopic(topic);
       // ignore: avoid_print
-      print('✅ Désabonné du topic: $topic');
+      debugPrint('✅ Désabonné du topic: $topic');
     } catch (e) {
       // ignore: avoid_print
-      print('❌ Erreur désabonnement du topic $topic: $e');
+      debugPrint('❌ Erreur désabonnement du topic $topic: $e');
     }
   }
 
@@ -337,10 +338,10 @@ class FCMService {
       await messaging.deleteToken();
       _fcmToken = null;
       // ignore: avoid_print
-      print('✅ Token FCM supprimé');
+      debugPrint('✅ Token FCM supprimé');
     } catch (e) {
       // ignore: avoid_print
-      print('❌ Erreur suppression token: $e');
+      debugPrint('❌ Erreur suppression token: $e');
     }
   }
 }
@@ -352,9 +353,10 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
   
   // ignore: avoid_print
-  print('📨 Message en arrière-plan: ${message.messageId}');
+  debugPrint('📨 Message en arrière-plan: ${message.messageId}');
   // ignore: avoid_print
-  print('   Titre: ${message.notification?.title}');
+  debugPrint('   Titre: ${message.notification?.title}');
   // ignore: avoid_print
-  print('   Corps: ${message.notification?.body}');
+  debugPrint('   Corps: ${message.notification?.body}');
 }
+

@@ -542,7 +542,7 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
     final subscription = _subscriptionDetails!['subscription'] as Map<String, dynamic>?;
     final payments = subscription?['payments'] as List<dynamic>? ?? [];
     
-    print('Nombre de paiements trouvés: ${payments.length}');
+    debugPrint('Nombre de paiements trouvés: ${payments.length}');
     
     if (payments.isEmpty) {
       return Center(
@@ -762,3 +762,4 @@ class _PaymentMethodOption extends StatelessWidget {
     );
   }
 }
+

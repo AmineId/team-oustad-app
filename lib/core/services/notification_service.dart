@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
@@ -113,9 +114,9 @@ class NotificationService {
   /// Callback appelé quand l'utilisateur tape sur une notification ou un bouton d'action
   void _onNotificationTapped(NotificationResponse response) {
     // ignore: avoid_print
-    print('Notification tapped: ${response.payload}');
+    debugPrint('Notification tapped: ${response.payload}');
     // ignore: avoid_print
-    print('Action ID: ${response.actionId}');
+    debugPrint('Action ID: ${response.actionId}');
     
     // Traiter les actions des boutons
     if (response.actionId != null && response.payload != null) {
@@ -130,7 +131,7 @@ class NotificationService {
   /// Gestionnaire d'actions de notification (pour les réponses aux demandes d'aide)
   void _handleNotificationAction(String actionId, String payload) {
     // ignore: avoid_print
-    print('Handling notification action: $actionId with payload: $payload');
+    debugPrint('Handling notification action: $actionId with payload: $payload');
     
     // Le payload est au format: help_request|memberId|exerciseName
     if (payload.startsWith('help_request|')) {
@@ -449,3 +450,4 @@ class NotificationService {
     return await _notifications.pendingNotificationRequests();
   }
 }
+

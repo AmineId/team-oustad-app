@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../../core/services/auth_service.dart';
+import '../../core/theme/theme.dart';
+import '../../widgets/common/common_widgets.dart';
 import '../admin/admin_home_screen.dart';
 import '../member/member_home_screen.dart';
+import '../member/onboarding_screen.dart';
 import 'forgot_password_screen.dart';
 import 'setup_password_screen.dart';
 import '../../core/services/api_service.dart';
@@ -211,6 +214,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
         final token = loginResult['token'] as String;
         final userType = loginResult['userType'] as String;
         final userId = loginResult['userId'] as String;
+        final lastLoginAt = loginResult['lastLoginAt'] as String?;
         
         await _authService.saveToken(token);
         await _authService.saveUserType(userType);
@@ -225,32 +229,42 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
         // Send FCM token to server for push notifications (after JWT is saved and validated)
         try {
           // ignore: avoid_print
-          print('🔍 Tentative de récupération du token FCM...');
+          debugPrint('🔍 Tentative de récupération du token FCM...');
           final fcmToken = await FCMService().getToken();
           // ignore: avoid_print
-          print('🔍 Token FCM récupéré: $fcmToken');
+          debugPrint('🔍 Token FCM récupéré: $fcmToken');
           
           if (fcmToken != null && fcmToken.isNotEmpty) {
             // ignore: avoid_print
-            print('📤 Envoi du token FCM au serveur (userId: $userId)...');
+            debugPrint('📤 Envoi du token FCM au serveur (userId: $userId)...');
             // ignore: avoid_print
-            print('🔑 JWT utilisé: ${token.substring(0, 20)}...');
+            debugPrint('🔑 JWT utilisé: ${token.substring(0, 20)}...');
             final result = await _apiService.updateUserFCMToken(int.parse(userId), fcmToken, token);
             // ignore: avoid_print
-            print('✅ Réponse serveur pour FCM token: $result');
+            debugPrint('✅ Réponse serveur pour FCM token: $result');
           } else {
             // ignore: avoid_print
-            print('⚠️ Token FCM null ou vide, non envoyé au serveur');
+            debugPrint('⚠️ Token FCM null ou vide, non envoyé au serveur');
           }
         } catch (e, stackTrace) {
           // ignore: avoid_print
-          print('❌ Erreur lors de l\'envoi du token FCM: $e');
+          debugPrint('❌ Erreur lors de l\'envoi du token FCM: $e');
           // ignore: avoid_print
-          print('Stack trace: $stackTrace');
+          debugPrint('Stack trace: $stackTrace');
           // Don't block login if FCM token sending fails
         }
         
-        _goToHome();
+        // Check if onboarding is needed for members with no previous login
+        if (lastLoginAt == null && userType.toLowerCase() == 'membre') {
+          // ignore: avoid_print
+          debugPrint('🎯 Première connexion détectée (lastLoginAt == null) - redirection vers onboarding');
+          if (!context.mounted) return;
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const OnboardingScreen()),
+          );
+        } else {
+          _goToHome();
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -358,13 +372,18 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [const Color(0xFF1a1f2e), const Color(0xFF2d3748)],
+            colors: isDark 
+              ? [AppColors.darkBackground, AppColors.darkSurface]
+              : [AppColors.lightBackground, AppColors.lightSurface],
           ),
         ),
         child: SafeArea(
@@ -572,69 +591,54 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
               Text(
                 isDesktop ? 'Connexion' : 'Bienvenue\nConnectez-vous',
                 textAlign: isDesktop ? TextAlign.left : TextAlign.center,
-                style: TextStyle(
-                  fontSize: isDesktop ? 28 : 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
+                style: isDesktop ? AppTextStyles.h2 : AppTextStyles.h3,
               ),
               const SizedBox(height: 32),
               if (_canCheckBiometrics) ...[
-                ElevatedButton.icon(
-                  icon: const Icon(Icons.fingerprint, size: 28),
-                  label: const Text(
-                    'Se connecter avec la biométrie',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-                    minimumSize: const Size(double.infinity, 56),
-                  ),
+                ModernButton(
+                  text: 'Se connecter avec la biométrie',
+                  icon: Icons.fingerprint,
                   onPressed: _isAuthenticating ? null : _onBiometricPressed,
+                  isLoading: _isAuthenticating,
+                  fullWidth: true,
                 ),
                 const SizedBox(height: 16),
-                const Text('ou utilisez votre mot de passe', style: TextStyle(color: Colors.white60)),
+                Text(
+                  'ou utilisez votre mot de passe', 
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
                 const SizedBox(height: 16),
               ],
-              TextField(
+              ModernTextField(
                 controller: _emailController,
-                textInputAction: TextInputAction.next,
-                style: const TextStyle(color: Colors.white, fontSize: 16),
-                decoration: const InputDecoration(
-                  labelText: "Email",
-                  prefixIcon: Icon(Icons.email, color: Color(0xFFe89547)),
-                ),
+                label: 'Email',
+                prefixIcon: Icons.email,
+                keyboardType: TextInputType.emailAddress,
               ),
               const SizedBox(height: 16),
-              TextField(
+              ModernTextField(
                 controller: _passwordController,
+                label: 'Mot de passe',
+                prefixIcon: Icons.lock,
                 obscureText: true,
-                style: const TextStyle(color: Colors.white, fontSize: 16),
-                decoration: const InputDecoration(
-                  labelText: 'Mot de passe',
-                  prefixIcon: Icon(Icons.lock, color: Color(0xFFe89547)),
-                ),
-                onSubmitted: (_) => _submitPassword(),
+                onChanged: (_) {},
               ),
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(onPressed: _forgotPassword, child: const Text('Mot de passe oublié ?')),
               ),
               const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isAuthenticating ? null : _submitPassword,
-                  style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 56)),
-                  child: _isAuthenticating
-                      ? const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(strokeWidth: 2))
-                      : const Text('Se connecter', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                ),
+              ModernButton(
+                text: 'Se connecter',
+                onPressed: _submitPassword,
+                isLoading: _isAuthenticating,
+                fullWidth: true,
               ),
               const SizedBox(height: 16),
-              
-              // Bouton Première connexion
-              OutlinedButton.icon(
+              ModernButton(
+                text: 'Première connexion',
+                icon: Icons.person_add,
+                variant: ModernButtonVariant.secondary,
                 onPressed: _isAuthenticating ? null : () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
@@ -642,20 +646,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                     ),
                   );
                 },
-                icon: const Icon(Icons.person_add, color: Color(0xFFe89547)),
-                label: const Text(
-                  'Première connexion',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFFe89547),
-                  ),
-                ),
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 56),
-                  side: const BorderSide(color: Color(0xFFe89547), width: 2),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                ),
+                fullWidth: true,
               ),
               const SizedBox(height: 24),
               
@@ -670,7 +661,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                       'Version $version (Build $build)',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.white.withOpacity(0.5),
+                        color: Colors.white.withValues(alpha: 0.5),
                       ),
                       textAlign: TextAlign.center,
                     );
@@ -685,3 +676,4 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
     );
   }
 }
+

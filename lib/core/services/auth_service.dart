@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:local_auth_android/local_auth_android.dart';
 import 'package:local_auth_darwin/local_auth_darwin.dart';
@@ -150,14 +151,14 @@ class AuthService {
           errorString.contains('PasscodeNotSet')) {
         // User hasn't set up biometrics - this is normal, not an error
         // ignore: avoid_print
-        print('ℹ️ Biométrie non configurée sur cet appareil');
+        debugPrint('ℹ️ Biométrie non configurée sur cet appareil');
         return false;
       }
       
       // Only print as error if it's an actual error (not user cancellation)
       if (!errorString.contains('UserCancel') && !errorString.contains('AuthenticationCanceled')) {
         // ignore: avoid_print
-        print('❌ Erreur biométrie: $e');
+        debugPrint('❌ Erreur biométrie: $e');
       }
       
       return false;
@@ -217,28 +218,28 @@ class AuthService {
         // Send FCM token to server for push notifications (after JWT is saved and validated)
         try {
           // ignore: avoid_print
-          print('🔍 [Biometric] Tentative de récupération du token FCM...');
+          debugPrint('🔍 [Biometric] Tentative de récupération du token FCM...');
           final fcmToken = await FCMService().getToken();
           // ignore: avoid_print
-          print('🔍 [Biometric] Token FCM récupéré: $fcmToken');
+          debugPrint('🔍 [Biometric] Token FCM récupéré: $fcmToken');
           
           if (fcmToken != null && fcmToken.isNotEmpty) {
             // ignore: avoid_print
-            print('📤 [Biometric] Envoi du token FCM au serveur (userId: $userId)...');
+            debugPrint('📤 [Biometric] Envoi du token FCM au serveur (userId: $userId)...');
             // ignore: avoid_print
-            print('🔑 [Biometric] JWT utilisé: ${token.substring(0, 20)}...');
+            debugPrint('🔑 [Biometric] JWT utilisé: ${token.substring(0, 20)}...');
             final result = await _apiService.updateUserFCMToken(int.parse(userId), fcmToken, token);
             // ignore: avoid_print
-            print('✅ [Biometric] Réponse serveur pour FCM token: $result');
+            debugPrint('✅ [Biometric] Réponse serveur pour FCM token: $result');
           } else {
             // ignore: avoid_print
-            print('⚠️ [Biometric] Token FCM null ou vide, non envoyé au serveur');
+            debugPrint('⚠️ [Biometric] Token FCM null ou vide, non envoyé au serveur');
           }
         } catch (e, stackTrace) {
           // ignore: avoid_print
-          print('❌ [Biometric] Erreur lors de l\'envoi du token FCM: $e');
+          debugPrint('❌ [Biometric] Erreur lors de l\'envoi du token FCM: $e');
           // ignore: avoid_print
-          print('Stack trace: $stackTrace');
+          debugPrint('Stack trace: $stackTrace');
           // Don't block login if FCM token sending fails
         }
         
@@ -326,3 +327,4 @@ class AuthService {
     }
   }
 }
+

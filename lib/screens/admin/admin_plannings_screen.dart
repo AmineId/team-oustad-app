@@ -80,7 +80,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
         _isLoading = false;
       });
     } catch (e) {
-      print('Erreur lors du chargement des plannings: $e');
+      debugPrint('Erreur lors du chargement des plannings: $e');
       setState(() {
         _errorMessage = 'Erreur: $e';
         _isLoading = false;
@@ -672,7 +672,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
                               ),
                             ),
                           );
-                        }).toList(),
+                        }),
                       ],
                     ),
                   ),
@@ -850,3 +850,4 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
     }
   }
 }
+

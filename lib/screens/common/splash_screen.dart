@@ -96,11 +96,11 @@ class _SplashScreenState extends State<SplashScreen> {
     } catch (e) {
       // Ignorer les erreurs silencieusement pour ne pas perturber l'expérience utilisateur
       // ignore: avoid_print
-      print('Erreur lors de la vérification OTA: $e');
+      debugPrint('Erreur lors de la vérification OTA: $e');
     }
   }
 
-  void _showOTAUpdateDialog(updateInfo) {
+  void _showOTAUpdateDialog(dynamic updateInfo) {
     showDialog(
       context: context,
       barrierDismissible: !updateInfo.forceUpdate,
@@ -124,7 +124,7 @@ class _SplashScreenState extends State<SplashScreen> {
       }
     } catch (e) {
       // ignore: avoid_print
-      print('Erreur lors de la vérification du premier lancement: $e');
+      debugPrint('Erreur lors de la vérification du premier lancement: $e');
     }
   }
 

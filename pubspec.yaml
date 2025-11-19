@@ -39,6 +39,8 @@ dependencies:
   # We use `local_auth` which supports Android and iOS. Run `flutter pub get`
   # after this change.
   local_auth: ^3.0.0
+  local_auth_android: ^2.0.0
+  local_auth_darwin: ^2.0.0
 
   # Store simple preferences like whether biometric login is enabled.
   shared_preferences: ^2.0.15

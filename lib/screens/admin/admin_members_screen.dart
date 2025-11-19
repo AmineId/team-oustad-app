@@ -65,7 +65,7 @@ class _AdminMembersScreenState extends State<AdminMembersScreen> {
       }
 
       final adminGymId = adminProfile['gymId'] as int?;
-      print('Admin gymId: $adminGymId');
+      debugPrint('Admin gymId: $adminGymId');
 
       final users = await _apiService.getUsers(token);
       
@@ -78,7 +78,7 @@ class _AdminMembersScreenState extends State<AdminMembersScreen> {
                 final userGymId = user['gymId'] as int?;
                 final isSameGym = adminGymId == null || userGymId == adminGymId;
                 
-                print('User: ${user['fullName']}, gymId: $userGymId, isRoleMember: $isRoleMember, isSameGym: $isSameGym');
+                debugPrint('User: ${user['fullName']}, gymId: $userGymId, isRoleMember: $isRoleMember, isSameGym: $isSameGym');
                 
                 return isRoleMember && isSameGym;
               })
@@ -87,7 +87,7 @@ class _AdminMembersScreenState extends State<AdminMembersScreen> {
           _filteredMembers = _members;
           _isLoading = false;
           
-          print('Membres filtrés: ${_members.length}');
+          debugPrint('Membres filtrés: ${_members.length}');
         });
       } else {
         setState(() {
@@ -425,3 +425,4 @@ class _MemberCard extends StatelessWidget {
     );
   }
 }
+

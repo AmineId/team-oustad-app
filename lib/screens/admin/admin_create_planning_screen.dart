@@ -85,7 +85,7 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
       }
     } catch (e) {
       // ignore: avoid_print
-      print('Error loading members: $e');
+      debugPrint('Error loading members: $e');
     }
   }
 
@@ -102,7 +102,7 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
       }
     } catch (e) {
       // ignore: avoid_print
-      print('Error loading exercises: $e');
+      debugPrint('Error loading exercises: $e');
     }
   }
 
@@ -679,7 +679,7 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
                     exercise['category'] as String? ?? '',
                     style: const TextStyle(color: Colors.white60, fontSize: 12),
                   ),
-                  activeColor: const Color(0xFFe89547),
+                  fillColor: WidgetStateProperty.all(const Color(0xFFe89547)),
                   checkColor: Colors.white,
                 );
               }).toList(),
@@ -843,3 +843,5 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
     );
   }
 }
+
+

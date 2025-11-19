@@ -55,7 +55,7 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
       }
     } catch (e) {
       // ignore: avoid_print
-      print('Erreur lors du chargement du gymId: $e');
+      debugPrint('Erreur lors du chargement du gymId: $e');
     }
   }
 
@@ -93,7 +93,7 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
       final shouldSendEmail = password == null ? _sendSetupEmail : false;
 
       // ignore: avoid_print
-      print('Création du membre: $fullName ($email)');
+      debugPrint('Création du membre: $fullName ($email)');
 
       final result = await _apiService.createMember(
         email,
@@ -358,7 +358,7 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                                       _sendSetupEmail = value ?? true;
                                     });
                                   },
-                                  activeColor: const Color(0xFFe89547),
+                                  fillColor: WidgetStateProperty.all(const Color(0xFFe89547)),
                                 ),
                                 Expanded(
                                   child: Column(
@@ -472,3 +472,5 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
     );
   }
 }
+
+

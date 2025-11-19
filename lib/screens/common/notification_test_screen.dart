@@ -52,6 +52,7 @@ class NotificationTestScreen extends StatelessWidget {
                   title: 'Test Notification',
                   body: 'Ceci est une notification de test !',
                 );
+                if (!context.mounted) return;
                 _showSnackBar(context, 'Notification envoyée !');
               },
             ),
@@ -72,6 +73,7 @@ class NotificationTestScreen extends StatelessWidget {
                   body: 'Cette notification était planifiée il y a 10 secondes',
                   scheduledDate: scheduledTime,
                 );
+                if (!context.mounted) return;
                 _showSnackBar(context, 'Notification planifiée pour dans 10 secondes');
               },
             ),
@@ -91,6 +93,7 @@ class NotificationTestScreen extends StatelessWidget {
                   amount: 49.99,
                   dueDate: DateTime.now().add(const Duration(days: 3)),
                 );
+                if (!context.mounted) return;
                 _showSnackBar(context, 'Rappel de paiement planifié');
               },
             ),
@@ -109,6 +112,7 @@ class NotificationTestScreen extends StatelessWidget {
                   memberName: 'Marie Martin',
                   planningTitle: 'Programme Full Body',
                 );
+                if (!context.mounted) return;
                 _showSnackBar(context, 'Notification de planning envoyée');
               },
             ),
@@ -135,6 +139,7 @@ class NotificationTestScreen extends StatelessWidget {
                   workoutDay: 'Jour de jambes',
                   reminderTime: reminderTime,
                 );
+                if (!context.mounted) return;
                 _showSnackBar(context, 'Rappel d\'entraînement planifié pour demain 8h');
               },
             ),
