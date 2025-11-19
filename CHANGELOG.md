@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.14](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.13...v1.0.0-beta.14) (2025-11-19)
+
+
+### 🐛 Bug Fixes
+
+* Corriger tous les problèmes Flutter analyze (67→6 info) ([d2355dd](https://github.com/TeamFitness/mobile-app/commit/d2355dddc4a224bcf2d0af706dbaef4800705f26))
+
 ## [1.0.0-beta.13](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.12...v1.0.0-beta.13) (2025-11-19)
 
 ### 🎨 Added - Design System Moderne
