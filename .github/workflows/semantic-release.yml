@@ -174,24 +174,46 @@ jobs:
 
       - name: 📤 Upload to OTA
         run: |
+          echo "🔍 Listing downloaded artifact contents (recursive):"
+          ls -lahR . | head -n 200 || true
+
+          APK_PATH="build/app/outputs/flutter-apk/app-release.apk"
+          if [ ! -f "$APK_PATH" ]; then
+            echo "❌ APK not found at $APK_PATH"
+            echo "Attempting fallback: searching for *.apk"
+            FOUND=$(find . -maxdepth 5 -type f -name "*.apk" | head -n1 || true)
+            if [ -n "$FOUND" ]; then
+              echo "➡️ Using found APK: $FOUND"
+              APK_PATH="$FOUND"
+            else
+              echo "❌ No APK file found. Aborting deploy."
+              exit 1
+            fi
+          else
+            echo "✅ APK located at $APK_PATH"
+          fi
+
+          echo "📦 Uploading APK: $APK_PATH"
           RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
             "https://app.team-oustad.com/android/upload" \
             -H "Authorization: Bearer ${{ secrets.OTA_BEARER_TOKEN }}" \
             -H "Accept: application/json" \
-            -F "apk=@app-release.apk" \
+            -F "apk=@${APK_PATH}" \
             -F "version_code=${{ steps.meta.outputs.version_code }}" \
             -F "version_name=${{ steps.meta.outputs.version_name }}" \
             -F "changelog=${{ steps.meta.outputs.changelog }}" \
             -F "force_update=${{ steps.meta.outputs.force_update }}" \
             -F "min_supported_version=${{ steps.meta.outputs.min_supported_version }}" \
             -F "channel=${{ steps.meta.outputs.channel }}")
-          
+
           HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
-          
+
           if [ "$HTTP_CODE" -eq 200 ]; then
             echo "✅ Deployed successfully"
             echo "$RESPONSE" | head -n-1 | jq '.'
           else
-            echo "❌ Deploy failed: $HTTP_CODE"
+            echo "❌ Deploy failed: HTTP $HTTP_CODE"
+            echo "Raw response body (excluding status code line):"
+            echo "$RESPONSE" | head -n-1 || true
             exit 1
           fi
