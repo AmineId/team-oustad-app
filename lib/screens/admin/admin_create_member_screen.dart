@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
+import '../../core/theme/theme.dart';
 
 class AdminCreateMemberScreen extends StatefulWidget {
   final VoidCallback? onBack;
@@ -115,7 +116,7 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                   ? 'Membre créé avec succès. Un email d\'activation a été envoyé.'
                   : 'Membre créé avec succès',
             ),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.success,
           ),
         );
         
@@ -168,8 +169,8 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              const Color(0xFF1a1f2e),
-              const Color(0xFF2d3748),
+              AppColors.darkBackground,
+              AppColors.darkSurface,
             ],
           ),
         ),
@@ -177,7 +178,7 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
           child: _isLoading
               ? const Center(
                   child: CircularProgressIndicator(
-                    color: Color(0xFFe89547),
+                    color: AppColors.primary,
                   ),
                 )
               : SingleChildScrollView(
@@ -195,16 +196,16 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                             decoration: BoxDecoration(
                               color: Colors.red.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: Colors.red),
+                              border: Border.all(color: AppColors.error),
                             ),
                             child: Row(
                               children: [
-                                const Icon(Icons.error_outline, color: Colors.red),
+                                const Icon(Icons.error_outline, color: AppColors.error),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
                                     _errorMessage!,
-                                    style: const TextStyle(color: Colors.red),
+                                    style: const TextStyle(color: AppColors.error),
                                   ),
                                 ),
                               ],
@@ -218,16 +219,16 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                           margin: const EdgeInsets.only(bottom: 24),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: const Color(0xFFe89547).withValues(alpha: 0.2),
+                            color: AppColors.primary.withValues(alpha: 0.2),
                             border: Border.all(
-                              color: const Color(0xFFe89547),
+                              color: AppColors.primary,
                               width: 2,
                             ),
                           ),
                           child: const Icon(
                             Icons.person_add,
                             size: 48,
-                            color: Color(0xFFe89547),
+                            color: AppColors.primary,
                           ),
                         ),
 
@@ -259,9 +260,9 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                           decoration: InputDecoration(
                             labelText: 'Email *',
                             labelStyle: const TextStyle(color: Colors.white60),
-                            prefixIcon: const Icon(Icons.email, color: Color(0xFFe89547)),
+                            prefixIcon: const Icon(Icons.email, color: AppColors.primary),
                             filled: true,
-                            fillColor: const Color(0xFF2d3748),
+                            fillColor: AppColors.darkCard,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                               borderSide: BorderSide.none,
@@ -286,9 +287,9 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                           decoration: InputDecoration(
                             labelText: 'Nom complet *',
                             labelStyle: const TextStyle(color: Colors.white60),
-                            prefixIcon: const Icon(Icons.person, color: Color(0xFFe89547)),
+                            prefixIcon: const Icon(Icons.person, color: AppColors.primary),
                             filled: true,
-                            fillColor: const Color(0xFF2d3748),
+                            fillColor: AppColors.darkCard,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                               borderSide: BorderSide.none,
@@ -313,7 +314,7 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                             labelStyle: const TextStyle(color: Colors.white60),
                             hintText: 'Laisser vide pour envoyer un email',
                             hintStyle: const TextStyle(color: Colors.white38),
-                            prefixIcon: const Icon(Icons.lock, color: Color(0xFFe89547)),
+                            prefixIcon: const Icon(Icons.lock, color: AppColors.primary),
                             suffixIcon: IconButton(
                               icon: Icon(
                                 _obscurePassword ? Icons.visibility : Icons.visibility_off,
@@ -326,7 +327,7 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                               },
                             ),
                             filled: true,
-                            fillColor: const Color(0xFF2d3748),
+                            fillColor: AppColors.darkCard,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                               borderSide: BorderSide.none,
@@ -346,7 +347,7 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                           Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF2d3748),
+                              color: AppColors.darkCard,
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Row(
@@ -358,7 +359,7 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                                       _sendSetupEmail = value ?? true;
                                     });
                                   },
-                                  fillColor: WidgetStateProperty.all(const Color(0xFFe89547)),
+                                  fillColor: WidgetStateProperty.all(AppColors.primary),
                                 ),
                                 Expanded(
                                   child: Column(
@@ -392,10 +393,10 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFe89547).withValues(alpha: 0.1),
+                            color: AppColors.primary.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: const Color(0xFFe89547).withValues(alpha: 0.3),
+                              color: AppColors.primary.withValues(alpha: 0.3),
                             ),
                           ),
                           child: Row(
@@ -403,7 +404,7 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                             children: [
                               Icon(
                                 Icons.info_outline,
-                                color: const Color(0xFFe89547),
+                                color: AppColors.primary,
                                 size: 20,
                               ),
                               const SizedBox(width: 12),
@@ -445,7 +446,7 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                               child: ElevatedButton(
                                 onPressed: _createMember,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFe89547),
+                                  backgroundColor: AppColors.primary,
                                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),

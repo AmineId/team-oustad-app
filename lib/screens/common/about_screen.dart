@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
+import '../../core/theme/theme.dart';
 
 class AboutScreen extends StatefulWidget {
   const AboutScreen({super.key});
@@ -60,16 +61,18 @@ class _AboutScreenState extends State<AboutScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              const Color(0xFF1a1f2e),
-              const Color(0xFF2d3748),
-            ],
+            colors: isDark
+                ? [AppColors.darkBackground, AppColors.darkSurface]
+                : [AppColors.lightBackground, AppColors.lightSurface],
           ),
         ),
         child: SafeArea(
@@ -81,15 +84,13 @@ class _AboutScreenState extends State<AboutScreen> {
                 child: Row(
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Colors.white),
+                      icon: Icon(Icons.arrow_back, color: theme.textTheme.bodyLarge!.color),
                       onPressed: () => Navigator.pop(context),
                     ),
-                    const Text(
+                    Text(
                       'À propos',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                      style: AppTextStyles.h4.copyWith(
+                        color: theme.textTheme.bodyLarge!.color,
                       ),
                     ),
                   ],
@@ -110,12 +111,10 @@ class _AboutScreenState extends State<AboutScreen> {
                         fit: BoxFit.contain,
                       ),
                       const SizedBox(height: 16),
-                      const Text(
+                      Text(
                         'Team Fitness',
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFFe89547),
+                        style: AppTextStyles.h2.copyWith(
+                          color: theme.colorScheme.primary,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -127,10 +126,10 @@ class _AboutScreenState extends State<AboutScreen> {
                           vertical: 8,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF2d3748),
+                          color: theme.cardTheme.color,
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: const Color(0xFFe89547).withValues(alpha: 0.3),
+                            color: theme.colorScheme.primary.withValues(alpha: 0.3),
                           ),
                         ),
                         child: Text(
@@ -158,7 +157,7 @@ class _AboutScreenState extends State<AboutScreen> {
                       
                       // Description
                       Card(
-                        color: const Color(0xFF2d3748),
+                        color: AppColors.darkCard,
                         child: Padding(
                           padding: const EdgeInsets.all(20.0),
                           child: Column(
@@ -168,7 +167,7 @@ class _AboutScreenState extends State<AboutScreen> {
                                 children: [
                                   Icon(
                                     Icons.info_outline,
-                                    color: const Color(0xFFe89547),
+                                    color: theme.colorScheme.primary,
                                     size: 24,
                                   ),
                                   const SizedBox(width: 12),
@@ -203,7 +202,7 @@ class _AboutScreenState extends State<AboutScreen> {
                         _buildReleaseNotesSection(
                           'Nouveautés',
                           Icons.new_releases,
-                          Colors.green,
+                          AppColors.success,
                           _features,
                         ),
                       ],
@@ -213,7 +212,7 @@ class _AboutScreenState extends State<AboutScreen> {
                         _buildReleaseNotesSection(
                           'Améliorations',
                           Icons.trending_up,
-                          Colors.blue,
+                          AppColors.info,
                           _improvements,
                         ),
                       ],
@@ -223,7 +222,7 @@ class _AboutScreenState extends State<AboutScreen> {
                         _buildReleaseNotesSection(
                           'Corrections',
                           Icons.bug_report,
-                          Colors.orange,
+                          AppColors.warning,
                           _bugFixes,
                         ),
                       ],
@@ -232,7 +231,7 @@ class _AboutScreenState extends State<AboutScreen> {
                       
                       // Credits
                       Card(
-                        color: const Color(0xFF2d3748),
+                        color: AppColors.darkCard,
                         child: Padding(
                           padding: const EdgeInsets.all(20.0),
                           child: Column(
@@ -241,7 +240,7 @@ class _AboutScreenState extends State<AboutScreen> {
                                 children: [
                                   Icon(
                                     Icons.code,
-                                    color: const Color(0xFFe89547),
+                                    color: AppColors.primary,
                                     size: 24,
                                   ),
                                   const SizedBox(width: 12),
@@ -297,7 +296,7 @@ class _AboutScreenState extends State<AboutScreen> {
     List<String> items,
   ) {
     return Card(
-      color: const Color(0xFF2d3748),
+      color: AppColors.darkCard,
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(

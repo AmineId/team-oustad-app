@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
+import '../../core/theme/theme.dart';
 
 class SubscriptionDetailsScreen extends StatefulWidget {
   final Map<String, dynamic>? subscriptionData;
@@ -158,16 +159,18 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
     final startDate = widget.subscriptionData?['startDate'] ?? 'N/A';
     final expiresAt = widget.subscriptionData?['expiresAt'] ?? 'N/A';
 
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              const Color(0xFF1a1f2e),
-              const Color(0xFF2d3748),
-            ],
+            colors: isDark
+                ? [AppColors.darkBackground, AppColors.darkSurface]
+                : [AppColors.lightBackground, AppColors.lightSurface],
           ),
         ),
         child: SafeArea(
@@ -180,15 +183,13 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
                   children: [
                     IconButton(
                       onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.arrow_back, color: Colors.white),
+                      icon: Icon(Icons.arrow_back, color: theme.textTheme.bodyLarge!.color),
                     ),
                     const SizedBox(width: 8),
-                    const Text(
+                    Text(
                       'Mon Abonnement',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                      style: AppTextStyles.h4.copyWith(
+                        color: theme.textTheme.bodyLarge!.color,
                       ),
                     ),
                   ],
@@ -204,7 +205,7 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
                     children: [
                       // Subscription details card
                       Card(
-                        color: const Color(0xFFe89547),
+                        color: theme.colorScheme.primary,
                         elevation: 4,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
@@ -236,16 +237,16 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
                                     ),
                                     decoration: BoxDecoration(
                                       color: subscriptionStatus == 'active' 
-                                          ? Colors.green 
-                                          : Colors.red,
+                                          ? AppColors.success 
+                                          : AppColors.error,
                                       borderRadius: BorderRadius.circular(20),
                                     ),
                                     child: Text(
                                       subscriptionStatus == 'active' ? 'ACTIVE' : 'INACTIF',
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.white,
+                                        color: isDark ? Colors.white : Colors.black,
                                       ),
                                     ),
                                   ),
@@ -282,21 +283,19 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
+                          Text(
                             'Historique des Paiements',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                            style: AppTextStyles.h5.copyWith(
+                              color: theme.textTheme.bodyLarge!.color,
                             ),
                           ),
                           if (_isLoadingPayments)
-                            const SizedBox(
+                            SizedBox(
                               width: 20,
                               height: 20,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                color: Color(0xFFe89547),
+                                color: theme.colorScheme.primary,
                               ),
                             ),
                         ],
@@ -347,9 +346,11 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
       children: [
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
-            color: Colors.white70,
+            color: Theme.of(context).brightness == Brightness.dark 
+                ? Colors.white70 
+                : AppColors.lightTextSecondary,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -357,10 +358,12 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
           child: Text(
             value,
             textAlign: TextAlign.right,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: Theme.of(context).brightness == Brightness.dark 
+                  ? Colors.white 
+                  : AppColors.lightTextPrimary,
             ),
           ),
         ),
@@ -369,6 +372,7 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
   }
 
   Widget _buildPaymentCard(Map<String, dynamic> payment) {
+    final theme = Theme.of(context);
     final status = payment['status'] as String;
     
     // Déterminer la couleur et l'icône selon le statut
@@ -378,33 +382,33 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
     
     switch (status) {
       case 'completed':
-        statusColor = Colors.green;
-        backgroundColor = Colors.green.withValues(alpha: 0.2);
+        statusColor = AppColors.success;
+        backgroundColor = AppColors.success.withValues(alpha: 0.2);
         statusIcon = Icons.check_circle;
         break;
       case 'overdue':
-        statusColor = Colors.orange;
-        backgroundColor = Colors.orange.withValues(alpha: 0.2);
+        statusColor = AppColors.warning;
+        backgroundColor = AppColors.warning.withValues(alpha: 0.2);
         statusIcon = Icons.schedule;
         break;
       case 'failed':
-        statusColor = Colors.red;
-        backgroundColor = Colors.red.withValues(alpha: 0.2);
+        statusColor = AppColors.error;
+        backgroundColor = AppColors.error.withValues(alpha: 0.2);
         statusIcon = Icons.error;
         break;
       case 'refunded':
-        statusColor = Colors.blue;
-        backgroundColor = Colors.blue.withValues(alpha: 0.2);
+        statusColor = AppColors.info;
+        backgroundColor = AppColors.info.withValues(alpha: 0.2);
         statusIcon = Icons.refresh;
         break;
       default:
-        statusColor = Colors.grey;
-        backgroundColor = Colors.grey.withValues(alpha: 0.2);
+        statusColor = theme.textTheme.bodyMedium!.color!;
+        backgroundColor = theme.textTheme.bodyMedium!.color!.withValues(alpha: 0.2);
         statusIcon = Icons.help_outline;
     }
     
     return Card(
-      color: const Color(0xFF2d3748),
+      color: theme.cardTheme.color,
       margin: const EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
@@ -432,8 +436,8 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
                 children: [
                   Text(
                     payment['description'] ?? 'Paiement',
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: theme.textTheme.bodyLarge!.color,
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
                     ),
@@ -442,7 +446,7 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
                   Text(
                     _formatDate(payment['date']),
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.6),
+                      color: theme.textTheme.bodyMedium!.color,
                       fontSize: 12,
                     ),
                   ),
@@ -452,7 +456,7 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
                       child: Text(
                         payment['method'],
                         style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.5),
+                          color: theme.textTheme.bodySmall!.color,
                           fontSize: 11,
                         ),
                       ),
@@ -465,8 +469,8 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
               children: [
                 Text(
                   '${payment['amount']} €',
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: theme.textTheme.bodyLarge!.color,
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                   ),

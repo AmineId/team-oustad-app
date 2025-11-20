@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
+import '../../core/theme/theme.dart';
 
 class AdminCreateSubscriptionScreen extends StatefulWidget {
   final int memberId;
@@ -111,10 +112,10 @@ class _AdminCreateSubscriptionScreenState extends State<AdminCreateSubscriptionS
         await showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            backgroundColor: const Color(0xFF2d3748),
+            backgroundColor: AppColors.darkCard,
             title: const Row(
               children: [
-                Icon(Icons.check_circle, color: Colors.green),
+                Icon(Icons.check_circle, color: AppColors.success),
                 SizedBox(width: 8),
                 Text(
                   'Succès',
@@ -134,7 +135,7 @@ class _AdminCreateSubscriptionScreenState extends State<AdminCreateSubscriptionS
                 ),
                 child: const Text(
                   'OK',
-                  style: TextStyle(color: Color(0xFFe89547)),
+                  style: TextStyle(color: AppColors.primary),
                 ),
               ),
             ],
@@ -163,10 +164,10 @@ class _AdminCreateSubscriptionScreenState extends State<AdminCreateSubscriptionS
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF2d3748),
+        backgroundColor: AppColors.darkCard,
         title: const Row(
           children: [
-            Icon(Icons.error, color: Colors.red),
+            Icon(Icons.error, color: AppColors.error),
             SizedBox(width: 8),
             Text(
               'Erreur',
@@ -186,7 +187,7 @@ class _AdminCreateSubscriptionScreenState extends State<AdminCreateSubscriptionS
             ),
             child: const Text(
               'OK',
-              style: TextStyle(color: Color(0xFFe89547)),
+              style: TextStyle(color: AppColors.primary),
             ),
           ),
         ],
@@ -213,15 +214,14 @@ class _AdminCreateSubscriptionScreenState extends State<AdminCreateSubscriptionS
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              const Color(0xFF1a1f2e),
-              const Color(0xFF2d3748),
+              AppColors.darkBackground, AppColors.darkSurface,
             ],
           ),
         ),
         child: _isLoading
             ? const Center(
                 child: CircularProgressIndicator(
-                  color: Color(0xFFe89547),
+                  color: AppColors.primary,
                 ),
               )
             : _errorMessage.isNotEmpty
@@ -231,7 +231,7 @@ class _AdminCreateSubscriptionScreenState extends State<AdminCreateSubscriptionS
                       children: [
                         const Icon(
                           Icons.error_outline,
-                          color: Colors.red,
+                          color: AppColors.error,
                           size: 48,
                         ),
                         const SizedBox(height: 16),
@@ -295,7 +295,7 @@ class _AdminCreateSubscriptionScreenState extends State<AdminCreateSubscriptionS
                           child: ElevatedButton(
                             onPressed: _isCreating ? null : _createSubscription,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFe89547),
+                              backgroundColor: AppColors.primary,
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
                               disabledBackgroundColor: Colors.grey,
@@ -336,13 +336,13 @@ class _AdminCreateSubscriptionScreenState extends State<AdminCreateSubscriptionS
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       color: isSelected 
-          ? const Color(0xFFe89547).withValues(alpha: 0.2)
-          : const Color(0xFF2d3748),
+          ? AppColors.primary.withValues(alpha: 0.2)
+          : AppColors.darkCard,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
           color: isSelected 
-              ? const Color(0xFFe89547)
+              ? AppColors.primary
               : Colors.transparent,
           width: 2,
         ),
@@ -376,7 +376,7 @@ class _AdminCreateSubscriptionScreenState extends State<AdminCreateSubscriptionS
                   if (isSelected)
                     const Icon(
                       Icons.check_circle,
-                      color: Color(0xFFe89547),
+                      color: AppColors.primary,
                       size: 28,
                     )
                   else
@@ -405,7 +405,7 @@ class _AdminCreateSubscriptionScreenState extends State<AdminCreateSubscriptionS
               Text(
                 '$monthlyPrice € / mois',
                 style: const TextStyle(
-                  color: Color(0xFFe89547),
+                  color: AppColors.primary,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
@@ -422,7 +422,7 @@ class _AdminCreateSubscriptionScreenState extends State<AdminCreateSubscriptionS
                     children: [
                       const Icon(
                         Icons.check,
-                        color: Color(0xFFe89547),
+                        color: AppColors.primary,
                         size: 16,
                       ),
                       const SizedBox(width: 8),

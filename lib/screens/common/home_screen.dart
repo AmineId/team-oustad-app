@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/theme/theme.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/services/api_service.dart';
 import '../../widgets/responsive/responsive_layout.dart';
@@ -77,8 +78,8 @@ class AccueilPage extends StatelessWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            const Color(0xFF1a1f2e),
-            const Color(0xFF2d3748),
+            AppColors.darkBackground,
+            AppColors.darkCard,
           ],
         ),
       ),
@@ -114,7 +115,7 @@ class AccueilPage extends StatelessWidget {
                       icon: Icons.people,
                       title: 'Membres',
                       value: '156',
-                      color: const Color(0xFFe89547),
+                      color: AppColors.primary,
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -123,7 +124,7 @@ class AccueilPage extends StatelessWidget {
                       icon: Icons.fitness_center,
                       title: 'Actifs',
                       value: '89',
-                      color: Colors.green,
+                      color: AppColors.success,
                     ),
                   ),
                 ],
@@ -136,7 +137,7 @@ class AccueilPage extends StatelessWidget {
                       icon: Icons.calendar_today,
                       title: 'Aujourd\'hui',
                       value: '23',
-                      color: Colors.blue,
+                      color: AppColors.info,
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -206,7 +207,7 @@ class _StatCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF2d3748),
+        color: AppColors.darkCard,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
@@ -256,7 +257,7 @@ class _QuickActionButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFF2d3748),
+          color: AppColors.darkCard,
           borderRadius: BorderRadius.circular(24),
         ),
         child: Row(
@@ -264,10 +265,10 @@ class _QuickActionButton extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: const Color(0xFFe89547).withValues(alpha: 0.2),
+                color: AppColors.primary.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: const Color(0xFFe89547)),
+              child: Icon(icon, color: AppColors.primary),
             ),
             const SizedBox(width: 16),
             Text(
@@ -299,8 +300,8 @@ class RecherchePage extends StatelessWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            const Color(0xFF1a1f2e),
-            const Color(0xFF2d3748),
+            AppColors.darkBackground,
+            AppColors.darkCard,
           ],
         ),
       ),
@@ -314,9 +315,9 @@ class RecherchePage extends StatelessWidget {
                 decoration: InputDecoration(
                   hintText: 'Rechercher un membre...',
                   hintStyle: const TextStyle(color: Colors.white60),
-                  prefixIcon: const Icon(Icons.search, color: Color(0xFFe89547)),
+                  prefixIcon: const Icon(Icons.search, color: AppColors.primary),
                   filled: true,
-                  fillColor: const Color(0xFF2d3748),
+                  fillColor: AppColors.darkCard,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(24),
                     borderSide: BorderSide.none,
@@ -356,8 +357,8 @@ class AjoutMembrePage extends StatelessWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            const Color(0xFF1a1f2e),
-            const Color(0xFF2d3748),
+            AppColors.darkBackground,
+            AppColors.darkCard,
           ],
         ),
       ),
@@ -381,7 +382,7 @@ class AjoutMembrePage extends StatelessWidget {
                 style: const TextStyle(color: Colors.white),
                 decoration: const InputDecoration(
                   labelText: 'Nom complet',
-                  prefixIcon: Icon(Icons.person, color: Color(0xFFe89547)),
+                  prefixIcon: Icon(Icons.person, color: AppColors.primary),
                 ),
               ),
               const SizedBox(height: 16),
@@ -389,7 +390,7 @@ class AjoutMembrePage extends StatelessWidget {
                 style: const TextStyle(color: Colors.white),
                 decoration: const InputDecoration(
                   labelText: 'Email',
-                  prefixIcon: Icon(Icons.email, color: Color(0xFFe89547)),
+                  prefixIcon: Icon(Icons.email, color: AppColors.primary),
                 ),
               ),
               const SizedBox(height: 16),
@@ -397,7 +398,7 @@ class AjoutMembrePage extends StatelessWidget {
                 style: const TextStyle(color: Colors.white),
                 decoration: const InputDecoration(
                   labelText: 'Téléphone',
-                  prefixIcon: Icon(Icons.phone, color: Color(0xFFe89547)),
+                  prefixIcon: Icon(Icons.phone, color: AppColors.primary),
                 ),
               ),
               const SizedBox(height: 32),
@@ -439,8 +440,8 @@ class ProfilePage extends StatelessWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            const Color(0xFF1a1f2e),
-            const Color(0xFF2d3748),
+            AppColors.darkBackground,
+            AppColors.darkCard,
           ],
         ),
       ),
@@ -455,13 +456,13 @@ class ProfilePage extends StatelessWidget {
                 height: 100,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: const Color(0xFFe89547).withValues(alpha: 0.2),
-                  border: Border.all(color: const Color(0xFFe89547), width: 3),
+                  color: AppColors.primary.withValues(alpha: 0.2),
+                  border: Border.all(color: AppColors.primary, width: 3),
                 ),
                 child: const Icon(
                   Icons.person,
                   size: 50,
-                  color: Color(0xFFe89547),
+                  color: AppColors.primary,
                 ),
               ),
               const SizedBox(height: 16),
@@ -523,7 +524,7 @@ class ProfilePage extends StatelessWidget {
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
+                    backgroundColor: AppColors.error,
                     minimumSize: const Size(double.infinity, 56),
                   ),
                   child: const Text(
@@ -559,12 +560,12 @@ class _ProfileOption extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFF2d3748),
+          color: AppColors.darkCard,
           borderRadius: BorderRadius.circular(24),
         ),
         child: Row(
           children: [
-            Icon(icon, color: const Color(0xFFe89547)),
+            Icon(icon, color: AppColors.primary),
             const SizedBox(width: 16),
             Text(
               title,

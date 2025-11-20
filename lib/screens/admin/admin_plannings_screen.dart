@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
+import '../../core/theme/theme.dart';
 import 'admin_create_planning_screen.dart';
 
 class AdminPlanningsScreen extends StatefulWidget {
@@ -104,11 +105,11 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
   Color _getStatusColor(String status) {
     switch (status) {
       case 'active':
-        return Colors.green;
+        return AppColors.success;
       case 'completed':
-        return Colors.blue;
+        return AppColors.info;
       case 'cancelled':
-        return Colors.red;
+        return AppColors.error;
       default:
         return Colors.grey;
     }
@@ -134,8 +135,8 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
         ),
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: const Color(0xFFe89547),
-          labelColor: const Color(0xFFe89547),
+          indicatorColor: AppColors.primary,
+          labelColor: AppColors.primary,
           unselectedLabelColor: Colors.white60,
           tabs: [
             Tab(
@@ -148,7 +149,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
                     Container(
                       padding: const EdgeInsets.all(4),
                       decoration: const BoxDecoration(
-                        color: Colors.green,
+                        color: AppColors.success,
                         shape: BoxShape.circle,
                       ),
                       constraints: const BoxConstraints(
@@ -179,7 +180,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
                     Container(
                       padding: const EdgeInsets.all(4),
                       decoration: const BoxDecoration(
-                        color: Colors.blue,
+                        color: AppColors.info,
                         shape: BoxShape.circle,
                       ),
                       constraints: const BoxConstraints(
@@ -210,7 +211,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
                     Container(
                       padding: const EdgeInsets.all(4),
                       decoration: const BoxDecoration(
-                        color: Colors.red,
+                        color: AppColors.error,
                         shape: BoxShape.circle,
                       ),
                       constraints: const BoxConstraints(
@@ -240,15 +241,15 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              const Color(0xFF1a1f2e),
-              const Color(0xFF2d3748),
+              AppColors.darkBackground,
+              AppColors.darkSurface,
             ],
           ),
         ),
         child: _isLoading
             ? const Center(
                 child: CircularProgressIndicator(
-                  color: Color(0xFFe89547),
+                  color: AppColors.primary,
                 ),
               )
             : _errorMessage.isNotEmpty
@@ -258,7 +259,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
                       children: [
                         const Icon(
                           Icons.error_outline,
-                          color: Colors.red,
+                          color: AppColors.error,
                           size: 48,
                         ),
                         const SizedBox(height: 16),
@@ -305,7 +306,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
             _loadPlannings();
           }
         },
-        backgroundColor: const Color(0xFFe89547),
+        backgroundColor: AppColors.primary,
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );
@@ -337,7 +338,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
 
     return RefreshIndicator(
       onRefresh: _loadPlannings,
-      color: const Color(0xFFe89547),
+      color: AppColors.primary,
       child: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: plannings.length,
@@ -360,7 +361,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
     
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      color: const Color(0xFF2d3748),
+      color: AppColors.darkCard,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
@@ -436,7 +437,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
               if (member != null)
                 Row(
                   children: [
-                    const Icon(Icons.person, color: Color(0xFFe89547), size: 16),
+                    const Icon(Icons.person, color: AppColors.primary, size: 16),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -456,7 +457,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
               if (coach != null)
                 Row(
                   children: [
-                    const Icon(Icons.fitness_center, color: Color(0xFFe89547), size: 16),
+                    const Icon(Icons.fitness_center, color: AppColors.primary, size: 16),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -518,7 +519,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
           builder: (context, scrollController) {
             return Container(
               decoration: const BoxDecoration(
-                color: Color(0xFF2d3748),
+                color: AppColors.darkCard,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
               ),
               child: Column(
@@ -527,7 +528,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF1a1f2e),
+                      color: AppColors.darkBackground,
                       borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
                     ),
                     child: Row(
@@ -645,7 +646,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
                           final exercises = dayData['exercises'] as List<dynamic>? ?? [];
                           final dayOfWeek = dayData['dayOfWeek'] as int?;
                           return Card(
-                            color: const Color(0xFF1a1f2e),
+                            color: AppColors.darkBackground,
                             margin: const EdgeInsets.only(bottom: 8),
                             child: Padding(
                               padding: const EdgeInsets.all(12.0),
@@ -657,7 +658,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
                                     style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
-                                      color: Color(0xFFe89547),
+                                      color: AppColors.primary,
                                     ),
                                   ),
                                   const SizedBox(height: 8),
@@ -680,7 +681,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: const BoxDecoration(
-                      color: Color(0xFF1a1f2e),
+                      color: AppColors.darkBackground,
                       borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
                     ),
                     child: SizedBox(
@@ -693,7 +694,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
                         icon: const Icon(Icons.delete_outline, size: 20),
                         label: const Text('Supprimer le planning'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
+                          backgroundColor: AppColors.error,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
                           shape: RoundedRectangleBorder(
@@ -716,7 +717,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, color: const Color(0xFFe89547), size: 20),
+        Icon(icon, color: AppColors.primary, size: 20),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
@@ -757,7 +758,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: const Color(0xFF2d3748),
+          backgroundColor: AppColors.darkCard,
           title: const Text(
             'Supprimer le planning',
             style: TextStyle(color: Colors.white),
@@ -777,7 +778,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
             ElevatedButton(
               onPressed: () => Navigator.pop(context, true),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
+                backgroundColor: AppColors.error,
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
               child: const Text('Supprimer'),
@@ -800,7 +801,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('❌ Token non disponible'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
         return;
@@ -815,7 +816,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('✅ Planning supprimé avec succès'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.success,
           ),
         );
         
@@ -825,7 +826,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('❌ Erreur lors de la suppression du planning'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -834,7 +835,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('❌ Erreur: $e'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.error,
         ),
       );
     }

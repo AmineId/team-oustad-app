@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/services/api_service.dart';
+import '../../core/theme/theme.dart';
 import '../../widgets/common/common_widgets.dart';
 import '../../widgets/responsive/responsive_layout.dart';
 import '../../main.dart';
@@ -128,7 +129,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Theme.of(context).textTheme.bodyLarge!.color),
               ),
-              backgroundColor: Colors.red,
+              backgroundColor: AppColors.error,
             ),
           );
         }
@@ -146,7 +147,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
               textAlign: TextAlign.center,
               style: TextStyle(color: Theme.of(context).textTheme.bodyLarge!.color, fontWeight: FontWeight.w500),
             ),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.success,
             duration: Duration(seconds: 2),
           ),
         );
@@ -214,7 +215,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                   statusColor = theme.colorScheme.onPrimary;
                 } else if (status == 'expired') {
                   statusText = 'Votre abonnement a expiré';
-                  statusColor = Colors.red.shade200;
+                  statusColor = AppColors.error;
                 } else if (status == 'cancelled') {
                   statusText = 'Abonnement annulé';
                   statusColor = Colors.orange.shade200;
@@ -315,7 +316,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                     'Visites ce mois',
                     '12',
                     Icons.calendar_today,
-                    Colors.blue,
+                    AppColors.info,
                   ),
                 ),
                 SizedBox(width: 12),
@@ -324,7 +325,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                     'Total visites',
                     '148',
                     Icons.fitness_center,
-                    Colors.green,
+                    AppColors.success,
                   ),
                 ),
               ],
@@ -410,7 +411,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
         
         if (isToday) {
           workoutStatus = 'Aujourd\'hui';
-          statusColor = Colors.green;
+          statusColor = AppColors.success;
           statusIcon = Icons.play_circle_outline;
         } else {
           // Formater la date pour afficher "Prochain : DD/MM"
@@ -932,7 +933,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Erreur: Non authentifié'),
-              backgroundColor: Colors.red,
+              backgroundColor: AppColors.error,
             ),
           );
         }
@@ -946,7 +947,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('✅ Demande d\'aide envoyée pour $exerciseName'),
-              backgroundColor: Colors.green,
+              backgroundColor: AppColors.success,
             ),
           );
         } else {
@@ -970,7 +971,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: Colors.red,
+        backgroundColor: AppColors.error,
         action: SnackBarAction(
           label: 'Réessayer',
           textColor: Theme.of(context).colorScheme.primary,
@@ -1128,7 +1129,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                         child: _buildGymInfoChip(
                           Icons.access_time,
                           'Horaires',
-                          Colors.blue,
+                          AppColors.info,
                           onTap: null,
                         ),
                       ),
@@ -1137,7 +1138,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                         child: _buildGymInfoChip(
                           Icons.navigation,
                           'Navigation',
-                          Colors.green,
+                          AppColors.success,
                           onTap: () => _openInGoogleMaps(
                             gym['address'] ?? '',
                             gym['name'],
@@ -1161,7 +1162,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Adresse non disponible'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -1293,7 +1294,7 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Une erreur est survenue'),
-              backgroundColor: Colors.red,
+              backgroundColor: AppColors.error,
               action: SnackBarAction(
                 label: 'Réessayer',
                 textColor: Theme.of(context).colorScheme.primary,
@@ -1314,7 +1315,7 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Une erreur est survenue'),
-              backgroundColor: Colors.red,
+              backgroundColor: AppColors.error,
               action: SnackBarAction(
                 label: 'Réessayer',
                 textColor: Theme.of(context).colorScheme.primary,
@@ -1337,7 +1338,7 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Une erreur est survenue'),
-              backgroundColor: Colors.red,
+              backgroundColor: AppColors.error,
               action: SnackBarAction(
                 label: 'Réessayer',
                 textColor: Theme.of(context).colorScheme.primary,
@@ -1362,7 +1363,7 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Erreur: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
             action: SnackBarAction(
               label: 'Réessayer',
               textColor: Theme.of(context).colorScheme.primary,
@@ -1601,7 +1602,7 @@ class MemberSubscriptionPage extends StatelessWidget {
                         Container(
                           padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: Colors.green,
+                            color: AppColors.success,
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
@@ -1688,7 +1689,7 @@ class MemberSubscriptionPage extends StatelessWidget {
           ),
           child: Icon(
             paid ? Icons.check_circle : Icons.pending,
-            color: paid ? Colors.green : Colors.red,
+            color: paid ? AppColors.success : AppColors.error,
             size: 24,
           ),
         ),
@@ -1740,7 +1741,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: Colors.red,
+        backgroundColor: AppColors.error,
         action: SnackBarAction(
           label: 'Réessayer',
           textColor: Theme.of(context).colorScheme.primary,
@@ -1882,7 +1883,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                     ),
                     child: Icon(
                       Icons.play_circle_outline,
-                      color: Colors.green,
+                      color: AppColors.success,
                       size: 28,
                     ),
                   ),
@@ -1917,7 +1918,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                             'Aujourd\'hui',
                             style: TextStyle(
                               fontSize: 12,
-                              color: Colors.green,
+                              color: AppColors.success,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -2009,7 +2010,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                         ),
                         child: Icon(
                           Icons.fitness_center,
-                          color: Colors.green,
+                          color: AppColors.success,
                           size: 24,
                         ),
                       ),
@@ -2205,11 +2206,11 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
   Color _getStatusColor(String status) {
     switch (status) {
       case 'active':
-        return Colors.green;
+        return AppColors.success;
       case 'completed':
-        return Colors.blue;
+        return AppColors.info;
       case 'cancelled':
-        return Colors.red;
+        return AppColors.error;
       default:
         return Colors.grey;
     }
@@ -2400,7 +2401,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                         color: Colors.orange.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: Colors.orange,
+                          color: AppColors.warning,
                           width: 1,
                         ),
                       ),
@@ -2410,7 +2411,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                           Icon(
                             Icons.schedule,
                             size: 14,
-                            color: Colors.orange,
+                            color: AppColors.warning,
                           ),
                           SizedBox(width: 4),
                           Text(
@@ -2418,7 +2419,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
-                              color: Colors.orange,
+                              color: AppColors.warning,
                             ),
                           ),
                         ],
@@ -2561,7 +2562,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Session expirée'),
-            backgroundColor: Colors.red.shade400,
+            backgroundColor: AppColors.error,
           ),
         );
         return;
@@ -2649,7 +2650,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                 ),
               ],
             ),
-            backgroundColor: Colors.green.shade600,
+            backgroundColor: AppColors.success,
             duration: Duration(seconds: 4),
           ),
         );
@@ -2982,7 +2983,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                             Container(
                               padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                               decoration: BoxDecoration(
-                                color: subscriptionStatus == 'active' ? Colors.green : Colors.red,
+                                color: subscriptionStatus == 'active' ? AppColors.success : AppColors.error,
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Text(
@@ -3074,7 +3075,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
               
               // Logout button
               Card(
-                color: Colors.red.shade400,
+                color: AppColors.error,
                 elevation: 2,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/services/notification_service.dart';
+import '../../core/theme/theme.dart';
 
 /// Écran de test et démonstration des notifications
 class NotificationTestScreen extends StatelessWidget {
@@ -26,8 +27,8 @@ class NotificationTestScreen extends StatelessWidget {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF1a1f2e),
-              Color(0xFF2d3748),
+              AppColors.darkBackground,
+              AppColors.darkSurface,
             ],
           ),
         ),
@@ -163,7 +164,7 @@ class NotificationTestScreen extends StatelessWidget {
                             icon: const Icon(Icons.list, size: 16),
                             label: const Text('Voir en attente', style: TextStyle(fontSize: 11)),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF2d3748),
+                              backgroundColor: AppColors.darkCard,
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 8),
                             ),
@@ -178,7 +179,7 @@ class NotificationTestScreen extends StatelessWidget {
                             icon: const Icon(Icons.clear_all, size: 16),
                             label: const Text('Tout annuler', style: TextStyle(fontSize: 11)),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red.shade700,
+                              backgroundColor: AppColors.error,
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 8),
                             ),
@@ -201,7 +202,7 @@ class NotificationTestScreen extends StatelessWidget {
                               icon: const Icon(Icons.list),
                               label: const Text('Voir en attente'),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF2d3748),
+                                backgroundColor: AppColors.darkCard,
                                 foregroundColor: Colors.white,
                                 padding: const EdgeInsets.symmetric(vertical: 12),
                               ),
@@ -218,7 +219,7 @@ class NotificationTestScreen extends StatelessWidget {
                               icon: const Icon(Icons.clear_all),
                               label: const Text('Tout annuler'),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red.shade700,
+                                backgroundColor: AppColors.error,
                                 foregroundColor: Colors.white,
                                 padding: const EdgeInsets.symmetric(vertical: 12),
                               ),
@@ -264,7 +265,7 @@ class NotificationTestScreen extends StatelessWidget {
         final descSize = isWatch ? 10.0 : 14.0;
         
         return Card(
-          color: const Color(0xFF2d3748),
+          color: AppColors.darkCard,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(isWatch ? 8 : 12),
           ),
@@ -278,12 +279,12 @@ class NotificationTestScreen extends StatelessWidget {
                   Container(
                     padding: EdgeInsets.all(iconPadding),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFe89547).withValues(alpha: 0.2),
+                      color: AppColors.primary.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(isWatch ? 8 : 12),
                     ),
                     child: Icon(
                       icon,
-                      color: const Color(0xFFe89547),
+                      color: AppColors.primary,
                       size: iconSize,
                     ),
                   ),
@@ -313,7 +314,7 @@ class NotificationTestScreen extends StatelessWidget {
                   ),
                   Icon(
                     Icons.arrow_forward_ios,
-                    color: const Color(0xFFe89547),
+                    color: AppColors.primary,
                     size: isWatch ? 12 : 16,
                   ),
                 ],
@@ -329,7 +330,7 @@ class NotificationTestScreen extends StatelessWidget {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: const Color(0xFFe89547),
+        backgroundColor: AppColors.primary,
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -339,7 +340,7 @@ class NotificationTestScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF2d3748),
+        backgroundColor: AppColors.darkCard,
         title: Text(
           title,
           style: const TextStyle(color: Colors.white),
@@ -356,7 +357,7 @@ class NotificationTestScreen extends StatelessWidget {
             ),
             child: const Text(
               'OK',
-              style: TextStyle(color: Color(0xFFe89547)),
+              style: TextStyle(color: AppColors.primary),
             ),
           ),
         ],

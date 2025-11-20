@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/services/api_service.dart';
+import '../../core/theme/theme.dart';
 
 class SetupPasswordScreen extends StatefulWidget {
   const SetupPasswordScreen({super.key});
@@ -71,7 +72,7 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Mot de passe créé avec succès'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.success,
             duration: Duration(seconds: 3),
           ),
         );
@@ -108,7 +109,7 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: Colors.red,
+        backgroundColor: AppColors.error,
         duration: const Duration(seconds: 3),
       ),
     );
@@ -122,10 +123,9 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              const Color(0xFF1a1f2e),
-              const Color(0xFF2d3748),
-            ],
+            colors: Theme.of(context).brightness == Brightness.dark
+                ? [AppColors.darkBackground, AppColors.darkSurface]
+                : [AppColors.lightBackground, AppColors.lightSurface],
           ),
         ),
         child: SafeArea(
@@ -192,7 +192,7 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
                       decoration: const InputDecoration(
                         labelText: 'Email',
                         hintText: 'votre.email@example.com',
-                        prefixIcon: Icon(Icons.email, color: Color(0xFFe89547)),
+                        prefixIcon: Icon(Icons.email, color: AppColors.primary),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -207,7 +207,7 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
                       decoration: const InputDecoration(
                         labelText: 'Code reçu par email',
                         hintText: '123456',
-                        prefixIcon: Icon(Icons.password, color: Color(0xFFe89547)),
+                        prefixIcon: Icon(Icons.password, color: AppColors.primary),
                         counterText: '',
                       ),
                     ),
@@ -222,7 +222,7 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
                       decoration: InputDecoration(
                         labelText: 'Nouveau mot de passe',
                         hintText: 'Minimum 6 caractères',
-                        prefixIcon: const Icon(Icons.lock, color: Color(0xFFe89547)),
+                        prefixIcon: const Icon(Icons.lock, color: AppColors.primary),
                         suffixIcon: IconButton(
                           icon: Icon(
                             _obscurePassword ? Icons.visibility_off : Icons.visibility,
@@ -244,7 +244,7 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
                       style: const TextStyle(color: Colors.white, fontSize: 16),
                       decoration: InputDecoration(
                         labelText: 'Confirmer le mot de passe',
-                        prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFFe89547)),
+                        prefixIcon: const Icon(Icons.lock_outline, color: AppColors.primary),
                         suffixIcon: IconButton(
                           icon: Icon(
                             _obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
@@ -289,17 +289,17 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFe89547).withValues(alpha: 0.1),
+                        color: AppColors.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: const Color(0xFFe89547).withValues(alpha: 0.3),
+                          color: AppColors.primary.withValues(alpha: 0.3),
                         ),
                       ),
                       child: Row(
                         children: [
                           const Icon(
                             Icons.info_outline,
-                            color: Color(0xFFe89547),
+                            color: AppColors.primary,
                             size: 24,
                           ),
                           const SizedBox(width: 12),

@@ -7,6 +7,7 @@ import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/services/notification_service.dart';
 import '../../core/services/ota_update_service.dart';
+import '../../core/theme/theme.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -134,7 +135,7 @@ class _SplashScreenState extends State<SplashScreen> {
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: const Color(0xFF2d3748),
+          backgroundColor: AppColors.darkCard,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
@@ -143,12 +144,12 @@ class _SplashScreenState extends State<SplashScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF4CAF50).withValues(alpha: 0.2),
+                  color: AppColors.success.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(
                   Icons.notifications_active,
-                  color: Color(0xFF4CAF50),
+                  color: AppColors.success,
                   size: 28,
                 ),
               ),
@@ -177,7 +178,7 @@ class _SplashScreenState extends State<SplashScreen> {
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4CAF50),
+                backgroundColor: AppColors.success,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -212,8 +213,8 @@ class _SplashScreenState extends State<SplashScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              const Color(0xFF1a1f2e),
-              const Color(0xFF2d3748),
+              AppColors.darkBackground,
+              AppColors.darkSurface,
             ],
           ),
         ),
@@ -250,7 +251,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   Column(
                     children: [
                       CircularProgressIndicator(
-                        color: const Color(0xFFe89547),
+                        color: AppColors.primary,
                         strokeWidth: isWatch ? 2.0 : 4.0,
                       ),
                       const SizedBox(height: 16),
@@ -319,7 +320,7 @@ class _OTAUpdateDialogState extends State<_OTAUpdateDialog> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Erreur lors du téléchargement'),
-              backgroundColor: Colors.red,
+              backgroundColor: AppColors.error,
             ),
           );
         }
@@ -332,7 +333,7 @@ class _OTAUpdateDialogState extends State<_OTAUpdateDialog> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Erreur: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -342,19 +343,19 @@ class _OTAUpdateDialogState extends State<_OTAUpdateDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      backgroundColor: const Color(0xFF2d3748),
+      backgroundColor: AppColors.darkCard,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       title: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: const Color(0xFF2196F3).withValues(alpha: 0.2),
+              color: AppColors.info.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(8),
             ),
             child: const Icon(
               Icons.system_update,
-              color: Color(0xFF2196F3),
+              color: AppColors.info,
               size: 28,
             ),
           ),
@@ -376,13 +377,13 @@ class _OTAUpdateDialogState extends State<_OTAUpdateDialog> {
               padding: const EdgeInsets.all(12),
               margin: const EdgeInsets.only(bottom: 16),
               decoration: BoxDecoration(
-                color: const Color(0xFFFF6B6B).withValues(alpha: 0.2),
+                color: AppColors.error.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: const Color(0xFFFF6B6B).withValues(alpha: 0.5)),
+                border: Border.all(color: AppColors.error.withValues(alpha: 0.5)),
               ),
               child: const Row(
                 children: [
-                  Icon(Icons.warning, color: Color(0xFFFF6B6B), size: 20),
+                  Icon(Icons.warning, color: AppColors.error, size: 20),
                   SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -412,7 +413,7 @@ class _OTAUpdateDialogState extends State<_OTAUpdateDialog> {
             LinearProgressIndicator(
               value: _downloadProgress,
               backgroundColor: Colors.white12,
-              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF2196F3)),
+              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.info),
               minHeight: 8,
               borderRadius: BorderRadius.circular(4),
             ),
@@ -437,7 +438,7 @@ class _OTAUpdateDialogState extends State<_OTAUpdateDialog> {
         if (!_isDownloading)
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF2196F3),
+              backgroundColor: AppColors.info,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),

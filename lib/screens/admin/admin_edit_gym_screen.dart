@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
+import '../../core/theme/theme.dart';
 
 class AdminEditGymScreen extends StatefulWidget {
   final Map<String, dynamic> gym;
@@ -61,7 +62,7 @@ class _AdminEditGymScreenState extends State<AdminEditGymScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Salle modifiée avec succès !'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.success,
           ),
         );
         Navigator.pop(context, true);
@@ -73,7 +74,7 @@ class _AdminEditGymScreenState extends State<AdminEditGymScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Erreur: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -90,7 +91,7 @@ class _AdminEditGymScreenState extends State<AdminEditGymScreen> {
           'Modifier salle',
           style: TextStyle(color: Colors.white),
         ),
-        backgroundColor: const Color(0xFF1a1f2e),
+        backgroundColor: AppColors.darkBackground,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Container(
@@ -99,8 +100,7 @@ class _AdminEditGymScreenState extends State<AdminEditGymScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              const Color(0xFF1a1f2e),
-              const Color(0xFF2d3748),
+              AppColors.darkBackground, AppColors.darkSurface,
             ],
           ),
         ),
@@ -118,11 +118,11 @@ class _AdminEditGymScreenState extends State<AdminEditGymScreen> {
                     height: 80,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: const Color(0xFFe89547).withValues(alpha: 0.2),
+                      color: AppColors.primary.withValues(alpha: 0.2),
                     ),
                     child: const Icon(
                       Icons.fitness_center,
-                      color: Color(0xFFe89547),
+                      color: AppColors.primary,
                       size: 40,
                     ),
                   ),
@@ -135,9 +135,9 @@ class _AdminEditGymScreenState extends State<AdminEditGymScreen> {
                     decoration: InputDecoration(
                       labelText: 'Nom de la salle',
                       labelStyle: const TextStyle(color: Colors.white60),
-                      prefixIcon: const Icon(Icons.business, color: Color(0xFFe89547)),
+                      prefixIcon: const Icon(Icons.business, color: AppColors.primary),
                       filled: true,
-                      fillColor: const Color(0xFF2d3748),
+                      fillColor: AppColors.darkCard,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
@@ -160,9 +160,9 @@ class _AdminEditGymScreenState extends State<AdminEditGymScreen> {
                     decoration: InputDecoration(
                       labelText: 'Adresse',
                       labelStyle: const TextStyle(color: Colors.white60),
-                      prefixIcon: const Icon(Icons.location_on, color: Color(0xFFe89547)),
+                      prefixIcon: const Icon(Icons.location_on, color: AppColors.primary),
                       filled: true,
-                      fillColor: const Color(0xFF2d3748),
+                      fillColor: AppColors.darkCard,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
@@ -185,9 +185,9 @@ class _AdminEditGymScreenState extends State<AdminEditGymScreen> {
                     decoration: InputDecoration(
                       labelText: 'Téléphone (optionnel)',
                       labelStyle: const TextStyle(color: Colors.white60),
-                      prefixIcon: const Icon(Icons.phone, color: Color(0xFFe89547)),
+                      prefixIcon: const Icon(Icons.phone, color: AppColors.primary),
                       filled: true,
-                      fillColor: const Color(0xFF2d3748),
+                      fillColor: AppColors.darkCard,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
@@ -200,7 +200,7 @@ class _AdminEditGymScreenState extends State<AdminEditGymScreen> {
                   ElevatedButton(
                     onPressed: _isLoading ? null : _updateGym,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFe89547),
+                      backgroundColor: AppColors.primary,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),

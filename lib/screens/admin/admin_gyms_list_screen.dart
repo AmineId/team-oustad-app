@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
+import '../../core/theme/theme.dart';
 
 class AdminGymsListScreen extends StatefulWidget {
   const AdminGymsListScreen({super.key});
@@ -105,7 +106,7 @@ class _AdminGymsListScreenState extends State<AdminGymsListScreen> {
             const SnackBar(content: Text('Création salle en développement')),
           );
         },
-        backgroundColor: const Color(0xFFe89547),
+        backgroundColor: AppColors.primary,
         child: const Icon(Icons.add, color: Colors.white),
       ),
       body: Container(
@@ -114,8 +115,8 @@ class _AdminGymsListScreenState extends State<AdminGymsListScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              const Color(0xFF1a1f2e),
-              const Color(0xFF2d3748),
+              AppColors.darkBackground,
+              AppColors.darkSurface,
             ],
           ),
         ),
@@ -131,7 +132,7 @@ class _AdminGymsListScreenState extends State<AdminGymsListScreen> {
                   decoration: InputDecoration(
                     hintText: 'Rechercher une salle...',
                     hintStyle: const TextStyle(color: Colors.white60),
-                    prefixIcon: const Icon(Icons.search, color: Color(0xFFe89547)),
+                    prefixIcon: const Icon(Icons.search, color: AppColors.primary),
                     suffixIcon: _searchController.text.isNotEmpty
                         ? IconButton(
                             icon: const Icon(Icons.clear, color: Colors.white60),
@@ -141,7 +142,7 @@ class _AdminGymsListScreenState extends State<AdminGymsListScreen> {
                           )
                         : null,
                     filled: true,
-                    fillColor: const Color(0xFF2d3748),
+                    fillColor: AppColors.darkCard,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(24),
                       borderSide: BorderSide.none,
@@ -155,7 +156,7 @@ class _AdminGymsListScreenState extends State<AdminGymsListScreen> {
                 child: _isLoading
                     ? const Center(
                         child: CircularProgressIndicator(
-                          color: Color(0xFFe89547),
+                          color: AppColors.primary,
                         ),
                       )
                     : _errorMessage.isNotEmpty
@@ -165,7 +166,7 @@ class _AdminGymsListScreenState extends State<AdminGymsListScreen> {
                               children: [
                                 const Icon(
                                   Icons.error_outline,
-                                  color: Colors.red,
+                                  color: AppColors.error,
                                   size: 48,
                                 ),
                                 const SizedBox(height: 16),
@@ -213,7 +214,7 @@ class _AdminGymsListScreenState extends State<AdminGymsListScreen> {
                               )
                             : RefreshIndicator(
                                 onRefresh: _loadGyms,
-                                color: const Color(0xFFe89547),
+                                color: AppColors.primary,
                                 child: ListView.builder(
                                   padding: const EdgeInsets.symmetric(horizontal: 16),
                                   itemCount: _filteredGyms.length,
@@ -259,7 +260,7 @@ class _GymCard extends StatelessWidget {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      color: const Color(0xFF2d3748),
+      color: AppColors.darkCard,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
@@ -276,16 +277,16 @@ class _GymCard extends StatelessWidget {
                 height: 60,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: const Color(0xFFe89547).withValues(alpha: 0.2),
+                  color: AppColors.primary.withValues(alpha: 0.2),
                   border: Border.all(
-                    color: const Color(0xFFe89547),
+                    color: AppColors.primary,
                     width: 2,
                   ),
                 ),
                 child: const Center(
                   child: Icon(
                     Icons.fitness_center,
-                    color: Color(0xFFe89547),
+                    color: AppColors.primary,
                     size: 28,
                   ),
                 ),
@@ -322,13 +323,13 @@ class _GymCard extends StatelessWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFe89547).withValues(alpha: 0.2),
+                        color: AppColors.primary.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
                         '$memberCount membre${memberCount > 1 ? 's' : ''}',
                         style: const TextStyle(
-                          color: Color(0xFFe89547),
+                          color: AppColors.primary,
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
                         ),

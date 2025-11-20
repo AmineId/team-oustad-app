@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
+import '../../core/theme/theme.dart';
 import 'admin_subscription_details_screen.dart';
 import 'admin_create_subscription_screen.dart';
 import 'admin_create_planning_screen.dart';
@@ -171,14 +172,14 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
   Color _getStatusColor(String status) {
     switch (status) {
       case 'active':
-        return Colors.green;
+        return AppColors.success;
       case 'paused':
-        return Colors.orange;
+        return AppColors.warning;
       case 'cancelled':
       case 'expired':
-        return Colors.red;
+        return AppColors.error;
       case 'pending':
-        return Colors.blue;
+        return AppColors.info;
       default:
         return Colors.grey;
     }
@@ -219,15 +220,15 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              const Color(0xFF1a1f2e),
-              const Color(0xFF2d3748),
+              AppColors.darkBackground,
+              AppColors.darkSurface,
             ],
           ),
         ),
         child: _isLoading
             ? const Center(
                 child: CircularProgressIndicator(
-                  color: Color(0xFFe89547),
+                  color: AppColors.primary,
                 ),
               )
             : _errorMessage.isNotEmpty
@@ -237,7 +238,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                       children: [
                         const Icon(
                           Icons.error_outline,
-                          color: Colors.red,
+                          color: AppColors.error,
                           size: 48,
                         ),
                         const SizedBox(height: 16),
@@ -262,7 +263,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                   )
                 : RefreshIndicator(
                     onRefresh: _loadMemberDetails,
-                    color: const Color(0xFFe89547),
+                    color: AppColors.primary,
                     child: SingleChildScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
                       padding: const EdgeInsets.all(16.0),
@@ -300,7 +301,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                                   _loadMemberDetails();
                                 },
                                 icon: const Icon(Icons.add_circle),
-                                color: const Color(0xFFe89547),
+                                color: AppColors.primary,
                                 iconSize: 32,
                                 tooltip: 'Ajouter un abonnement',
                               ),
@@ -364,7 +365,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                                   _loadMemberDetails();
                                 },
                                 icon: const Icon(Icons.add_circle),
-                                color: const Color(0xFFe89547),
+                                color: AppColors.primary,
                                 iconSize: 32,
                                 tooltip: 'Ajouter un planning',
                               ),
@@ -426,7 +427,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF2d3748),
+        color: AppColors.darkCard,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -437,9 +438,9 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
             height: 80,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: const Color(0xFFe89547).withValues(alpha: 0.2),
+              color: AppColors.primary.withValues(alpha: 0.2),
               border: Border.all(
-                color: const Color(0xFFe89547),
+                color: AppColors.primary,
                 width: 3,
               ),
             ),
@@ -447,7 +448,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
               child: Text(
                 initials,
                 style: const TextStyle(
-                  color: Color(0xFFe89547),
+                  color: AppColors.primary,
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                 ),
@@ -477,13 +478,13 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
               vertical: 6,
             ),
             decoration: BoxDecoration(
-              color: const Color(0xFFe89547).withValues(alpha: 0.2),
+              color: AppColors.primary.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
               uniqueCode,
               style: const TextStyle(
-                color: Color(0xFFe89547),
+                color: AppColors.primary,
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
@@ -509,7 +510,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
   Widget _buildInfoRow(IconData icon, String text) {
     return Row(
       children: [
-        Icon(icon, color: const Color(0xFFe89547), size: 20),
+        Icon(icon, color: AppColors.primary, size: 20),
         const SizedBox(width: 12),
         Expanded(
           child: Text(
@@ -532,7 +533,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
     
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      color: const Color(0xFF2d3748),
+      color: AppColors.darkCard,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
@@ -612,7 +613,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                 Text(
                   '${subscriptionType!['monthlyPrice']} € / mois',
                   style: const TextStyle(
-                    color: Color(0xFFe89547),
+                    color: AppColors.primary,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
@@ -659,7 +660,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
     
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      color: const Color(0xFF2d3748),
+      color: AppColors.darkCard,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
@@ -735,7 +736,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
               if (coach != null)
                 Row(
                   children: [
-                    const Icon(Icons.fitness_center, color: Color(0xFFe89547), size: 16),
+                    const Icon(Icons.fitness_center, color: AppColors.primary, size: 16),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -817,7 +818,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
         maxChildSize: 0.95,
         builder: (context, scrollController) => Container(
           decoration: const BoxDecoration(
-            color: Color(0xFF1a1f2e),
+            color: AppColors.darkBackground,
             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
           child: Column(
@@ -826,7 +827,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF2d3748),
+                  color: AppColors.darkCard,
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
                   border: Border(
                     bottom: BorderSide(
@@ -949,7 +950,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF2d3748),
+                          color: AppColors.darkCard,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
@@ -969,10 +970,10 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                           margin: const EdgeInsets.only(bottom: 12),
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF2d3748),
+                            color: AppColors.darkCard,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: const Color(0xFFe89547).withValues(alpha: 0.3),
+                              color: AppColors.primary.withValues(alpha: 0.3),
                               width: 1,
                             ),
                           ),
@@ -981,12 +982,12 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                               Container(
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFe89547).withValues(alpha: 0.2),
+                                  color: AppColors.primary.withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: const Icon(
                                   Icons.fitness_center,
-                                  color: Color(0xFFe89547),
+                                  color: AppColors.primary,
                                   size: 20,
                                 ),
                               ),
@@ -1036,11 +1037,11 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                         label: const Text('Supprimer le planning'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.red.withValues(alpha: 0.2),
-                          foregroundColor: Colors.red,
+                          foregroundColor: AppColors.error,
                           padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
-                            side: const BorderSide(color: Colors.red, width: 1),
+                            side: const BorderSide(color: AppColors.error, width: 1),
                           ),
                         ),
                       ),
@@ -1064,10 +1065,10 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: const Color(0xFFe89547).withValues(alpha: 0.2),
+            color: AppColors.primary.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(icon, color: const Color(0xFFe89547), size: 20),
+          child: Icon(icon, color: AppColors.primary, size: 20),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -1123,7 +1124,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF2d3748),
+        backgroundColor: AppColors.darkCard,
         title: const Text(
           'Confirmer la suppression',
           style: TextStyle(color: Colors.white),
@@ -1149,7 +1150,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
               _deletePlanning(planningId);
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
+              backgroundColor: AppColors.error,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
@@ -1168,7 +1169,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('❌ Token non disponible'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
         return;
@@ -1181,7 +1182,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('❌ ID de planning invalide'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
         return;
@@ -1196,7 +1197,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('✅ Planning supprimé avec succès'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.success,
           ),
         );
         
@@ -1206,7 +1207,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('❌ Erreur lors de la suppression du planning'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -1215,7 +1216,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('❌ Erreur: $e'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.error,
         ),
       );
     }

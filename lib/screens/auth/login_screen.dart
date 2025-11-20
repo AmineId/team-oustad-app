@@ -168,7 +168,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
         SnackBar(
           content: Row(
             children: [
-              const Icon(Icons.error_outline, color: Color(0xFFFF6B6B), size: 24),
+              const Icon(Icons.error_outline, color: AppColors.error, size: 24),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
@@ -178,11 +178,11 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
               ),
             ],
           ),
-          backgroundColor: const Color(0xFF2d1f1f),
+          backgroundColor: AppColors.darkCard,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
-            side: const BorderSide(color: Color(0xFFFF6B6B), width: 1),
+            side: const BorderSide(color: AppColors.error, width: 1),
           ),
           margin: EdgeInsets.only(
             bottom: MediaQuery.of(context).size.height - 200,
@@ -204,7 +204,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
         SnackBar(
           content: const Row(
             children: [
-              Icon(Icons.error_outline, color: Color(0xFFFF6B6B), size: 24),
+              Icon(Icons.error_outline, color: AppColors.error, size: 24),
               SizedBox(width: 12),
               Expanded(
                 child: Text(
@@ -214,11 +214,11 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
               ),
             ],
           ),
-          backgroundColor: Color(0xFF2d1f1f),
+          backgroundColor: AppColors.darkCard,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
-            side: BorderSide(color: Color(0xFFFF6B6B), width: 1),
+            side: BorderSide(color: AppColors.error, width: 1),
           ),
           margin: EdgeInsets.only(
             bottom: MediaQuery.of(context).size.height - 200,
@@ -299,7 +299,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
           SnackBar(
             content: const Row(
               children: [
-                Icon(Icons.error_outline, color: Color(0xFFFF6B6B), size: 24),
+                Icon(Icons.error_outline, color: AppColors.error, size: 24),
                 SizedBox(width: 12),
                 Expanded(
                   child: Text(
@@ -309,11 +309,11 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                 ),
               ],
             ),
-            backgroundColor: Color(0xFF2d1f1f),
+            backgroundColor: AppColors.darkCard,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
-              side: BorderSide(color: Color(0xFFFF6B6B), width: 1),
+              side: BorderSide(color: AppColors.error, width: 1),
             ),
             margin: EdgeInsets.only(
               bottom: MediaQuery.of(context).size.height - 200,
@@ -329,7 +329,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
           SnackBar(
             content: Row(
               children: [
-                const Icon(Icons.error_outline, color: Color(0xFFFF6B6B), size: 24),
+                const Icon(Icons.error_outline, color: AppColors.error, size: 24),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
@@ -339,11 +339,11 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                 ),
               ],
             ),
-            backgroundColor: const Color(0xFF2d1f1f),
+            backgroundColor: AppColors.darkCard,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
-              side: const BorderSide(color: Color(0xFFFF6B6B), width: 1),
+              side: const BorderSide(color: AppColors.error, width: 1),
             ),
             margin: EdgeInsets.only(
               bottom: MediaQuery.of(context).size.height - 200,
@@ -427,7 +427,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      CircularProgressIndicator(color: Color(0xFFe89547)),
+                      CircularProgressIndicator(color: AppColors.primary),
                       SizedBox(height: 16),
                       Text(
                         'Vérification de la connexion...',
@@ -452,8 +452,8 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                             colors: [
-                              const Color(0xFF2d3748),
-                              const Color(0xFF1a1f2e),
+                              AppColors.darkCard,
+                              AppColors.darkBackground,
                             ],
                           ),
                         ),
@@ -473,7 +473,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                                 style: TextStyle(
                                   fontSize: 32,
                                   fontWeight: FontWeight.bold,
-                                  color: Color(0xFFe89547),
+                                  color: AppColors.primary,
                                 ),
                               ),
                               const SizedBox(height: 12),
@@ -546,7 +546,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
             children: [
               const Icon(
                 Icons.warning,
-                color: Colors.orange,
+                color: AppColors.warning,
                 size: 64,
               ),
               const SizedBox(height: 16),

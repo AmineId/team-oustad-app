@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
+import '../../core/theme/theme.dart';
 
 class AdminCreatePlanningScreen extends StatefulWidget {
   final int? preselectedMemberId;
@@ -166,10 +167,10 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
       await showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          backgroundColor: const Color(0xFF2d3748),
+          backgroundColor: AppColors.darkCard,
           title: const Row(
             children: [
-              Icon(Icons.check_circle, color: Colors.green),
+              Icon(Icons.check_circle, color: AppColors.success),
               SizedBox(width: 8),
               Text(
                 'Succès',
@@ -189,7 +190,7 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
               ),
               child: const Text(
                 'OK',
-                style: TextStyle(color: Color(0xFFe89547)),
+                style: TextStyle(color: AppColors.primary),
               ),
             ),
           ],
@@ -218,10 +219,10 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF2d3748),
+        backgroundColor: AppColors.darkCard,
         title: const Row(
           children: [
-            Icon(Icons.error, color: Colors.red),
+            Icon(Icons.error, color: AppColors.error),
             SizedBox(width: 8),
             Text(
               'Erreur',
@@ -241,7 +242,7 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
             ),
             child: const Text(
               'OK',
-              style: TextStyle(color: Color(0xFFe89547)),
+              style: TextStyle(color: AppColors.primary),
             ),
           ),
         ],
@@ -295,8 +296,7 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              const Color(0xFF1a1f2e),
-              const Color(0xFF2d3748),
+              AppColors.darkBackground, AppColors.darkSurface,
             ],
           ),
         ),
@@ -344,7 +344,7 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
                   ElevatedButton(
                     onPressed: _isLoading ? null : details.onStepContinue,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFe89547),
+                      backgroundColor: AppColors.primary,
                       foregroundColor: Colors.white,
                     ),
                     child: _isLoading && _currentStep == 2
@@ -418,7 +418,7 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
               borderSide: BorderSide(color: Colors.white24),
             ),
             focusedBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: Color(0xFFe89547)),
+              borderSide: BorderSide(color: AppColors.primary),
             ),
           ),
         ),
@@ -437,7 +437,7 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
               borderSide: BorderSide(color: Colors.white24),
             ),
             focusedBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: Color(0xFFe89547)),
+              borderSide: BorderSide(color: AppColors.primary),
             ),
           ),
         ),
@@ -455,11 +455,11 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
         const SizedBox(height: 8),
         DropdownButtonFormField<int>(
           initialValue: _selectedMemberId,
-          dropdownColor: const Color(0xFF2d3748),
+          dropdownColor: AppColors.darkCard,
           style: const TextStyle(color: Colors.white),
           decoration: InputDecoration(
             filled: true,
-            fillColor: const Color(0xFF2d3748),
+            fillColor: AppColors.darkCard,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide.none,
@@ -493,7 +493,7 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
                 : 'Sélectionner une date',
             style: const TextStyle(color: Colors.white),
           ),
-          trailing: const Icon(Icons.calendar_today, color: Color(0xFFe89547)),
+          trailing: const Icon(Icons.calendar_today, color: AppColors.primary),
           onTap: () async {
             final date = await showDatePicker(
               context: context,
@@ -504,8 +504,8 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
                 return Theme(
                   data: ThemeData.dark().copyWith(
                     colorScheme: const ColorScheme.dark(
-                      primary: Color(0xFFe89547),
-                      surface: Color(0xFF2d3748),
+                      primary: AppColors.primary,
+                      surface: AppColors.darkCard,
                     ),
                   ),
                   child: child!,
@@ -537,7 +537,7 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
                 : 'Sélectionner une date',
             style: const TextStyle(color: Colors.white),
           ),
-          trailing: const Icon(Icons.calendar_today, color: Color(0xFFe89547)),
+          trailing: const Icon(Icons.calendar_today, color: AppColors.primary),
           onTap: () async {
             if (_startDate == null) {
               _showError('Veuillez d\'abord sélectionner une date de début');
@@ -553,8 +553,8 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
                 return Theme(
                   data: ThemeData.dark().copyWith(
                     colorScheme: const ColorScheme.dark(
-                      primary: Color(0xFFe89547),
-                      surface: Color(0xFF2d3748),
+                      primary: AppColors.primary,
+                      surface: AppColors.darkCard,
                     ),
                   ),
                   child: child!,
@@ -604,13 +604,13 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
                   }
                 });
               },
-              selectedColor: const Color(0xFFe89547).withValues(alpha: 0.3),
-              checkmarkColor: const Color(0xFFe89547),
+              selectedColor: AppColors.primary.withValues(alpha: 0.3),
+              checkmarkColor: AppColors.primary,
               labelStyle: TextStyle(
-                color: isSelected ? const Color(0xFFe89547) : Colors.white60,
+                color: isSelected ? AppColors.primary : Colors.white60,
               ),
               side: BorderSide(
-                color: isSelected ? const Color(0xFFe89547) : Colors.white24,
+                color: isSelected ? AppColors.primary : Colors.white24,
               ),
             );
           }),
@@ -639,7 +639,7 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
           
           return Card(
             margin: const EdgeInsets.only(bottom: 16),
-            color: const Color(0xFF2d3748),
+            color: AppColors.darkCard,
             child: ExpansionTile(
               title: Text(
                 dayNames[dayOfWeek],
@@ -652,7 +652,7 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
                 '${selectedExercises.length} exercice(s) sélectionné(s)',
                 style: const TextStyle(color: Colors.white60),
               ),
-              iconColor: const Color(0xFFe89547),
+              iconColor: AppColors.primary,
               collapsedIconColor: Colors.white60,
               children: _allExercises.map((exercise) {
                 final exerciseId = exercise['id'] as int;
@@ -679,7 +679,7 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
                     exercise['category'] as String? ?? '',
                     style: const TextStyle(color: Colors.white60, fontSize: 12),
                   ),
-                  fillColor: WidgetStateProperty.all(const Color(0xFFe89547)),
+                  fillColor: WidgetStateProperty.all(AppColors.primary),
                   checkColor: Colors.white,
                 );
               }).toList(),
@@ -714,7 +714,7 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
               child: Text(
                 dayNames[dayOfWeek],
                 style: const TextStyle(
-                  color: Color(0xFFe89547),
+                  color: AppColors.primary,
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
@@ -737,7 +737,7 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
     
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      color: const Color(0xFF2d3748),
+      color: AppColors.darkCard,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(

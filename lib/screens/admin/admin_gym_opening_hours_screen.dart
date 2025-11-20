@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
+import '../../core/theme/theme.dart';
 
 class AdminGymOpeningHoursScreen extends StatefulWidget {
   final Map<String, dynamic> gym;
@@ -74,7 +75,7 @@ class _AdminGymOpeningHoursScreenState extends State<AdminGymOpeningHoursScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Erreur: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -102,7 +103,7 @@ class _AdminGymOpeningHoursScreenState extends State<AdminGymOpeningHoursScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Horaires enregistrés avec succès !'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.success,
           ),
         );
         Navigator.pop(context, true);
@@ -114,7 +115,7 @@ class _AdminGymOpeningHoursScreenState extends State<AdminGymOpeningHoursScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Erreur: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -139,9 +140,9 @@ class _AdminGymOpeningHoursScreenState extends State<AdminGymOpeningHoursScreen>
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.dark(
-              primary: Color(0xFFe89547),
+              primary: AppColors.primary,
               onSurface: Colors.white,
-              surface: Color(0xFF2d3748),
+              surface: AppColors.darkCard,
             ),
           ),
           child: child!,
@@ -165,8 +166,7 @@ class _AdminGymOpeningHoursScreenState extends State<AdminGymOpeningHoursScreen>
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              const Color(0xFF1a1f2e),
-              const Color(0xFF2d3748),
+              AppColors.darkBackground, AppColors.darkSurface,
             ],
           ),
         ),
@@ -213,7 +213,7 @@ class _AdminGymOpeningHoursScreenState extends State<AdminGymOpeningHoursScreen>
                 child: _isLoading
                     ? const Center(
                         child: CircularProgressIndicator(
-                          color: Color(0xFFe89547),
+                          color: AppColors.primary,
                         ),
                       )
                     : ListView.builder(
@@ -224,7 +224,7 @@ class _AdminGymOpeningHoursScreenState extends State<AdminGymOpeningHoursScreen>
                           final isClosed = dayData['isClosed'] as bool;
 
                           return Card(
-                            color: const Color(0xFF2d3748),
+                            color: AppColors.darkCard,
                             margin: const EdgeInsets.only(bottom: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
@@ -239,7 +239,7 @@ class _AdminGymOpeningHoursScreenState extends State<AdminGymOpeningHoursScreen>
                                       Text(
                                         _dayNames[index],
                                         style: const TextStyle(
-                                          color: Color(0xFFe89547),
+                                          color: AppColors.primary,
                                           fontSize: 18,
                                           fontWeight: FontWeight.bold,
                                         ),
@@ -255,7 +255,7 @@ class _AdminGymOpeningHoursScreenState extends State<AdminGymOpeningHoursScreen>
                                       const SizedBox(width: 8),
                                       Switch(
                                         value: isClosed,
-                                        activeTrackColor: Colors.red,
+                                        activeTrackColor: AppColors.error,
                                         onChanged: (value) {
                                           setState(() {
                                             _hoursData[index]['isClosed'] = value;
@@ -312,7 +312,7 @@ class _AdminGymOpeningHoursScreenState extends State<AdminGymOpeningHoursScreen>
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _saveOpeningHours,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFe89547),
+                      backgroundColor: AppColors.primary,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -361,10 +361,10 @@ class _AdminGymOpeningHoursScreenState extends State<AdminGymOpeningHoursScreen>
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: const Color(0xFF1a1f2e),
+          color: AppColors.darkBackground,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: const Color(0xFFe89547).withValues(alpha: 0.3),
+            color: AppColors.primary.withValues(alpha: 0.3),
           ),
         ),
         child: Column(
@@ -382,7 +382,7 @@ class _AdminGymOpeningHoursScreenState extends State<AdminGymOpeningHoursScreen>
               children: [
                 const Icon(
                   Icons.access_time,
-                  color: Color(0xFFe89547),
+                  color: AppColors.primary,
                   size: 20,
                 ),
                 const SizedBox(width: 8),

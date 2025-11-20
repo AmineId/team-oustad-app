@@ -4,6 +4,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/ota_update_service.dart';
+import '../../core/theme/theme.dart';
 
 class SecuritySettingsPage extends StatefulWidget {
   const SecuritySettingsPage({super.key});
@@ -109,7 +110,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
               children: [
                 Icon(
                   value ? Icons.notifications_active : Icons.notifications_off,
-                  color: value ? const Color(0xFF4CAF50) : Colors.white70,
+                  color: value ? AppColors.success : Colors.white70,
                   size: 24,
                 ),
                 const SizedBox(width: 12),
@@ -123,12 +124,12 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                 ),
               ],
             ),
-            backgroundColor: value ? const Color(0xFF1f2d1f) : const Color(0xFF2d2d2d),
+            backgroundColor: value ? AppColors.darkCard : AppColors.darkCard,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
               side: BorderSide(
-                color: value ? const Color(0xFF4CAF50) : Colors.white38,
+                color: value ? AppColors.success : Colors.white38,
                 width: 1,
               ),
             ),
@@ -142,7 +143,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
           const SnackBar(
             content: Row(
               children: [
-                Icon(Icons.error_outline, color: Color(0xFFFF6B6B), size: 24),
+                Icon(Icons.error_outline, color: AppColors.error, size: 24),
                 SizedBox(width: 12),
                 Expanded(
                   child: Text(
@@ -152,7 +153,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                 ),
               ],
             ),
-            backgroundColor: Color(0xFF2d1f1f),
+            backgroundColor: AppColors.darkCard,
           ),
         );
       }
@@ -189,7 +190,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
               children: [
                 Icon(
                   value ? Icons.calendar_today : Icons.event_busy,
-                  color: value ? const Color(0xFF4CAF50) : Colors.white70,
+                  color: value ? AppColors.success : Colors.white70,
                   size: 24,
                 ),
                 const SizedBox(width: 12),
@@ -203,12 +204,12 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                 ),
               ],
             ),
-            backgroundColor: value ? const Color(0xFF1f2d1f) : const Color(0xFF2d2d2d),
+            backgroundColor: value ? AppColors.darkCard : AppColors.darkCard,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
               side: BorderSide(
-                color: value ? const Color(0xFF4CAF50) : Colors.white38,
+                color: value ? AppColors.success : Colors.white38,
                 width: 1,
               ),
             ),
@@ -222,7 +223,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
           const SnackBar(
             content: Row(
               children: [
-                Icon(Icons.error_outline, color: Color(0xFFFF6B6B), size: 24),
+                Icon(Icons.error_outline, color: AppColors.error, size: 24),
                 SizedBox(width: 12),
                 Expanded(
                   child: Text(
@@ -232,7 +233,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                 ),
               ],
             ),
-            backgroundColor: Color(0xFF2d1f1f),
+            backgroundColor: AppColors.darkCard,
           ),
         );
       }
@@ -247,7 +248,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
       context: context,
       barrierDismissible: false,
       builder: (context) => const Center(
-        child: CircularProgressIndicator(color: Color(0xFF2196F3)),
+        child: CircularProgressIndicator(color: AppColors.info),
       ),
     );
 
@@ -263,7 +264,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
           title: 'Application à jour',
           message: 'Vous utilisez la dernière version de l\'application.',
           icon: Icons.check_circle_outline,
-          iconColor: const Color(0xFF4CAF50),
+          iconColor: AppColors.success,
         );
       } else {
         // Mise à jour disponible
@@ -277,7 +278,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
         title: 'Erreur',
         message: 'Impossible de vérifier les mises à jour. Vérifiez votre connexion.',
         icon: Icons.error_outline,
-        iconColor: const Color(0xFFFF6B6B),
+        iconColor: AppColors.error,
       );
     }
   }
@@ -291,7 +292,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF2d3748),
+        backgroundColor: AppColors.darkCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
@@ -315,7 +316,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
-            child: const Text('OK', style: TextStyle(color: Color(0xFF2196F3), fontSize: 16)),
+            child: const Text('OK', style: TextStyle(color: AppColors.info, fontSize: 16)),
           ),
         ],
       ),
@@ -331,19 +332,19 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
       context: context,
       barrierDismissible: !updateInfo.forceUpdate,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF2d3748),
+        backgroundColor: AppColors.darkCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: const Color(0xFF2196F3).withValues(alpha: 0.2),
+                color: AppColors.info.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Icon(
                 Icons.system_update,
-                color: Color(0xFF2196F3),
+                color: AppColors.info,
                 size: 28,
               ),
             ),
@@ -375,13 +376,13 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                 padding: const EdgeInsets.all(12),
                 margin: const EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFF6B6B).withValues(alpha: 0.2),
+                  color: AppColors.error.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: const Color(0xFFFF6B6B).withValues(alpha: 0.5)),
+                  border: Border.all(color: AppColors.error.withValues(alpha: 0.5)),
                 ),
                 child: const Row(
                   children: [
-                    Icon(Icons.warning, color: Color(0xFFFF6B6B), size: 20),
+                    Icon(Icons.warning, color: AppColors.error, size: 20),
                     SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -414,7 +415,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
             ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF2196F3),
+              backgroundColor: AppColors.info,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
@@ -437,11 +438,11 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
       builder: (context) => StatefulBuilder(
         builder: (context, setState) {
           return AlertDialog(
-            backgroundColor: const Color(0xFF2d3748),
+            backgroundColor: AppColors.darkCard,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             title: const Row(
               children: [
-                Icon(Icons.download, color: Color(0xFF2196F3), size: 28),
+                Icon(Icons.download, color: AppColors.info, size: 28),
                 SizedBox(width: 12),
                 Text('Téléchargement', style: TextStyle(color: Colors.white)),
               ],
@@ -452,7 +453,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                 LinearProgressIndicator(
                   value: _otaService.downloadProgress,
                   backgroundColor: Colors.white24,
-                  color: const Color(0xFF2196F3),
+                  color: AppColors.info,
                 ),
                 const SizedBox(height: 16),
                 Text(
@@ -482,14 +483,14 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
           title: 'Téléchargement terminé',
           message: 'La mise à jour a été téléchargée. L\'application va redémarrer.',
           icon: Icons.check_circle_outline,
-          iconColor: const Color(0xFF4CAF50),
+          iconColor: AppColors.success,
         );
       } else {
         _showUpdateDialog(
           title: 'Échec',
           message: 'Le téléchargement de la mise à jour a échoué.',
           icon: Icons.error_outline,
-          iconColor: const Color(0xFFFF6B6B),
+          iconColor: AppColors.error,
         );
       }
     });
@@ -497,16 +498,18 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              const Color(0xFF1a1f2e),
-              const Color(0xFF2d3748),
-            ],
+            colors: isDark
+                ? [AppColors.darkBackground, AppColors.darkSurface]
+                : [AppColors.lightBackground, AppColors.lightSurface],
           ),
         ),
         child: SafeArea(
@@ -522,16 +525,14 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                     child: Row(
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.arrow_back, color: Colors.white),
+                          icon: Icon(Icons.arrow_back, color: theme.textTheme.bodyLarge!.color),
                           onPressed: () => Navigator.of(context).pop(),
                         ),
                         const SizedBox(width: 8),
-                        const Text(
+                        Text(
                           'Paramètres',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                          style: AppTextStyles.h2.copyWith(
+                            color: theme.textTheme.bodyLarge!.color,
                           ),
                         ),
                       ],
@@ -546,9 +547,9 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                           maxWidth: isDesktop ? 600 : double.infinity,
                         ),
                         child: _isLoading
-                            ? const Center(
+                            ? Center(
                                 child: CircularProgressIndicator(
-                                  color: Color(0xFFe89547),
+                                  color: theme.colorScheme.primary,
                                 ),
                               )
                             : SingleChildScrollView(
@@ -557,12 +558,10 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     // En-tête Section Sécurité
-                                    const Text(
+                                    Text(
                                       'SÉCURITÉ',
-                                      style: TextStyle(
-                                        color: Colors.white70,
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600,
+                                      style: AppTextStyles.caption.copyWith(
+                                        color: theme.textTheme.bodyMedium!.color,
                                         letterSpacing: 1.2,
                                       ),
                                     ),
@@ -572,17 +571,17 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                                     Container(
                                       padding: const EdgeInsets.all(16),
                                       decoration: BoxDecoration(
-                                        color: const Color(0xFFe89547).withValues(alpha: 0.1),
+                                        color: theme.colorScheme.primary.withValues(alpha: 0.1),
                                         borderRadius: BorderRadius.circular(12),
                                         border: Border.all(
-                                          color: const Color(0xFFe89547).withValues(alpha: 0.3),
+                                          color: theme.colorScheme.primary.withValues(alpha: 0.3),
                                         ),
                                       ),
                                       child: Row(
                                         children: [
-                                          const Icon(
+                                          Icon(
                                             Icons.fingerprint,
-                                            color: Color(0xFFe89547),
+                                            color: theme.colorScheme.primary,
                                             size: 32,
                                           ),
                                           const SizedBox(width: 16),
@@ -590,12 +589,10 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                                             child: Column(
                                               crossAxisAlignment: CrossAxisAlignment.start,
                                               children: [
-                                                const Text(
+                                                Text(
                                                   'Authentification biométrique',
-                                                  style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.w600,
+                                                  style: AppTextStyles.body1.copyWith(
+                                                    color: theme.textTheme.bodyLarge!.color,
                                                   ),
                                                 ),
                                                 const SizedBox(height: 8),
@@ -603,9 +600,8 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                                                   _canCheckBiometrics
                                                       ? 'La biométrie est automatiquement activée sur votre appareil. Vous serez invité à vous authentifier avec votre empreinte digitale ou Face ID lors de la connexion.'
                                                       : 'La biométrie n\'est pas disponible sur cet appareil.',
-                                                  style: TextStyle(
-                                                    color: Colors.white.withValues(alpha: 0.8),
-                                                    fontSize: 13,
+                                                  style: AppTextStyles.body2.copyWith(
+                                                    color: theme.textTheme.bodyMedium!.color,
                                                   ),
                                                 ),
                                               ],
@@ -620,7 +616,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                                     
                                     // Changer mot de passe
                                     Card(
-                                      color: const Color(0xFF2d3748),
+                                      color: theme.cardTheme.color,
                                       child: InkWell(
                                         borderRadius: BorderRadius.circular(12),
                                         onTap: () {
@@ -637,29 +633,27 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                                               Container(
                                                 padding: const EdgeInsets.all(12),
                                                 decoration: BoxDecoration(
-                                                  color: const Color(0xFFe89547).withValues(alpha: 0.2),
+                                                  color: theme.colorScheme.primary.withValues(alpha: 0.2),
                                                   borderRadius: BorderRadius.circular(12),
                                                 ),
-                                                child: const Icon(
+                                                child: Icon(
                                                   Icons.lock_outline,
-                                                  color: Color(0xFFe89547),
+                                                  color: theme.colorScheme.primary,
                                                   size: 24,
                                                 ),
                                               ),
                                               const SizedBox(width: 16),
-                                              const Expanded(
+                                              Expanded(
                                                 child: Text(
                                                   'Modifier le mot de passe',
-                                                  style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.w500,
+                                                  style: AppTextStyles.body1.copyWith(
+                                                    color: theme.textTheme.bodyLarge!.color,
                                                   ),
                                                 ),
                                               ),
-                                              const Icon(
+                                              Icon(
                                                 Icons.arrow_forward_ios,
-                                                color: Colors.white60,
+                                                color: theme.textTheme.bodyMedium!.color,
                                                 size: 16,
                                               ),
                                             ],
@@ -671,12 +665,10 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                                     const SizedBox(height: 32),
                                     
                                     // En-tête Section Notifications
-                                    const Text(
+                                    Text(
                                       'NOTIFICATIONS',
-                                      style: TextStyle(
-                                        color: Colors.white70,
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600,
+                                      style: AppTextStyles.caption.copyWith(
+                                        color: theme.textTheme.bodyMedium!.color,
                                         letterSpacing: 1.2,
                                       ),
                                     ),
@@ -684,7 +676,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                                     
                                     // Section Notifications
                                     Card(
-                                      color: const Color(0xFF2d3748),
+                                      color: theme.cardTheme.color,
                                       child: Column(
                                         children: [
                                           // Toggle principal des notifications
@@ -695,12 +687,12 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                                                 Container(
                                                   padding: const EdgeInsets.all(12),
                                                   decoration: BoxDecoration(
-                                                    color: const Color(0xFF4CAF50).withValues(alpha: 0.2),
+                                                    color: AppColors.success.withValues(alpha: 0.2),
                                                     borderRadius: BorderRadius.circular(12),
                                                   ),
                                                   child: const Icon(
                                                     Icons.notifications_active,
-                                                    color: Color(0xFF4CAF50),
+                                                    color: AppColors.success,
                                                     size: 28,
                                                   ),
                                                 ),
@@ -734,7 +726,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                                                 Switch(
                                                   value: _notificationsEnabled,
                                                   onChanged: _toggleNotifications,
-                                                  activeTrackColor: const Color(0xFF4CAF50),
+                                                  activeTrackColor: AppColors.success,
                                                   inactiveThumbColor: Colors.white60,
                                                 ),
                                               ],
@@ -783,7 +775,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                                                   Switch(
                                                     value: _workoutNotificationsEnabled,
                                                     onChanged: _notificationsEnabled ? _toggleWorkoutNotifications : null,
-                                                    activeTrackColor: const Color(0xFF4CAF50),
+                                                    activeTrackColor: AppColors.success,
                                                     inactiveThumbColor: Colors.white60,
                                                   ),
                                                 ],
@@ -796,12 +788,10 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                                     const SizedBox(height: 32),
                                     
                                     // En-tête Section Mises à jour
-                                    const Text(
+                                    Text(
                                       'APPLICATION',
-                                      style: TextStyle(
-                                        color: Colors.white70,
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600,
+                                      style: AppTextStyles.caption.copyWith(
+                                        color: theme.textTheme.bodyMedium!.color,
                                         letterSpacing: 1.2,
                                       ),
                                     ),
@@ -809,7 +799,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                                     
                                     // Section Mises à jour
                                     Card(
-                                      color: const Color(0xFF2d3748),
+                                      color: theme.cardTheme.color,
                                       child: InkWell(
                                         borderRadius: BorderRadius.circular(12),
                                         onTap: _checkForUpdates,
@@ -820,12 +810,12 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                                               Container(
                                                 padding: const EdgeInsets.all(12),
                                                 decoration: BoxDecoration(
-                                                  color: const Color(0xFF2196F3).withValues(alpha: 0.2),
+                                                  color: AppColors.info.withValues(alpha: 0.2),
                                                   borderRadius: BorderRadius.circular(12),
                                                 ),
                                                 child: const Icon(
                                                   Icons.system_update,
-                                                  color: Color(0xFF2196F3),
+                                                  color: AppColors.info,
                                                   size: 28,
                                                 ),
                                               ),

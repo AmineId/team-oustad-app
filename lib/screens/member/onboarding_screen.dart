@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
+import '../../core/theme/theme.dart';
 import '../member/member_home_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -147,9 +148,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.dark(
-              primary: Color(0xFFe89547),
+              primary: AppColors.primary,
               onPrimary: Colors.white,
-              surface: Color(0xFF2d3748),
+              surface: AppColors.darkCard,
               onSurface: Colors.white,
             ),
           ),
@@ -186,7 +187,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Erreur lors de la capture: $e'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.error,
         ),
       );
     }
@@ -201,7 +202,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Veuillez prendre une photo de profil'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.error,
         ),
       );
       return;
@@ -304,7 +305,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Profil créé avec succès!'),
-          backgroundColor: Colors.green,
+          backgroundColor: AppColors.success,
         ),
       );
     } catch (e) {
@@ -312,7 +313,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Erreur: $e'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.error,
         ),
       );
     } finally {
@@ -350,8 +351,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                const Color(0xFF1a1f2e),
-                const Color(0xFF2d3748),
+                AppColors.darkBackground,
+                AppColors.darkSurface,
               ],
             ),
           ),
@@ -375,10 +376,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 color: _profileImage == null
-                                    ? const Color(0xFFe89547).withValues(alpha: 0.2)
+                                    ? AppColors.primary.withValues(alpha: 0.2)
                                     : null,
                                 border: Border.all(
-                                  color: const Color(0xFFe89547),
+                                  color: AppColors.primary,
                                   width: 3,
                                 ),
                                 image: _profileImage != null
@@ -392,7 +393,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                   ? const Icon(
                                       Icons.camera_alt,
                                       size: 40,
-                                      color: Color(0xFFe89547),
+                                      color: AppColors.primary,
                                     )
                                   : null,
                             ),
@@ -402,14 +403,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             onPressed: _takePicture,
                             icon: const Icon(
                               Icons.camera_alt,
-                              color: Color(0xFFe89547),
+                              color: AppColors.primary,
                             ),
                             label: Text(
                               _profileImage == null
                                   ? 'Prendre une photo'
                                   : 'Changer la photo',
                               style: const TextStyle(
-                                color: Color(0xFFe89547),
+                                color: AppColors.primary,
                                 fontSize: 14,
                               ),
                             ),
@@ -438,9 +439,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       decoration: InputDecoration(
                         labelText: 'Nom et Prénom *',
                         labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
-                        prefixIcon: const Icon(Icons.person, color: Color(0xFFe89547)),
+                        prefixIcon: const Icon(Icons.person, color: AppColors.primary),
                         filled: true,
-                        fillColor: const Color(0xFF2d3748),
+                        fillColor: AppColors.darkCard,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide.none,
@@ -468,10 +469,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       decoration: InputDecoration(
                         labelText: 'Date de naissance *',
                         labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
-                        prefixIcon: const Icon(Icons.cake, color: Color(0xFFe89547)),
-                        suffixIcon: const Icon(Icons.calendar_today, color: Color(0xFFe89547)),
+                        prefixIcon: const Icon(Icons.cake, color: AppColors.primary),
+                        suffixIcon: const Icon(Icons.calendar_today, color: AppColors.primary),
                         filled: true,
-                        fillColor: const Color(0xFF2d3748),
+                        fillColor: AppColors.darkCard,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide.none,
@@ -493,9 +494,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       decoration: InputDecoration(
                         labelText: 'Adresse (facultatif)',
                         labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
-                        prefixIcon: const Icon(Icons.location_on, color: Color(0xFFe89547)),
+                        prefixIcon: const Icon(Icons.location_on, color: AppColors.primary),
                         filled: true,
-                        fillColor: const Color(0xFF2d3748),
+                        fillColor: AppColors.darkCard,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide.none,
@@ -518,7 +519,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF2d3748),
+                        color: AppColors.darkCard,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Column(
@@ -530,7 +531,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             ),
                             value: option,
                             groupValue: _profession,
-                            fillColor: WidgetStateProperty.all(const Color(0xFFe89547)),
+                            fillColor: WidgetStateProperty.all(AppColors.primary),
                             onChanged: (value) {
                               setState(() {
                                 _profession = value!;
@@ -563,9 +564,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       decoration: InputDecoration(
                         labelText: 'Poids (kg) *',
                         labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
-                        prefixIcon: const Icon(Icons.monitor_weight, color: Color(0xFFe89547)),
+                        prefixIcon: const Icon(Icons.monitor_weight, color: AppColors.primary),
                         filled: true,
-                        fillColor: const Color(0xFF2d3748),
+                        fillColor: AppColors.darkCard,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide.none,
@@ -592,9 +593,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       decoration: InputDecoration(
                         labelText: 'Tour de taille (cm) *',
                         labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
-                        prefixIcon: const Icon(Icons.straighten, color: Color(0xFFe89547)),
+                        prefixIcon: const Icon(Icons.straighten, color: AppColors.primary),
                         filled: true,
-                        fillColor: const Color(0xFF2d3748),
+                        fillColor: AppColors.darkCard,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide.none,
@@ -621,9 +622,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       decoration: InputDecoration(
                         labelText: 'Taille (cm) *',
                         labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
-                        prefixIcon: const Icon(Icons.height, color: Color(0xFFe89547)),
+                        prefixIcon: const Icon(Icons.height, color: AppColors.primary),
                         filled: true,
-                        fillColor: const Color(0xFF2d3748),
+                        fillColor: AppColors.darkCard,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide.none,
@@ -645,14 +646,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     // Fitness Level
                     DropdownButtonFormField<String>(
                       value: _fitnessLevel,
-                      dropdownColor: const Color(0xFF2d3748),
+                      dropdownColor: AppColors.darkCard,
                       style: const TextStyle(color: Colors.white),
                       decoration: InputDecoration(
                         labelText: 'Niveau sportif *',
                         labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
-                        prefixIcon: const Icon(Icons.fitness_center, color: Color(0xFFe89547)),
+                        prefixIcon: const Icon(Icons.fitness_center, color: AppColors.primary),
                         filled: true,
-                        fillColor: const Color(0xFF2d3748),
+                        fillColor: AppColors.darkCard,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide.none,
@@ -713,15 +714,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             });
                             _saveData();
                           },
-                          backgroundColor: const Color(0xFF2d3748),
-                          selectedColor: const Color(0xFFe89547).withValues(alpha: 0.3),
-                          checkmarkColor: const Color(0xFFe89547),
+                          backgroundColor: AppColors.darkCard,
+                          selectedColor: AppColors.primary.withValues(alpha: 0.3),
+                          checkmarkColor: AppColors.primary,
                           labelStyle: TextStyle(
-                            color: isSelected ? const Color(0xFFe89547) : Colors.white.withValues(alpha: 0.7),
+                            color: isSelected ? AppColors.primary : Colors.white.withValues(alpha: 0.7),
                             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                           ),
                           side: BorderSide(
-                            color: isSelected ? const Color(0xFFe89547) : Colors.white.withValues(alpha: 0.3),
+                            color: isSelected ? AppColors.primary : Colors.white.withValues(alpha: 0.3),
                             width: 1,
                           ),
                         );
@@ -734,7 +735,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF2d3748),
+                        color: AppColors.darkCard,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
                           color: Colors.white.withValues(alpha: 0.1),
@@ -746,12 +747,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFe89547).withValues(alpha: 0.2),
+                              color: AppColors.primary.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: const Icon(
                               Icons.notifications_active,
-                              color: Color(0xFFe89547),
+                              color: AppColors.primary,
                               size: 24,
                             ),
                           ),
@@ -787,7 +788,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               });
                               _saveData();
                             },
-                            activeTrackColor: const Color(0xFFe89547),
+                            activeTrackColor: AppColors.primary,
                             inactiveThumbColor: Colors.white.withValues(alpha: 0.5),
                           ),
                         ],
@@ -802,7 +803,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       child: ElevatedButton(
                         onPressed: _isLoading ? null : _submitOnboarding,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFe89547),
+                          backgroundColor: AppColors.primary,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
+import '../../core/theme/theme.dart';
 import 'admin_member_details_screen.dart';
 import 'admin_create_member_screen.dart';
 
@@ -159,7 +160,7 @@ class _AdminMembersScreenState extends State<AdminMembersScreen> {
             }
           }
         },
-        backgroundColor: const Color(0xFFe89547),
+        backgroundColor: AppColors.primary,
         child: const Icon(Icons.add, color: Colors.white),
       ),
       body: Container(
@@ -168,8 +169,8 @@ class _AdminMembersScreenState extends State<AdminMembersScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              const Color(0xFF1a1f2e),
-              const Color(0xFF2d3748),
+              AppColors.darkBackground,
+              AppColors.darkSurface,
             ],
           ),
         ),
@@ -185,7 +186,7 @@ class _AdminMembersScreenState extends State<AdminMembersScreen> {
                   decoration: InputDecoration(
                     hintText: 'Rechercher un membre...',
                     hintStyle: const TextStyle(color: Colors.white60),
-                    prefixIcon: const Icon(Icons.search, color: Color(0xFFe89547)),
+                    prefixIcon: const Icon(Icons.search, color: AppColors.primary),
                     suffixIcon: _searchController.text.isNotEmpty
                         ? IconButton(
                             icon: const Icon(Icons.clear, color: Colors.white60),
@@ -195,7 +196,7 @@ class _AdminMembersScreenState extends State<AdminMembersScreen> {
                           )
                         : null,
                     filled: true,
-                    fillColor: const Color(0xFF2d3748),
+                    fillColor: AppColors.darkCard,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(24),
                       borderSide: BorderSide.none,
@@ -209,7 +210,7 @@ class _AdminMembersScreenState extends State<AdminMembersScreen> {
                 child: _isLoading
                     ? const Center(
                         child: CircularProgressIndicator(
-                          color: Color(0xFFe89547),
+                          color: AppColors.primary,
                         ),
                       )
                     : _errorMessage.isNotEmpty
@@ -219,7 +220,7 @@ class _AdminMembersScreenState extends State<AdminMembersScreen> {
                               children: [
                                 const Icon(
                                   Icons.error_outline,
-                                  color: Colors.red,
+                                  color: AppColors.error,
                                   size: 48,
                                 ),
                                 const SizedBox(height: 16),
@@ -267,7 +268,7 @@ class _AdminMembersScreenState extends State<AdminMembersScreen> {
                               )
                             : RefreshIndicator(
                                 onRefresh: _loadMembers,
-                                color: const Color(0xFFe89547),
+                                color: AppColors.primary,
                                 child: ListView.builder(
                                   padding: const EdgeInsets.symmetric(horizontal: 16),
                                   itemCount: _filteredMembers.length,
@@ -332,7 +333,7 @@ class _MemberCard extends StatelessWidget {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      color: const Color(0xFF2d3748),
+      color: AppColors.darkCard,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
@@ -349,9 +350,9 @@ class _MemberCard extends StatelessWidget {
                 height: 60,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: const Color(0xFFe89547).withValues(alpha: 0.2),
+                  color: AppColors.primary.withValues(alpha: 0.2),
                   border: Border.all(
-                    color: const Color(0xFFe89547),
+                    color: AppColors.primary,
                     width: 2,
                   ),
                 ),
@@ -359,7 +360,7 @@ class _MemberCard extends StatelessWidget {
                   child: Text(
                     initials,
                     style: const TextStyle(
-                      color: Color(0xFFe89547),
+                      color: AppColors.primary,
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
@@ -396,13 +397,13 @@ class _MemberCard extends StatelessWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFe89547).withValues(alpha: 0.2),
+                        color: AppColors.primary.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
                         uniqueCode,
                         style: const TextStyle(
-                          color: Color(0xFFe89547),
+                          color: AppColors.primary,
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
                         ),

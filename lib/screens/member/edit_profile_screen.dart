@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
+import '../../core/theme/theme.dart';
 
 class EditProfileScreen extends StatefulWidget {
   final Map<String, dynamic>? profileData;
@@ -74,9 +75,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.dark(
-              primary: Color(0xFFe89547),
+              primary: AppColors.primary,
               onPrimary: Colors.white,
-              surface: Color(0xFF2d3748),
+              surface: AppColors.darkCard,
               onSurface: Colors.white,
             ),
           ),
@@ -130,7 +131,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
             ),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.success,
             duration: Duration(seconds: 2),
           ),
         );
@@ -146,7 +147,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               textAlign: TextAlign.center,
               style: const TextStyle(color: Colors.white),
             ),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -180,8 +181,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color(0xFF1a1f2e),
-              const Color(0xFF2d3748),
+              AppColors.darkBackground,
+              AppColors.darkSurface,
             ],
           ),
         ),
@@ -198,7 +199,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     children: [
                       CircleAvatar(
                         radius: 60,
-                        backgroundColor: const Color(0xFFe89547),
+                        backgroundColor: AppColors.primary,
                         child: const Icon(Icons.person, size: 60, color: Colors.white),
                       ),
                       Positioned(
@@ -207,17 +208,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         child: Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF1a1f2e),
+                            color: AppColors.darkBackground,
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: const Color(0xFFe89547),
+                              color: AppColors.primary,
                               width: 2,
                             ),
                           ),
                           child: const Icon(
                             Icons.camera_alt,
                             size: 20,
-                            color: Color(0xFFe89547),
+                            color: AppColors.primary,
                           ),
                         ),
                       ),
@@ -294,7 +295,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _saveProfile,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFe89547),
+                      backgroundColor: AppColors.primary,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
                       shape: RoundedRectangleBorder(
@@ -382,12 +383,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       decoration: InputDecoration(
         labelText: label,
         labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
-        prefixIcon: Icon(icon, color: const Color(0xFFe89547)),
+        prefixIcon: Icon(icon, color: AppColors.primary),
         suffixIcon: suffixIcon != null
-            ? Icon(suffixIcon, color: const Color(0xFFe89547))
+            ? Icon(suffixIcon, color: AppColors.primary)
             : null,
         filled: true,
-        fillColor: const Color(0xFF2d3748),
+        fillColor: AppColors.darkCard,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
@@ -402,21 +403,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(
-            color: Color(0xFFe89547),
+            color: AppColors.primary,
             width: 2,
           ),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(
-            color: Colors.red,
+            color: AppColors.error,
             width: 1,
           ),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(
-            color: Colors.red,
+            color: AppColors.error,
             width: 2,
           ),
         ),

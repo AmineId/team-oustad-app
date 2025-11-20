@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
+import '../../core/theme/theme.dart';
 
 class AdminAdminsListScreen extends StatefulWidget {
   const AdminAdminsListScreen({super.key});
@@ -112,7 +113,7 @@ class _AdminAdminsListScreenState extends State<AdminAdminsListScreen> {
             const SnackBar(content: Text('Création admin en développement')),
           );
         },
-        backgroundColor: const Color(0xFFe89547),
+        backgroundColor: AppColors.primary,
         child: const Icon(Icons.person_add, color: Colors.white),
       ),
       body: Container(
@@ -121,8 +122,7 @@ class _AdminAdminsListScreenState extends State<AdminAdminsListScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              const Color(0xFF1a1f2e),
-              const Color(0xFF2d3748),
+              AppColors.darkBackground, AppColors.darkSurface,
             ],
           ),
         ),
@@ -138,7 +138,7 @@ class _AdminAdminsListScreenState extends State<AdminAdminsListScreen> {
                   decoration: InputDecoration(
                     hintText: 'Rechercher un administrateur...',
                     hintStyle: const TextStyle(color: Colors.white60),
-                    prefixIcon: const Icon(Icons.search, color: Color(0xFFe89547)),
+                    prefixIcon: const Icon(Icons.search, color: AppColors.primary),
                     suffixIcon: _searchController.text.isNotEmpty
                         ? IconButton(
                             icon: const Icon(Icons.clear, color: Colors.white60),
@@ -148,7 +148,7 @@ class _AdminAdminsListScreenState extends State<AdminAdminsListScreen> {
                           )
                         : null,
                     filled: true,
-                    fillColor: const Color(0xFF2d3748),
+                    fillColor: AppColors.darkCard,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(24),
                       borderSide: BorderSide.none,
@@ -162,7 +162,7 @@ class _AdminAdminsListScreenState extends State<AdminAdminsListScreen> {
                 child: _isLoading
                     ? const Center(
                         child: CircularProgressIndicator(
-                          color: Color(0xFFe89547),
+                          color: AppColors.primary,
                         ),
                       )
                     : _errorMessage.isNotEmpty
@@ -172,7 +172,7 @@ class _AdminAdminsListScreenState extends State<AdminAdminsListScreen> {
                               children: [
                                 const Icon(
                                   Icons.error_outline,
-                                  color: Colors.red,
+                                  color: AppColors.error,
                                   size: 48,
                                 ),
                                 const SizedBox(height: 16),
@@ -220,7 +220,7 @@ class _AdminAdminsListScreenState extends State<AdminAdminsListScreen> {
                               )
                             : RefreshIndicator(
                                 onRefresh: _loadAdmins,
-                                color: const Color(0xFFe89547),
+                                color: AppColors.primary,
                                 child: ListView.builder(
                                   padding: const EdgeInsets.symmetric(horizontal: 16),
                                   itemCount: _filteredAdmins.length,
@@ -280,11 +280,11 @@ class _AdminCard extends StatelessWidget {
             : role;
     final roleColor = role == 'owner' 
         ? Colors.purple 
-        : const Color(0xFFe89547);
+        : AppColors.primary;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      color: const Color(0xFF2d3748),
+      color: AppColors.darkCard,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),

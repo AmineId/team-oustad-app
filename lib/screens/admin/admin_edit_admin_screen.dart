@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
+import '../../core/theme/theme.dart';
 
 class AdminEditAdminScreen extends StatefulWidget {
   final Map<String, dynamic> admin;
@@ -84,7 +85,7 @@ class _AdminEditAdminScreenState extends State<AdminEditAdminScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Administrateur modifié avec succès !'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.success,
           ),
         );
         Navigator.pop(context, true);
@@ -96,7 +97,7 @@ class _AdminEditAdminScreenState extends State<AdminEditAdminScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Erreur: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -113,7 +114,7 @@ class _AdminEditAdminScreenState extends State<AdminEditAdminScreen> {
           'Modifier administrateur',
           style: TextStyle(color: Colors.white),
         ),
-        backgroundColor: const Color(0xFF1a1f2e),
+        backgroundColor: AppColors.darkBackground,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Container(
@@ -122,8 +123,7 @@ class _AdminEditAdminScreenState extends State<AdminEditAdminScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              const Color(0xFF1a1f2e),
-              const Color(0xFF2d3748),
+              AppColors.darkBackground, AppColors.darkSurface,
             ],
           ),
         ),
@@ -141,11 +141,11 @@ class _AdminEditAdminScreenState extends State<AdminEditAdminScreen> {
                     height: 80,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: const Color(0xFFe89547).withValues(alpha: 0.2),
+                      color: AppColors.primary.withValues(alpha: 0.2),
                     ),
                     child: const Icon(
                       Icons.admin_panel_settings,
-                      color: Color(0xFFe89547),
+                      color: AppColors.primary,
                       size: 40,
                     ),
                   ),
@@ -158,9 +158,9 @@ class _AdminEditAdminScreenState extends State<AdminEditAdminScreen> {
                     decoration: InputDecoration(
                       labelText: 'Nom complet',
                       labelStyle: const TextStyle(color: Colors.white60),
-                      prefixIcon: const Icon(Icons.person, color: Color(0xFFe89547)),
+                      prefixIcon: const Icon(Icons.person, color: AppColors.primary),
                       filled: true,
-                      fillColor: const Color(0xFF2d3748),
+                      fillColor: AppColors.darkCard,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
@@ -183,9 +183,9 @@ class _AdminEditAdminScreenState extends State<AdminEditAdminScreen> {
                     decoration: InputDecoration(
                       labelText: 'Email',
                       labelStyle: const TextStyle(color: Colors.white60),
-                      prefixIcon: const Icon(Icons.email, color: Color(0xFFe89547)),
+                      prefixIcon: const Icon(Icons.email, color: AppColors.primary),
                       filled: true,
-                      fillColor: const Color(0xFF2d3748),
+                      fillColor: AppColors.darkCard,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
@@ -206,14 +206,14 @@ class _AdminEditAdminScreenState extends State<AdminEditAdminScreen> {
                   // Salle
                   DropdownButtonFormField<int>(
                     value: _selectedGymId,
-                    dropdownColor: const Color(0xFF2d3748),
+                    dropdownColor: AppColors.darkCard,
                     style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
                       labelText: 'Salle de sport',
                       labelStyle: const TextStyle(color: Colors.white60),
-                      prefixIcon: const Icon(Icons.fitness_center, color: Color(0xFFe89547)),
+                      prefixIcon: const Icon(Icons.fitness_center, color: AppColors.primary),
                       filled: true,
-                      fillColor: const Color(0xFF2d3748),
+                      fillColor: AppColors.darkCard,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
@@ -241,7 +241,7 @@ class _AdminEditAdminScreenState extends State<AdminEditAdminScreen> {
                   ElevatedButton(
                     onPressed: _isLoading ? null : _updateAdmin,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFe89547),
+                      backgroundColor: AppColors.primary,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),

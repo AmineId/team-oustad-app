@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
+import '../../core/theme/theme.dart';
 
 class AdminSubscriptionDetailsScreen extends StatefulWidget {
   final int subscriptionId;
@@ -72,7 +73,7 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
     final paymentMethod = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF2d3748),
+        backgroundColor: AppColors.darkCard,
         title: const Text(
           'Mode de paiement',
           style: TextStyle(color: Colors.white),
@@ -129,7 +130,7 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
       barrierDismissible: false,
       builder: (context) => const Center(
         child: CircularProgressIndicator(
-          color: Color(0xFFe89547),
+          color: AppColors.primary,
         ),
       ),
     );
@@ -169,10 +170,10 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF2d3748),
+        backgroundColor: AppColors.darkCard,
         title: const Row(
           children: [
-            Icon(Icons.check_circle, color: Colors.green),
+            Icon(Icons.check_circle, color: AppColors.success),
             SizedBox(width: 8),
             Text(
               'Succès',
@@ -192,7 +193,7 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
             ),
             child: const Text(
               'OK',
-              style: TextStyle(color: Color(0xFFe89547)),
+              style: TextStyle(color: AppColors.primary),
             ),
           ),
         ],
@@ -204,10 +205,10 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF2d3748),
+        backgroundColor: AppColors.darkCard,
         title: const Row(
           children: [
-            Icon(Icons.error, color: Colors.red),
+            Icon(Icons.error, color: AppColors.error),
             SizedBox(width: 8),
             Text(
               'Erreur',
@@ -227,7 +228,7 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
             ),
             child: const Text(
               'OK',
-              style: TextStyle(color: Color(0xFFe89547)),
+              style: TextStyle(color: AppColors.primary),
             ),
           ),
         ],
@@ -255,14 +256,14 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
   Color _getStatusColor(String status) {
     switch (status) {
       case 'active':
-        return Colors.green;
+        return AppColors.success;
       case 'paused':
-        return Colors.orange;
+        return AppColors.warning;
       case 'cancelled':
       case 'expired':
-        return Colors.red;
+        return AppColors.error;
       case 'pending':
-        return Colors.blue;
+        return AppColors.info;
       default:
         return Colors.grey;
     }
@@ -284,11 +285,11 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
   Color _getPaymentStatusColor(String status) {
     switch (status) {
       case 'completed':
-        return Colors.green;
+        return AppColors.success;
       case 'pending':
-        return Colors.orange;
+        return AppColors.warning;
       case 'failed':
-        return Colors.red;
+        return AppColors.error;
       default:
         return Colors.grey;
     }
@@ -319,15 +320,14 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              const Color(0xFF1a1f2e),
-              const Color(0xFF2d3748),
+              AppColors.darkBackground, AppColors.darkSurface,
             ],
           ),
         ),
         child: _isLoading
             ? const Center(
                 child: CircularProgressIndicator(
-                  color: Color(0xFFe89547),
+                  color: AppColors.primary,
                 ),
               )
             : _errorMessage.isNotEmpty
@@ -337,7 +337,7 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
                       children: [
                         const Icon(
                           Icons.error_outline,
-                          color: Colors.red,
+                          color: AppColors.error,
                           size: 48,
                         ),
                         const SizedBox(height: 16),
@@ -362,7 +362,7 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
                   )
                 : RefreshIndicator(
                     onRefresh: _loadSubscriptionDetails,
-                    color: const Color(0xFFe89547),
+                    color: AppColors.primary,
                     child: SingleChildScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
                       padding: const EdgeInsets.all(16.0),
@@ -411,7 +411,7 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF2d3748),
+        color: AppColors.darkCard,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -512,7 +512,7 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
   Widget _buildInfoRow(IconData icon, String label, String value) {
     return Row(
       children: [
-        Icon(icon, color: const Color(0xFFe89547), size: 20),
+        Icon(icon, color: AppColors.primary, size: 20),
         const SizedBox(width: 12),
         Expanded(
           child: Text(
@@ -593,7 +593,7 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      color: const Color(0xFF2d3748),
+      color: AppColors.darkCard,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
@@ -613,7 +613,7 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
                 Text(
                   '$amount €',
                   style: const TextStyle(
-                    color: Color(0xFFe89547),
+                    color: AppColors.primary,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
@@ -675,12 +675,12 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
               const SizedBox(height: 8),
               Row(
                 children: [
-                  const Icon(Icons.check_circle, color: Colors.green, size: 16),
+                  const Icon(Icons.check_circle, color: AppColors.success, size: 16),
                   const SizedBox(width: 8),
                   Text(
                     'Payé le: ${_formatDate(paymentDate)}',
                     style: const TextStyle(
-                      color: Colors.green,
+                      color: AppColors.success,
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
                     ),
@@ -699,7 +699,7 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
                   icon: const Icon(Icons.check),
                   label: const Text('Acquitter le paiement'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
+                    backgroundColor: AppColors.success,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
@@ -742,12 +742,12 @@ class _PaymentMethodOption extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFF1a1f2e),
+          color: AppColors.darkBackground,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
           children: [
-            Icon(icon, color: const Color(0xFFe89547)),
+            Icon(icon, color: AppColors.primary),
             const SizedBox(width: 16),
             Text(
               label,
