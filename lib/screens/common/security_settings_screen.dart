@@ -14,9 +14,11 @@ class SecuritySettingsPage extends StatefulWidget {
 
 class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
   final AuthService _authService = AuthService(ApiService.fromEnv());
+  final ApiService _apiService = ApiService.fromEnv();
   final OTAUpdateService _otaService = OTAUpdateService();
   bool _canCheckBiometrics = false;
   bool _notificationsEnabled = true;
+  bool _workoutNotificationsEnabled = true;
   bool _isLoading = true;
 
   @override
@@ -32,10 +34,23 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
       final prefs = await SharedPreferences.getInstance();
       final notifEnabled = prefs.getBool('notifications_enabled') ?? true;
       
+      // Charger les préférences de notification depuis le profil utilisateur
+      final profileData = await _authService.getCachedUserProfile();
+      bool workoutNotifEnabled = true;
+      
+      if (profileData != null) {
+        // Charger depuis le membre si disponible
+        final memberData = profileData['member'] as Map<String, dynamic>?;
+        if (memberData != null && memberData['workoutNotificationsEnabled'] != null) {
+          workoutNotifEnabled = memberData['workoutNotificationsEnabled'] as bool;
+        }
+      }
+      
       if (mounted) {
         setState(() {
           _canCheckBiometrics = canCheck;
           _notificationsEnabled = notifEnabled;
+          _workoutNotificationsEnabled = workoutNotifEnabled;
           _isLoading = false;
         });
       }
@@ -47,11 +62,45 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
   }
 
   Future<void> _toggleNotifications(bool value) async {
-    setState(() => _notificationsEnabled = value);
+    setState(() {
+      _notificationsEnabled = value;
+      // Si on désactive les notifications, désactiver aussi les notifications de planning
+      if (!value) {
+        _workoutNotificationsEnabled = false;
+      }
+    });
     
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('notifications_enabled', value);
+      
+      // Mettre à jour le profil utilisateur
+      final profileData = await _authService.getCachedUserProfile();
+      if (profileData != null) {
+        final userId = profileData['id'] as int;
+        final token = await _authService.loadToken();
+        
+        if (token != null) {
+          // Mettre à jour notificationEnabled sur l'utilisateur
+          await _apiService.updateUserProfile(
+            userId,
+            {'notificationEnabled': value},
+            token,
+          );
+          
+          // Si on désactive les notifications, mettre aussi workoutNotificationsEnabled à false
+          if (!value) {
+            await _apiService.updateMemberProfile(
+              userId,
+              {'workoutNotificationsEnabled': false},
+              token,
+            );
+          }
+          
+          // Rafraîchir le cache du profil
+          await _authService.refreshUserProfile();
+        }
+      }
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -89,6 +138,86 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
     } catch (e) {
       if (mounted) {
         setState(() => _notificationsEnabled = !value);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Row(
+              children: [
+                Icon(Icons.error_outline, color: Color(0xFFFF6B6B), size: 24),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Erreur lors de la sauvegarde',
+                    style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: Color(0xFF2d1f1f),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _toggleWorkoutNotifications(bool value) async {
+    setState(() => _workoutNotificationsEnabled = value);
+    
+    try {
+      // Mettre à jour le profil membre
+      final profileData = await _authService.getCachedUserProfile();
+      if (profileData != null) {
+        final userId = profileData['id'] as int;
+        final token = await _authService.loadToken();
+        
+        if (token != null) {
+          // Mettre à jour workoutNotificationsEnabled sur le membre
+          await _apiService.updateMemberProfile(
+            userId,
+            {'workoutNotificationsEnabled': value},
+            token,
+          );
+          
+          // Rafraîchir le cache du profil
+          await _authService.refreshUserProfile();
+        }
+      }
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Icon(
+                  value ? Icons.calendar_today : Icons.event_busy,
+                  color: value ? const Color(0xFF4CAF50) : Colors.white70,
+                  size: 24,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    value 
+                        ? 'Notifications de planning activées'
+                        : 'Notifications de planning désactivées',
+                    style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: value ? const Color(0xFF1f2d1f) : const Color(0xFF2d2d2d),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(
+                color: value ? const Color(0xFF4CAF50) : Colors.white38,
+                width: 1,
+              ),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _workoutNotificationsEnabled = !value);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Row(
@@ -556,57 +685,111 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                                     // Section Notifications
                                     Card(
                                       color: const Color(0xFF2d3748),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(20.0),
-                                        child: Row(
-                                          children: [
-                                            Container(
-                                              padding: const EdgeInsets.all(12),
-                                              decoration: BoxDecoration(
-                                                color: const Color(0xFF4CAF50).withValues(alpha: 0.2),
-                                                borderRadius: BorderRadius.circular(12),
-                                              ),
-                                              child: const Icon(
-                                                Icons.notifications_active,
-                                                color: Color(0xFF4CAF50),
-                                                size: 28,
+                                      child: Column(
+                                        children: [
+                                          // Toggle principal des notifications
+                                          Padding(
+                                            padding: const EdgeInsets.all(20.0),
+                                            child: Row(
+                                              children: [
+                                                Container(
+                                                  padding: const EdgeInsets.all(12),
+                                                  decoration: BoxDecoration(
+                                                    color: const Color(0xFF4CAF50).withValues(alpha: 0.2),
+                                                    borderRadius: BorderRadius.circular(12),
+                                                  ),
+                                                  child: const Icon(
+                                                    Icons.notifications_active,
+                                                    color: Color(0xFF4CAF50),
+                                                    size: 28,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 16),
+                                                Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    children: [
+                                                      const Text(
+                                                        'Notifications',
+                                                        style: TextStyle(
+                                                          color: Colors.white,
+                                                          fontSize: 16,
+                                                          fontWeight: FontWeight.w600,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(height: 4),
+                                                      Text(
+                                                        _notificationsEnabled
+                                                            ? 'Recevoir les notifications push'
+                                                            : 'Les notifications sont désactivées',
+                                                        style: TextStyle(
+                                                          color: Colors.white.withValues(alpha: 0.6),
+                                                          fontSize: 13,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 12),
+                                                Switch(
+                                                  value: _notificationsEnabled,
+                                                  onChanged: _toggleNotifications,
+                                                  activeTrackColor: const Color(0xFF4CAF50),
+                                                  inactiveThumbColor: Colors.white60,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          // Divider
+                                          if (_notificationsEnabled)
+                                            Padding(
+                                              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                                              child: Divider(
+                                                color: Colors.white.withValues(alpha: 0.1),
+                                                height: 1,
                                               ),
                                             ),
-                                            const SizedBox(width: 16),
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                          // Option notifications de planning (sub-option)
+                                          if (_notificationsEnabled)
+                                            Padding(
+                                              padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+                                              child: Row(
                                                 children: [
-                                                  const Text(
-                                                    'Notifications',
-                                                    style: TextStyle(
-                                                      color: Colors.white,
-                                                      fontSize: 16,
-                                                      fontWeight: FontWeight.w600,
+                                                  const SizedBox(width: 56), // Alignement avec le texte au-dessus
+                                                  Expanded(
+                                                    child: Column(
+                                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                                      children: [
+                                                        const Text(
+                                                          'Notifier mon planning',
+                                                          style: TextStyle(
+                                                            color: Colors.white,
+                                                            fontSize: 15,
+                                                            fontWeight: FontWeight.w500,
+                                                          ),
+                                                        ),
+                                                        const SizedBox(height: 4),
+                                                        Text(
+                                                          'Recevoir des rappels pour vos séances d\'entraînement',
+                                                          style: TextStyle(
+                                                            color: Colors.white.withValues(alpha: 0.5),
+                                                            fontSize: 12,
+                                                          ),
+                                                        ),
+                                                      ],
                                                     ),
                                                   ),
-                                                  const SizedBox(height: 4),
-                                                  Text(
-                                                    _notificationsEnabled
-                                                        ? 'Recevoir les notifications push'
-                                                        : 'Les notifications sont désactivées',
-                                                    style: TextStyle(
-                                                      color: Colors.white.withValues(alpha: 0.6),
-                                                      fontSize: 13,
-                                                    ),
+                                                  const SizedBox(width: 12),
+                                                  Switch(
+                                                    value: _workoutNotificationsEnabled,
+                                                    onChanged: _notificationsEnabled ? _toggleWorkoutNotifications : null,
+                                                    activeTrackColor: const Color(0xFF4CAF50),
+                                                    inactiveThumbColor: Colors.white60,
                                                   ),
                                                 ],
                                               ),
                                             ),
-                                            const SizedBox(width: 12),
-                                            Switch(
-                                              value: _notificationsEnabled,
-                                              onChanged: _toggleNotifications,
-                                              activeTrackColor: const Color(0xFF4CAF50),
-                                              inactiveThumbColor: Colors.white60,
-                                            ),
-                                          ],
-                                        ),
+                                        ],
                                       ),
                                     ),
                                     

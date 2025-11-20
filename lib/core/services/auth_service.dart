@@ -217,28 +217,20 @@ class AuthService {
         
         // Send FCM token to server for push notifications (after JWT is saved and validated)
         try {
-          // ignore: avoid_print
           debugPrint('🔍 [Biometric] Tentative de récupération du token FCM...');
           final fcmToken = await FCMService().getToken();
-          // ignore: avoid_print
           debugPrint('🔍 [Biometric] Token FCM récupéré: $fcmToken');
           
           if (fcmToken != null && fcmToken.isNotEmpty) {
-            // ignore: avoid_print
             debugPrint('📤 [Biometric] Envoi du token FCM au serveur (userId: $userId)...');
-            // ignore: avoid_print
             debugPrint('🔑 [Biometric] JWT utilisé: ${token.substring(0, 20)}...');
             final result = await _apiService.updateUserFCMToken(int.parse(userId), fcmToken, token);
-            // ignore: avoid_print
             debugPrint('✅ [Biometric] Réponse serveur pour FCM token: $result');
           } else {
-            // ignore: avoid_print
             debugPrint('⚠️ [Biometric] Token FCM null ou vide, non envoyé au serveur');
           }
         } catch (e, stackTrace) {
-          // ignore: avoid_print
           debugPrint('❌ [Biometric] Erreur lors de l\'envoi du token FCM: $e');
-          // ignore: avoid_print
           debugPrint('Stack trace: $stackTrace');
           // Don't block login if FCM token sending fails
         }
@@ -251,6 +243,133 @@ class AuthService {
         await _apiService.reportError('Login failed during biometric auth: $e', st.toString());
       } catch (_) {}
       return AuthStatus.error;
+    }
+  }
+
+  /// Full biometric flow with onboarding check
+  Future<Map<String, dynamic>> authenticateWithBiometricsAndCheckOnboarding() async {
+    final ok = await promptBiometric(localizedReason: 'Please authenticate to access the app');
+    if (!ok) {
+      return {'status': AuthStatus.biometricFailed};
+    }
+
+    // Prefer using a stored JWT token when available.
+    final token = await loadToken();
+    if (token != null) {
+      try {
+        final valid = await _apiService.verifyToken(token);
+        if (valid) {
+          // Token valid, but we need to check onboarding status from server
+          debugPrint('🔍 [Biometric] Token valid, fetching profile for onboarding check...');
+          
+          // Get user type from storage
+          final userType = await getUserType();
+          
+          // Fetch fresh profile to get REAL onboarding status from server
+          final profileData = await _apiService.getUserProfile(token);
+          
+          if (profileData != null) {
+            // Check onboarding in member object first, then at root level
+            final memberData = profileData['member'] as Map<String, dynamic>?;
+            final needsOnboarding = memberData?['onboarding'] as bool? ?? 
+                                    profileData['onboarding'] as bool? ?? 
+                                    true; // Default to true if not found
+            
+            debugPrint('🔍 [Biometric] Profile fetched - onboarding=$needsOnboarding, userType=$userType');
+            debugPrint('🔍 [Biometric] Member data: $memberData');
+            
+            return {
+              'status': AuthStatus.success,
+              'needsOnboarding': needsOnboarding,
+              'userType': userType ?? 'member',
+            };
+          } else {
+            debugPrint('⚠️ [Biometric] Profile fetch returned null, defaulting to needs onboarding');
+            return {
+              'status': AuthStatus.success,
+              'needsOnboarding': true,
+              'userType': userType ?? 'member',
+            };
+          }
+        }
+        // token invalid -> fallthrough to credential-based flow
+      } catch (e, st) {
+        debugPrint('❌ [Biometric] Error during token validation: $e');
+        try {
+          await _apiService.reportError('Token verify failed during biometric auth: $e', st.toString());
+        } catch (_) {}
+        // fallback
+      }
+    }
+
+    final creds = await loadCredentials();
+    if (creds == null) {
+      return {'status': AuthStatus.noSavedCredentials};
+    }
+
+    // Check backend health
+    try {
+      final healthy = await _apiService.healthCheck();
+      if (!healthy) {
+        return {'status': AuthStatus.serverUnavailable};
+      }
+    } catch (e, st) {
+      try {
+        await _apiService.reportError('Health check failed during biometric auth: $e', st.toString());
+      } catch (_) {}
+      return {'status': AuthStatus.serverUnavailable};
+    }
+
+    // Try login using saved credentials
+    try {
+      final loginResult = await _apiService.login(creds['email']!, creds['password']!);
+      if (loginResult != null) {
+        final token = loginResult['token'] as String;
+        final userType = loginResult['userType'] as String;
+        final userId = loginResult['userId'] as String;
+        final needsOnboarding = loginResult['onboarding'] as bool? ?? true;
+        
+        debugPrint('🔍 [Biometric] Login successful - onboarding=$needsOnboarding, userType=$userType');
+        
+        // persist token and user type for future biometric logins
+        await saveToken(token);
+        await saveUserType(userType);
+        
+        // Small delay to ensure token is properly saved and validated
+        await Future.delayed(const Duration(milliseconds: 100));
+        
+        // Send FCM token to server for push notifications (after JWT is saved and validated)
+        try {
+          debugPrint('🔍 [Biometric] Tentative de récupération du token FCM...');
+          final fcmToken = await FCMService().getToken();
+          debugPrint('🔍 [Biometric] Token FCM récupéré: $fcmToken');
+          
+          if (fcmToken != null && fcmToken.isNotEmpty) {
+            debugPrint('📤 [Biometric] Envoi du token FCM au serveur (userId: $userId)...');
+            debugPrint('🔑 [Biometric] JWT utilisé: ${token.substring(0, 20)}...');
+            final result = await _apiService.updateUserFCMToken(int.parse(userId), fcmToken, token);
+            debugPrint('✅ [Biometric] Réponse serveur pour FCM token: $result');
+          } else {
+            debugPrint('⚠️ [Biometric] Token FCM null ou vide, non envoyé au serveur');
+          }
+        } catch (e, stackTrace) {
+          debugPrint('❌ [Biometric] Erreur lors de l\'envoi du token FCM: $e');
+          debugPrint('Stack trace: $stackTrace');
+          // Don't block login if FCM token sending fails
+        }
+        
+        return {
+          'status': AuthStatus.success,
+          'needsOnboarding': needsOnboarding,
+          'userType': userType,
+        };
+      }
+      return {'status': AuthStatus.serverAuthFailed};
+    } catch (e, st) {
+      try {
+        await _apiService.reportError('Login failed during biometric auth: $e', st.toString());
+      } catch (_) {}
+      return {'status': AuthStatus.error};
     }
   }
 

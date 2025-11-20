@@ -32,6 +32,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   String _profession = 'Actif';
   String _fitnessLevel = 'debutant';
   bool _isLoading = false;
+  Set<int> _preferredTrainingDays = {}; // 0=Dimanche, 1=Lundi, ..., 6=Samedi
+  bool _workoutNotificationsEnabled = true;
   
   // Constants
   final List<String> _professionOptions = ['Actif', 'Etudiant'];
@@ -42,6 +44,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     'expert': 'Expert',
     'athletique': 'Athlétique',
   };
+  
+  final List<String> _daysOfWeek = [
+    'Lundi',
+    'Mardi',
+    'Mercredi',
+    'Jeudi',
+    'Vendredi',
+    'Samedi',
+    'Dimanche',
+  ];
 
   @override
   void initState() {
@@ -91,6 +103,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           _weightController.text = data['weight'] ?? '';
           _waistController.text = data['waist'] ?? '';
           _heightController.text = data['height'] ?? '';
+          _preferredTrainingDays = (data['preferredTrainingDays'] as List<dynamic>?)?.map((e) => e as int).toSet() ?? {};
+          _workoutNotificationsEnabled = data['workoutNotificationsEnabled'] ?? true;
         });
       }
     } catch (e) {
@@ -111,6 +125,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         'weight': _weightController.text,
         'waist': _waistController.text,
         'height': _heightController.text,
+        'preferredTrainingDays': _preferredTrainingDays.toList(),
+        'workoutNotificationsEnabled': _workoutNotificationsEnabled,
       };
       await prefs.setString('onboarding_data', jsonEncode(data));
     } catch (e) {
@@ -213,7 +229,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         'profession': _profession,
         'fitnessLevel': _fitnessLevel,
         'profileImage': 'data:image/jpeg;base64,$base64Image',
-        'lastLoginAt': DateTime.now().toIso8601String(), // Mark first login as completed
+        'onboarding': false, // Mark onboarding as completed (false = done)
+        'preferredTrainingDays': _preferredTrainingDays.toList(),
+        'workoutNotificationsEnabled': _workoutNotificationsEnabled,
       };
 
       final profileResponse = await _apiService.updateMemberProfile(
@@ -652,6 +670,128 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         });
                         _saveData();
                       },
+                    ),
+                    
+                    const SizedBox(height: 32),
+                    
+                    // Preferred Training Days Section
+                    const Text(
+                      'Jours préférés d\'entraînement',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Sélectionnez les jours où vous préférez vous entraîner',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.white.withValues(alpha: 0.6),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: List.generate(7, (index) {
+                        final dayIndex = (index + 1) % 7; // Convertir: Lundi=1, ..., Dimanche=0
+                        final isSelected = _preferredTrainingDays.contains(dayIndex);
+                        
+                        return FilterChip(
+                          label: Text(_daysOfWeek[index]),
+                          selected: isSelected,
+                          onSelected: (selected) {
+                            setState(() {
+                              if (selected) {
+                                _preferredTrainingDays.add(dayIndex);
+                              } else {
+                                _preferredTrainingDays.remove(dayIndex);
+                              }
+                            });
+                            _saveData();
+                          },
+                          backgroundColor: const Color(0xFF2d3748),
+                          selectedColor: const Color(0xFFe89547).withValues(alpha: 0.3),
+                          checkmarkColor: const Color(0xFFe89547),
+                          labelStyle: TextStyle(
+                            color: isSelected ? const Color(0xFFe89547) : Colors.white.withValues(alpha: 0.7),
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          ),
+                          side: BorderSide(
+                            color: isSelected ? const Color(0xFFe89547) : Colors.white.withValues(alpha: 0.3),
+                            width: 1,
+                          ),
+                        );
+                      }),
+                    ),
+                    
+                    const SizedBox(height: 32),
+                    
+                    // Workout Notifications Section
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2d3748),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.1),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFe89547).withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(
+                              Icons.notifications_active,
+                              color: Color(0xFFe89547),
+                              size: 24,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Notifications d\'entraînement',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Recevez des rappels pour vos séances',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: Colors.white.withValues(alpha: 0.6),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Switch(
+                            value: _workoutNotificationsEnabled,
+                            onChanged: (value) {
+                              setState(() {
+                                _workoutNotificationsEnabled = value;
+                              });
+                              _saveData();
+                            },
+                            activeTrackColor: const Color(0xFFe89547),
+                            inactiveThumbColor: Colors.white.withValues(alpha: 0.5),
+                          ),
+                        ],
+                      ),
                     ),
                     
                     const SizedBox(height: 32),

@@ -72,14 +72,27 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
     
     setState(() => _isAuthenticating = true);
     
-    final status = await _authService.authenticateWithBiometrics();
+    final result = await _authService.authenticateWithBiometricsAndCheckOnboarding();
     
     if (!mounted) return;
     
     setState(() => _isAuthenticating = false);
     
-    if (status == AuthStatus.success) {
-      _goToHome();
+    if (result['status'] == AuthStatus.success) {
+      final needsOnboarding = result['needsOnboarding'] as bool? ?? false;
+      final userType = result['userType'] as String? ?? '';
+      
+      debugPrint('🔍 [Biometric] needsOnboarding=$needsOnboarding, userType=$userType');
+      
+      if (needsOnboarding && userType.toLowerCase() == 'member') {
+        debugPrint('🎯 [Biometric] Onboarding nécessaire - redirection vers onboarding');
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const OnboardingScreen()),
+        );
+      } else {
+        debugPrint('✅ [Biometric] Redirection vers home');
+        _goToHome();
+      }
     }
     // Si échec, ne pas afficher d'erreur, laisser l'utilisateur se connecter manuellement
   }
@@ -108,15 +121,29 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
   Future<void> _onBiometricPressed() async {
     setState(() => _isAuthenticating = true);
     
-    final status = await _authService.authenticateWithBiometrics();
+    final result = await _authService.authenticateWithBiometricsAndCheckOnboarding();
     
     if (!mounted) return;
     
     setState(() => _isAuthenticating = false);
     
-    if (status == AuthStatus.success) {
-      _goToHome();
+    if (result['status'] == AuthStatus.success) {
+      final needsOnboarding = result['needsOnboarding'] as bool? ?? false;
+      final userType = result['userType'] as String? ?? '';
+      
+      debugPrint('🔍 [Biometric] Button - needsOnboarding=$needsOnboarding, userType=$userType');
+      
+      if (needsOnboarding && userType.toLowerCase() == 'member') {
+        debugPrint('🎯 [Biometric] Button - Onboarding nécessaire - redirection vers onboarding');
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const OnboardingScreen()),
+        );
+      } else {
+        debugPrint('✅ [Biometric] Button - Redirection vers home');
+        _goToHome();
+      }
     } else {
+      final status = result['status'] as AuthStatus;
       String message = 'Authentification biométrique échouée';
       switch (status) {
         case AuthStatus.noSavedCredentials:
@@ -208,13 +235,20 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
     try {
       final loginResult = await _apiService.login(email, password);
       
+      debugPrint('🔍 Login - loginResult reçu: $loginResult');
+      
       if (!mounted) return;
 
       if (loginResult != null) {
+        debugPrint('🔍 Login - loginResult est non-null, extraction des données...');
+        
         final token = loginResult['token'] as String;
         final userType = loginResult['userType'] as String;
         final userId = loginResult['userId'] as String;
-        final lastLoginAt = loginResult['lastLoginAt'] as String?;
+        final needsOnboarding = loginResult['onboarding'] as bool? ?? true;
+        
+        debugPrint('🔍 Login - onboarding value from server: ${loginResult['onboarding']}');
+        debugPrint('🔍 Login - needsOnboarding: $needsOnboarding, userType: $userType');
         
         await _authService.saveToken(token);
         await _authService.saveUserType(userType);
@@ -228,41 +262,36 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
         
         // Send FCM token to server for push notifications (after JWT is saved and validated)
         try {
-          // ignore: avoid_print
           debugPrint('🔍 Tentative de récupération du token FCM...');
           final fcmToken = await FCMService().getToken();
-          // ignore: avoid_print
           debugPrint('🔍 Token FCM récupéré: $fcmToken');
           
           if (fcmToken != null && fcmToken.isNotEmpty) {
-            // ignore: avoid_print
             debugPrint('📤 Envoi du token FCM au serveur (userId: $userId)...');
-            // ignore: avoid_print
             debugPrint('🔑 JWT utilisé: ${token.substring(0, 20)}...');
             final result = await _apiService.updateUserFCMToken(int.parse(userId), fcmToken, token);
-            // ignore: avoid_print
             debugPrint('✅ Réponse serveur pour FCM token: $result');
           } else {
-            // ignore: avoid_print
             debugPrint('⚠️ Token FCM null ou vide, non envoyé au serveur');
           }
         } catch (e, stackTrace) {
-          // ignore: avoid_print
           debugPrint('❌ Erreur lors de l\'envoi du token FCM: $e');
-          // ignore: avoid_print
           debugPrint('Stack trace: $stackTrace');
           // Don't block login if FCM token sending fails
         }
         
-        // Check if onboarding is needed for members with no previous login
-        if (lastLoginAt == null && userType.toLowerCase() == 'membre') {
-          // ignore: avoid_print
-          debugPrint('🎯 Première connexion détectée (lastLoginAt == null) - redirection vers onboarding');
+        // Check if onboarding is needed for members who haven't completed it
+        debugPrint('🔍 Checking onboarding: needsOnboarding=$needsOnboarding, userType=$userType');
+        debugPrint('🔍 Condition check: needsOnboarding=$needsOnboarding, isMember=${userType.toLowerCase() == 'member'}');
+        
+        if (needsOnboarding && userType.toLowerCase() == 'member') {
+          debugPrint('🎯 Onboarding nécessaire - redirection vers onboarding');
           if (!context.mounted) return;
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (context) => const OnboardingScreen()),
           );
         } else {
+          debugPrint('✅ Redirection vers home (onboarding déjà fait)');
           _goToHome();
         }
       } else {

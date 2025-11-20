@@ -132,10 +132,23 @@ class ApiService {
             // ignore: avoid_print
             debugPrint('ApiService.login final userType: $userType');
             
-            // Extract lastLoginAt from user object to check if it's first login
-            final lastLoginAt = user['lastLoginAt'] as String?;
-            // ignore: avoid_print
-            debugPrint('ApiService.login lastLoginAt: $lastLoginAt');
+            // Extract onboarding status from member object or body root
+            // true = needs onboarding, false = onboarding completed
+            // Check multiple locations: body.onboarding, user.member.onboarding, user.onboarding
+            bool onboarding = true; // Default: needs onboarding
+            if (body['onboarding'] != null) {
+              onboarding = body['onboarding'] as bool;
+              debugPrint('ApiService.login onboarding from body root: $onboarding');
+            } else if (user['member'] != null && user['member']['onboarding'] != null) {
+              onboarding = user['member']['onboarding'] as bool;
+              debugPrint('ApiService.login onboarding from user.member: $onboarding');
+            } else if (user['onboarding'] != null) {
+              onboarding = user['onboarding'] as bool;
+              debugPrint('ApiService.login onboarding from user: $onboarding');
+            } else {
+              // Default to true if not provided (needs onboarding for new members)
+              debugPrint('ApiService.login onboarding not found, defaulting to: true (needs onboarding)');
+            }
             
             return {
               'token': body['token'] as String,
@@ -144,7 +157,7 @@ class ApiService {
               'email': user['email'] as String,
               'fullName': user['fullName'] as String,
               'gymId': user['gymId']?.toString(),
-              'lastLoginAt': lastLoginAt,
+              'onboarding': onboarding,
             };
           }
         } catch (e) {
