@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.15](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.14...v1.0.0-beta.15) (2025-11-20)
+
+
+### ✨ New Features
+
+* Add workout notifications settings and onboarding tracking ([0698225](https://github.com/TeamFitness/mobile-app/commit/0698225d852e8195fd2d7e065c340027829b11cb))
+
 ## [1.0.0-beta.14](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.13...v1.0.0-beta.14) (2025-11-19)
 
 
