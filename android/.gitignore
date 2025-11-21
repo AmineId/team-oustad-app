@@ -12,3 +12,14 @@ GeneratedPluginRegistrant.java
 key.properties
 **/*.keystore
 **/*.jks
+
+# Fichiers sensibles de signature
+upload-keystore.jks
+github-secrets-instructions.txt
+
+# Fastlane
+fastlane/service-account-key.json
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output

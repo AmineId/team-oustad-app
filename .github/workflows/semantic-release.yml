@@ -139,8 +139,30 @@ jobs:
       - name: 📦 Get dependencies
         run: flutter pub get
 
+      - name: 🔐 Setup Android signing
+        run: |
+          # Décoder le keystore depuis base64 si disponible
+          if [[ -n "${{ secrets.KEYSTORE_BASE64 }}" ]]; then
+            echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/upload-keystore.jks
+            
+            # Créer le fichier key.properties
+            cat > android/key.properties << EOF
+          storePassword=${{ secrets.KEYSTORE_PASSWORD }}
+          keyPassword=${{ secrets.KEY_PASSWORD }}
+          keyAlias=${{ secrets.KEY_ALIAS }}
+          storeFile=upload-keystore.jks
+          EOF
+            
+            echo "✅ Android signing configured with production keystore"
+          else
+            echo "⚠️ No keystore configured, using debug signing"
+          fi
+
       - name: 🏗️ Build APK
         run: flutter build apk --release --dart-define=ENVIRONMENT=${{ needs.version.outputs.dart_env }}
+
+      - name: 🏗️ Build AAB (for Play Store)
+        run: flutter build appbundle --release --dart-define=ENVIRONMENT=${{ needs.version.outputs.dart_env }}
 
       - name: 📤 Upload artifacts
         uses: actions/upload-artifact@v4
@@ -148,11 +170,108 @@ jobs:
           name: release-${{ needs.version.outputs.environment }}
           path: |
             build/app/outputs/flutter-apk/app-release.apk
+            build/app/outputs/bundle/release/app-release.aab
             version-metadata.json
           retention-days: 30
 
-  # Étape 3: Déploiement OTA
-  deploy:
+  # Étape 3: Déploiement Play Store
+  deploy-playstore:
+    name: 📱 Deploy to Play Store Internal Testing
+    needs: [version, build]
+    runs-on: ubuntu-latest
+    if: needs.version.outputs.released == 'true'
+    
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 📥 Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: release-${{ needs.version.outputs.environment }}
+          path: .
+
+      - name: 🔍 List downloaded files
+        run: |
+          echo "📂 Structure des fichiers téléchargés:"
+          ls -lahR . | head -n 100
+          echo ""
+          echo "🔎 Recherche de fichiers AAB:"
+          find . -name "*.aab" -type f
+
+      - name: 🔧 Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: false
+
+      - name: 📦 Install Fastlane
+        run: |
+          gem install fastlane -v 2.217.0
+
+      - name: 🔐 Setup Play Store credentials
+        run: |
+          mkdir -p android/fastlane
+          echo "${{ secrets.SERVICE_ACCOUNT_JSON }}" > android/fastlane/service-account-key.json
+
+      - name: 📝 Generate release notes
+        id: release_notes
+        run: |
+          # Générer les notes de version pour Play Store (max 500 caractères)
+          NOTES="Nouveautés :
+          • Mode clair/sombre avec basculement automatique
+          • Interface moderne avec nouveaux composants UI
+          • Notifications d'entraînement personnalisables
+          
+          Corrections :
+          • Résolution de bugs d'interface
+          • Optimisations de performance
+          
+          À tester :
+          ✅ Le basculement entre mode clair/sombre
+          ✅ La navigation générale
+          ✅ Les notifications d'entraînement
+          
+          Merci de vos retours ! 💪"
+          
+          # Sauvegarder dans un fichier
+          echo "$NOTES" > release-notes-fr.txt
+          echo "✅ Notes de version générées"
+
+      - name: 📤 Deploy to Internal Testing
+        run: |
+          # Trouver le fichier AAB
+          AAB_PATH=$(find . -name "app-release.aab" -type f | head -n1)
+          
+          if [ -z "$AAB_PATH" ]; then
+            echo "❌ AAB file not found!"
+            exit 1
+          fi
+          
+          echo "✅ AAB found at: $AAB_PATH"
+          
+          # Créer le dossier pour les notes de version
+          mkdir -p fastlane/metadata/android/fr-FR
+          cp release-notes-fr.txt fastlane/metadata/android/fr-FR/changelogs/default.txt
+          
+          # Déployer avec Fastlane
+          fastlane supply \
+            --aab "$AAB_PATH" \
+            --track internal \
+            --release_status completed \
+            --json_key android/fastlane/service-account-key.json \
+            --package_name team.fitness.team_fitness_app \
+            --skip_upload_metadata \
+            --skip_upload_images \
+            --skip_upload_screenshots
+
+      - name: 🧹 Cleanup
+        if: always()
+        run: |
+          rm -f android/fastlane/service-account-key.json
+
+  # Étape 4: Déploiement OTA
+  deploy-ota:
     name: 🚀 Deploy OTA
     needs: [version, build]
     runs-on: ubuntu-latest

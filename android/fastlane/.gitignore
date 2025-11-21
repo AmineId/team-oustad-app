@@ -1,0 +1,17 @@
+# Fastlane gitignore
+
+# Service Account JSON (SENSIBLE - NE PAS COMMITER)
+service-account-key.json
+
+# Fichiers temporaires
+*.gem
+*.ipa
+*.dSYM.zip
+*.log
+tmp/
+screenshots/
+test_output/
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+fastlane/README.md
