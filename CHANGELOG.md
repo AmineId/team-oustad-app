@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.24](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.23...v1.0.0-beta.24) (2025-11-21)
+
+
+### 🐛 Bug Fixes
+
+* utiliser chemin absolu pour service account JSON dans Fastlane ([f1859e7](https://github.com/TeamFitness/mobile-app/commit/f1859e7bd2ea05006197a04285a0c377a3db63c8))
+
 ## [1.0.0-beta.23](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.22...v1.0.0-beta.23) (2025-11-21)
 
 
