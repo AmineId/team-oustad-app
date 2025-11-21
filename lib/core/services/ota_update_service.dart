@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:open_file/open_file.dart';
 import 'dart:convert';
@@ -104,7 +103,7 @@ class OTAUpdateService {
     }
   }
 
-  /// Télécharge et installe la mise à jour (Android uniquement)
+  /// Ouvre le Play Store pour mettre à jour l'application
   Future<bool> downloadAndInstallUpdate(
     UpdateInfo updateInfo, {
     Function(double)? onProgress,
@@ -118,81 +117,38 @@ class OTAUpdateService {
     }
 
     _isDownloading = true;
-    _downloadProgress = 0.0;
 
     try {
-      // Créer un dossier temporaire pour le téléchargement
-      final tempDir = await getTemporaryDirectory();
-      final filePath = '${tempDir.path}/app_update.apk';
-      final file = File(filePath);
-
-      // Supprimer l'ancien fichier s'il existe
-      if (await file.exists()) {
-        await file.delete();
-      }
-
-      // Télécharger le fichier APK
-      final request = http.Request('GET', Uri.parse(updateInfo.downloadUrl));
-      final response = await http.Client().send(request);
-
-      if (response.statusCode != 200) {
-        debugPrint('❌ Erreur de téléchargement: ${response.statusCode}');
-        return false;
-      }
-
-      final contentLength = response.contentLength ?? 0;
-      var downloadedBytes = 0;
-
-      final sink = file.openWrite();
-      
-      await for (var chunk in response.stream) {
-        sink.add(chunk);
-        downloadedBytes += chunk.length;
-        
-        if (contentLength > 0) {
-          _downloadProgress = downloadedBytes / contentLength;
-          onProgress?.call(_downloadProgress);
-        }
-      }
-
-      await sink.close();
-
-      debugPrint('✅ Téléchargement terminé: $filePath');
-
-      // Installer l'APK (nécessite les permissions appropriées)
-      // Note: L'installation nécessite l'interaction utilisateur sur Android
-      await _installApk(filePath);
-
+      // Ouvrir le Play Store avec l'app ID
+      await _openPlayStore(updateInfo.downloadUrl);
       return true;
     } catch (e) {
-      debugPrint('❌ Erreur lors du téléchargement/installation: $e');
+      debugPrint('❌ Erreur lors de l\'ouverture du Play Store: $e');
       return false;
     } finally {
       _isDownloading = false;
-      _downloadProgress = 0.0;
     }
   }
 
-  /// Installe l'APK téléchargé (Android uniquement)
-  Future<void> _installApk(String filePath) async {
+  /// Ouvre l'URL de téléchargement (Play Store ou autre)
+  Future<void> _openPlayStore(String downloadUrl) async {
     if (!Platform.isAndroid) return;
 
     try {
-      debugPrint('📦 Ouverture de l\'installateur APK: $filePath');
+      debugPrint('🔗 Ouverture de l\'URL: $downloadUrl');
       
-      // Utiliser open_file pour ouvrir l'installateur Android
-      final result = await OpenFile.open(
-        filePath,
-        type: 'application/vnd.android.package-archive',
-      );
+      // Le backend redirige déjà vers le Play Store
+      // On ouvre simplement l'URL fournie
+      final uri = Uri.parse(downloadUrl);
+      final result = await OpenFile.open(uri.toString());
       
       if (result.type == ResultType.done) {
-        debugPrint('✅ Installateur APK ouvert avec succès');
+        debugPrint('✅ URL ouverte avec succès');
       } else {
         debugPrint('⚠️ Résultat de l\'ouverture: ${result.type} - ${result.message}');
       }
     } catch (e) {
-      debugPrint('❌ Erreur lors de l\'ouverture de l\'installateur: $e');
+      debugPrint('❌ Erreur lors de l\'ouverture de l\'URL: $e');
     }
   }
 
