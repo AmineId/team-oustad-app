@@ -212,7 +212,19 @@ jobs:
       - name: 🔐 Setup Play Store credentials
         run: |
           mkdir -p android/fastlane
-          echo "${{ secrets.SERVICE_ACCOUNT_JSON }}" > android/fastlane/service-account-key.json
+          # Écrire le JSON en utilisant cat et un heredoc pour éviter les problèmes d'échappement
+          cat > android/fastlane/service-account-key.json << 'EOFJSON'
+          ${{ secrets.SERVICE_ACCOUNT_JSON }}
+          EOFJSON
+          
+          # Vérifier que le JSON est valide
+          if jq empty android/fastlane/service-account-key.json 2>/dev/null; then
+            echo "✅ Service account JSON is valid"
+          else
+            echo "❌ Service account JSON is invalid"
+            cat android/fastlane/service-account-key.json | head -n 5
+            exit 1
+          fi
 
       - name: 📝 Generate release notes
         id: release_notes
