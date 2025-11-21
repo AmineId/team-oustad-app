@@ -189,7 +189,7 @@ class AppTheme {
     // AppBar
     appBarTheme: AppBarTheme(
       backgroundColor: AppColors.lightSurface,
-      elevation: 0,
+      elevation: 1,  // Légère élévation pour séparer du fond
       centerTitle: true,
       surfaceTintColor: Colors.transparent,
       systemOverlayStyle: SystemUiOverlayStyle.dark,
@@ -198,15 +198,15 @@ class AppTheme {
       shadowColor: AppColors.lightShadow,
     ),
     
-    // Cards (design Material 3 subtil)
+    // Cards (design Material 3 avec meilleur contraste)
     cardTheme: CardThemeData(
       color: AppColors.lightCard,
-      elevation: 1,
+      elevation: 2,  // Élévation augmentée pour meilleure visibilité
       shadowColor: AppColors.lightShadow,
       surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: AppColors.lightBorder.withValues(alpha: 0.2)),
+        side: BorderSide(color: AppColors.lightBorder.withValues(alpha: 0.5)),  // Bordure plus visible
       ),
       margin: const EdgeInsets.all(8),
     ),
@@ -248,15 +248,15 @@ class AppTheme {
     // Input fields
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: AppColors.lightElevated,
+      fillColor: AppColors.lightSurface,  // Blanc pour meilleur contraste
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide.none,
+        borderSide: const BorderSide(color: AppColors.lightBorder, width: 1),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide.none,
+        borderSide: const BorderSide(color: AppColors.lightBorder, width: 1),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -276,7 +276,7 @@ class AppTheme {
     bottomNavigationBarTheme: BottomNavigationBarThemeData(
       backgroundColor: AppColors.lightSurface,
       selectedItemColor: AppColors.primary,
-      unselectedItemColor: AppColors.lightTextTertiary,
+      unselectedItemColor: AppColors.lightTextSecondary,  // Meilleur contraste
       type: BottomNavigationBarType.fixed,
       elevation: 8,
       selectedLabelStyle: AppTextStyles.caption.copyWith(fontWeight: FontWeight.w600),
@@ -292,7 +292,7 @@ class AppTheme {
     
     // Icons
     iconTheme: const IconThemeData(
-      color: AppColors.lightTextSecondary,
+      color: AppColors.lightTextPrimary,  // Contraste amélioré pour les icônes
       size: 24,
     ),
     
@@ -316,8 +316,10 @@ class AppTheme {
       contentTextStyle: AppTextStyles.body2.copyWith(color: AppColors.lightTextPrimary),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(color: AppColors.lightBorder, width: 1),
       ),
       behavior: SnackBarBehavior.floating,
+      elevation: 4,  // Élévation pour meilleure visibilité
     ),
     
     // Dialogs
@@ -325,8 +327,12 @@ class AppTheme {
       backgroundColor: AppColors.lightCard,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
+        side: BorderSide(color: AppColors.lightBorder.withValues(alpha: 0.3)),
       ),
-      elevation: 8,
+      elevation: 12,  // Élévation augmentée pour meilleure séparation
     ),
   );
 }
+
+
+

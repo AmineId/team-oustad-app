@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/theme/theme.dart';
+import '../../core/utils/user_utils.dart';
 import 'admin_member_details_screen.dart';
 import 'admin_create_member_screen.dart';
 
@@ -169,8 +170,8 @@ class _AdminMembersScreenState extends State<AdminMembersScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              AppColors.darkBackground,
-              AppColors.darkSurface,
+              Theme.of(context).scaffoldBackgroundColor,
+              Theme.of(context).cardTheme.color!,
             ],
           ),
         ),
@@ -196,7 +197,7 @@ class _AdminMembersScreenState extends State<AdminMembersScreen> {
                           )
                         : null,
                     filled: true,
-                    fillColor: AppColors.darkCard,
+                    fillColor: Theme.of(context).cardTheme.color,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(24),
                       borderSide: BorderSide.none,
@@ -319,7 +320,7 @@ class _MemberCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fullName = member['fullName'] as String? ?? 'Sans nom';
+    final fullName = getUserFullName(member);
     final email = member['email'] as String? ?? '';
     final uniqueCode = member['uniqueCode'] as String? ?? '';
     
@@ -333,7 +334,7 @@ class _MemberCard extends StatelessWidget {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      color: AppColors.darkCard,
+      color: Theme.of(context).cardTheme.color,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
@@ -376,8 +377,8 @@ class _MemberCard extends StatelessWidget {
                   children: [
                     Text(
                       fullName,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: Theme.of(context).textTheme.bodyLarge!.color,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
@@ -386,7 +387,7 @@ class _MemberCard extends StatelessWidget {
                     Text(
                       email,
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.7),
+                        color: Theme.of(context).textTheme.bodyMedium!.color,
                         fontSize: 14,
                       ),
                     ),
@@ -397,15 +398,22 @@ class _MemberCard extends StatelessWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.2),
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.primary.withValues(alpha: 0.2)
+                            : AppColors.primary.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(8),
+                        border: Theme.of(context).brightness == Brightness.light
+                            ? Border.all(color: AppColors.primaryDark, width: 1)
+                            : null,
                       ),
                       child: Text(
                         uniqueCode,
-                        style: const TextStyle(
-                          color: AppColors.primary,
+                        style: TextStyle(
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? AppColors.primary
+                              : AppColors.primaryDark,
                           fontSize: 12,
-                          fontWeight: FontWeight.w500,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),

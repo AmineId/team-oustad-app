@@ -73,7 +73,7 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
     final paymentMethod = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.darkCard,
+        backgroundColor: Theme.of(context).cardTheme.color,
         title: const Text(
           'Mode de paiement',
           style: TextStyle(color: Colors.white),
@@ -170,7 +170,7 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.darkCard,
+        backgroundColor: Theme.of(context).cardTheme.color,
         title: const Row(
           children: [
             Icon(Icons.check_circle, color: AppColors.success),
@@ -205,7 +205,7 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.darkCard,
+        backgroundColor: Theme.of(context).cardTheme.color,
         title: const Row(
           children: [
             Icon(Icons.error, color: AppColors.error),
@@ -320,7 +320,7 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              AppColors.darkBackground, AppColors.darkSurface,
+              Theme.of(context).scaffoldBackgroundColor, Theme.of(context).cardTheme.color!,
             ],
           ),
         ),
@@ -411,7 +411,7 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.darkCard,
+        color: Theme.of(context).cardTheme.color,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -593,7 +593,7 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      color: AppColors.darkCard,
+      color: Theme.of(context).cardTheme.color,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
@@ -742,7 +742,7 @@ class _PaymentMethodOption extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.darkBackground,
+          color: Theme.of(context).scaffoldBackgroundColor,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -762,4 +762,5 @@ class _PaymentMethodOption extends StatelessWidget {
     );
   }
 }
+
 

@@ -3,9 +3,8 @@ import 'package:flutter/material.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/services/api_service.dart';
 import '../../core/theme/theme.dart';
+import '../../core/utils/user_utils.dart';
 import '../../widgets/responsive/responsive_layout.dart';
-import '../../widgets/common/common_widgets.dart';
-import '../../main.dart';
 import '../auth/login_screen.dart';
 import 'admin_create_member_screen.dart';
 import 'admin_members_screen.dart';
@@ -105,11 +104,12 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
 
     // Afficher le dialog avec loading
     if (!mounted) return;
+    final theme = Theme.of(context);
     showDialog(
       context: context,
       barrierDismissible: true,
       builder: (dialogContext) => AlertDialog(
-        backgroundColor: AppColors.darkCard,
+        backgroundColor: theme.cardTheme.color,
         title: const Text(
           'Mon QR Code',
           style: TextStyle(color: Colors.white),
@@ -169,7 +169,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       showDialog(
         context: context,
         builder: (dialogContext) => AlertDialog(
-          backgroundColor: AppColors.darkCard,
+          backgroundColor: theme.cardTheme.color,
           title: const Text(
             'Mon QR Code',
             style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
@@ -234,7 +234,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
+              onPressed: () => Navigator.of(context).pop(),
               style: TextButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               ),
@@ -311,14 +311,6 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Récupérer le ThemeProvider
-    ThemeProvider? themeProvider;
-    try {
-      themeProvider = ThemeProviderScope.of(context);
-    } catch (e) {
-      // Si ThemeProviderScope n'est pas trouvé, on continue sans
-    }
-    
     return ResponsiveScaffold(
       title: _titles[_currentIndex],
       navigationItems: _navigationItems,
@@ -330,8 +322,9 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       },
       body: _pages[_currentIndex],
       actions: [
-        if (themeProvider != null)
-          ThemeToggleButton(themeProvider: themeProvider),
+        // Theme toggle button hidden - dark theme is default
+        // if (themeProvider != null)
+        //   ThemeToggleButton(themeProvider: themeProvider),
         IconButton(
           icon: const Icon(Icons.qr_code_2),
           onPressed: _showQrCode,
@@ -1656,7 +1649,7 @@ class _AdminsListViewState extends State<_AdminsListView> {
 
   Widget _buildAdminCard(Map<String, dynamic> admin, VoidCallback onTap) {
     final theme = Theme.of(context);
-    final fullName = admin['fullName'] as String? ?? 'Sans nom';
+    final fullName = getUserFullName(admin);
     final email = admin['email'] as String? ?? '';
     final role = admin['role'] as String? ?? 'N/A';
     
@@ -1845,6 +1838,7 @@ class _GymsListViewState extends State<_GymsListView> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Container(
@@ -1853,7 +1847,8 @@ class _GymsListViewState extends State<_GymsListView> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              AppColors.darkBackground, AppColors.darkSurface,
+              theme.scaffoldBackgroundColor,
+              theme.cardTheme.color!,
             ],
           ),
         ),
@@ -1900,7 +1895,7 @@ class _GymsListViewState extends State<_GymsListView> {
                         )
                       : null,
                   filled: true,
-                  fillColor: AppColors.darkCard,
+                  fillColor: theme.cardTheme.color,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(24),
                     borderSide: BorderSide.none,
@@ -1997,13 +1992,14 @@ class _GymsListViewState extends State<_GymsListView> {
   }
 
   Widget _buildGymCard(Map<String, dynamic> gym, VoidCallback onTap) {
+    final theme = Theme.of(context);
     final name = gym['name'] as String? ?? 'Sans nom';
     final address = gym['address'] as String? ?? '';
     final memberCount = gym['_count']?['users'] ?? 0;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      color: AppColors.darkCard,
+      color: theme.cardTheme.color,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
@@ -2098,7 +2094,8 @@ class _AdminDetailsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fullName = admin['fullName'] as String? ?? 'Sans nom';
+    final theme = Theme.of(context);
+    final fullName = getUserFullName(admin);
     final email = admin['email'] as String? ?? '';
     final uniqueCode = admin['uniqueCode'] as String? ?? '';
     final gymId = admin['gymId']?.toString() ?? 'N/A';
@@ -2118,7 +2115,8 @@ class _AdminDetailsView extends StatelessWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            AppColors.darkBackground, AppColors.darkSurface,
+            theme.scaffoldBackgroundColor,
+            theme.cardTheme.color!,
           ],
         ),
       ),
@@ -2214,6 +2212,7 @@ class _AdminDetailsView extends StatelessWidget {
                     
                     // Informations
                     _buildInfoCard(
+                      context,
                       icon: Icons.email,
                       title: 'Email',
                       value: email,
@@ -2221,6 +2220,7 @@ class _AdminDetailsView extends StatelessWidget {
                     const SizedBox(height: 16),
                     
                     _buildInfoCard(
+                      context,
                       icon: Icons.qr_code,
                       title: 'Code unique',
                       value: uniqueCode,
@@ -2228,6 +2228,7 @@ class _AdminDetailsView extends StatelessWidget {
                     const SizedBox(height: 16),
                     
                     _buildInfoCard(
+                      context,
                       icon: Icons.fitness_center,
                       title: 'ID Salle',
                       value: gymId,
@@ -2235,6 +2236,7 @@ class _AdminDetailsView extends StatelessWidget {
                     const SizedBox(height: 16),
                     
                     _buildInfoCard(
+                      context,
                       icon: Icons.calendar_today,
                       title: 'Créé le',
                       value: createdAt.isNotEmpty 
@@ -2271,15 +2273,17 @@ class _AdminDetailsView extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoCard({
+  Widget _buildInfoCard(
+    BuildContext context, {
     required IconData icon,
     required String title,
     required String value,
   }) {
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.darkCard,
+        color: theme.cardTheme.color,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.1),
@@ -2331,10 +2335,11 @@ class _AdminDetailsView extends StatelessWidget {
   }
 
   void _showDeleteConfirmation(BuildContext context, String name) {
+    final theme = Theme.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.darkCard,
+        backgroundColor: theme.cardTheme.color,
         title: const Text(
           'Confirmer la suppression',
           style: TextStyle(color: Colors.white),
@@ -2382,6 +2387,7 @@ class _GymDetailsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final name = gym['name'] as String? ?? 'Sans nom';
     final address = gym['address'] as String? ?? '';
     final phone = gym['phone'] as String? ?? 'N/A';
@@ -2394,7 +2400,8 @@ class _GymDetailsView extends StatelessWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            AppColors.darkBackground, AppColors.darkSurface,
+            theme.scaffoldBackgroundColor,
+            theme.cardTheme.color!,
           ],
         ),
       ),
@@ -2487,6 +2494,7 @@ class _GymDetailsView extends StatelessWidget {
                     
                     // Informations
                     _buildInfoCard(
+                      context,
                       icon: Icons.location_on,
                       title: 'Adresse',
                       value: address,
@@ -2494,6 +2502,7 @@ class _GymDetailsView extends StatelessWidget {
                     const SizedBox(height: 16),
                     
                     _buildInfoCard(
+                      context,
                       icon: Icons.phone,
                       title: 'Téléphone',
                       value: phone,
@@ -2501,6 +2510,7 @@ class _GymDetailsView extends StatelessWidget {
                     const SizedBox(height: 16),
                     
                     _buildInfoCard(
+                      context,
                       icon: Icons.people,
                       title: 'Nombre de membres',
                       value: memberCount.toString(),
@@ -2508,6 +2518,7 @@ class _GymDetailsView extends StatelessWidget {
                     const SizedBox(height: 16),
                     
                     _buildInfoCard(
+                      context,
                       icon: Icons.calendar_today,
                       title: 'Créée le',
                       value: createdAt.isNotEmpty 
@@ -2584,7 +2595,7 @@ class _GymDetailsView extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoCard({
+  Widget _buildInfoCard(BuildContext context, {
     required IconData icon,
     required String title,
     required String value,
@@ -2592,7 +2603,7 @@ class _GymDetailsView extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.darkCard,
+        color: Theme.of(context).cardTheme.color,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.1),
@@ -2647,7 +2658,7 @@ class _GymDetailsView extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.darkCard,
+        backgroundColor: Theme.of(context).cardTheme.color,
         title: const Text(
           'Confirmer la suppression',
           style: TextStyle(color: Colors.white),
@@ -2797,7 +2808,7 @@ class _AdminEditViewState extends State<_AdminEditView> {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            AppColors.darkBackground, AppColors.darkSurface,
+            Theme.of(context).scaffoldBackgroundColor, Theme.of(context).cardTheme.color!,
           ],
         ),
       ),
@@ -2861,7 +2872,7 @@ class _AdminEditViewState extends State<_AdminEditView> {
                           labelStyle: const TextStyle(color: Colors.white60),
                           prefixIcon: const Icon(Icons.person, color: AppColors.primary),
                           filled: true,
-                          fillColor: AppColors.darkCard,
+                          fillColor: Theme.of(context).cardTheme.color,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none,
@@ -2886,7 +2897,7 @@ class _AdminEditViewState extends State<_AdminEditView> {
                           labelStyle: const TextStyle(color: Colors.white60),
                           prefixIcon: const Icon(Icons.email, color: AppColors.primary),
                           filled: true,
-                          fillColor: AppColors.darkCard,
+                          fillColor: Theme.of(context).cardTheme.color,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none,
@@ -2907,14 +2918,14 @@ class _AdminEditViewState extends State<_AdminEditView> {
                       // Salle
                       DropdownButtonFormField<int>(
                         initialValue: _selectedGymId,
-                        dropdownColor: AppColors.darkCard,
+                        dropdownColor: Theme.of(context).cardTheme.color,
                         style: const TextStyle(color: Colors.white),
                         decoration: InputDecoration(
                           labelText: 'Salle de sport',
                           labelStyle: const TextStyle(color: Colors.white60),
                           prefixIcon: const Icon(Icons.fitness_center, color: AppColors.primary),
                           filled: true,
-                          fillColor: AppColors.darkCard,
+                          fillColor: Theme.of(context).cardTheme.color,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none,
@@ -3073,7 +3084,7 @@ class _GymEditViewState extends State<_GymEditView> {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            AppColors.darkBackground, AppColors.darkSurface,
+            Theme.of(context).scaffoldBackgroundColor, Theme.of(context).cardTheme.color!,
           ],
         ),
       ),
@@ -3135,7 +3146,7 @@ class _GymEditViewState extends State<_GymEditView> {
                           labelStyle: const TextStyle(color: Colors.white60),
                           prefixIcon: const Icon(Icons.business, color: AppColors.primary),
                           filled: true,
-                          fillColor: AppColors.darkCard,
+                          fillColor: Theme.of(context).cardTheme.color,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none,
@@ -3158,7 +3169,7 @@ class _GymEditViewState extends State<_GymEditView> {
                           labelStyle: const TextStyle(color: Colors.white60),
                           prefixIcon: const Icon(Icons.location_on, color: AppColors.primary),
                           filled: true,
-                          fillColor: AppColors.darkCard,
+                          fillColor: Theme.of(context).cardTheme.color,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none,
@@ -3181,7 +3192,7 @@ class _GymEditViewState extends State<_GymEditView> {
                           labelStyle: const TextStyle(color: Colors.white60),
                           prefixIcon: const Icon(Icons.phone, color: AppColors.primary),
                           filled: true,
-                          fillColor: AppColors.darkCard,
+                          fillColor: Theme.of(context).cardTheme.color,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none,
@@ -3367,10 +3378,10 @@ class _GymOpeningHoursViewState extends State<_GymOpeningHoursView> {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.dark(
+            colorScheme: ColorScheme.dark(
               primary: AppColors.primary,
               onSurface: Colors.white,
-              surface: AppColors.darkCard,
+              surface: Theme.of(context).cardTheme.color ?? Colors.grey[900]!,
             ),
           ),
           child: child!,
@@ -3399,7 +3410,7 @@ class _GymOpeningHoursViewState extends State<_GymOpeningHoursView> {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: AppColors.darkBackground,
+          color: Theme.of(context).scaffoldBackgroundColor,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: AppColors.primary.withValues(alpha: 0.3),
@@ -3450,7 +3461,7 @@ class _GymOpeningHoursViewState extends State<_GymOpeningHoursView> {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            AppColors.darkBackground, AppColors.darkSurface,
+            Theme.of(context).scaffoldBackgroundColor, Theme.of(context).cardTheme.color!,
           ],
         ),
       ),
@@ -3508,7 +3519,7 @@ class _GymOpeningHoursViewState extends State<_GymOpeningHoursView> {
                         final isClosed = dayData['isClosed'] as bool;
 
                         return Card(
-                          color: AppColors.darkCard,
+                          color: Theme.of(context).cardTheme.color,
                           margin: const EdgeInsets.only(bottom: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
@@ -3649,7 +3660,8 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
   final AuthService _authService = AuthService(ApiService.fromEnv());
   
   final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _fullNameController = TextEditingController();
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   
   List<Map<String, dynamic>> _gyms = [];
@@ -3666,7 +3678,8 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
   @override
   void dispose() {
     _emailController.dispose();
-    _fullNameController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -3702,7 +3715,8 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
 
       final response = await _apiService.createAdmin(
         _emailController.text.trim(),
-        _fullNameController.text.trim(),
+        _firstNameController.text.trim(),
+        _lastNameController.text.trim(),
         _selectedGymId!,
         token,
         password: _sendSetupEmail ? null : _passwordController.text.trim(),
@@ -3741,7 +3755,7 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            AppColors.darkBackground, AppColors.darkSurface,
+            Theme.of(context).scaffoldBackgroundColor, Theme.of(context).cardTheme.color!,
           ],
         ),
       ),
@@ -3796,16 +3810,15 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
                       ),
                       const SizedBox(height: 32),
 
-                      // Nom complet
+                      // Prénom
                       TextFormField(
-                        controller: _fullNameController,
+                        controller: _firstNameController,
                         style: const TextStyle(color: Colors.white),
                         decoration: InputDecoration(
-                          labelText: 'Nom complet',
-                          labelStyle: const TextStyle(color: Colors.white60),
+                          labelText: 'Prénom', labelStyle: const TextStyle(color: Colors.white60),
                           prefixIcon: const Icon(Icons.person, color: AppColors.primary),
                           filled: true,
-                          fillColor: AppColors.darkCard,
+                          fillColor: Theme.of(context).cardTheme.color,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none,
@@ -3813,7 +3826,31 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
                         ),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
-                            return 'Le nom complet est requis';
+                            return 'Le prénom est requis';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Nom de famille
+                      TextFormField(
+                        controller: _lastNameController,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: InputDecoration(
+                          labelText: 'Nom de famille',
+                          labelStyle: const TextStyle(color: Colors.white60),
+                          prefixIcon: const Icon(Icons.person_outline, color: AppColors.primary),
+                          filled: true,
+                          fillColor: Theme.of(context).cardTheme.color,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Le nom de famille est requis';
                           }
                           return null;
                         },
@@ -3830,7 +3867,7 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
                           labelStyle: const TextStyle(color: Colors.white60),
                           prefixIcon: const Icon(Icons.email, color: AppColors.primary),
                           filled: true,
-                          fillColor: AppColors.darkCard,
+                          fillColor: Theme.of(context).cardTheme.color,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none,
@@ -3851,14 +3888,14 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
                       // Salle
                       DropdownButtonFormField<int>(
                         initialValue: _selectedGymId,
-                        dropdownColor: AppColors.darkCard,
+                        dropdownColor: Theme.of(context).cardTheme.color,
                         style: const TextStyle(color: Colors.white),
                         decoration: InputDecoration(
                           labelText: 'Salle de sport',
                           labelStyle: const TextStyle(color: Colors.white60),
                           prefixIcon: const Icon(Icons.fitness_center, color: AppColors.primary),
                           filled: true,
-                          fillColor: AppColors.darkCard,
+                          fillColor: Theme.of(context).cardTheme.color,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none,
@@ -3886,7 +3923,7 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: AppColors.darkCard,
+                          color: Theme.of(context).cardTheme.color,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
                             color: Colors.white.withValues(alpha: 0.1),
@@ -3929,7 +3966,7 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
                             labelStyle: const TextStyle(color: Colors.white60),
                             prefixIcon: const Icon(Icons.lock, color: AppColors.primary),
                             filled: true,
-                            fillColor: AppColors.darkCard,
+                            fillColor: Theme.of(context).cardTheme.color,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                               borderSide: BorderSide.none,
@@ -4074,7 +4111,7 @@ class _GymCreateViewState extends State<_GymCreateView> {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            AppColors.darkBackground, AppColors.darkSurface,
+            Theme.of(context).scaffoldBackgroundColor, Theme.of(context).cardTheme.color!,
           ],
         ),
       ),
@@ -4138,7 +4175,7 @@ class _GymCreateViewState extends State<_GymCreateView> {
                           labelStyle: const TextStyle(color: Colors.white60),
                           prefixIcon: const Icon(Icons.business, color: AppColors.primary),
                           filled: true,
-                          fillColor: AppColors.darkCard,
+                          fillColor: Theme.of(context).cardTheme.color,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none,
@@ -4163,7 +4200,7 @@ class _GymCreateViewState extends State<_GymCreateView> {
                           labelStyle: const TextStyle(color: Colors.white60),
                           prefixIcon: const Icon(Icons.location_on, color: AppColors.primary),
                           filled: true,
-                          fillColor: AppColors.darkCard,
+                          fillColor: Theme.of(context).cardTheme.color,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none,
@@ -4188,7 +4225,7 @@ class _GymCreateViewState extends State<_GymCreateView> {
                           labelStyle: const TextStyle(color: Colors.white60),
                           prefixIcon: const Icon(Icons.phone, color: AppColors.primary),
                           filled: true,
-                          fillColor: AppColors.darkCard,
+                          fillColor: Theme.of(context).cardTheme.color,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none,
@@ -4236,4 +4273,5 @@ class _GymCreateViewState extends State<_GymCreateView> {
     );
   }
 }
+
 

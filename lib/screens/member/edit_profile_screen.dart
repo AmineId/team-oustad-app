@@ -74,11 +74,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.dark(
+            colorScheme: ColorScheme.dark(
               primary: AppColors.primary,
-              onPrimary: Colors.white,
-              surface: AppColors.darkCard,
-              onSurface: Colors.white,
+              onPrimary: Theme.of(context).brightness == Brightness.dark ? (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary) : AppColors.primaryDark,
+              surface: Theme.of(context).cardTheme.color ?? Colors.grey[900]!,
+              onSurface: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary) ?? (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
             ),
           ),
           child: child!,
@@ -125,14 +125,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         widget.onProfileUpdated?.call();
         
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text(
               '✓ Profil mis à jour avec succès',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+              style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary), fontWeight: FontWeight.w500),
             ),
             backgroundColor: AppColors.success,
-            duration: Duration(seconds: 2),
+            duration: const Duration(seconds: 2),
           ),
         );
         
@@ -145,7 +145,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             content: Text(
               'Erreur: ${e.toString()}',
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white),
+              style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary)),
             ),
             backgroundColor: AppColors.error,
           ),
@@ -162,12 +162,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Modifier le Profil',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
           ),
         ),
         leading: IconButton(
@@ -181,8 +181,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              AppColors.darkBackground,
-              AppColors.darkSurface,
+              Theme.of(context).scaffoldBackgroundColor,
+              Theme.of(context).cardTheme.color!,
             ],
           ),
         ),
@@ -200,7 +200,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       CircleAvatar(
                         radius: 60,
                         backgroundColor: AppColors.primary,
-                        child: const Icon(Icons.person, size: 60, color: Colors.white),
+                        child: Icon(Icons.person, size: 60, color: Theme.of(context).brightness == Brightness.dark ? (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary) : AppColors.primaryDark),
                       ),
                       Positioned(
                         bottom: 0,
@@ -208,7 +208,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         child: Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: AppColors.darkBackground,
+                            color: Theme.of(context).scaffoldBackgroundColor,
                             shape: BoxShape.circle,
                             border: Border.all(
                               color: AppColors.primary,
@@ -228,12 +228,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 const SizedBox(height: 32),
 
                 // Form fields
-                const Text(
+                Text(
                   'Informations Personnelles',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -296,7 +296,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     onPressed: _isLoading ? null : _saveProfile,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
+                      foregroundColor: Theme.of(context).brightness == Brightness.dark ? (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary) : AppColors.primaryDark,
                       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -304,11 +304,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       elevation: 4,
                     ),
                     child: _isLoading
-                        ? const SizedBox(
+                        ? SizedBox(
                             height: 20,
                             width: 20,
                             child: CircularProgressIndicator(
-                              color: Colors.white,
+                              color: Theme.of(context).brightness == Brightness.dark ? (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary) : AppColors.primaryDark,
                               strokeWidth: 2,
                             ),
                           )
@@ -329,8 +329,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   child: OutlinedButton(
                     onPressed: () => Navigator.pop(context),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      side: const BorderSide(color: Colors.white38),
+                      foregroundColor: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
+                      side: BorderSide(color: Theme.of(context).dividerColor),
                       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -379,16 +379,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       readOnly: readOnly,
       onTap: onTap,
       maxLines: maxLines,
-      style: const TextStyle(color: Colors.white),
+      style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary)),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
+        labelStyle: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)),
         prefixIcon: Icon(icon, color: AppColors.primary),
         suffixIcon: suffixIcon != null
             ? Icon(suffixIcon, color: AppColors.primary)
             : null,
         filled: true,
-        fillColor: AppColors.darkCard,
+        fillColor: Theme.of(context).cardTheme.color,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
@@ -396,7 +396,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(
-            color: Colors.white.withValues(alpha: 0.1),
+            color: Theme.of(context).dividerColor,
             width: 1,
           ),
         ),
@@ -425,3 +425,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 }
+
+
+
+
+
+
+

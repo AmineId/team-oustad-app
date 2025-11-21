@@ -6,7 +6,6 @@ import '../../core/services/api_service.dart';
 import '../../core/theme/theme.dart';
 import '../../widgets/common/common_widgets.dart';
 import '../../widgets/responsive/responsive_layout.dart';
-import '../../main.dart';
 import '../auth/login_screen.dart';
 import 'subscription_details_screen.dart';
 import 'edit_profile_screen.dart';
@@ -39,9 +38,6 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Récupérer le ThemeProvider
-    final themeProvider = ThemeProviderScope.of(context);
-    
     return ResponsiveScaffold(
       title: _titles[_currentIndex],
       navigationItems: [
@@ -73,9 +69,10 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
         });
       },
       body: _pages[_currentIndex],
-      actions: [
-        ThemeToggleButton(themeProvider: themeProvider),
-      ],
+      // Theme toggle button hidden - dark theme is default
+      // actions: [
+      //   ThemeToggleButton(themeProvider: themeProvider),
+      // ],
     );
   }
 }
@@ -127,7 +124,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
               content: Text(
                 'Session expirée, veuillez vous reconnecter',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Theme.of(context).textTheme.bodyLarge!.color),
+                style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary)),
               ),
               backgroundColor: AppColors.error,
             ),
@@ -145,7 +142,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
             content: Text(
               '✓ Données mises à jour',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Theme.of(context).textTheme.bodyLarge!.color, fontWeight: FontWeight.w500),
+              style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary), fontWeight: FontWeight.w500),
             ),
             backgroundColor: AppColors.success,
             duration: Duration(seconds: 2),
@@ -252,13 +249,13 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                           SizedBox(height: 12),
                           Row(
                             children: [
-                              Icon(Icons.check_circle, color: Theme.of(context).textTheme.bodyLarge!.color, size: 20),
+                              Icon(Icons.check_circle, color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary), size: 20),
                               SizedBox(width: 8),
                               Text(
                                 'Expire le: ${_formatDate(expiresAt)}',
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color: Theme.of(context).textTheme.bodyLarge!.color,
+                                  color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -279,7 +276,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Theme.of(context).textTheme.bodyLarge!.color,
+                  color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                 ),
               ),
               SizedBox(height: 16),
@@ -292,7 +289,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Theme.of(context).textTheme.bodyLarge!.color,
+                  color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                 ),
               ),
               SizedBox(height: 16),
@@ -305,7 +302,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Theme.of(context).textTheme.bodyLarge!.color,
+                color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
               ),
             ),
             SizedBox(height: 16),
@@ -371,14 +368,14 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                   Icon(
                     Icons.fitness_center,
                     size: 48,
-                    color: Theme.of(context).textTheme.bodyMedium!.color,
+                    color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                   ),
                   SizedBox(height: 12),
                   Text(
                     'Aucun entraînement prévu',
                     style: TextStyle(
                       fontSize: 16,
-                      color: Theme.of(context).textTheme.bodyMedium!.color,
+                      color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -388,7 +385,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 13,
-                      color: Theme.of(context).textTheme.bodyMedium!.color,
+                      color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                     ),
                   ),
                 ],
@@ -466,7 +463,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                                color: Theme.of(context).textTheme.bodyLarge!.color,
+                                color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                               ),
                             ),
                             SizedBox(height: 4),
@@ -532,7 +529,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                                 exercise?['name'] ?? 'Exercice',
                                 style: TextStyle(
                                   fontSize: 15,
-                                  color: Theme.of(context).textTheme.bodyLarge!.color,
+                                  color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -542,7 +539,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                                 '$sets × $reps',
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color: Theme.of(context).textTheme.bodyMedium!.color,
+                                  color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                                 ),
                               ),
                           ],
@@ -570,7 +567,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                         label: Text('Voir les détails'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Theme.of(context).colorScheme.primary,
-                          foregroundColor: Theme.of(context).textTheme.bodyLarge!.color,
+                          foregroundColor: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                           padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
@@ -684,7 +681,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                                color: Theme.of(context).textTheme.bodyLarge!.color,
+                                color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                               ),
                             ),
                             SizedBox(height: 4),
@@ -692,7 +689,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                               '${exercises.length} exercice${exercises.length > 1 ? 's' : ''} • $workoutStatus',
                               style: TextStyle(
                                 fontSize: 13,
-                                color: Theme.of(context).textTheme.bodyMedium!.color,
+                                color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                               ),
                             ),
                           ],
@@ -700,7 +697,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                       ),
                       IconButton(
                         onPressed: () => Navigator.pop(context),
-                        icon: Icon(Icons.close, color: Theme.of(context).textTheme.bodyLarge!.color),
+                        icon: Icon(Icons.close, color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary)),
                       ),
                     ],
                   ),
@@ -714,7 +711,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                             child: Text(
                               'Aucun exercice prévu',
                               style: TextStyle(
-                                color: Theme.of(context).textTheme.bodyMedium!.color!.withValues(alpha: 0.7),
+                                color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)!.withValues(alpha: 0.7),
                                 fontSize: 16,
                               ),
                             ),
@@ -771,7 +768,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                                             style: TextStyle(
                                               fontSize: 16,
                                               fontWeight: FontWeight.bold,
-                                              color: Theme.of(context).textTheme.bodyLarge!.color,
+                                              color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                                             ),
                                           ),
                                         ),
@@ -805,7 +802,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                                             Icon(
                                               Icons.note,
                                               size: 16,
-                                              color: Theme.of(context).textTheme.bodyMedium!.color,
+                                              color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                                             ),
                                             SizedBox(width: 8),
                                             Expanded(
@@ -813,7 +810,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                                                 notes,
                                                 style: TextStyle(
                                                   fontSize: 13,
-                                                  color: Theme.of(context).textTheme.bodyMedium!.color,
+                                                  color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                                                 ),
                                               ),
                                             ),
@@ -872,14 +869,14 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
             '$label: ',
             style: TextStyle(
               fontSize: 13,
-              color: Theme.of(context).textTheme.bodyMedium!.color,
+              color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
             ),
           ),
           Text(
             value,
             style: TextStyle(
               fontSize: 13,
-              color: Theme.of(context).textTheme.bodyLarge!.color,
+              color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -897,11 +894,11 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
           backgroundColor: Theme.of(context).cardTheme.color,
           title: Text(
             'Demander de l\'aide',
-            style: TextStyle(color: Theme.of(context).textTheme.bodyLarge!.color),
+            style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary)),
           ),
           content: Text(
             'Voulez-vous demander de l\'aide pour l\'exercice "$exerciseName" ?',
-            style: TextStyle(color: Theme.of(context).textTheme.bodyMedium!.color!),
+            style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)!),
           ),
           actions: [
             TextButton(
@@ -1000,7 +997,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: Theme.of(context).textTheme.bodyLarge!.color,
+                color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
               ),
             ),
             SizedBox(height: 4),
@@ -1009,7 +1006,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 12,
-                color: Theme.of(context).textTheme.bodyMedium!.color,
+                color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
               ),
             ),
           ],
@@ -1042,7 +1039,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
               padding: EdgeInsets.all(20.0),
               child: Text(
                 'Aucune salle assignée',
-                style: TextStyle(color: Theme.of(context).textTheme.bodyMedium!.color),
+                style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)),
               ),
             ),
           );
@@ -1086,7 +1083,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                                color: Theme.of(context).textTheme.bodyLarge!.color,
+                                color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                               ),
                             ),
                             SizedBox(height: 4),
@@ -1095,7 +1092,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                                 Icon(
                                   Icons.location_on,
                                   size: 14,
-                                  color: Theme.of(context).textTheme.bodyMedium!.color,
+                                  color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                                 ),
                                 SizedBox(width: 4),
                                 Expanded(
@@ -1103,7 +1100,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                                     gym['address'] ?? 'Adresse non disponible',
                                     style: TextStyle(
                                       fontSize: 13,
-                                      color: Theme.of(context).textTheme.bodyMedium!.color,
+                                      color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -1116,7 +1113,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                       ),
                       Icon(
                         Icons.arrow_forward_ios,
-                        color: Theme.of(context).textTheme.bodyMedium!.color!.withValues(alpha: 0.8),
+                        color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)!.withValues(alpha: 0.8),
                         size: 20,
                       ),
                     ],
@@ -1400,7 +1397,7 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: Theme.of(context).textTheme.bodyLarge!.color,
+                  color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                 ),
               ),
               SizedBox(height: 16),
@@ -1408,7 +1405,7 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
                 'Scannez ce code à l\'entrée',
                 style: TextStyle(
                   fontSize: 16,
-                  color: Theme.of(context).textTheme.bodyMedium!.color,
+                  color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                 ),
               ),
               SizedBox(height: 40),
@@ -1426,7 +1423,7 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
                     Text(
                       'Chargement du QR code...',
                       style: TextStyle(
-                        color: Theme.of(context).textTheme.bodyMedium!.color!,
+                        color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)!,
                         fontSize: 14,
                       ),
                     ),
@@ -1449,7 +1446,7 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
                           Container(
                             padding: EdgeInsets.all(20),
                             decoration: BoxDecoration(
-                              color: Theme.of(context).textTheme.bodyLarge!.color,
+                              color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: Image.memory(
@@ -1463,7 +1460,7 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
                           Text(
                             _profileData?['fullName'] ?? 'Utilisateur',
                             style: TextStyle(
-                              color: Theme.of(context).textTheme.bodyLarge!.color,
+                              color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                             ),
@@ -1494,7 +1491,7 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
                           Text(
                             'Présentez ce code à l\'entrée',
                             style: TextStyle(
-                              color: Theme.of(context).textTheme.bodyMedium!.color!.withValues(alpha: 0.8),
+                              color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)!.withValues(alpha: 0.8),
                               fontSize: 14,
                             ),
                             textAlign: TextAlign.center,
@@ -1532,7 +1529,7 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).colorScheme.primary,
-                  foregroundColor: Theme.of(context).textTheme.bodyLarge!.color,
+                  foregroundColor: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                   padding: EdgeInsets.symmetric(horizontal: 32, vertical: 20),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -1549,7 +1546,7 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 14,
-                  color: Theme.of(context).textTheme.bodyMedium!.color,
+                  color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                 ),
               ),
             ],
@@ -1596,7 +1593,7 @@ class MemberSubscriptionPage extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
-                            color: Theme.of(context).textTheme.bodyLarge!.color,
+                            color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                           ),
                         ),
                         Container(
@@ -1610,7 +1607,7 @@ class MemberSubscriptionPage extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
-                              color: Theme.of(context).textTheme.bodyLarge!.color,
+                              color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                             ),
                           ),
                         ),
@@ -1633,7 +1630,7 @@ class MemberSubscriptionPage extends StatelessWidget {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Theme.of(context).textTheme.bodyLarge!.color,
+                color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
               ),
             ),
             SizedBox(height: 16),
@@ -1656,7 +1653,7 @@ class MemberSubscriptionPage extends StatelessWidget {
             label,
             style: TextStyle(
               fontSize: 14,
-              color: Theme.of(context).textTheme.bodyMedium!.color,
+              color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
             ),
           ),
           Text(
@@ -1664,7 +1661,7 @@ class MemberSubscriptionPage extends StatelessWidget {
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.bold,
-              color: Theme.of(context).textTheme.bodyLarge!.color,
+              color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
             ),
           ),
         ],
@@ -1698,14 +1695,14 @@ class MemberSubscriptionPage extends StatelessWidget {
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
-            color: Theme.of(context).textTheme.bodyLarge!.color,
+            color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
           ),
         ),
         subtitle: Text(
           date,
           style: TextStyle(
             fontSize: 12,
-            color: Theme.of(context).textTheme.bodyMedium!.color,
+            color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
           ),
         ),
         trailing: Text(
@@ -1897,7 +1894,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: Theme.of(context).textTheme.bodyLarge!.color,
+                            color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                           ),
                         ),
                         SizedBox(height: 4),
@@ -1936,14 +1933,14 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                 Icon(
                   Icons.fitness_center,
                   size: 18,
-                  color: Theme.of(context).textTheme.bodyMedium!.color,
+                  color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                 ),
                 SizedBox(width: 8),
                 Text(
                   '${exercises.length} exercice${exercises.length > 1 ? 's' : ''} prévu${exercises.length > 1 ? 's' : ''}',
                   style: TextStyle(
                     fontSize: 14,
-                    color: Theme.of(context).textTheme.bodyMedium!.color,
+                    color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                   ),
                 ),
               ],
@@ -1957,7 +1954,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                 label: Text('Voir les détails'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).colorScheme.primary,
-                  foregroundColor: Theme.of(context).textTheme.bodyLarge!.color,
+                  foregroundColor: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                   padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
@@ -2024,7 +2021,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                                color: Theme.of(context).textTheme.bodyLarge!.color,
+                                color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                               ),
                             ),
                             SizedBox(height: 4),
@@ -2032,7 +2029,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                               '${exercises.length} exercice${exercises.length > 1 ? 's' : ''} • Aujourd\'hui',
                               style: TextStyle(
                                 fontSize: 13,
-                                color: Theme.of(context).textTheme.bodyMedium!.color,
+                                color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                               ),
                             ),
                           ],
@@ -2040,7 +2037,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                       ),
                       IconButton(
                         onPressed: () => Navigator.pop(context),
-                        icon: Icon(Icons.close, color: Theme.of(context).textTheme.bodyLarge!.color),
+                        icon: Icon(Icons.close, color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary)),
                       ),
                     ],
                   ),
@@ -2054,7 +2051,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                             child: Text(
                               'Aucun exercice prévu',
                               style: TextStyle(
-                                color: Theme.of(context).textTheme.bodyMedium!.color!.withValues(alpha: 0.7),
+                                color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)!.withValues(alpha: 0.7),
                                 fontSize: 16,
                               ),
                             ),
@@ -2106,7 +2103,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                           style: TextStyle(
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold,
-                                            color: Theme.of(context).textTheme.bodyLarge!.color,
+                                            color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                                           ),
                                         ),
                                       ),
@@ -2146,7 +2143,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                               notes,
                                               style: TextStyle(
                                                 fontSize: 13,
-                                                color: Theme.of(context).textTheme.bodyMedium!.color,
+                                                color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                                                 fontStyle: FontStyle.italic,
                                               ),
                                             ),
@@ -2257,7 +2254,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                         Text(
                           _errorMessage!,
                           style: TextStyle(
-                            color: Theme.of(context).textTheme.bodyLarge!.color,
+                            color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                             fontSize: 16,
                           ),
                           textAlign: TextAlign.center,
@@ -2281,13 +2278,13 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                             Icon(
                               Icons.fitness_center,
                               size: 80,
-                              color: Theme.of(context).textTheme.bodyMedium!.color,
+                              color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                             ),
                             SizedBox(height: 16),
                             Text(
                               'Aucun planning disponible',
                               style: TextStyle(
-                                color: Theme.of(context).textTheme.bodyMedium!.color,
+                                color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                                 fontSize: 18,
                               ),
                             ),
@@ -2296,7 +2293,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                               'Votre coach vous assignera bientôt\nun programme d\'entraînement',
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                                color: Theme.of(context).textTheme.bodyMedium!.color,
+                                color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                                 fontSize: 14,
                               ),
                             ),
@@ -2323,7 +2320,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                       style: TextStyle(
                                         fontSize: 20,
                                         fontWeight: FontWeight.bold,
-                                        color: Theme.of(context).textTheme.bodyLarge!.color,
+                                        color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                                       ),
                                     ),
                                     SizedBox(height: 12),
@@ -2334,7 +2331,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                       style: TextStyle(
                                         fontSize: 20,
                                         fontWeight: FontWeight.bold,
-                                        color: Theme.of(context).textTheme.bodyLarge!.color,
+                                        color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                                       ),
                                     ),
                                     SizedBox(height: 12),
@@ -2389,7 +2386,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Theme.of(context).textTheme.bodyLarge!.color,
+                        color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                       ),
                     ),
                   ),
@@ -2452,7 +2449,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                   description,
                   style: TextStyle(
                     fontSize: 14,
-                    color: Theme.of(context).textTheme.bodyMedium!.color,
+                    color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                   ),
                 ),
               ],
@@ -2464,14 +2461,14 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                   Icon(
                     Icons.calendar_today,
                     size: 16,
-                    color: Theme.of(context).textTheme.bodyMedium!.color,
+                    color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                   ),
                   SizedBox(width: 8),
                   Text(
                     'Du ${_formatDateSimple(startDate)} au ${_formatDateSimple(endDate)}',
                     style: TextStyle(
                       fontSize: 13,
-                      color: Theme.of(context).textTheme.bodyMedium!.color,
+                      color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                     ),
                   ),
                 ],
@@ -2484,14 +2481,14 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                     Icon(
                       Icons.person,
                       size: 16,
-                      color: Theme.of(context).textTheme.bodyMedium!.color,
+                      color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                     ),
                     SizedBox(width: 8),
                     Text(
                       'Coach: ${coach['fullName'] ?? 'N/A'}',
                       style: TextStyle(
                         fontSize: 13,
-                        color: Theme.of(context).textTheme.bodyMedium!.color,
+                        color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                       ),
                     ),
                   ],
@@ -2520,7 +2517,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                   Spacer(),
                   Icon(
                     Icons.arrow_forward_ios,
-                    color: Theme.of(context).textTheme.bodyMedium!.color!.withValues(alpha: 0.8),
+                    color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)!.withValues(alpha: 0.8),
                     size: 16,
                   ),
                 ],
@@ -2545,7 +2542,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
           text,
           style: TextStyle(
             fontSize: 13,
-            color: Theme.of(context).textTheme.bodyMedium!.color,
+            color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
           ),
         ),
       ],
@@ -2579,11 +2576,11 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
           backgroundColor: Theme.of(context).cardTheme.color,
           title: Text(
             'Demander de l\'aide',
-            style: TextStyle(color: Theme.of(context).textTheme.bodyLarge!.color),
+            style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary)),
           ),
           content: Text(
             'Voulez-vous notifier les coachs de votre salle pour obtenir de l\'aide avec "$exerciseName" ?',
-            style: TextStyle(color: Theme.of(context).textTheme.bodyMedium!.color),
+            style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)),
           ),
           actions: [
             TextButton(
@@ -2643,7 +2640,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
           SnackBar(
             content: Row(
               children: [
-                Icon(Icons.check_circle, color: Theme.of(context).textTheme.bodyLarge!.color),
+                Icon(Icons.check_circle, color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary)),
                 SizedBox(width: 12),
                 Expanded(
                   child: Text('Les coachs ont été notifiés ! Ils viendront vous aider.'),
@@ -2849,7 +2846,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                           CircleAvatar(
                             radius: 50,
                             backgroundColor: Theme.of(context).colorScheme.primary,
-                            child: Icon(Icons.person, size: 50, color: Theme.of(context).textTheme.bodyLarge!.color),
+                            child: Icon(Icons.person, size: 50, color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary)),
                           ),
                           Positioned(
                             bottom: 0,
@@ -2879,7 +2876,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
-                          color: Theme.of(context).textTheme.bodyLarge!.color,
+                          color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                         ),
                       ),
                       SizedBox(height: 8),
@@ -2887,7 +2884,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                         email,
                         style: TextStyle(
                           fontSize: 14,
-                          color: Theme.of(context).textTheme.bodyMedium!.color,
+                          color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                         ),
                       ),
                       SizedBox(height: 8),
@@ -2895,7 +2892,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                         'Membre depuis: $joinedAt',
                         style: TextStyle(
                           fontSize: 12,
-                          color: Theme.of(context).textTheme.bodyMedium!.color!.withValues(alpha: 0.7),
+                          color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)!.withValues(alpha: 0.7),
                         ),
                       ),
                       SizedBox(height: 12),
@@ -2941,7 +2938,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Theme.of(context).textTheme.bodyLarge!.color,
+                  color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                 ),
               ),
               SizedBox(height: 12),
@@ -2976,7 +2973,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                                 style: TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
-                                  color: Theme.of(context).textTheme.bodyLarge!.color,
+                                  color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                                 ),
                               ),
                             ),
@@ -2991,7 +2988,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
-                                  color: Theme.of(context).textTheme.bodyLarge!.color,
+                                  color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                                 ),
                               ),
                             ),
@@ -3010,7 +3007,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                               'Voir les détails',
                               style: TextStyle(
                                 fontSize: 14,
-                                color: Theme.of(context).textTheme.bodyMedium!.color!,
+                                color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)!,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -3018,7 +3015,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                             Icon(
                               Icons.arrow_forward_ios,
                               size: 14,
-                              color: Theme.of(context).textTheme.bodyMedium!.color!,
+                              color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)!,
                             ),
                           ],
                         ),
@@ -3035,7 +3032,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Theme.of(context).textTheme.bodyLarge!.color,
+                  color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                 ),
               ),
               SizedBox(height: 12),
@@ -3081,16 +3078,16 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: ListTile(
-                  leading: Icon(Icons.logout, color: Theme.of(context).textTheme.bodyLarge!.color),
+                  leading: Icon(Icons.logout, color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary)),
                   title: Text(
                     'Se déconnecter',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Theme.of(context).textTheme.bodyLarge!.color,
+                      color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                     ),
                   ),
-                  trailing: Icon(Icons.arrow_forward_ios, color: Theme.of(context).textTheme.bodyLarge!.color, size: 16),
+                  trailing: Icon(Icons.arrow_forward_ios, color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary), size: 16),
                   onTap: () async {
                     await _authService.clearAll();
                     if (context.mounted) {
@@ -3120,7 +3117,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
             label,
             style: TextStyle(
               fontSize: 14,
-              color: Theme.of(context).textTheme.bodyMedium!.color,
+              color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
             ),
           ),
           Text(
@@ -3128,7 +3125,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.bold,
-              color: Theme.of(context).textTheme.bodyLarge!.color,
+              color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
             ),
           ),
         ],
@@ -3163,13 +3160,16 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w500,
-            color: Theme.of(context).textTheme.bodyLarge!.color,
+            color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
           ),
         ),
-        trailing: Icon(Icons.arrow_forward_ios, color: Theme.of(context).textTheme.bodyMedium!.color!.withValues(alpha: 0.8), size: 16),
+        trailing: Icon(Icons.arrow_forward_ios, color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)!.withValues(alpha: 0.8), size: 16),
         onTap: onTap,
       ),
     );
   }
 }
+
+
+
 

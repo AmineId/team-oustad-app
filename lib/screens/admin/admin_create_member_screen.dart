@@ -23,10 +23,14 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
   final _formKey = GlobalKey<FormState>();
   
   final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _fullNameController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _gymController = TextEditingController(text: 'Ma salle');
   
   bool _isLoading = false;
+  bool _isLoadingGym = true;
   bool _sendSetupEmail = true;
   bool _obscurePassword = true;
   int? _gymId;
@@ -41,22 +45,78 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
   @override
   void dispose() {
     _emailController.dispose();
-    _fullNameController.dispose();
+    _phoneController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     _passwordController.dispose();
+    _gymController.dispose();
     super.dispose();
   }
 
   Future<void> _loadUserGymId() async {
     try {
-      final profile = await _authService.getCachedUserProfile();
-      if (profile != null) {
+      final token = await _authService.loadToken();
+      if (token == null) {
+        debugPrint('❌ Token non disponible');
+        return;
+      }
+
+      debugPrint('🔍 Chargement de la salle admin...');
+      
+      // Récupérer la liste des salles (pour un admin, ce sera sa salle)
+      final gyms = await _apiService.getGyms(token);
+      
+      debugPrint('📊 Gyms reçus: $gyms');
+      
+      if (gyms != null && gyms.isNotEmpty) {
+        final gym = gyms.first as Map<String, dynamic>;
+        final gymId = gym['id'] as int;
+        final gymName = gym['name'] as String? ?? 'Ma salle';
+        
+        debugPrint('✅ Gym admin trouvé: $gymName (ID: $gymId)');
+        
+        if (mounted) {
+          setState(() {
+            _gymId = gymId;
+            _gymController.text = gymName;
+            _isLoadingGym = false;
+          });
+          debugPrint('✅ Controller mis à jour avec: ${_gymController.text}');
+        }
+      } else {
+        debugPrint('⚠️ Aucune salle trouvée pour cet admin');
+        // Fallback: essayer de récupérer depuis le profil
+        final profile = await _authService.getCachedUserProfile();
+        debugPrint('📊 Profil: $profile');
+        if (profile != null) {
+          final gymId = profile['gymId'] as int?;
+          final gymData = profile['gym'];
+          debugPrint('📊 GymId du profil: $gymId, Gym data: $gymData');
+          if (mounted) {
+            setState(() {
+              _gymId = gymId;
+              _isLoadingGym = false;
+              if (gymData != null && gymData is Map) {
+                _gymController.text = gymData['name'] ?? 'Ma salle';
+              }
+            });
+          }
+        } else {
+          if (mounted) {
+            setState(() {
+              _isLoadingGym = false;
+            });
+          }
+        }
+      }
+    } catch (e, stackTrace) {
+      debugPrint('❌ Erreur lors du chargement du gymId: $e');
+      debugPrint('Stack trace: $stackTrace');
+      if (mounted) {
         setState(() {
-          _gymId = profile['gymId'] as int?;
+          _isLoadingGym = false;
         });
       }
-    } catch (e) {
-      // ignore: avoid_print
-      debugPrint('Erreur lors du chargement du gymId: $e');
     }
   }
 
@@ -65,7 +125,21 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
       return;
     }
 
+    debugPrint('🔍 Création membre - _isLoadingGym: $_isLoadingGym, _gymId: $_gymId');
+
+    if (_isLoadingGym) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Chargement de la salle en cours...'),
+          backgroundColor: AppColors.info,
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
     if (_gymId == null) {
+      debugPrint('❌ GymId est null!');
       setState(() {
         _errorMessage = 'Impossible de déterminer la salle de sport';
       });
@@ -89,19 +163,24 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
 
       // Créer le membre
       final email = _emailController.text.trim();
-      final fullName = _fullNameController.text.trim();
+      final phone = _phoneController.text.trim();
+      final firstName = _firstNameController.text.trim();
+      final lastName = _lastNameController.text.trim();
       final password = _passwordController.text.isNotEmpty ? _passwordController.text : null;
-      final shouldSendEmail = password == null ? _sendSetupEmail : false;
+      // Envoyer l'email seulement si un email est fourni et pas de mot de passe
+      final shouldSendEmail = email.isNotEmpty && password == null ? _sendSetupEmail : false;
 
       // ignore: avoid_print
-      debugPrint('Création du membre: $fullName ($email)');
+      debugPrint('Création du membre: $firstName $lastName ($phone)');
 
       final result = await _apiService.createMember(
-        email,
-        fullName,
+        email.isNotEmpty ? email : phone, // Utiliser le téléphone si pas d'email
+        firstName,
+        lastName,
         _gymId!,
         token,
         password: password,
+        phone: phone,
         sendSetupEmail: shouldSendEmail,
       );
 
@@ -112,7 +191,7 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              _passwordController.text.isEmpty && _sendSetupEmail
+              _emailController.text.isNotEmpty && _passwordController.text.isEmpty && _sendSetupEmail
                   ? 'Membre créé avec succès. Un email d\'activation a été envoyé.'
                   : 'Membre créé avec succès',
             ),
@@ -169,8 +248,8 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              AppColors.darkBackground,
-              AppColors.darkSurface,
+              Theme.of(context).scaffoldBackgroundColor,
+              Theme.of(context).cardTheme.color!,
             ],
           ),
         ),
@@ -232,37 +311,69 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                           ),
                         ),
 
-                        const Text(
+                        Text(
                           'Nouveau membre',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: Theme.of(context).textTheme.bodyLarge!.color,
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
                           ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 8),
-                        const Text(
+                        Text(
                           'Remplissez les informations du membre',
                           style: TextStyle(
-                            color: Colors.white60,
+                            color: Theme.of(context).textTheme.bodyMedium!.color,
                             fontSize: 14,
                           ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 32),
 
-                        // Email
+                        // Salle (lecture seule)
                         TextFormField(
-                          controller: _emailController,
-                          style: const TextStyle(color: Colors.white),
-                          keyboardType: TextInputType.emailAddress,
+                          controller: _gymController,
+                          enabled: false,
+                          style: TextStyle(color: Theme.of(context).textTheme.bodyLarge!.color),
                           decoration: InputDecoration(
-                            labelText: 'Email *',
-                            labelStyle: const TextStyle(color: Colors.white60),
-                            prefixIcon: const Icon(Icons.email, color: AppColors.primary),
+                            labelText: 'Salle de sport',
+                            labelStyle: TextStyle(color: Theme.of(context).textTheme.bodyMedium!.color),
+                            prefixIcon: const Icon(Icons.fitness_center, color: AppColors.primary),
+                            suffixIcon: _isLoadingGym 
+                              ? const Padding(
+                                  padding: EdgeInsets.all(12.0),
+                                  child: SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: AppColors.primary,
+                                    ),
+                                  ),
+                                )
+                              : null,
                             filled: true,
-                            fillColor: AppColors.darkCard,
+                            fillColor: Theme.of(context).cardTheme.color!.withValues(alpha: 0.5),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Numéro de téléphone (obligatoire)
+                        TextFormField(
+                          controller: _phoneController,
+                          style: TextStyle(color: Theme.of(context).textTheme.bodyLarge!.color),
+                          keyboardType: TextInputType.phone,
+                          decoration: InputDecoration(
+                            labelText: 'Numéro de téléphone *',
+                            labelStyle: TextStyle(color: Theme.of(context).textTheme.bodyMedium!.color),
+                            prefixIcon: const Icon(Icons.phone, color: AppColors.primary),
+                            filled: true,
+                            fillColor: Theme.of(context).cardTheme.color,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                               borderSide: BorderSide.none,
@@ -270,9 +381,38 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Email requis';
+                              return 'Numéro de téléphone requis';
                             }
-                            if (!value.contains('@')) {
+                            // Validation basique du format
+                            if (!RegExp(r'^\+?[0-9\s\-\(\)]+$').hasMatch(value.trim())) {
+                              return 'Numéro de téléphone invalide';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Email (optionnel)
+                        TextFormField(
+                          controller: _emailController,
+                          style: TextStyle(color: Theme.of(context).textTheme.bodyLarge!.color),
+                          keyboardType: TextInputType.emailAddress,
+                          decoration: InputDecoration(
+                            labelText: 'Email (optionnel)',
+                            labelStyle: TextStyle(color: Theme.of(context).textTheme.bodyMedium!.color),
+                            hintText: 'Pour recevoir l\'email de configuration',
+                            hintStyle: TextStyle(color: Theme.of(context).textTheme.bodyMedium!.color!.withValues(alpha: 0.5)),
+                            prefixIcon: const Icon(Icons.email, color: AppColors.primary),
+                            filled: true,
+                            fillColor: Theme.of(context).cardTheme.color,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                          validator: (value) {
+                            // Email optionnel, mais s'il est fourni, il doit être valide
+                            if (value != null && value.isNotEmpty && !value.contains('@')) {
                               return 'Email invalide';
                             }
                             return null;
@@ -280,16 +420,16 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                         ),
                         const SizedBox(height: 16),
 
-                        // Nom complet
+                        // Prénom
                         TextFormField(
-                          controller: _fullNameController,
-                          style: const TextStyle(color: Colors.white),
+                          controller: _firstNameController,
+                          style: TextStyle(color: Theme.of(context).textTheme.bodyLarge!.color),
                           decoration: InputDecoration(
-                            labelText: 'Nom complet *',
-                            labelStyle: const TextStyle(color: Colors.white60),
+                            labelText: 'Prénom *',
+                            labelStyle: TextStyle(color: Theme.of(context).textTheme.bodyMedium!.color),
                             prefixIcon: const Icon(Icons.person, color: AppColors.primary),
                             filled: true,
-                            fillColor: AppColors.darkCard,
+                            fillColor: Theme.of(context).cardTheme.color,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                               borderSide: BorderSide.none,
@@ -297,7 +437,31 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Nom complet requis';
+                              return 'Prénom requis';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Nom de famille
+                        TextFormField(
+                          controller: _lastNameController,
+                          style: TextStyle(color: Theme.of(context).textTheme.bodyLarge!.color),
+                          decoration: InputDecoration(
+                            labelText: 'Nom de famille *',
+                            labelStyle: TextStyle(color: Theme.of(context).textTheme.bodyMedium!.color),
+                            prefixIcon: const Icon(Icons.person_outline, color: AppColors.primary),
+                            filled: true,
+                            fillColor: Theme.of(context).cardTheme.color,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Nom de famille requis';
                             }
                             return null;
                           },
@@ -307,13 +471,13 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                         // Mot de passe (optionnel)
                         TextFormField(
                           controller: _passwordController,
-                          style: const TextStyle(color: Colors.white),
+                          style: TextStyle(color: Theme.of(context).textTheme.bodyLarge!.color),
                           obscureText: _obscurePassword,
                           decoration: InputDecoration(
                             labelText: 'Mot de passe (optionnel)',
-                            labelStyle: const TextStyle(color: Colors.white60),
+                            labelStyle: TextStyle(color: Theme.of(context).textTheme.bodyMedium!.color),
                             hintText: 'Laisser vide pour envoyer un email',
-                            hintStyle: const TextStyle(color: Colors.white38),
+                            hintStyle: TextStyle(color: Theme.of(context).textTheme.bodyMedium!.color!.withValues(alpha: 0.5)),
                             prefixIcon: const Icon(Icons.lock, color: AppColors.primary),
                             suffixIcon: IconButton(
                               icon: Icon(
@@ -327,7 +491,7 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                               },
                             ),
                             filled: true,
-                            fillColor: AppColors.darkCard,
+                            fillColor: Theme.of(context).cardTheme.color,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                               borderSide: BorderSide.none,
@@ -347,7 +511,7 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                           Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: AppColors.darkCard,
+                              color: Theme.of(context).cardTheme.color,
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Row(
@@ -410,7 +574,7 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Text(
-                                  '* Champs requis\n\nSi vous ne fournissez pas de mot de passe, un email sera automatiquement envoyé au membre pour qu\'il puisse créer le sien.',
+                                  '* Champs requis\n\nLe numéro de téléphone est obligatoire. L\'email est optionnel mais nécessaire pour envoyer l\'email de configuration.\n\nSi vous ne fournissez pas de mot de passe et qu\'un email est fourni, le membre recevra un email pour créer son mot de passe.',
                                   style: TextStyle(
                                     color: Colors.white.withValues(alpha: 0.9),
                                     fontSize: 12,

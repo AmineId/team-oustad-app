@@ -80,7 +80,7 @@ class _AdminCreateGymScreenState extends State<AdminCreateGymScreen> {
           'Créer une salle',
           style: TextStyle(color: Colors.white),
         ),
-        backgroundColor: AppColors.darkBackground,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Container(
@@ -89,7 +89,7 @@ class _AdminCreateGymScreenState extends State<AdminCreateGymScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              AppColors.darkBackground, AppColors.darkSurface,
+              Theme.of(context).scaffoldBackgroundColor, Theme.of(context).cardTheme.color!,
             ],
           ),
         ),
@@ -126,7 +126,7 @@ class _AdminCreateGymScreenState extends State<AdminCreateGymScreen> {
                       labelStyle: const TextStyle(color: Colors.white60),
                       prefixIcon: const Icon(Icons.business, color: AppColors.primary),
                       filled: true,
-                      fillColor: AppColors.darkCard,
+                      fillColor: Theme.of(context).cardTheme.color,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
@@ -151,7 +151,7 @@ class _AdminCreateGymScreenState extends State<AdminCreateGymScreen> {
                       labelStyle: const TextStyle(color: Colors.white60),
                       prefixIcon: const Icon(Icons.location_on, color: AppColors.primary),
                       filled: true,
-                      fillColor: AppColors.darkCard,
+                      fillColor: Theme.of(context).cardTheme.color,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
@@ -176,7 +176,7 @@ class _AdminCreateGymScreenState extends State<AdminCreateGymScreen> {
                       labelStyle: const TextStyle(color: Colors.white60),
                       prefixIcon: const Icon(Icons.phone, color: AppColors.primary),
                       filled: true,
-                      fillColor: AppColors.darkCard,
+                      fillColor: Theme.of(context).cardTheme.color,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
@@ -221,3 +221,4 @@ class _AdminCreateGymScreenState extends State<AdminCreateGymScreen> {
     );
   }
 }
+

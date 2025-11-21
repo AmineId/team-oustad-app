@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/services/api_service.dart';
 import '../../core/theme/theme.dart';
+import 'forgot_password_screen.dart';
 
 class SetupPasswordScreen extends StatefulWidget {
   const SetupPasswordScreen({super.key});
@@ -19,6 +20,11 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  bool _isCheckingPhone = false;
+  bool? _phoneExists;
+  
+  bool get _isPhoneNumber => !_emailController.text.contains('@') && _emailController.text.trim().isNotEmpty;
+  bool get _isEmail => _emailController.text.contains('@');
 
   @override
   void dispose() {
@@ -29,14 +35,193 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
     super.dispose();
   }
 
+  Future<void> _checkPhoneNumber() async {
+    final phoneNumber = _emailController.text.trim();
+    
+    if (phoneNumber.isEmpty) {
+      _showError('Veuillez entrer un numéro de téléphone');
+      return;
+    }
+    
+    setState(() => _isCheckingPhone = true);
+    
+    try {
+      final result = await _apiService.checkPhone(phoneNumber);
+      
+      if (!mounted) return;
+      
+      setState(() => _isCheckingPhone = false);
+      
+      if (result['success'] != true) {
+        _showError('Une erreur est survenue. Veuillez réessayer.');
+        return;
+      }
+      
+      final exists = result['exists'] as bool? ?? false;
+      final hasPassword = result['hasPassword'] as bool? ?? false;
+      
+      if (exists && hasPassword) {
+        // Cas 1: Le numéro existe et a déjà un mot de passe
+        // Rediriger vers l'écran de changement de mot de passe (forgot password)
+        setState(() => _phoneExists = true);
+        
+        if (!mounted) return;
+        
+        // Afficher un message d'information
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Ce numéro a déjà un mot de passe. Redirection vers la réinitialisation...'),
+            backgroundColor: AppColors.primary,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+        
+        // Attendre un peu puis rediriger
+        await Future.delayed(const Duration(seconds: 2));
+        
+        if (!mounted) return;
+        
+        // Rediriger vers l'écran de mot de passe oublié
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => const ForgotPasswordScreen(),
+          ),
+        );
+      } else if (!exists && !hasPassword) {
+        // Cas 2: Le numéro n'existe pas
+        // Afficher un message pour passer à la salle
+        setState(() => _phoneExists = false);
+        
+        if (!mounted) return;
+        
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              title: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.store,
+                      color: AppColors.primary,
+                      size: 28,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Text(
+                      'Compte non trouvé',
+                      style: TextStyle(fontSize: 20),
+                    ),
+                  ),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Ce numéro de téléphone n\'est pas encore enregistré dans notre système.',
+                    style: TextStyle(fontSize: 15),
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: AppColors.primary.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(
+                          Icons.info_outline,
+                          color: AppColors.primary,
+                          size: 24,
+                        ),
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'Merci de passer à notre salle pour créer votre compte.',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text(
+                    'Compris',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      } else if (exists && !hasPassword) {
+        // Cas 3: Le numéro existe mais n'a pas encore de mot de passe
+        // Permettre de continuer avec la configuration
+        setState(() => _phoneExists = true);
+        
+        final user = result['user'] as Map<String, dynamic>?;
+        final userName = user?['fullName'] ?? 'Utilisateur';
+        
+        if (!mounted) return;
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('✓ Compte trouvé: $userName. Vous pouvez configurer votre mot de passe.'),
+            backgroundColor: AppColors.success,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isCheckingPhone = false);
+      _showError('Une erreur est survenue. Veuillez réessayer.');
+    }
+  }
+
   Future<void> _setupPassword() async {
     // Validation
     if (_emailController.text.trim().isEmpty) {
-      _showError('Veuillez entrer votre email');
+      _showError(_isPhoneNumber ? 'Veuillez entrer votre numéro de téléphone' : 'Veuillez entrer votre email');
       return;
     }
+    
+    // Si c'est un numéro de téléphone, vérifier qu'il existe et qu'il n'a pas déjà de mot de passe
+    if (_isPhoneNumber) {
+      if (_phoneExists != true) {
+        _showError('Veuillez d\'abord vérifier le numéro en cliquant sur l\'icône de recherche');
+        return;
+      }
+      // Note: Si hasPassword était true, l'utilisateur aurait été redirigé lors de la vérification
+    }
 
-    if (_tokenController.text.trim().isEmpty) {
+    if (_isEmail && _tokenController.text.trim().isEmpty) {
       _showError('Veuillez entrer le code reçu par email');
       return;
     }
@@ -124,8 +309,8 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: Theme.of(context).brightness == Brightness.dark
-                ? [AppColors.darkBackground, AppColors.darkSurface]
-                : [AppColors.lightBackground, AppColors.lightSurface],
+                ? [Theme.of(context).scaffoldBackgroundColor, Theme.of(context).cardTheme.color!]
+                : [Theme.of(context).scaffoldBackgroundColor, Theme.of(context).cardTheme.color!],
           ),
         ),
         child: SafeArea(
@@ -143,7 +328,7 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
                     Align(
                       alignment: Alignment.centerLeft,
                       child: IconButton(
-                        icon: const Icon(Icons.arrow_back, color: Colors.white),
+                        icon: Icon(Icons.arrow_back, color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary)),
                         onPressed: () => Navigator.of(context).pop(),
                       ),
                     ),
@@ -168,57 +353,112 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
                       style: TextStyle(
                         fontSize: isDesktop ? 32 : 24,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                       ),
                       textAlign: isDesktop ? TextAlign.left : TextAlign.center,
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Créez votre mot de passe avec le code reçu par email',
+                      _isEmail 
+                        ? 'Créez votre mot de passe avec le code reçu par email'
+                        : 'Créez votre mot de passe avec votre numéro de téléphone',
                       style: TextStyle(
                         fontSize: isDesktop ? 16 : 14,
-                        color: Colors.white70,
+                        color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                       ),
                       textAlign: isDesktop ? TextAlign.left : TextAlign.center,
                     ),
                     const SizedBox(height: 32),
                     
-                    // Champ Email
+                    // Champ Email/Téléphone
                     TextField(
                       controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
+                      keyboardType: TextInputType.text,
                       textInputAction: TextInputAction.next,
-                      style: const TextStyle(color: Colors.white, fontSize: 16),
-                      decoration: const InputDecoration(
-                        labelText: 'Email',
-                        hintText: 'votre.email@example.com',
-                        prefixIcon: Icon(Icons.email, color: AppColors.primary),
+                      style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary), fontSize: 16),
+                      onChanged: (_) {
+                        setState(() {
+                          _phoneExists = null;
+                        });
+                      },
+                      decoration: InputDecoration(
+                        labelText: 'Email ou Numéro de téléphone',
+                        hintText: _isEmail ? 'votre.email@example.com' : '+33612345678',
+                        prefixIcon: Icon(
+                          _isEmail ? Icons.email : Icons.phone,
+                          color: AppColors.primary,
+                        ),
+                        suffixIcon: _isPhoneNumber
+                            ? IconButton(
+                                icon: _phoneExists == true
+                                    ? const Icon(Icons.check_circle, color: AppColors.success)
+                                    : const Icon(Icons.search, color: AppColors.primary),
+                                onPressed: _isCheckingPhone ? null : _checkPhoneNumber,
+                              )
+                            : null,
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    
-                    // Champ Code
-                    TextField(
-                      controller: _tokenController,
-                      keyboardType: TextInputType.number,
-                      textInputAction: TextInputAction.next,
-                      maxLength: 6,
-                      style: const TextStyle(color: Colors.white, fontSize: 16),
-                      decoration: const InputDecoration(
-                        labelText: 'Code reçu par email',
-                        hintText: '123456',
-                        prefixIcon: Icon(Icons.password, color: AppColors.primary),
-                        counterText: '',
+                    if (_isCheckingPhone) ...[
+                      const SizedBox(height: 8),
+                      const Row(
+                        children: [
+                          SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                          SizedBox(width: 8),
+                          Text('Vérification...', style: TextStyle(fontSize: 12)),
+                        ],
                       ),
-                    ),
+                    ],
+                    if (_isPhoneNumber && _phoneExists == true) ...[
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: AppColors.success.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: AppColors.success.withValues(alpha: 0.3),
+                          ),
+                        ),
+                        child: const Row(
+                          children: [
+                            Icon(Icons.check_circle, color: AppColors.success, size: 20),
+                            SizedBox(width: 8),
+                            Text(
+                              'Numéro vérifié',
+                              style: TextStyle(color: AppColors.success, fontSize: 12),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 16),
                     
-                    // Champ Mot de passe
+                    // Champ Code (uniquement pour email)
+                    if (_isEmail) ...[
+                      TextField(
+                        controller: _tokenController,
+                        keyboardType: TextInputType.number,
+                        textInputAction: TextInputAction.next,
+                        maxLength: 6,
+                        style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary), fontSize: 16),
+                        decoration: const InputDecoration(
+                          labelText: 'Code reçu par email',
+                          hintText: '123456',
+                          prefixIcon: Icon(Icons.password, color: AppColors.primary),
+                          counterText: '',
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],                    // Champ Mot de passe
                     TextField(
                       controller: _passwordController,
                       obscureText: _obscurePassword,
                       textInputAction: TextInputAction.next,
-                      style: const TextStyle(color: Colors.white, fontSize: 16),
+                      style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary), fontSize: 16),
                       decoration: InputDecoration(
                         labelText: 'Nouveau mot de passe',
                         hintText: 'Minimum 6 caractères',
@@ -226,7 +466,7 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
                         suffixIcon: IconButton(
                           icon: Icon(
                             _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                            color: Colors.white60,
+                            color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                           ),
                           onPressed: () {
                             setState(() => _obscurePassword = !_obscurePassword);
@@ -241,14 +481,14 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
                       controller: _confirmPasswordController,
                       obscureText: _obscureConfirmPassword,
                       textInputAction: TextInputAction.done,
-                      style: const TextStyle(color: Colors.white, fontSize: 16),
+                      style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary), fontSize: 16),
                       decoration: InputDecoration(
                         labelText: 'Confirmer le mot de passe',
                         prefixIcon: const Icon(Icons.lock_outline, color: AppColors.primary),
                         suffixIcon: IconButton(
                           icon: Icon(
                             _obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
-                            color: Colors.white60,
+                            color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                           ),
                           onPressed: () {
                             setState(() => _obscureConfirmPassword = !_obscureConfirmPassword);
@@ -305,9 +545,11 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
-                              'Vous avez reçu un code à 6 chiffres par email. Ce code est valide pendant 1 heure.',
+                              _isEmail
+                                ? 'Vous avez reçu un code à 6 chiffres par email. Ce code est valide pendant 1 heure.'
+                                : 'Entrez votre numéro de téléphone et cliquez sur "Vérifier" pour confirmer qu\'il existe dans la base de données.',
                               style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.8),
+                                color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                                 fontSize: 13,
                               ),
                             ),
@@ -338,3 +580,8 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
     );
   }
 }
+
+
+
+
+

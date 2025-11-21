@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:team_fitness_app/core/utils/platform_utils.dart';
+import '../../core/theme/theme.dart';
 
 /// A widget that builds different layouts based on device type
 class ResponsiveLayout extends StatelessWidget {
@@ -100,6 +101,9 @@ class ResponsiveScaffold extends StatelessWidget {
   }
 
   Widget _buildDesktopLayout(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return Scaffold(
       body: Row(
         children: [
@@ -107,7 +111,7 @@ class ResponsiveScaffold extends StatelessWidget {
           Container(
             width: 250,
             decoration: BoxDecoration(
-              color: const Color(0xFF1a1f2e),
+              color: isDark ? AppColors.darkBackground : AppColors.lightBackground,
               border: Border(
                 right: BorderSide(
                   color: Colors.white.withValues(alpha: 0.1),
@@ -152,20 +156,20 @@ class ResponsiveScaffold extends StatelessWidget {
                         leading: Icon(
                           isSelected ? (item.activeIcon ?? item.icon) : item.icon,
                           color: isSelected
-                              ? const Color(0xFFe89547)
+                              ? AppColors.primary
                               : Colors.white60,
                         ),
                         title: Text(
                           item.label,
                           style: TextStyle(
                             color:
-                                isSelected ? const Color(0xFFe89547) : Colors.white60,
+                                isSelected ? AppColors.primary : Colors.white60,
                             fontWeight:
                                 isSelected ? FontWeight.bold : FontWeight.normal,
                           ),
                         ),
                         selected: isSelected,
-                        selectedTileColor: const Color(0xFFe89547).withValues(alpha: 0.1),
+                        selectedTileColor: AppColors.primary.withValues(alpha: 0.1),
                         onTap: () => onNavigationChanged(index),
                       );
                     },
@@ -182,7 +186,7 @@ class ResponsiveScaffold extends StatelessWidget {
                 Container(
                   height: 64,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1a1f2e),
+                    color: isDark ? AppColors.darkBackground : AppColors.lightBackground,
                     border: Border(
                       bottom: BorderSide(
                         color: Colors.white.withValues(alpha: 0.1),
@@ -211,7 +215,7 @@ class ResponsiveScaffold extends StatelessWidget {
                 // Body
                 Expanded(
                   child: Container(
-                    color: const Color(0xFF1a1f2e),
+                    color: isDark ? AppColors.darkBackground : AppColors.lightBackground,
                     child: body,
                   ),
                 ),
@@ -224,12 +228,15 @@ class ResponsiveScaffold extends StatelessWidget {
   }
 
   Widget _buildWatchLayout(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return Scaffold(
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
             floating: true,
-            backgroundColor: const Color(0xFF1a1f2e),
+            backgroundColor: isDark ? AppColors.darkBackground : AppColors.lightBackground,
             title: Text(
               title,
               style: const TextStyle(
@@ -244,9 +251,9 @@ class ResponsiveScaffold extends StatelessWidget {
           // Bottom Navigation for watch (as list)
           SliverToBoxAdapter(
             child: Container(
-              margin: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: const Color(0xFF2d3748),
+                color: isDark ? AppColors.darkCard : AppColors.lightCard,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Column(
@@ -258,13 +265,13 @@ class ResponsiveScaffold extends StatelessWidget {
                     dense: true,
                     leading: Icon(
                       isSelected ? (item.activeIcon ?? item.icon) : item.icon,
-                      color: isSelected ? const Color(0xFFe89547) : Colors.white60,
+                      color: isSelected ? AppColors.primary : Colors.white60,
                       size: 16,
                     ),
                     title: Text(
                       item.label,
                       style: TextStyle(
-                        color: isSelected ? const Color(0xFFe89547) : Colors.white60,
+                        color: isSelected ? AppColors.primary : Colors.white60,
                         fontSize: 12,
                         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                       ),

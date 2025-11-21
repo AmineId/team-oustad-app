@@ -135,7 +135,7 @@ class _SplashScreenState extends State<SplashScreen> {
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: AppColors.darkCard,
+          backgroundColor: Theme.of(context).cardTheme.color,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
@@ -154,23 +154,29 @@ class _SplashScreenState extends State<SplashScreen> {
                 ),
               ),
               const SizedBox(width: 12),
-              const Expanded(
-                child: Text(
-                  'Notifications',
-                  style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+              Expanded(
+                child: Builder(
+                  builder: (context) => Text(
+                    'Notifications',
+                    style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary), fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
             ],
           ),
-          content: const Text(
-            'Souhaitez-vous recevoir des notifications pour rester informé des nouveautés, rappels d\'entraînement et messages importants ?',
-            style: TextStyle(color: Colors.white70, fontSize: 15),
+          content: Builder(
+            builder: (context) => Text(
+              'Souhaitez-vous recevoir des notifications pour rester informé des nouveautés, rappels d\'entraînement et messages importants ?',
+              style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary), fontSize: 15),
+            ),
           ),
           actions: <Widget>[
             TextButton(
-              child: const Text(
-                'Plus tard',
-                style: TextStyle(color: Colors.white60),
+              child: Builder(
+                builder: (context) => Text(
+                  'Plus tard',
+                  style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)),
+                ),
               ),
               onPressed: () {
                 Navigator.of(context).pop();
@@ -179,7 +185,7 @@ class _SplashScreenState extends State<SplashScreen> {
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.success,
-                foregroundColor: Colors.white,
+                foregroundColor: Theme.of(context).brightness == Brightness.dark ? (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary) : AppColors.primaryDark,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -213,8 +219,8 @@ class _SplashScreenState extends State<SplashScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              AppColors.darkBackground,
-              AppColors.darkSurface,
+              Theme.of(context).scaffoldBackgroundColor,
+              Theme.of(context).cardTheme.color!,
             ],
           ),
         ),
@@ -243,7 +249,7 @@ class _SplashScreenState extends State<SplashScreen> {
                     'Votre partenaire fitness',
                     style: TextStyle(
                       fontSize: fontSize,
-                      color: Colors.white70,
+                      color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                     ),
                   ),
                   SizedBox(height: spacing + 16),
@@ -259,7 +265,7 @@ class _SplashScreenState extends State<SplashScreen> {
                         'Vérification de la connexion...',
                         style: TextStyle(
                           fontSize: isWatch ? 10 : 14,
-                          color: Colors.white70,
+                          color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                         ),
                       ),
                     ],
@@ -343,7 +349,7 @@ class _OTAUpdateDialogState extends State<_OTAUpdateDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      backgroundColor: AppColors.darkCard,
+      backgroundColor: Theme.of(context).cardTheme.color,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       title: Row(
         children: [
@@ -360,10 +366,12 @@ class _OTAUpdateDialogState extends State<_OTAUpdateDialog> {
             ),
           ),
           const SizedBox(width: 12),
-          const Expanded(
-            child: Text(
-              'Mise à jour disponible',
-              style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+          Expanded(
+            child: Builder(
+              builder: (context) => Text(
+                'Mise à jour disponible',
+                style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary), fontSize: 18, fontWeight: FontWeight.bold),
+              ),
             ),
           ),
         ],
@@ -381,14 +389,16 @@ class _OTAUpdateDialogState extends State<_OTAUpdateDialog> {
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: AppColors.error.withValues(alpha: 0.5)),
               ),
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(Icons.warning, color: AppColors.error, size: 20),
-                  SizedBox(width: 8),
+                  const Icon(Icons.warning, color: AppColors.error, size: 20),
+                  const SizedBox(width: 8),
                   Expanded(
-                    child: Text(
-                      'Cette mise à jour est obligatoire',
-                      style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+                    child: Builder(
+                      builder: (context) => Text(
+                        'Cette mise à jour est obligatoire',
+                        style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary), fontSize: 13, fontWeight: FontWeight.w600),
+                      ),
                     ),
                   ),
                 ],
@@ -396,23 +406,25 @@ class _OTAUpdateDialogState extends State<_OTAUpdateDialog> {
             ),
           Text(
             'Version: ${widget.updateInfo.currentVersion} → ${widget.updateInfo.latestVersion}',
-            style: const TextStyle(color: Colors.white70, fontSize: 14),
+            style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary), fontSize: 14),
           ),
           const SizedBox(height: 12),
-          const Text(
-            'Nouveautés :',
-            style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
+          Builder(
+            builder: (context) => Text(
+              'Nouveautés :',
+              style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary), fontSize: 14, fontWeight: FontWeight.w600),
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             widget.updateInfo.changelog,
-            style: const TextStyle(color: Colors.white70, fontSize: 14),
+            style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary), fontSize: 14),
           ),
           if (_isDownloading) ...[
             const SizedBox(height: 20),
             LinearProgressIndicator(
               value: _downloadProgress,
-              backgroundColor: Colors.white12,
+              backgroundColor: Theme.of(context).dividerColor.withValues(alpha: 0.3),
               valueColor: const AlwaysStoppedAnimation<Color>(AppColors.info),
               minHeight: 8,
               borderRadius: BorderRadius.circular(4),
@@ -420,7 +432,7 @@ class _OTAUpdateDialogState extends State<_OTAUpdateDialog> {
             const SizedBox(height: 8),
             Text(
               'Téléchargement en cours... ${(_downloadProgress * 100).toStringAsFixed(0)}%',
-              style: const TextStyle(color: Colors.white70, fontSize: 13),
+              style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary), fontSize: 13),
               textAlign: TextAlign.center,
             ),
           ],
@@ -433,13 +445,15 @@ class _OTAUpdateDialogState extends State<_OTAUpdateDialog> {
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
-            child: const Text('Plus tard', style: TextStyle(color: Colors.white60, fontSize: 16)),
+            child: Builder(
+              builder: (context) => Text('Plus tard', style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary), fontSize: 16)),
+            ),
           ),
         if (!_isDownloading)
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.info,
-              foregroundColor: Colors.white,
+              foregroundColor: Theme.of(context).brightness == Brightness.dark ? (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary) : AppColors.primaryDark,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
             onPressed: _startDownload,
@@ -449,3 +463,8 @@ class _OTAUpdateDialogState extends State<_OTAUpdateDialog> {
     );
   }
 }
+
+
+
+
+

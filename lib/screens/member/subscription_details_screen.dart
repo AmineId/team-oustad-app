@@ -168,9 +168,10 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: isDark
-                ? [AppColors.darkBackground, AppColors.darkSurface]
-                : [AppColors.lightBackground, AppColors.lightSurface],
+            colors: [
+              theme.scaffoldBackgroundColor,
+              theme.cardTheme.color!,
+            ],
           ),
         ),
         child: SafeArea(
@@ -223,10 +224,10 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
                                       subscriptionType == 'premium' 
                                           ? 'Abonnement Premium' 
                                           : 'Abonnement Standard',
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 22,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.white,
+                                        color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                                       ),
                                     ),
                                   ),
@@ -246,7 +247,7 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
                                       style: TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.bold,
-                                        color: isDark ? Colors.white : Colors.black,
+                                        color: isDark ? (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary) : AppColors.primaryDark,
                                       ),
                                     ),
                                   ),
@@ -257,17 +258,17 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
                                 'Type',
                                 billingPeriod == 'monthly' ? 'Mensuel' : 'Annuel',
                               ),
-                              const Divider(color: Colors.white54, height: 24),
+                              Divider(color: Theme.of(context).dividerColor, height: 24),
                               _buildDetailRow(
                                 'Prix',
                                 '$price € / ${billingPeriod == 'monthly' ? 'mois' : 'an'}',
                               ),
-                              const Divider(color: Colors.white54, height: 24),
+                              Divider(color: Theme.of(context).dividerColor, height: 24),
                               _buildDetailRow(
                                 'Date de début',
                                 _formatDate(startDate),
                               ),
-                              const Divider(color: Colors.white54, height: 24),
+                              Divider(color: Theme.of(context).dividerColor, height: 24),
                               _buildDetailRow(
                                 'Expire le',
                                 expiresAt != 'N/A' ? _formatDate(expiresAt) : 'N/A',
@@ -313,13 +314,13 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
                                 Icon(
                                   Icons.receipt_long_outlined,
                                   size: 64,
-                                  color: Colors.white.withValues(alpha: 0.3),
+                                  color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)?.withValues(alpha: 0.3),
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
                                   'Aucun paiement enregistré',
                                   style: TextStyle(
-                                    color: Colors.white.withValues(alpha: 0.5),
+                                    color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                                     fontSize: 16,
                                   ),
                                 ),
@@ -348,9 +349,7 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
           label,
           style: TextStyle(
             fontSize: 14,
-            color: Theme.of(context).brightness == Brightness.dark 
-                ? Colors.white70 
-                : AppColors.lightTextSecondary,
+            color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -361,9 +360,7 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Theme.of(context).brightness == Brightness.dark 
-                  ? Colors.white 
-                  : AppColors.lightTextPrimary,
+              color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
             ),
           ),
         ),
@@ -485,12 +482,14 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
                     color: statusColor,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Text(
-                    _getStatusLabel(status),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
+                  child: Builder(
+                    builder: (context) => Text(
+                      _getStatusLabel(status),
+                      style: TextStyle(
+                        color: Theme.of(context).brightness == Brightness.dark ? (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary) : AppColors.primaryDark,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
@@ -502,4 +501,8 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
     );
   }
 }
+
+
+
+
 

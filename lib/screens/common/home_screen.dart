@@ -78,8 +78,8 @@ class AccueilPage extends StatelessWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            AppColors.darkBackground,
-            AppColors.darkCard,
+            Theme.of(context).scaffoldBackgroundColor,
+            Theme.of(context).cardTheme.color!,
           ],
         ),
       ),
@@ -89,20 +89,20 @@ class AccueilPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Bienvenue !',
                 style: TextStyle(
-                  fontSize: 28,
+                  fontSize: 36,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'Tableau de bord',
                 style: TextStyle(
                   fontSize: 16,
-                  color: Colors.white60,
+                  color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                 ),
               ),
               const SizedBox(height: 32),
@@ -155,12 +155,12 @@ class AccueilPage extends StatelessWidget {
               const SizedBox(height: 32),
               
               // Actions rapides
-              const Text(
+              Text(
                 'Actions rapides',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                 ),
               ),
               const SizedBox(height: 16),
@@ -207,7 +207,7 @@ class _StatCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.darkCard,
+        color: Theme.of(context).cardTheme.color,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
@@ -218,16 +218,16 @@ class _StatCard extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             title,
-            style: const TextStyle(
-              color: Colors.white60,
+            style: TextStyle(
+              color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
               fontSize: 12,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             value,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
               fontSize: 24,
               fontWeight: FontWeight.bold,
             ),
@@ -257,7 +257,7 @@ class _QuickActionButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.darkCard,
+          color: Theme.of(context).cardTheme.color,
           borderRadius: BorderRadius.circular(24),
         ),
         child: Row(
@@ -273,14 +273,14 @@ class _QuickActionButton extends StatelessWidget {
             const SizedBox(width: 16),
             Text(
               title,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
             ),
             const Spacer(),
-            const Icon(Icons.arrow_forward_ios, color: Colors.white60, size: 16),
+            Icon(Icons.arrow_forward_ios, color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary), size: 16),
           ],
         ),
       ),
@@ -300,8 +300,8 @@ class RecherchePage extends StatelessWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            AppColors.darkBackground,
-            AppColors.darkCard,
+            Theme.of(context).scaffoldBackgroundColor,
+            Theme.of(context).cardTheme.color!,
           ],
         ),
       ),
@@ -311,13 +311,13 @@ class RecherchePage extends StatelessWidget {
           child: Column(
             children: [
               TextField(
-                style: const TextStyle(color: Colors.white),
+                style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary)),
                 decoration: InputDecoration(
                   hintText: 'Rechercher un membre...',
-                  hintStyle: const TextStyle(color: Colors.white60),
+                  hintStyle: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)),
                   prefixIcon: const Icon(Icons.search, color: AppColors.primary),
                   filled: true,
-                  fillColor: AppColors.darkCard,
+                  fillColor: Theme.of(context).cardTheme.color,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(24),
                     borderSide: BorderSide.none,
@@ -325,13 +325,13 @@ class RecherchePage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 24),
-              const Expanded(
+              Expanded(
                 child: Center(
                   child: Text(
                     'Fonctionnalité de recherche\nà implémenter',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: Colors.white60,
+                      color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                       fontSize: 16,
                     ),
                   ),
@@ -357,8 +357,8 @@ class AjoutMembrePage extends StatelessWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            AppColors.darkBackground,
-            AppColors.darkCard,
+            Theme.of(context).scaffoldBackgroundColor,
+            Theme.of(context).cardTheme.color!,
           ],
         ),
       ),
@@ -368,37 +368,40 @@ class AjoutMembrePage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Ajouter un nouveau membre',
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                 ),
               ),
               const SizedBox(height: 32),
               
               TextField(
-                style: const TextStyle(color: Colors.white),
-                decoration: const InputDecoration(
+                style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary)),
+                decoration: InputDecoration(
                   labelText: 'Nom complet',
-                  prefixIcon: Icon(Icons.person, color: AppColors.primary),
+                  labelStyle: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)),
+                  prefixIcon: const Icon(Icons.person, color: AppColors.primary),
                 ),
               ),
               const SizedBox(height: 16),
               TextField(
-                style: const TextStyle(color: Colors.white),
-                decoration: const InputDecoration(
+                style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary)),
+                decoration: InputDecoration(
                   labelText: 'Email',
+                  labelStyle: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)),
                   prefixIcon: Icon(Icons.email, color: AppColors.primary),
                 ),
               ),
               const SizedBox(height: 16),
               TextField(
-                style: const TextStyle(color: Colors.white),
-                decoration: const InputDecoration(
+                style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary)),
+                decoration: InputDecoration(
                   labelText: 'Téléphone',
-                  prefixIcon: Icon(Icons.phone, color: AppColors.primary),
+                  labelStyle: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)),
+                  prefixIcon: const Icon(Icons.phone, color: AppColors.primary),
                 ),
               ),
               const SizedBox(height: 32),
@@ -440,8 +443,8 @@ class ProfilePage extends StatelessWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            AppColors.darkBackground,
-            AppColors.darkCard,
+            Theme.of(context).scaffoldBackgroundColor,
+            Theme.of(context).cardTheme.color!,
           ],
         ),
       ),
@@ -466,20 +469,20 @@ class ProfilePage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 'Administrateur',
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'admin@gymmanager.com',
                 style: TextStyle(
                   fontSize: 14,
-                  color: Colors.white60,
+                  color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                 ),
               ),
               const SizedBox(height: 32),
@@ -560,7 +563,7 @@ class _ProfileOption extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.darkCard,
+          color: Theme.of(context).cardTheme.color,
           borderRadius: BorderRadius.circular(24),
         ),
         child: Row(
@@ -569,17 +572,20 @@ class _ProfileOption extends StatelessWidget {
             const SizedBox(width: 16),
             Text(
               title,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
             ),
             const Spacer(),
-            const Icon(Icons.arrow_forward_ios, color: Colors.white60, size: 16),
+            Icon(Icons.arrow_forward_ios, color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary), size: 16),
           ],
         ),
       ),
     );
   }
 }
+
+
+

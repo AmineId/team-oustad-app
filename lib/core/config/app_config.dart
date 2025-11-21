@@ -77,3 +77,6 @@ class AppConfig {
   @override
   String toString() => 'AppConfig(environment: $environment, apiBaseUrl: $apiBaseUrl)';
 }
+
+
+

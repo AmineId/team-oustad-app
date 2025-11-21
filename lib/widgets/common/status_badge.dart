@@ -19,22 +19,24 @@ class StatusBadge extends StatelessWidget {
     Color backgroundColor;
     Color textColor;
     
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     switch (type) {
       case StatusBadgeType.success:
         backgroundColor = AppColors.success.withValues(alpha: 0.15);
-        textColor = AppColors.successLight;
+        textColor = isDark ? AppColors.successLight : AppColors.success;
         break;
       case StatusBadgeType.error:
         backgroundColor = AppColors.error.withValues(alpha: 0.15);
-        textColor = AppColors.errorLight;
+        textColor = isDark ? AppColors.errorLight : AppColors.error;
         break;
       case StatusBadgeType.warning:
         backgroundColor = AppColors.warning.withValues(alpha: 0.15);
-        textColor = AppColors.warningLight;
+        textColor = isDark ? AppColors.warningLight : AppColors.warning;
         break;
       case StatusBadgeType.info:
         backgroundColor = AppColors.info.withValues(alpha: 0.15);
-        textColor = AppColors.infoLight;
+        textColor = isDark ? AppColors.infoLight : AppColors.info;
         break;
       case StatusBadgeType.primary:
         backgroundColor = AppColors.primary.withValues(alpha: 0.15);

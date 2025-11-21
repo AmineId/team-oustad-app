@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/theme/theme.dart';
-import '../member/member_home_screen.dart';
+import 'gym_rules_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -22,6 +22,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   
   // Controllers
   final TextEditingController _fullNameController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _birthDateController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _weightController = TextEditingController();
@@ -67,6 +68,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   void dispose() {
     _fullNameController.dispose();
+    _phoneController.dispose();
     _birthDateController.dispose();
     _addressController.dispose();
     _weightController.dispose();
@@ -97,6 +99,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         final data = jsonDecode(savedData) as Map<String, dynamic>;
         setState(() {
           _fullNameController.text = data['fullName'] ?? '';
+          _phoneController.text = data['phone'] ?? '';
           _birthDateController.text = data['birthDate'] ?? '';
           _addressController.text = data['address'] ?? '';
           _profession = data['profession'] ?? 'Actif';
@@ -119,6 +122,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       final prefs = await SharedPreferences.getInstance();
       final data = {
         'fullName': _fullNameController.text,
+        'phone': _phoneController.text,
         'birthDate': _birthDateController.text,
         'address': _addressController.text,
         'profession': _profession,
@@ -147,11 +151,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.dark(
+            colorScheme: ColorScheme.dark(
               primary: AppColors.primary,
-              onPrimary: Colors.white,
-              surface: AppColors.darkCard,
-              onSurface: Colors.white,
+              onPrimary: Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+              surface: Theme.of(context).cardTheme.color!,
+              onSurface: Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
             ),
           ),
           child: child!,
@@ -226,7 +230,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       
       final profileUpdateData = {
         'birthDate': _birthDateController.text,
-        'phone': profileData['phone'] ?? '',
+        'phone': _phoneController.text,
         'profession': _profession,
         'fitnessLevel': _fitnessLevel,
         'profileImage': 'data:image/jpeg;base64,$base64Image',
@@ -295,10 +299,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
       if (!mounted) return;
       
-      // Navigate to member home screen
+      // Navigate to gym rules screen
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (context) => const MemberHomeScreen(),
+          builder: (context) => const GymRulesScreen(),
         ),
       );
 
@@ -335,12 +339,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text(
+          title: Text(
             'Bienvenue! Configurez votre profil',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
             ),
           ),
           automaticallyImplyLeading: false,
@@ -351,8 +355,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                AppColors.darkBackground,
-                AppColors.darkSurface,
+                Theme.of(context).scaffoldBackgroundColor,
+                Theme.of(context).cardTheme.color!,
               ],
             ),
           ),
@@ -422,12 +426,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     const SizedBox(height: 32),
                     
                     // Personal Information Section
-                    const Text(
+                    Text(
                       'Informations Personnelles',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -435,13 +439,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     // Full Name
                     TextFormField(
                       controller: _fullNameController,
-                      style: const TextStyle(color: Colors.white),
+                      style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary)),
                       decoration: InputDecoration(
-                        labelText: 'Nom et Prénom *',
-                        labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
-                        prefixIcon: const Icon(Icons.person, color: AppColors.primary),
+                        labelText: 'Code Postal *',
+                        labelStyle: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)),
+                        prefixIcon: const Icon(Icons.mail, color: AppColors.primary),
                         filled: true,
-                        fillColor: AppColors.darkCard,
+                        fillColor: Theme.of(context).cardTheme.color,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide.none,
@@ -460,19 +464,49 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     ),
                     const SizedBox(height: 16),
                     
+                    // Phone Number
+                    TextFormField(
+                      controller: _phoneController,
+                      style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary)),
+                      keyboardType: TextInputType.phone,
+                      decoration: InputDecoration(
+                        labelText: 'Numéro de téléphone *',
+                        labelStyle: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)),
+                        prefixIcon: const Icon(Icons.phone, color: AppColors.primary),
+                        filled: true,
+                        fillColor: Theme.of(context).cardTheme.color,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Le numéro de téléphone est requis';
+                        }
+                        // Basic phone validation (allow + and digits)
+                        if (!RegExp(r'^\+?[0-9\s\-\(\)]+$').hasMatch(value.trim())) {
+                          return 'Veuillez entrer un numéro valide';
+                        }
+                        return null;
+                      },
+                      onChanged: (_) => _saveData(),
+                    ),
+                    const SizedBox(height: 16),
+                    
                     // Birth Date
                     TextFormField(
                       controller: _birthDateController,
                       readOnly: true,
                       onTap: _selectDate,
-                      style: const TextStyle(color: Colors.white),
+                      style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary)),
                       decoration: InputDecoration(
                         labelText: 'Date de naissance *',
-                        labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
+                        labelStyle: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)),
                         prefixIcon: const Icon(Icons.cake, color: AppColors.primary),
                         suffixIcon: const Icon(Icons.calendar_today, color: AppColors.primary),
                         filled: true,
-                        fillColor: AppColors.darkCard,
+                        fillColor: Theme.of(context).cardTheme.color,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide.none,
@@ -490,13 +524,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     // Address (optional)
                     TextFormField(
                       controller: _addressController,
-                      style: const TextStyle(color: Colors.white),
+                      style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary)),
                       decoration: InputDecoration(
                         labelText: 'Adresse (facultatif)',
-                        labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
+                        labelStyle: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)),
                         prefixIcon: const Icon(Icons.location_on, color: AppColors.primary),
                         filled: true,
-                        fillColor: AppColors.darkCard,
+                        fillColor: Theme.of(context).cardTheme.color,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide.none,
@@ -507,19 +541,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     const SizedBox(height: 16),
                     
                     // Profession (Radio buttons)
-                    const Text(
+                    Text(
                       'Activité *',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: Colors.white,
+                        color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                       ),
                     ),
                     const SizedBox(height: 8),
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: AppColors.darkCard,
+                        color: Theme.of(context).cardTheme.color,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Column(
@@ -527,7 +561,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           return RadioListTile<String>(
                             title: Text(
                               option,
-                              style: const TextStyle(color: Colors.white),
+                              style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary)),
                             ),
                             value: option,
                             groupValue: _profession,
@@ -546,12 +580,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     const SizedBox(height: 32),
                     
                     // Objectives Section
-                    const Text(
+                    Text(
                       'Objectifs',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -560,13 +594,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     TextFormField(
                       controller: _weightController,
                       keyboardType: TextInputType.number,
-                      style: const TextStyle(color: Colors.white),
+                      style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary)),
                       decoration: InputDecoration(
                         labelText: 'Poids (kg) *',
-                        labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
+                        labelStyle: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)),
                         prefixIcon: const Icon(Icons.monitor_weight, color: AppColors.primary),
                         filled: true,
-                        fillColor: AppColors.darkCard,
+                        fillColor: Theme.of(context).cardTheme.color,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide.none,
@@ -589,13 +623,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     TextFormField(
                       controller: _waistController,
                       keyboardType: TextInputType.number,
-                      style: const TextStyle(color: Colors.white),
+                      style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary)),
                       decoration: InputDecoration(
                         labelText: 'Tour de taille (cm) *',
-                        labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
+                        labelStyle: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)),
                         prefixIcon: const Icon(Icons.straighten, color: AppColors.primary),
                         filled: true,
-                        fillColor: AppColors.darkCard,
+                        fillColor: Theme.of(context).cardTheme.color,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide.none,
@@ -618,13 +652,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     TextFormField(
                       controller: _heightController,
                       keyboardType: TextInputType.number,
-                      style: const TextStyle(color: Colors.white),
+                      style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary)),
                       decoration: InputDecoration(
-                        labelText: 'Taille (cm) *',
-                        labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
-                        prefixIcon: const Icon(Icons.height, color: AppColors.primary),
+                        labelText: 'Email *',
+                        labelStyle: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)),
+                        prefixIcon: const Icon(Icons.email, color: AppColors.primary),
                         filled: true,
-                        fillColor: AppColors.darkCard,
+                        fillColor: Theme.of(context).cardTheme.color,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide.none,
@@ -646,14 +680,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     // Fitness Level
                     DropdownButtonFormField<String>(
                       value: _fitnessLevel,
-                      dropdownColor: AppColors.darkCard,
-                      style: const TextStyle(color: Colors.white),
+                      dropdownColor: Theme.of(context).cardTheme.color,
+                      style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary)),
                       decoration: InputDecoration(
                         labelText: 'Niveau sportif *',
-                        labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
+                        labelStyle: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)),
                         prefixIcon: const Icon(Icons.fitness_center, color: AppColors.primary),
                         filled: true,
-                        fillColor: AppColors.darkCard,
+                        fillColor: Theme.of(context).cardTheme.color,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide.none,
@@ -676,12 +710,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     const SizedBox(height: 32),
                     
                     // Preferred Training Days Section
-                    const Text(
+                    Text(
                       'Jours préférés d\'entraînement',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -689,7 +723,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       'Sélectionnez les jours où vous préférez vous entraîner',
                       style: TextStyle(
                         fontSize: 14,
-                        color: Colors.white.withValues(alpha: 0.6),
+                        color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -714,15 +748,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             });
                             _saveData();
                           },
-                          backgroundColor: AppColors.darkCard,
+                          backgroundColor: Theme.of(context).cardTheme.color,
                           selectedColor: AppColors.primary.withValues(alpha: 0.3),
                           checkmarkColor: AppColors.primary,
                           labelStyle: TextStyle(
-                            color: isSelected ? AppColors.primary : Colors.white.withValues(alpha: 0.7),
+                            color: isSelected ? AppColors.primary : (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                           ),
                           side: BorderSide(
-                            color: isSelected ? AppColors.primary : Colors.white.withValues(alpha: 0.3),
+                            color: isSelected ? AppColors.primary : Theme.of(context).dividerColor,
                             width: 1,
                           ),
                         );
@@ -735,10 +769,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: AppColors.darkCard,
+                        color: Theme.of(context).cardTheme.color,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.1),
+                          color: Theme.of(context).dividerColor,
                           width: 1,
                         ),
                       ),
@@ -761,12 +795,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
+                                Text(
                                   'Notifications d\'entraînement',
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.white,
+                                    color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                                   ),
                                 ),
                                 const SizedBox(height: 4),
@@ -774,7 +808,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                   'Recevez des rappels pour vos séances',
                                   style: TextStyle(
                                     fontSize: 13,
-                                    color: Colors.white.withValues(alpha: 0.6),
+                                    color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                                   ),
                                 ),
                               ],
@@ -789,7 +823,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               _saveData();
                             },
                             activeTrackColor: AppColors.primary,
-                            inactiveThumbColor: Colors.white.withValues(alpha: 0.5),
+                            inactiveThumbColor: Theme.of(context).brightness == Brightness.dark ? (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary).withValues(alpha: 0.5) : Colors.grey,
                           ),
                         ],
                       ),
@@ -804,7 +838,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         onPressed: _isLoading ? null : _submitOnboarding,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
+                          foregroundColor: Theme.of(context).brightness == Brightness.dark ? (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary) : AppColors.primaryDark,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -812,11 +846,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           elevation: 4,
                         ),
                         child: _isLoading
-                            ? const SizedBox(
+                            ? SizedBox(
                                 height: 20,
                                 width: 20,
                                 child: CircularProgressIndicator(
-                                  color: Colors.white,
+                                  color: Theme.of(context).brightness == Brightness.dark ? (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary) : AppColors.primaryDark,
                                   strokeWidth: 2,
                                 ),
                               )
@@ -841,6 +875,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 }
+
+
+
+
+
+
 
 
 

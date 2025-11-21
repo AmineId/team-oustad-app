@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/theme/theme.dart';
+import '../../core/utils/user_utils.dart';
 
 class AdminAdminsListScreen extends StatefulWidget {
   const AdminAdminsListScreen({super.key});
@@ -122,7 +123,7 @@ class _AdminAdminsListScreenState extends State<AdminAdminsListScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              AppColors.darkBackground, AppColors.darkSurface,
+              Theme.of(context).scaffoldBackgroundColor, Theme.of(context).cardTheme.color!,
             ],
           ),
         ),
@@ -148,7 +149,7 @@ class _AdminAdminsListScreenState extends State<AdminAdminsListScreen> {
                           )
                         : null,
                     filled: true,
-                    fillColor: AppColors.darkCard,
+                    fillColor: Theme.of(context).cardTheme.color,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(24),
                       borderSide: BorderSide.none,
@@ -260,7 +261,7 @@ class _AdminCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fullName = admin['fullName'] as String? ?? 'Sans nom';
+    final fullName = getUserFullName(admin);
     final email = admin['email'] as String? ?? '';
     final role = admin['role'] as String? ?? 'N/A';
     
@@ -284,7 +285,7 @@ class _AdminCard extends StatelessWidget {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      color: AppColors.darkCard,
+      color: Theme.of(context).cardTheme.color,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
@@ -377,3 +378,4 @@ class _AdminCard extends StatelessWidget {
     );
   }
 }
+

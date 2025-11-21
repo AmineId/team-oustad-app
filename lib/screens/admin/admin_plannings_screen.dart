@@ -241,8 +241,8 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              AppColors.darkBackground,
-              AppColors.darkSurface,
+              Theme.of(context).scaffoldBackgroundColor,
+              Theme.of(context).cardTheme.color!,
             ],
           ),
         ),
@@ -361,7 +361,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
     
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      color: AppColors.darkCard,
+      color: Theme.of(context).cardTheme.color,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
@@ -518,8 +518,8 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
           maxChildSize: 0.95,
           builder: (context, scrollController) {
             return Container(
-              decoration: const BoxDecoration(
-                color: AppColors.darkCard,
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardTheme.color,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
               ),
               child: Column(
@@ -528,7 +528,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: AppColors.darkBackground,
+                      color: Theme.of(context).scaffoldBackgroundColor,
                       borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
                     ),
                     child: Row(
@@ -646,7 +646,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
                           final exercises = dayData['exercises'] as List<dynamic>? ?? [];
                           final dayOfWeek = dayData['dayOfWeek'] as int?;
                           return Card(
-                            color: AppColors.darkBackground,
+                            color: Theme.of(context).scaffoldBackgroundColor,
                             margin: const EdgeInsets.only(bottom: 8),
                             child: Padding(
                               padding: const EdgeInsets.all(12.0),
@@ -680,8 +680,8 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
                   // Bouton de suppression
                   Container(
                     padding: const EdgeInsets.all(20),
-                    decoration: const BoxDecoration(
-                      color: AppColors.darkBackground,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).scaffoldBackgroundColor,
                       borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
                     ),
                     child: SizedBox(
@@ -758,7 +758,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: AppColors.darkCard,
+          backgroundColor: Theme.of(context).cardTheme.color,
           title: const Text(
             'Supprimer le planning',
             style: TextStyle(color: Colors.white),
@@ -851,4 +851,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
     }
   }
 }
+
+
+
 

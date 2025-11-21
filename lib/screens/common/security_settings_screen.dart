@@ -110,7 +110,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
               children: [
                 Icon(
                   value ? Icons.notifications_active : Icons.notifications_off,
-                  color: value ? AppColors.success : Colors.white70,
+                  color: value ? AppColors.success : (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                   size: 24,
                 ),
                 const SizedBox(width: 12),
@@ -119,17 +119,17 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                     value 
                         ? 'Notifications activées'
                         : 'Notifications désactivées',
-                    style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
+                    style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary), fontSize: 14, fontWeight: FontWeight.w500),
                   ),
                 ),
               ],
             ),
-            backgroundColor: value ? AppColors.darkCard : AppColors.darkCard,
+            backgroundColor: value ? Theme.of(context).cardTheme.color : Theme.of(context).cardTheme.color,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
               side: BorderSide(
-                color: value ? AppColors.success : Colors.white38,
+                color: value ? AppColors.success : (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary).withValues(alpha: 0.38),
                 width: 1,
               ),
             ),
@@ -140,20 +140,19 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
       if (mounted) {
         setState(() => _notificationsEnabled = !value);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Row(
+          SnackBar(content: Row(
               children: [
                 Icon(Icons.error_outline, color: AppColors.error, size: 24),
                 SizedBox(width: 12),
                 Expanded(
                   child: Text(
                     'Erreur lors de la sauvegarde',
-                    style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
+                    style: TextStyle(color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary, fontSize: 14, fontWeight: FontWeight.w500),
                   ),
                 ),
               ],
             ),
-            backgroundColor: AppColors.darkCard,
+            backgroundColor: Theme.of(context).cardTheme.color,
           ),
         );
       }
@@ -190,7 +189,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
               children: [
                 Icon(
                   value ? Icons.calendar_today : Icons.event_busy,
-                  color: value ? AppColors.success : Colors.white70,
+                  color: value ? AppColors.success : (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                   size: 24,
                 ),
                 const SizedBox(width: 12),
@@ -199,17 +198,17 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                     value 
                         ? 'Notifications de planning activées'
                         : 'Notifications de planning désactivées',
-                    style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
+                    style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary), fontSize: 14, fontWeight: FontWeight.w500),
                   ),
                 ),
               ],
             ),
-            backgroundColor: value ? AppColors.darkCard : AppColors.darkCard,
+            backgroundColor: value ? Theme.of(context).cardTheme.color : Theme.of(context).cardTheme.color,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
               side: BorderSide(
-                color: value ? AppColors.success : Colors.white38,
+                color: value ? AppColors.success : (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary).withValues(alpha: 0.38),
                 width: 1,
               ),
             ),
@@ -220,20 +219,19 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
       if (mounted) {
         setState(() => _workoutNotificationsEnabled = !value);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Row(
+          SnackBar(content: Row(
               children: [
                 Icon(Icons.error_outline, color: AppColors.error, size: 24),
                 SizedBox(width: 12),
                 Expanded(
                   child: Text(
                     'Erreur lors de la sauvegarde',
-                    style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
+                    style: TextStyle(color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary, fontSize: 14, fontWeight: FontWeight.w500),
                   ),
                 ),
               ],
             ),
-            backgroundColor: AppColors.darkCard,
+            backgroundColor: Theme.of(context).cardTheme.color,
           ),
         );
       }
@@ -292,7 +290,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.darkCard,
+        backgroundColor: Theme.of(context).cardTheme.color,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
@@ -301,14 +299,14 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
             Expanded(
               child: Text(
                 title,
-                style: const TextStyle(color: Colors.white, fontSize: 20),
+                style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary), fontSize: 20),
               ),
             ),
           ],
         ),
         content: Text(
           message,
-          style: const TextStyle(color: Colors.white70, fontSize: 15),
+          style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary), fontSize: 15),
         ),
         actions: [
           TextButton(
@@ -332,7 +330,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
       context: context,
       barrierDismissible: !updateInfo.forceUpdate,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.darkCard,
+        backgroundColor: Theme.of(context).cardTheme.color,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
@@ -354,13 +352,13 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text(
+                  Text(
                     'Mise à jour disponible',
-                    style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary), fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   Text(
                     '${packageInfo.version} → ${updateInfo.latestVersion}',
-                    style: const TextStyle(color: Colors.white60, fontSize: 13),
+                    style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary), fontSize: 13),
                   ),
                 ],
               ),
@@ -380,27 +378,31 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: AppColors.error.withValues(alpha: 0.5)),
                 ),
-                child: const Row(
+                child: Row(
                   children: [
-                    Icon(Icons.warning, color: AppColors.error, size: 20),
-                    SizedBox(width: 8),
+                    const Icon(Icons.warning, color: AppColors.error, size: 20),
+                    const SizedBox(width: 8),
                     Expanded(
-                      child: Text(
-                        'Cette mise à jour est obligatoire',
-                        style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+                      child: Builder(
+                        builder: (context) => Text(
+                          'Cette mise à jour est obligatoire',
+                          style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary), fontSize: 13, fontWeight: FontWeight.w600),
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
-            const Text(
-              'Nouveautés :',
-              style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
+            Builder(
+              builder: (context) => Text(
+                'Nouveautés :',
+                style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary), fontSize: 14, fontWeight: FontWeight.w600),
+              ),
             ),
             const SizedBox(height: 8),
             Text(
               updateInfo.changelog,
-              style: const TextStyle(color: Colors.white70, fontSize: 14),
+              style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary), fontSize: 14),
             ),
           ],
         ),
@@ -411,12 +413,14 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
               style: TextButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
-              child: const Text('Plus tard', style: TextStyle(color: Colors.white60, fontSize: 16)),
+              child: Builder(
+                builder: (context) => Text('Plus tard', style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary), fontSize: 16)),
+              ),
             ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.info,
-              foregroundColor: Colors.white,
+              foregroundColor: Theme.of(context).brightness == Brightness.dark ? (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary) : AppColors.primaryDark,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
             onPressed: () {
@@ -438,13 +442,15 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
       builder: (context) => StatefulBuilder(
         builder: (context, setState) {
           return AlertDialog(
-            backgroundColor: AppColors.darkCard,
+            backgroundColor: Theme.of(context).cardTheme.color,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            title: const Row(
+            title: Row(
               children: [
-                Icon(Icons.download, color: AppColors.info, size: 28),
-                SizedBox(width: 12),
-                Text('Téléchargement', style: TextStyle(color: Colors.white)),
+                const Icon(Icons.download, color: AppColors.info, size: 28),
+                const SizedBox(width: 12),
+                Builder(
+                  builder: (context) => Text('Téléchargement', style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary))),
+                ),
               ],
             ),
             content: Column(
@@ -452,13 +458,13 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
               children: [
                 LinearProgressIndicator(
                   value: _otaService.downloadProgress,
-                  backgroundColor: Colors.white24,
+                  backgroundColor: Theme.of(context).dividerColor.withValues(alpha: 0.3),
                   color: AppColors.info,
                 ),
                 const SizedBox(height: 16),
                 Text(
                   '${(_otaService.downloadProgress * 100).toStringAsFixed(0)}%',
-                  style: const TextStyle(color: Colors.white70, fontSize: 16),
+                  style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary), fontSize: 16),
                 ),
               ],
             ),
@@ -508,8 +514,8 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: isDark
-                ? [AppColors.darkBackground, AppColors.darkSurface]
-                : [AppColors.lightBackground, AppColors.lightSurface],
+                ? [Theme.of(context).scaffoldBackgroundColor, Theme.of(context).cardTheme.color!]
+                : [Theme.of(context).scaffoldBackgroundColor, Theme.of(context).cardTheme.color!],
           ),
         ),
         child: SafeArea(
@@ -701,10 +707,10 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                                                   child: Column(
                                                     crossAxisAlignment: CrossAxisAlignment.start,
                                                     children: [
-                                                      const Text(
+                                                      Text(
                                                         'Notifications',
                                                         style: TextStyle(
-                                                          color: Colors.white,
+                                                          color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                                                           fontSize: 16,
                                                           fontWeight: FontWeight.w600,
                                                         ),
@@ -715,7 +721,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                                                             ? 'Recevoir les notifications push'
                                                             : 'Les notifications sont désactivées',
                                                         style: TextStyle(
-                                                          color: Colors.white.withValues(alpha: 0.6),
+                                                          color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                                                           fontSize: 13,
                                                         ),
                                                       ),
@@ -727,7 +733,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                                                   value: _notificationsEnabled,
                                                   onChanged: _toggleNotifications,
                                                   activeTrackColor: AppColors.success,
-                                                  inactiveThumbColor: Colors.white60,
+                                                  inactiveThumbColor: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                                                 ),
                                               ],
                                             ),
@@ -737,7 +743,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                                             Padding(
                                               padding: const EdgeInsets.symmetric(horizontal: 20.0),
                                               child: Divider(
-                                                color: Colors.white.withValues(alpha: 0.1),
+                                                color: Theme.of(context).dividerColor,
                                                 height: 1,
                                               ),
                                             ),
@@ -752,10 +758,10 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                                                     child: Column(
                                                       crossAxisAlignment: CrossAxisAlignment.start,
                                                       children: [
-                                                        const Text(
+                                                        Text(
                                                           'Notifier mon planning',
                                                           style: TextStyle(
-                                                            color: Colors.white,
+                                                            color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                                                             fontSize: 15,
                                                             fontWeight: FontWeight.w500,
                                                           ),
@@ -764,7 +770,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                                                         Text(
                                                           'Recevoir des rappels pour vos séances d\'entraînement',
                                                           style: TextStyle(
-                                                            color: Colors.white.withValues(alpha: 0.5),
+                                                            color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                                                             fontSize: 12,
                                                           ),
                                                         ),
@@ -776,7 +782,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                                                     value: _workoutNotificationsEnabled,
                                                     onChanged: _notificationsEnabled ? _toggleWorkoutNotifications : null,
                                                     activeTrackColor: AppColors.success,
-                                                    inactiveThumbColor: Colors.white60,
+                                                    inactiveThumbColor: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                                                   ),
                                                 ],
                                               ),
@@ -820,32 +826,36 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                                                 ),
                                               ),
                                               const SizedBox(width: 16),
-                                              const Expanded(
+                                              Expanded(
                                                 child: Column(
                                                   crossAxisAlignment: CrossAxisAlignment.start,
                                                   children: [
-                                                    Text(
-                                                      'Vérifier les mises à jour',
-                                                      style: TextStyle(
-                                                        color: Colors.white,
-                                                        fontSize: 16,
-                                                        fontWeight: FontWeight.w600,
+                                                    Builder(
+                                                      builder: (context) => Text(
+                                                        'Vérifier les mises à jour',
+                                                        style: TextStyle(
+                                                          color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
+                                                          fontSize: 16,
+                                                          fontWeight: FontWeight.w600,
+                                                        ),
                                                       ),
                                                     ),
-                                                    SizedBox(height: 4),
-                                                    Text(
-                                                      'Maintenir l\'application à jour',
-                                                      style: TextStyle(
-                                                        color: Colors.white60,
-                                                        fontSize: 13,
+                                                    const SizedBox(height: 4),
+                                                    Builder(
+                                                      builder: (context) => Text(
+                                                        'Maintenir l\'application à jour',
+                                                        style: TextStyle(
+                                                          color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
+                                                          fontSize: 13,
+                                                        ),
                                                       ),
                                                     ),
                                                   ],
                                                 ),
                                               ),
-                                              const Icon(
+                                              Icon(
                                                 Icons.arrow_forward_ios,
-                                                color: Colors.white60,
+                                                color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                                                 size: 16,
                                               ),
                                             ],
@@ -868,4 +878,13 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
     );
   }
 }
+
+
+
+
+
+
+
+
+
 

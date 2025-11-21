@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/theme/theme.dart';
+import '../../core/utils/user_utils.dart';
 
 class AdminCreatePlanningScreen extends StatefulWidget {
   final int? preselectedMemberId;
@@ -167,7 +168,7 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
       await showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          backgroundColor: AppColors.darkCard,
+          backgroundColor: Theme.of(context).cardTheme.color,
           title: const Row(
             children: [
               Icon(Icons.check_circle, color: AppColors.success),
@@ -219,7 +220,7 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.darkCard,
+        backgroundColor: Theme.of(context).cardTheme.color,
         title: const Row(
           children: [
             Icon(Icons.error, color: AppColors.error),
@@ -296,7 +297,7 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              AppColors.darkBackground, AppColors.darkSurface,
+              Theme.of(context).scaffoldBackgroundColor, Theme.of(context).cardTheme.color!,
             ],
           ),
         ),
@@ -455,11 +456,11 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
         const SizedBox(height: 8),
         DropdownButtonFormField<int>(
           initialValue: _selectedMemberId,
-          dropdownColor: AppColors.darkCard,
+          dropdownColor: Theme.of(context).cardTheme.color,
           style: const TextStyle(color: Colors.white),
           decoration: InputDecoration(
             filled: true,
-            fillColor: AppColors.darkCard,
+            fillColor: Theme.of(context).cardTheme.color,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide.none,
@@ -468,7 +469,7 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
           items: _members.map((member) {
             return DropdownMenuItem<int>(
               value: member['id'] as int,
-              child: Text(member['fullName'] as String? ?? 'Sans nom'),
+              child: Text(getUserFullName(member)),
             );
           }).toList(),
           onChanged: (value) {
@@ -503,9 +504,7 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
               builder: (context, child) {
                 return Theme(
                   data: ThemeData.dark().copyWith(
-                    colorScheme: const ColorScheme.dark(
-                      primary: AppColors.primary,
-                      surface: AppColors.darkCard,
+                    colorScheme: ColorScheme.dark(primary: AppColors.primary, surface: Theme.of(context).cardTheme.color ?? Colors.grey[900]!,
                     ),
                   ),
                   child: child!,
@@ -552,9 +551,7 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
               builder: (context, child) {
                 return Theme(
                   data: ThemeData.dark().copyWith(
-                    colorScheme: const ColorScheme.dark(
-                      primary: AppColors.primary,
-                      surface: AppColors.darkCard,
+                    colorScheme: ColorScheme.dark(primary: AppColors.primary, surface: Theme.of(context).cardTheme.color ?? Colors.grey[900]!,
                     ),
                   ),
                   child: child!,
@@ -639,7 +636,7 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
           
           return Card(
             margin: const EdgeInsets.only(bottom: 16),
-            color: AppColors.darkCard,
+            color: Theme.of(context).cardTheme.color,
             child: ExpansionTile(
               title: Text(
                 dayNames[dayOfWeek],
@@ -672,7 +669,7 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
                     });
                   },
                   title: Text(
-                    exercise['name'] as String? ?? 'Sans nom',
+                    exercise['name'] as String? ?? 'Exercice sans nom',
                     style: const TextStyle(color: Colors.white),
                   ),
                   subtitle: Text(
@@ -737,14 +734,14 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
     
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      color: AppColors.darkCard,
+      color: Theme.of(context).cardTheme.color,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              exercise['name'] as String? ?? 'Sans nom',
+              exercise['name'] as String? ?? 'Exercice sans nom',
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 16,
@@ -843,5 +840,8 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
     );
   }
 }
+
+
+
 
 

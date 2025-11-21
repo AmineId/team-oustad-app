@@ -16,7 +16,8 @@ class _AdminCreateAdminScreenState extends State<AdminCreateAdminScreen> {
   final AuthService _authService = AuthService(ApiService.fromEnv());
   
   final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _fullNameController = TextEditingController();
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   
   List<Map<String, dynamic>> _gyms = [];
@@ -33,7 +34,8 @@ class _AdminCreateAdminScreenState extends State<AdminCreateAdminScreen> {
   @override
   void dispose() {
     _emailController.dispose();
-    _fullNameController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -75,7 +77,8 @@ class _AdminCreateAdminScreenState extends State<AdminCreateAdminScreen> {
 
       final response = await _apiService.createAdmin(
         _emailController.text.trim(),
-        _fullNameController.text.trim(),
+        _firstNameController.text.trim(),
+        _lastNameController.text.trim(),
         _selectedGymId!,
         token,
         password: _sendSetupEmail ? null : _passwordController.text,
@@ -112,14 +115,14 @@ class _AdminCreateAdminScreenState extends State<AdminCreateAdminScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Créer un administrateur',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: theme.appBarTheme.titleTextStyle?.color),
         ),
-        backgroundColor: AppColors.darkBackground,
-        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -127,7 +130,8 @@ class _AdminCreateAdminScreenState extends State<AdminCreateAdminScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              AppColors.darkBackground, AppColors.darkSurface,
+              theme.scaffoldBackgroundColor,
+              theme.cardTheme.color!,
             ],
           ),
         ),
@@ -155,16 +159,16 @@ class _AdminCreateAdminScreenState extends State<AdminCreateAdminScreen> {
                   ),
                   const SizedBox(height: 32),
 
-                  // Nom complet
+                  // Prénom
                   TextFormField(
-                    controller: _fullNameController,
+                    controller: _firstNameController,
                     style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
-                      labelText: 'Nom complet',
+                      labelText: 'Prénom',
                       labelStyle: const TextStyle(color: Colors.white60),
                       prefixIcon: const Icon(Icons.person, color: AppColors.primary),
                       filled: true,
-                      fillColor: AppColors.darkCard,
+                      fillColor: theme.cardTheme.color,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
@@ -172,7 +176,31 @@ class _AdminCreateAdminScreenState extends State<AdminCreateAdminScreen> {
                     ),
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
-                        return 'Le nom complet est requis';
+                        return 'Le prénom est requis';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Nom de famille
+                  TextFormField(
+                    controller: _lastNameController,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      labelText: 'Nom de famille',
+                      labelStyle: const TextStyle(color: Colors.white60),
+                      prefixIcon: const Icon(Icons.person_outline, color: AppColors.primary),
+                      filled: true,
+                      fillColor: theme.cardTheme.color,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Le nom de famille est requis';
                       }
                       return null;
                     },
@@ -189,7 +217,7 @@ class _AdminCreateAdminScreenState extends State<AdminCreateAdminScreen> {
                       labelStyle: const TextStyle(color: Colors.white60),
                       prefixIcon: const Icon(Icons.email, color: AppColors.primary),
                       filled: true,
-                      fillColor: AppColors.darkCard,
+                      fillColor: theme.cardTheme.color,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
@@ -210,14 +238,14 @@ class _AdminCreateAdminScreenState extends State<AdminCreateAdminScreen> {
                   // Salle
                   DropdownButtonFormField<int>(
                     value: _selectedGymId,
-                    dropdownColor: AppColors.darkCard,
-                    style: const TextStyle(color: Colors.white),
+                    dropdownColor: theme.cardTheme.color,
+                    style: TextStyle(color: theme.textTheme.bodyLarge!.color),
                     decoration: InputDecoration(
                       labelText: 'Salle de sport',
-                      labelStyle: const TextStyle(color: Colors.white60),
+                      labelStyle: TextStyle(color: theme.textTheme.bodyMedium!.color),
                       prefixIcon: const Icon(Icons.fitness_center, color: AppColors.primary),
                       filled: true,
-                      fillColor: AppColors.darkCard,
+                      fillColor: theme.cardTheme.color,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
@@ -245,7 +273,7 @@ class _AdminCreateAdminScreenState extends State<AdminCreateAdminScreen> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: AppColors.darkCard,
+                      color: theme.cardTheme.color,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Column(
@@ -300,7 +328,7 @@ class _AdminCreateAdminScreenState extends State<AdminCreateAdminScreen> {
                         labelStyle: const TextStyle(color: Colors.white60),
                         prefixIcon: const Icon(Icons.lock, color: AppColors.primary),
                         filled: true,
-                        fillColor: AppColors.darkCard,
+                        fillColor: theme.cardTheme.color,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide.none,

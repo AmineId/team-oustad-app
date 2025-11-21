@@ -13,21 +13,21 @@ class AppColors {
   static const Color darkCard = Color(0xFF374151);        // Cartes avec bon contraste
   static const Color darkElevated = Color(0xFF475569);
   
-  // Couleurs de fond - Mode clair (tons doux et apaisants)
-  static const Color lightBackground = Color(0xFFF7F8FA);  // Gris très très clair (moins de contraste)
+  // Couleurs de fond - Mode clair (meilleur contraste)
+  static const Color lightBackground = Color(0xFFECEFF3);  // Gris plus visible pour le fond
   static const Color lightSurface = Color(0xFFFFFFFF);     // Blanc pour la surface
   static const Color lightCard = Color(0xFFFFFFFF);        // Blanc pour les cartes
-  static const Color lightElevated = Color(0xFFF1F5F9);    // Gris doux
+  static const Color lightElevated = Color(0xFFE2E8F0);    // Gris plus prononcé
   
   // Couleurs de texte - Mode sombre
   static const Color darkTextPrimary = Color(0xFFFFFFFF);
   static const Color darkTextSecondary = Color(0xFFD1D5DB);
   static const Color darkTextTertiary = Color(0xFF9CA3AF);
   
-  // Couleurs de texte - Mode clair (contraste harmonieux)
-  static const Color lightTextPrimary = Color(0xFF1e293b);   // Bleu-gris foncé (plus doux)
-  static const Color lightTextSecondary = Color(0xFF64748b); // Gris ardoise
-  static const Color lightTextTertiary = Color(0xFF94a3b8);  // Gris plus clair
+  // Couleurs de texte - Mode clair (contraste optimal)
+  static const Color lightTextPrimary = Color(0xFF1E293B);   // Encore plus foncé pour maximum contraste
+  static const Color lightTextSecondary = Color(0xFF334155); // Plus sombre pour meilleure lisibilité
+  static const Color lightTextTertiary = Color(0xFF475569);  // Renforcé pour tertiaire
   
   // Couleurs sémantiques
   static const Color success = Color(0xFF10B981);
@@ -41,9 +41,12 @@ class AppColors {
   
   // Couleurs de bordure
   static const Color darkBorder = Color(0xFF475569);
-  static const Color lightBorder = Color(0xFFCBD5E1);
+  static const Color lightBorder = Color(0xFF94A3B8);  // Contraste amélioré en mode clair
   
   // Ombres
   static Color darkShadow = Colors.black.withValues(alpha: 0.3);
-  static Color lightShadow = Colors.black.withValues(alpha: 0.1);
+  static Color lightShadow = Colors.black.withValues(alpha: 0.15);  // Ombre plus visible
 }
+
+
+

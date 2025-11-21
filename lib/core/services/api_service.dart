@@ -68,18 +68,25 @@ class ApiService {
   /// Attempt login against the API. Returns a map with token and user info on success,
   /// or null on failure. The backend returns JSON like:
   /// {"token":"...", "user": {"id":"...", "email":"...", "fullName":"...", "gymId":"...", "type":"admin|member|owner"}}
-  Future<Map<String, dynamic>?> login(String email, String password, {Duration timeout = const Duration(seconds: 8)}) async {
+  /// Supports login with email OR phoneNumber
+  Future<Map<String, dynamic>?> login(String emailOrPhone, String password, {Duration timeout = const Duration(seconds: 8)}) async {
     final uri = baseUri.resolve('/auth/login');
     try {
       // Clean input to remove null bytes and invalid characters
-      final cleanEmail = _cleanString(email);
+      final cleanEmailOrPhone = _cleanString(emailOrPhone);
       final cleanPassword = _cleanString(password);
       
+      // Determine if input is email or phone number
+      final isEmail = cleanEmailOrPhone.contains('@');
+      final requestBody = isEmail 
+        ? {'email': cleanEmailOrPhone, 'password': cleanPassword}
+        : {'phoneNumber': cleanEmailOrPhone, 'password': cleanPassword};
+      
       // ignore: avoid_print
-      debugPrint('ApiService.login -> $uri with email: $cleanEmail');
+      debugPrint('ApiService.login -> $uri with ${isEmail ? "email" : "phoneNumber"}: $cleanEmailOrPhone');
       
       final resp = await http
-          .post(uri, headers: {'Content-Type': 'application/json'}, body: jsonEncode({'email': cleanEmail, 'password': cleanPassword})).timeout(timeout);
+          .post(uri, headers: {'Content-Type': 'application/json'}, body: jsonEncode(requestBody)).timeout(timeout);
       
       // ignore: avoid_print
       debugPrint('ApiService.login response status: ${resp.statusCode}');
@@ -277,21 +284,90 @@ class ApiService {
     }
   }
 
+  /// Check if a phone number exists and has a password configured
+  /// POST /auth/check-phone
+  Future<Map<String, dynamic>> checkPhone(
+    String phoneNumber, {
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
+    final uri = baseUri.resolve('/auth/check-phone');
+    try {
+      debugPrint('ApiService.checkPhone -> $uri with phoneNumber: $phoneNumber');
+      
+      final resp = await http
+          .post(
+            uri,
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({'phoneNumber': phoneNumber}),
+          )
+          .timeout(timeout);
+      
+      debugPrint('ApiService.checkPhone response status: ${resp.statusCode}');
+      debugPrint('ApiService.checkPhone response body: ${resp.body}');
+      
+      if (resp.statusCode == 200) {
+        final body = jsonDecode(resp.body);
+        // exists: true, hasPassword: true/false, user data
+        return {
+          'success': true,
+          'exists': body['exists'] ?? false,
+          'hasPassword': body['hasPassword'] ?? false,
+          'user': body['user'],
+        };
+      } else if (resp.statusCode == 409) {
+        // Phone exists with password
+        final body = jsonDecode(resp.body);
+        return {
+          'success': true,
+          'exists': true,
+          'hasPassword': true,
+          'message': body['message'],
+        };
+      } else if (resp.statusCode == 404) {
+        // Phone not found
+        return {
+          'success': true,
+          'exists': false,
+          'hasPassword': false,
+        };
+      } else {
+        final body = jsonDecode(resp.body);
+        return {
+          'success': false,
+          'error': body['error'] ?? 'Erreur de vérification',
+        };
+      }
+    } catch (e) {
+      debugPrint('ApiService.checkPhone exception: $e');
+      return {
+        'success': false,
+        'error': e.toString(),
+      };
+    }
+  }
+
   /// Setup initial password for a new account
   /// POST /auth/setup-password
+  /// Supports both email and phoneNumber
   Future<Map<String, dynamic>> setupPassword(
-    String email,
+    String emailOrPhone,
     String token,
     String password, {
     Duration timeout = const Duration(seconds: 8),
   }) async {
     final uri = baseUri.resolve('/auth/setup-password');
     try {
+      // Determine if input is email or phone number
+      final isEmail = emailOrPhone.contains('@');
+      final requestBody = isEmail 
+        ? {'email': emailOrPhone, 'token': token, 'password': password}
+        : {'phoneNumber': emailOrPhone, 'token': token, 'password': password};
+      
       final resp = await http
           .post(
             uri,
             headers: {'Content-Type': 'application/json'},
-            body: jsonEncode({'email': email, 'token': token, 'password': password}),
+            body: jsonEncode(requestBody),
           )
           .timeout(timeout);
       
@@ -382,7 +458,8 @@ class ApiService {
   /// If no password is provided, a setup email will be sent automatically
   Future<Map<String, dynamic>?> createAdmin(
     String email,
-    String fullName,
+    String firstName,
+    String lastName,
     int gymId,
     String token, {
     String? password,
@@ -392,7 +469,7 @@ class ApiService {
     try {
       final body = {
         'email': email,
-        'fullName': fullName,
+        'fullName': '$firstName $lastName',
         'gymId': gymId,
         if (password != null) 'password': password,
       };
@@ -427,7 +504,8 @@ class ApiService {
   /// If no password is provided, a setup email will be sent automatically
   Future<Map<String, dynamic>?> createOwner(
     String email,
-    String fullName,
+    String firstName,
+    String lastName,
     int gymId,
     String token, {
     String? password,
@@ -437,7 +515,7 @@ class ApiService {
     try {
       final body = {
         'email': email,
-        'fullName': fullName,
+        'fullName': '$firstName $lastName',
         'gymId': gymId,
         if (password != null) 'password': password,
       };
@@ -1435,7 +1513,8 @@ class ApiService {
   /// POST /users
   Future<Map<String, dynamic>?> createMember(
     String email,
-    String fullName,
+    String firstName,
+    String lastName,
     int gymId,
     String token, {
     String? password,
@@ -1447,11 +1526,11 @@ class ApiService {
     try {
       final body = {
         'email': email,
-        'fullName': fullName,
+        'fullName': '$firstName $lastName',
         'gymId': gymId,
         'role': 'member',
         if (password != null) 'password': password,
-        if (phone != null) 'phone': phone,
+        if (phone != null) 'phoneNumber': phone,
         'sendSetupEmail': sendSetupEmail,
       };
 
@@ -2201,4 +2280,7 @@ class ApiService {
     }
   }
 }
+
+
+
 

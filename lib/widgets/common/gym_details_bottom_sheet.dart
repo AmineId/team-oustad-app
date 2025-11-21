@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
+import '../../core/theme/theme.dart';
 
 class GymDetailsBottomSheet extends StatefulWidget {
   final Map<String, dynamic> gym;
@@ -119,12 +120,12 @@ class _GymDetailsBottomSheetState extends State<GymDetailsBottomSheet> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFe89547).withValues(alpha: 0.7),
+                  color: AppColors.primary.withValues(alpha: 0.7),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(
                   Icons.fitness_center,
-                  color: Color(0xFFe89547),
+                  color: AppColors.primary,
                   size: 28,
                 ),
               ),
@@ -168,7 +169,7 @@ class _GymDetailsBottomSheetState extends State<GymDetailsBottomSheet> {
           const SizedBox(height: 12),
           _isLoading
               ? const Center(
-                  child: CircularProgressIndicator(color: Color(0xFFe89547)),
+                  child: CircularProgressIndicator(color: AppColors.primary),
                 )
               : _openingHours == null || _openingHours!.isEmpty
                   ? Text(
@@ -242,7 +243,7 @@ class _GymDetailsBottomSheetState extends State<GymDetailsBottomSheet> {
                   icon: const Icon(Icons.navigation),
                   label: const Text('Waze'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF33CCFF),
+                    backgroundColor: AppColors.info,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
                     shape: RoundedRectangleBorder(

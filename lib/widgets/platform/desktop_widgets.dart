@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/theme/theme.dart';
 
 /// Enhanced stat card for desktop with more details
 class DesktopStatCard extends StatelessWidget {
@@ -21,10 +22,13 @@ class DesktopStatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFF2d3748),
+        color: isDark ? AppColors.darkCard : AppColors.lightCard,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: color.withValues(alpha: 0.3)),
         boxShadow: [
@@ -110,13 +114,16 @@ class DesktopActionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: const Color(0xFF2d3748),
+          color: isDark ? AppColors.darkCard : AppColors.lightCard,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: Colors.white.withValues(alpha: 0.1),
@@ -128,10 +135,10 @@ class DesktopActionCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFFe89547).withValues(alpha: 0.2),
+                color: AppColors.primary.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(icon, color: const Color(0xFFe89547), size: 32),
+              child: Icon(icon, color: AppColors.primary, size: 32),
             ),
             const SizedBox(height: 16),
             Text(
@@ -158,7 +165,7 @@ class DesktopActionCard extends StatelessWidget {
                 Text(
                   'Accéder',
                   style: TextStyle(
-                    color: const Color(0xFFe89547),
+                    color: AppColors.primary,
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
@@ -166,7 +173,7 @@ class DesktopActionCard extends StatelessWidget {
                 const SizedBox(width: 4),
                 const Icon(
                   Icons.arrow_forward,
-                  color: Color(0xFFe89547),
+                  color: AppColors.primary,
                   size: 16,
                 ),
               ],
@@ -193,9 +200,12 @@ class DesktopDataTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF2d3748),
+        color: isDark ? AppColors.darkCard : AppColors.lightCard,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.1),
@@ -207,7 +217,7 @@ class DesktopDataTable extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             decoration: BoxDecoration(
-              color: const Color(0xFF1a1f2e),
+              color: isDark ? AppColors.darkBackground : AppColors.lightElevated,
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(12),
                 topRight: Radius.circular(12),
@@ -278,10 +288,13 @@ class DesktopSearchBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: const Color(0xFF2d3748),
+        color: isDark ? AppColors.darkCard : AppColors.lightCard,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.1),

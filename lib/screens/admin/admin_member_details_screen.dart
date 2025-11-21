@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/theme/theme.dart';
+import '../../core/utils/user_utils.dart';
 import 'admin_subscription_details_screen.dart';
 import 'admin_create_subscription_screen.dart';
 import 'admin_create_planning_screen.dart';
@@ -220,8 +221,8 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              AppColors.darkBackground,
-              AppColors.darkSurface,
+              Theme.of(context).scaffoldBackgroundColor,
+              Theme.of(context).cardTheme.color!,
             ],
           ),
         ),
@@ -279,12 +280,12 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text(
+                              Text(
                                 'Abonnements',
                                 style: TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                                  color: Theme.of(context).textTheme.bodyLarge!.color,
                                 ),
                               ),
                               IconButton(
@@ -411,7 +412,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
   Widget _buildMemberInfoCard() {
     if (_member == null) return const SizedBox();
     
-    final fullName = _member!['fullName'] as String? ?? 'Sans nom';
+    final fullName = getUserFullName(_member);
     final email = _member!['email'] as String? ?? '';
     final uniqueCode = _member!['uniqueCode'] as String? ?? '';
     final phone = _member!['phone'] as String?;
@@ -427,7 +428,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.darkCard,
+        color: Theme.of(context).cardTheme.color,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -533,7 +534,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
     
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      color: AppColors.darkCard,
+      color: Theme.of(context).cardTheme.color,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
@@ -660,7 +661,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
     
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      color: AppColors.darkCard,
+      color: Theme.of(context).cardTheme.color,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
@@ -817,8 +818,8 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
         minChildSize: 0.5,
         maxChildSize: 0.95,
         builder: (context, scrollController) => Container(
-          decoration: const BoxDecoration(
-            color: AppColors.darkBackground,
+          decoration: BoxDecoration(
+            color: Theme.of(context).scaffoldBackgroundColor,
             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
           child: Column(
@@ -827,7 +828,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.darkCard,
+                  color: Theme.of(context).cardTheme.color,
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
                   border: Border(
                     bottom: BorderSide(
@@ -950,7 +951,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: AppColors.darkCard,
+                          color: Theme.of(context).cardTheme.color,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
@@ -970,7 +971,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                           margin: const EdgeInsets.only(bottom: 12),
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: AppColors.darkCard,
+                            color: Theme.of(context).cardTheme.color,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
                               color: AppColors.primary.withValues(alpha: 0.3),
@@ -1124,7 +1125,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.darkCard,
+        backgroundColor: Theme.of(context).cardTheme.color,
         title: const Text(
           'Confirmer la suppression',
           style: TextStyle(color: Colors.white),
@@ -1233,3 +1234,6 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
   }
 
 }
+
+
+

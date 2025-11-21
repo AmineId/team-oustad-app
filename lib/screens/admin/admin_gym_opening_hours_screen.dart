@@ -139,10 +139,7 @@ class _AdminGymOpeningHoursScreenState extends State<AdminGymOpeningHoursScreen>
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: AppColors.primary,
-              onSurface: Colors.white,
-              surface: AppColors.darkCard,
+            colorScheme: ColorScheme.dark(primary: AppColors.primary, onSurface: Colors.white, surface: Theme.of(context).cardTheme.color ?? Colors.grey[900]!,
             ),
           ),
           child: child!,
@@ -166,7 +163,7 @@ class _AdminGymOpeningHoursScreenState extends State<AdminGymOpeningHoursScreen>
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              AppColors.darkBackground, AppColors.darkSurface,
+              Theme.of(context).scaffoldBackgroundColor, Theme.of(context).cardTheme.color!,
             ],
           ),
         ),
@@ -224,7 +221,7 @@ class _AdminGymOpeningHoursScreenState extends State<AdminGymOpeningHoursScreen>
                           final isClosed = dayData['isClosed'] as bool;
 
                           return Card(
-                            color: AppColors.darkCard,
+                            color: Theme.of(context).cardTheme.color,
                             margin: const EdgeInsets.only(bottom: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
@@ -361,7 +358,7 @@ class _AdminGymOpeningHoursScreenState extends State<AdminGymOpeningHoursScreen>
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: AppColors.darkBackground,
+          color: Theme.of(context).scaffoldBackgroundColor,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: AppColors.primary.withValues(alpha: 0.3),
@@ -402,3 +399,5 @@ class _AdminGymOpeningHoursScreenState extends State<AdminGymOpeningHoursScreen>
     );
   }
 }
+
+

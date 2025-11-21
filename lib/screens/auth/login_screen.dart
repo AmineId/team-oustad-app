@@ -30,6 +30,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
   bool _isCheckingHealth = false;
   bool _dbHealthy = false;
   bool _canCheckBiometrics = false;
+  bool _obscurePassword = true;
 
   @override
   void initState() {
@@ -43,11 +44,13 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
 
   Future<void> _initialize() async {
     await _checkBiometricAvailability();
+    
+    // Vérifier la connexion DB seulement si elle n'a pas été vérifiée depuis le splash screen
     if (!_dbHealthy) {
       await _performHealthCheck();
     }
     
-    // Tenter l'authentification biométrique automatiquement si disponible
+    // Tenter l'authentification biométrique automatiquement si disponible et DB OK
     if (_canCheckBiometrics && _dbHealthy) {
       // Petit délai pour laisser l'UI se charger
       await Future.delayed(const Duration(milliseconds: 500));
@@ -173,12 +176,12 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
               Expanded(
                 child: Text(
                   message,
-                  style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
+                  style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary), fontSize: 14, fontWeight: FontWeight.w500),
                 ),
               ),
             ],
           ),
-          backgroundColor: AppColors.darkCard,
+          backgroundColor: Theme.of(context).cardTheme.color,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -202,19 +205,19 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
     if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Row(
+          content: Row(
             children: [
-              Icon(Icons.error_outline, color: AppColors.error, size: 24),
-              SizedBox(width: 12),
+              const Icon(Icons.error_outline, color: AppColors.error, size: 24),
+              const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  'Veuillez remplir tous les champs',
-                  style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
+                  'Veuillez saisir votre email/téléphone et mot de passe',
+                  style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary), fontSize: 14, fontWeight: FontWeight.w500),
                 ),
               ),
             ],
           ),
-          backgroundColor: AppColors.darkCard,
+          backgroundColor: Theme.of(context).cardTheme.color,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -297,19 +300,21 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Row(
+            content: Row(
               children: [
-                Icon(Icons.error_outline, color: AppColors.error, size: 24),
-                SizedBox(width: 12),
+                const Icon(Icons.error_outline, color: AppColors.error, size: 24),
+                const SizedBox(width: 12),
                 Expanded(
-                  child: Text(
-                    'Email ou mot de passe incorrect',
-                    style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
+                  child: Builder(
+                    builder: (context) => Text(
+                      'Identifiants incorrects',
+                      style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary), fontSize: 14, fontWeight: FontWeight.w500),
+                    ),
                   ),
                 ),
               ],
             ),
-            backgroundColor: AppColors.darkCard,
+            backgroundColor: Theme.of(context).cardTheme.color,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -334,12 +339,12 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                 Expanded(
                   child: Text(
                     'Erreur: $e',
-                    style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
+                    style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary), fontSize: 14, fontWeight: FontWeight.w500),
                   ),
                 ),
               ],
             ),
-            backgroundColor: AppColors.darkCard,
+            backgroundColor: Theme.of(context).cardTheme.color,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -394,9 +399,8 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      _performHealthCheck();
-    }
+    // Ne plus vérifier la connexion à chaque reprise de l'app
+    // La vérification est faite uniquement au lancement
   }
 
   @override
@@ -411,8 +415,8 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: isDark 
-              ? [AppColors.darkBackground, AppColors.darkSurface]
-              : [AppColors.lightBackground, AppColors.lightSurface],
+              ? [Theme.of(context).scaffoldBackgroundColor, Theme.of(context).cardTheme.color!]
+              : [Theme.of(context).scaffoldBackgroundColor, Theme.of(context).cardTheme.color!],
           ),
         ),
         child: SafeArea(
@@ -423,16 +427,18 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
               final isWatch = constraints.maxWidth < 300;
               
               if (_isCheckingHealth) {
-                return const Center(
+                return Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      CircularProgressIndicator(color: AppColors.primary),
-                      SizedBox(height: 16),
-                      Text(
-                        'Vérification de la connexion...',
-                        style: TextStyle(color: Colors.white70, fontSize: 16),
-                        textAlign: TextAlign.center,
+                      const CircularProgressIndicator(color: AppColors.primary),
+                      const SizedBox(height: 16),
+                      Builder(
+                        builder: (context) => Text(
+                          'Vérification de la connexion...',
+                          style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary), fontSize: 16),
+                          textAlign: TextAlign.center,
+                        ),
                       ),
                     ],
                   ),
@@ -452,8 +458,8 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                             colors: [
-                              AppColors.darkCard,
-                              AppColors.darkBackground,
+                              theme.cardTheme.color ?? Colors.black,
+                              theme.scaffoldBackgroundColor,
                             ],
                           ),
                         ),
@@ -477,11 +483,13 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                                 ),
                               ),
                               const SizedBox(height: 12),
-                              const Text(
-                                'Gestion de votre salle de sport',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.white60,
+                              Builder(
+                                builder: (context) => Text(
+                                  'Gestion de votre salle de sport',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
+                                  ),
                                 ),
                               ),
                             ],
@@ -550,10 +558,10 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                 size: 64,
               ),
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 'Mode hors ligne',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
@@ -569,26 +577,14 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButton(
-                    onPressed: () async {
-                      setState(() => _isCheckingHealth = true);
-                      try {
-                        final ok = await _apiService.healthCheck();
-                        _dbHealthy = ok;
-                      } catch (e) {
-                        _dbHealthy = false;
-                      }
-                      if (mounted) setState(() => _isCheckingHealth = false);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    ),
-                    child: const Text('Réessayer'),
-                  ),
-                ],
+              const SizedBox(height: 8),
+              Text(
+                'Vous pouvez toujours vous connecter en mode hors ligne si vous avez déjà un compte.',
+                style: TextStyle(
+                  color: Colors.orange.shade400,
+                  fontSize: 12,
+                ),
+                textAlign: TextAlign.center,
               ),
             ],
           ),
@@ -640,16 +636,22 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
               ],
               ModernTextField(
                 controller: _emailController,
-                label: 'Email',
-                prefixIcon: Icons.email,
-                keyboardType: TextInputType.emailAddress,
+                label: 'Email ou Numéro de téléphone',
+                prefixIcon: Icons.person,
+                keyboardType: TextInputType.text,
               ),
               const SizedBox(height: 16),
               ModernTextField(
                 controller: _passwordController,
                 label: 'Mot de passe',
                 prefixIcon: Icons.lock,
-                obscureText: true,
+                obscureText: _obscurePassword,
+                suffixIcon: _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                onSuffixIconPressed: () {
+                  setState(() {
+                    _obscurePassword = !_obscurePassword;
+                  });
+                },
                 onChanged: (_) {},
               ),
               Align(
@@ -690,7 +692,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                       'Version $version (Build $build)',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.white.withValues(alpha: 0.5),
+                        color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                       ),
                       textAlign: TextAlign.center,
                     );
@@ -705,4 +707,10 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
     );
   }
 }
+
+
+
+
+
+
 

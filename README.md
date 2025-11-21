@@ -159,14 +159,15 @@ flutter test
 # Debug APK
 flutter build apk --debug
 
-# Release APK
-flutter build apk --release
+# Release APK (with environment)
+flutter build apk --release --dart-define=ENVIRONMENT=pprod
 ```
 Output: `build\app\outputs\flutter-apk\app-release.apk`
 
 ### Build App Bundle (Google Play Store)
 ```bash
-flutter build appbundle --release
+# Release AAB (required for Play Store)
+flutter build appbundle --release --dart-define=ENVIRONMENT=pprod
 ```
 Output: `build\app\outputs\bundle\release\app-release.aab`
 
@@ -175,6 +176,64 @@ Output: `build\app\outputs\bundle\release\app-release.aab`
 flutter build windows --release
 ```
 Output: `build\windows\runner\Release\team_fitness_app.exe`
+
+## 🚀 Déploiement Automatique Play Store
+
+L'app est automatiquement déployée vers **Google Play Console Internal Testing** à chaque push sur `staging` ou `main`.
+
+### Configuration Requise
+
+1. **Créer le keystore de production**
+   ```powershell
+   cd android
+   .\create-keystore.ps1
+   ```
+
+2. **Configurer les secrets GitHub**
+   ```powershell
+   .\setup-github-secrets.ps1
+   ```
+
+3. **Configurer Google Play Console**
+   - Créer un Service Account Google Cloud
+   - Lier le service account à Play Console
+   - Ajouter le secret `PLAY_STORE_SERVICE_ACCOUNT_JSON` sur GitHub
+
+4. **Premier upload manuel** (requis par Google)
+   ```powershell
+   flutter build appbundle --release --dart-define=ENVIRONMENT=pprod
+   # Uploader manuellement sur Play Console
+   ```
+
+### Workflow Automatique
+
+Une fois configuré, à chaque push :
+1. ✅ Version mise à jour automatiquement (semantic-release)
+2. ✅ APK signé généré (pour OTA)
+3. ✅ AAB signé généré (pour Play Store)
+4. ✅ Déploiement automatique vers Internal Testing
+5. ✅ Déploiement OTA automatique
+
+### Guides Complets
+
+- 📖 **[GUIDE_RAPIDE_PLAY_STORE.md](./GUIDE_RAPIDE_PLAY_STORE.md)** - Guide rapide en français
+- 📖 **[GOOGLE_PLAY_SETUP.md](./GOOGLE_PLAY_SETUP.md)** - Documentation détaillée
+- 📖 **[BACKUP_ANDROID_SIGNING_CONFIG.md](./BACKUP_ANDROID_SIGNING_CONFIG.md)** - Configuration de signature
+
+### Scripts Android Utiles
+
+```powershell
+cd android
+
+# Tester la configuration
+.\test-config.ps1
+
+# Créer le keystore
+.\create-keystore.ps1
+
+# Configurer GitHub Secrets
+.\setup-github-secrets.ps1
+```
 
 ## Responsive Design 🎨
 

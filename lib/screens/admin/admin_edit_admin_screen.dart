@@ -108,14 +108,14 @@ class _AdminEditAdminScreenState extends State<AdminEditAdminScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Modifier administrateur',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: theme.appBarTheme.titleTextStyle?.color),
         ),
-        backgroundColor: AppColors.darkBackground,
-        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -123,7 +123,8 @@ class _AdminEditAdminScreenState extends State<AdminEditAdminScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              AppColors.darkBackground, AppColors.darkSurface,
+              theme.scaffoldBackgroundColor,
+              theme.cardTheme.color!,
             ],
           ),
         ),
@@ -160,7 +161,7 @@ class _AdminEditAdminScreenState extends State<AdminEditAdminScreen> {
                       labelStyle: const TextStyle(color: Colors.white60),
                       prefixIcon: const Icon(Icons.person, color: AppColors.primary),
                       filled: true,
-                      fillColor: AppColors.darkCard,
+                      fillColor: theme.cardTheme.color,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
@@ -185,7 +186,7 @@ class _AdminEditAdminScreenState extends State<AdminEditAdminScreen> {
                       labelStyle: const TextStyle(color: Colors.white60),
                       prefixIcon: const Icon(Icons.email, color: AppColors.primary),
                       filled: true,
-                      fillColor: AppColors.darkCard,
+                      fillColor: theme.cardTheme.color,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
@@ -206,14 +207,14 @@ class _AdminEditAdminScreenState extends State<AdminEditAdminScreen> {
                   // Salle
                   DropdownButtonFormField<int>(
                     value: _selectedGymId,
-                    dropdownColor: AppColors.darkCard,
-                    style: const TextStyle(color: Colors.white),
+                    dropdownColor: theme.cardTheme.color,
+                    style: TextStyle(color: theme.textTheme.bodyLarge!.color),
                     decoration: InputDecoration(
                       labelText: 'Salle de sport',
-                      labelStyle: const TextStyle(color: Colors.white60),
+                      labelStyle: TextStyle(color: theme.textTheme.bodyMedium!.color),
                       prefixIcon: const Icon(Icons.fitness_center, color: AppColors.primary),
                       filled: true,
-                      fillColor: AppColors.darkCard,
+                      fillColor: theme.cardTheme.color,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,

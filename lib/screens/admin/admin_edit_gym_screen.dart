@@ -85,14 +85,14 @@ class _AdminEditGymScreenState extends State<AdminEditGymScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Modifier salle',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: theme.appBarTheme.titleTextStyle?.color),
         ),
-        backgroundColor: AppColors.darkBackground,
-        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -100,7 +100,8 @@ class _AdminEditGymScreenState extends State<AdminEditGymScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              AppColors.darkBackground, AppColors.darkSurface,
+              theme.scaffoldBackgroundColor,
+              theme.cardTheme.color!,
             ],
           ),
         ),
@@ -137,7 +138,7 @@ class _AdminEditGymScreenState extends State<AdminEditGymScreen> {
                       labelStyle: const TextStyle(color: Colors.white60),
                       prefixIcon: const Icon(Icons.business, color: AppColors.primary),
                       filled: true,
-                      fillColor: AppColors.darkCard,
+                      fillColor: theme.cardTheme.color,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
@@ -162,7 +163,7 @@ class _AdminEditGymScreenState extends State<AdminEditGymScreen> {
                       labelStyle: const TextStyle(color: Colors.white60),
                       prefixIcon: const Icon(Icons.location_on, color: AppColors.primary),
                       filled: true,
-                      fillColor: AppColors.darkCard,
+                      fillColor: theme.cardTheme.color,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
@@ -187,7 +188,7 @@ class _AdminEditGymScreenState extends State<AdminEditGymScreen> {
                       labelStyle: const TextStyle(color: Colors.white60),
                       prefixIcon: const Icon(Icons.phone, color: AppColors.primary),
                       filled: true,
-                      fillColor: AppColors.darkCard,
+                      fillColor: theme.cardTheme.color,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,

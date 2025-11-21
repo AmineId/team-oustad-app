@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/theme/theme.dart';
 
 /// Simplified stat card for smartwatch displays
 class WatchStatCard extends StatelessWidget {
@@ -17,11 +18,14 @@ class WatchStatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return Container(
       padding: const EdgeInsets.all(8),
       margin: const EdgeInsets.symmetric(vertical: 4),
       decoration: BoxDecoration(
-        color: const Color(0xFF2d3748),
+        color: isDark ? AppColors.darkCard : AppColors.lightCard,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
@@ -72,18 +76,21 @@ class WatchActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return InkWell(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         margin: const EdgeInsets.symmetric(vertical: 4),
         decoration: BoxDecoration(
-          color: const Color(0xFF2d3748),
+          color: isDark ? AppColors.darkCard : AppColors.lightCard,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
           children: [
-            Icon(icon, color: const Color(0xFFe89547), size: 18),
+            Icon(icon, color: AppColors.primary, size: 18),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
@@ -120,19 +127,22 @@ class WatchListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return InkWell(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(8),
         margin: const EdgeInsets.symmetric(vertical: 2),
         decoration: BoxDecoration(
-          color: const Color(0xFF2d3748),
+          color: isDark ? AppColors.darkCard : AppColors.lightCard,
           borderRadius: BorderRadius.circular(6),
         ),
         child: Row(
           children: [
             if (icon != null) ...[
-              Icon(icon, color: const Color(0xFFe89547), size: 16),
+              Icon(icon, color: AppColors.primary, size: 16),
               const SizedBox(width: 8),
             ],
             Expanded(

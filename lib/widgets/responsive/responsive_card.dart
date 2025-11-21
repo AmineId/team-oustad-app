@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:team_fitness_app/core/utils/platform_utils.dart';
+import '../../core/theme/theme.dart';
 
 /// A card widget that adapts its styling based on device type
 class ResponsiveCard extends StatelessWidget {
@@ -20,6 +21,8 @@ class ResponsiveCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final deviceType = PlatformUtils.getDeviceType(context);
     
     final responsivePadding = padding ?? (
@@ -39,7 +42,7 @@ class ResponsiveCard extends StatelessWidget {
     );
 
     return Card(
-      color: color ?? const Color(0xFF2d3748),
+      color: color ?? (isDark ? AppColors.darkCard : AppColors.lightCard),
       elevation: responsiveElevation,
       shape: RoundedRectangleBorder(
         borderRadius: responsiveBorderRadius,
@@ -85,7 +88,7 @@ class ResponsiveButton extends StatelessWidget {
     return ElevatedButton(
       onPressed: isLoading ? null : onPressed,
       style: ElevatedButton.styleFrom(
-        backgroundColor: backgroundColor ?? const Color(0xFFe89547),
+        backgroundColor: backgroundColor ?? AppColors.primary,
         foregroundColor: foregroundColor ?? Colors.white,
         padding: padding,
         shape: RoundedRectangleBorder(

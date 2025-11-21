@@ -286,3 +286,6 @@ class UpdateInfo {
   @Deprecated('Use forceUpdate instead')
   bool get isMandatory => forceUpdate;
 }
+
+
+

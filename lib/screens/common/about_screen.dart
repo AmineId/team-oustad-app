@@ -62,7 +62,6 @@ class _AboutScreenState extends State<AboutScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     
     return Scaffold(
       body: Container(
@@ -70,9 +69,10 @@ class _AboutScreenState extends State<AboutScreen> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: isDark
-                ? [AppColors.darkBackground, AppColors.darkSurface]
-                : [AppColors.lightBackground, AppColors.lightSurface],
+            colors: [
+              theme.scaffoldBackgroundColor,
+              theme.cardTheme.color!,
+            ],
           ),
         ),
         child: SafeArea(
@@ -134,9 +134,9 @@ class _AboutScreenState extends State<AboutScreen> {
                         ),
                         child: Text(
                           'Version $_version (Build $_buildNumber)',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 14,
-                            color: Colors.white70,
+                            color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -148,7 +148,7 @@ class _AboutScreenState extends State<AboutScreen> {
                           'Publié le $_releaseDate',
                           style: TextStyle(
                             fontSize: 13,
-                            color: Colors.white.withValues(alpha: 0.6),
+                            color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                           ),
                         ),
                       ],
@@ -157,7 +157,7 @@ class _AboutScreenState extends State<AboutScreen> {
                       
                       // Description
                       Card(
-                        color: AppColors.darkCard,
+                        color: theme.cardTheme.color,
                         child: Padding(
                           padding: const EdgeInsets.all(20.0),
                           child: Column(
@@ -171,12 +171,14 @@ class _AboutScreenState extends State<AboutScreen> {
                                     size: 24,
                                   ),
                                   const SizedBox(width: 12),
-                                  const Text(
-                                    'Description',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
+                                  Builder(
+                                    builder: (context) => Text(
+                                      'Description',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -187,7 +189,7 @@ class _AboutScreenState extends State<AboutScreen> {
                                 'Gérez vos membres, plannings d\'entraînement, présences et bien plus encore.',
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color: Colors.white.withValues(alpha: 0.8),
+                                  color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                                   height: 1.5,
                                 ),
                               ),
@@ -231,7 +233,7 @@ class _AboutScreenState extends State<AboutScreen> {
                       
                       // Credits
                       Card(
-                        color: AppColors.darkCard,
+                        color: theme.cardTheme.color,
                         child: Padding(
                           padding: const EdgeInsets.all(20.0),
                           child: Column(
@@ -244,12 +246,14 @@ class _AboutScreenState extends State<AboutScreen> {
                                     size: 24,
                                   ),
                                   const SizedBox(width: 12),
-                                  const Text(
-                                    'Développé par',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
+                                  Builder(
+                                    builder: (context) => Text(
+                                      'Développé par',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -259,7 +263,7 @@ class _AboutScreenState extends State<AboutScreen> {
                                 'Team Oustad © ${DateTime.now().year}',
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color: Colors.white.withValues(alpha: 0.8),
+                                  color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                                 ),
                               ),
                             ],
@@ -274,7 +278,7 @@ class _AboutScreenState extends State<AboutScreen> {
                         'Tous droits réservés',
                         style: TextStyle(
                           fontSize: 12,
-                          color: Colors.white.withValues(alpha: 0.5),
+                          color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -296,7 +300,7 @@ class _AboutScreenState extends State<AboutScreen> {
     List<String> items,
   ) {
     return Card(
-      color: AppColors.darkCard,
+      color: Theme.of(context).cardTheme.color,
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
@@ -306,12 +310,14 @@ class _AboutScreenState extends State<AboutScreen> {
               children: [
                 Icon(icon, color: color, size: 24),
                 const SizedBox(width: 12),
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                Builder(
+                  builder: (context) => Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
+                    ),
                   ),
                 ),
               ],
@@ -333,12 +339,14 @@ class _AboutScreenState extends State<AboutScreen> {
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: Text(
-                      item,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.white.withValues(alpha: 0.8),
-                        height: 1.5,
+                    child: Builder(
+                      builder: (context) => Text(
+                        item,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
+                          height: 1.5,
+                        ),
                       ),
                     ),
                   ),
@@ -351,4 +359,7 @@ class _AboutScreenState extends State<AboutScreen> {
     );
   }
 }
+
+
+
 

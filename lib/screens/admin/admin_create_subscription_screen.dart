@@ -112,7 +112,7 @@ class _AdminCreateSubscriptionScreenState extends State<AdminCreateSubscriptionS
         await showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            backgroundColor: AppColors.darkCard,
+            backgroundColor: Theme.of(context).cardTheme.color,
             title: const Row(
               children: [
                 Icon(Icons.check_circle, color: AppColors.success),
@@ -164,7 +164,7 @@ class _AdminCreateSubscriptionScreenState extends State<AdminCreateSubscriptionS
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.darkCard,
+        backgroundColor: Theme.of(context).cardTheme.color,
         title: const Row(
           children: [
             Icon(Icons.error, color: AppColors.error),
@@ -214,7 +214,7 @@ class _AdminCreateSubscriptionScreenState extends State<AdminCreateSubscriptionS
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              AppColors.darkBackground, AppColors.darkSurface,
+              Theme.of(context).scaffoldBackgroundColor, Theme.of(context).cardTheme.color!,
             ],
           ),
         ),
@@ -337,7 +337,7 @@ class _AdminCreateSubscriptionScreenState extends State<AdminCreateSubscriptionS
       margin: const EdgeInsets.only(bottom: 12),
       color: isSelected 
           ? AppColors.primary.withValues(alpha: 0.2)
-          : AppColors.darkCard,
+          : Theme.of(context).cardTheme.color,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
@@ -446,4 +446,5 @@ class _AdminCreateSubscriptionScreenState extends State<AdminCreateSubscriptionS
     );
   }
 }
+
 
