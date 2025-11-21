@@ -91,8 +91,8 @@ class ResponsiveScaffold extends StatelessWidget {
         elevation: 8,
         items: navigationItems
             .map((item) => BottomNavigationBarItem(
-                  icon: Icon(item.icon),
-                  activeIcon: Icon(item.activeIcon ?? item.icon),
+                  icon: item.customWidget ?? Icon(item.icon),
+                  activeIcon: item.activeCustomWidget ?? item.customWidget ?? Icon(item.activeIcon ?? item.icon),
                   label: item.label,
                 ))
             .toList(),
@@ -293,11 +293,15 @@ class NavigationItem {
   final IconData icon;
   final IconData? activeIcon;
   final String label;
+  final Widget? customWidget;
+  final Widget? activeCustomWidget;
 
   const NavigationItem({
     required this.icon,
     this.activeIcon,
     required this.label,
+    this.customWidget,
+    this.activeCustomWidget,
   });
 }
 

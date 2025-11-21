@@ -21,13 +21,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   late final AuthService _authService;
   
   // Controllers
-  final TextEditingController _fullNameController = TextEditingController();
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _birthDateController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _weightController = TextEditingController();
   final TextEditingController _waistController = TextEditingController();
   final TextEditingController _heightController = TextEditingController();
+  final TextEditingController _goalTitleController = TextEditingController();
+  final TextEditingController _goalDescriptionController = TextEditingController();
   
   // State
   File? _profileImage;
@@ -61,44 +65,67 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   void initState() {
     super.initState();
     _authService = AuthService(_apiService);
-    _loadSavedData();
-    _prefillUserName();
+    _clearOldDataAndInitialize();
+  }
+  
+  Future<void> _clearOldDataAndInitialize() async {
+    // Clear old onboarding data to force fresh load from profile
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('onboarding_data');
+      await prefs.remove('onboarding_profile_image');
+      debugPrint('🗑️ ONBOARDING: Old onboarding data cleared');
+      
+      // Also refresh the user profile cache to get latest data
+      debugPrint('🔄 ONBOARDING: Refreshing user profile cache...');
+      await _authService.refreshUserProfile();
+      debugPrint('✅ ONBOARDING: User profile cache refreshed');
+    } catch (e) {
+      debugPrint('⚠️ ONBOARDING: Error clearing old data: $e');
+    }
+    await _initializeData();
   }
 
   @override
   void dispose() {
-    _fullNameController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    _emailController.dispose();
     _phoneController.dispose();
     _birthDateController.dispose();
     _addressController.dispose();
     _weightController.dispose();
     _waistController.dispose();
     _heightController.dispose();
+    _goalTitleController.dispose();
+    _goalDescriptionController.dispose();
     super.dispose();
   }
 
-  Future<void> _prefillUserName() async {
+  Future<void> _initializeData() async {
     try {
+      debugPrint('🔍 ONBOARDING: Initializing data...');
+      
+      // Always load profile data first
       final profileData = await _authService.getCachedUserProfile();
-      if (profileData != null && profileData['fullName'] != null) {
-        setState(() {
-          _fullNameController.text = profileData['fullName'];
-        });
-      }
-    } catch (e) {
-      // ignore: avoid_print
-      debugPrint('Error prefilling name: $e');
-    }
-  }
-
-  Future<void> _loadSavedData() async {
-    try {
+      debugPrint('👤 ONBOARDING: Profile data loaded');
+      
+      // Then try to load saved onboarding data
       final prefs = await SharedPreferences.getInstance();
       final savedData = prefs.getString('onboarding_data');
+      final imagePath = prefs.getString('onboarding_profile_image');
+      
+      debugPrint('🔍 ONBOARDING: savedData = ${savedData != null ? "EXISTS" : "NULL"}');
+      
       if (savedData != null) {
         final data = jsonDecode(savedData) as Map<String, dynamic>;
+        debugPrint('📦 ONBOARDING: Saved data: $data');
+        
         setState(() {
-          _fullNameController.text = data['fullName'] ?? '';
+          // Load saved data
+          _firstNameController.text = data['firstName'] ?? '';
+          _lastNameController.text = data['lastName'] ?? '';
+          _emailController.text = data['email'] ?? '';
           _phoneController.text = data['phone'] ?? '';
           _birthDateController.text = data['birthDate'] ?? '';
           _addressController.text = data['address'] ?? '';
@@ -107,13 +134,168 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           _weightController.text = data['weight'] ?? '';
           _waistController.text = data['waist'] ?? '';
           _heightController.text = data['height'] ?? '';
+          _goalTitleController.text = data['goalTitle'] ?? '';
+          _goalDescriptionController.text = data['goalDescription'] ?? '';
           _preferredTrainingDays = (data['preferredTrainingDays'] as List<dynamic>?)?.map((e) => e as int).toSet() ?? {};
           _workoutNotificationsEnabled = data['workoutNotificationsEnabled'] ?? true;
+          
+          // If profile data exists, fill in missing fields
+          if (profileData != null) {
+            debugPrint('🔍 ONBOARDING: Checking profile data...');
+            debugPrint('🔍 ONBOARDING: phoneNumber in profile = ${profileData['phoneNumber']}');
+            debugPrint('🔍 ONBOARDING: Current phone value = "${_phoneController.text}"');
+            
+            // Always use profile data for firstName, lastName, email, and phone if they're empty or whitespace
+            if (_firstNameController.text.trim().isEmpty && profileData['firstName'] != null) {
+              _firstNameController.text = profileData['firstName'];
+              debugPrint('✅ ONBOARDING: First name filled from profile: ${profileData['firstName']}');
+            }
+            if (_lastNameController.text.trim().isEmpty && profileData['lastName'] != null) {
+              _lastNameController.text = profileData['lastName'];
+              debugPrint('✅ ONBOARDING: Last name filled from profile: ${profileData['lastName']}');
+            }
+            if (_phoneController.text.trim().isEmpty && profileData['phoneNumber'] != null) {
+              _phoneController.text = profileData['phoneNumber'];
+              debugPrint('✅ ONBOARDING: Phone filled from profile: ${profileData['phoneNumber']}');
+            } else {
+              debugPrint('⚠️ ONBOARDING: Phone NOT filled - text="${_phoneController.text}", trim().isEmpty=${_phoneController.text.trim().isEmpty}, phoneNumber=${profileData['phoneNumber']}');
+            }
+            if (_emailController.text.trim().isEmpty) {
+              if (profileData['email'] != null) {
+                _emailController.text = profileData['email'];
+                debugPrint('✅ ONBOARDING: Email filled from profile: ${profileData['email']}');
+              } else {
+                final memberData = profileData['member'];
+                if (memberData != null && memberData['email'] != null) {
+                  _emailController.text = memberData['email'];
+                  debugPrint('✅ ONBOARDING: Email filled from member: ${memberData['email']}');
+                }
+              }
+            }
+            
+            // Load birthDate from member data if empty
+            if (_birthDateController.text.trim().isEmpty) {
+              final memberData = profileData['member'];
+              if (memberData != null && memberData['birthDate'] != null) {
+                try {
+                  final birthDate = DateTime.parse(memberData['birthDate']);
+                  _birthDateController.text = _formatDateFrench(birthDate);
+                  debugPrint('✅ ONBOARDING: Birth date filled from member: ${_birthDateController.text}');
+                } catch (e) {
+                  debugPrint('⚠️ ONBOARDING: Error parsing birth date: $e');
+                }
+              }
+            }
+            
+            // Load profile image from base64 if not already loaded
+            if (_profileImage == null && profileData['profileImage'] != null) {
+              try {
+                final base64String = profileData['profileImage'] as String;
+                final cleanBase64 = base64String.replaceFirst(RegExp(r'data:image/[^;]+;base64,'), '');
+                final bytes = base64Decode(cleanBase64);
+                
+                final tempDir = Directory.systemTemp;
+                final tempFile = File('${tempDir.path}/profile_temp_${DateTime.now().millisecondsSinceEpoch}.jpg');
+                tempFile.writeAsBytesSync(bytes);
+                
+                _profileImage = tempFile;
+                debugPrint('✅ ONBOARDING: Profile image loaded from base64 (saved data path)');
+              } catch (e) {
+                debugPrint('⚠️ ONBOARDING: Error loading profile image from base64: $e');
+              }
+            }
+          } else {
+            debugPrint('❌ ONBOARDING: Profile data is NULL when trying to fill missing fields!');
+          }
+          
+          // Load saved profile image from local path if exists
+          if (_profileImage == null && imagePath != null) {
+            final imageFile = File(imagePath);
+            if (imageFile.existsSync()) {
+              _profileImage = imageFile;
+              debugPrint('✅ ONBOARDING: Profile image loaded from local path');
+            }
+          }
         });
+      } else {
+        // No saved data, prefill from user profile
+        debugPrint('👤 ONBOARDING: No saved data, prefilling from profile');
+        
+        if (profileData != null) {
+          debugPrint('👤 ONBOARDING: Profile data details:');
+          debugPrint('   - firstName: ${profileData['firstName']}');
+          debugPrint('   - lastName: ${profileData['lastName']}');
+          debugPrint('   - phoneNumber: ${profileData['phoneNumber']}');
+          debugPrint('   - email: ${profileData['email']}');
+          debugPrint('   - profileImage: ${profileData['profileImage'] != null ? "EXISTS (base64)" : "NULL"}');
+          
+          setState(() {
+            if (profileData['firstName'] != null) {
+              _firstNameController.text = profileData['firstName'];
+              debugPrint('✅ ONBOARDING: First name set to: ${profileData['firstName']}');
+            }
+            if (profileData['lastName'] != null) {
+              _lastNameController.text = profileData['lastName'];
+              debugPrint('✅ ONBOARDING: Last name set to: ${profileData['lastName']}');
+            }
+            if (profileData['phoneNumber'] != null) {
+              _phoneController.text = profileData['phoneNumber'];
+              debugPrint('✅ ONBOARDING: Phone set to: ${profileData['phoneNumber']}');
+            } else {
+              debugPrint('❌ ONBOARDING: phoneNumber is NULL in profile!');
+            }
+            if (profileData['email'] != null) {
+              _emailController.text = profileData['email'];
+              debugPrint('✅ ONBOARDING: Email set to: ${profileData['email']}');
+            } else {
+              final memberData = profileData['member'];
+              if (memberData != null && memberData['email'] != null) {
+                _emailController.text = memberData['email'];
+                debugPrint('✅ ONBOARDING: Email set from member: ${memberData['email']}');
+              }
+            }
+            
+            // Load birthDate from member data
+            final memberData = profileData['member'];
+            if (memberData != null && memberData['birthDate'] != null) {
+              try {
+                final birthDate = DateTime.parse(memberData['birthDate']);
+                _birthDateController.text = _formatDateFrench(birthDate);
+                debugPrint('✅ ONBOARDING: Birth date set to: ${_birthDateController.text}');
+              } catch (e) {
+                debugPrint('⚠️ ONBOARDING: Error parsing birth date: $e');
+              }
+            }
+            
+            // Load profile image from base64 if available
+            if (profileData['profileImage'] != null) {
+              try {
+                final base64String = profileData['profileImage'] as String;
+                // Remove data:image/jpeg;base64, prefix if present
+                final cleanBase64 = base64String.replaceFirst(RegExp(r'data:image/[^;]+;base64,'), '');
+                final bytes = base64Decode(cleanBase64);
+                
+                // Save to temp file
+                final tempDir = Directory.systemTemp;
+                final tempFile = File('${tempDir.path}/profile_temp_${DateTime.now().millisecondsSinceEpoch}.jpg');
+                tempFile.writeAsBytesSync(bytes);
+                
+                _profileImage = tempFile;
+                debugPrint('✅ ONBOARDING: Profile image loaded from base64');
+              } catch (e) {
+                debugPrint('⚠️ ONBOARDING: Error loading profile image: $e');
+              }
+            }
+          });
+        } else {
+          debugPrint('❌ ONBOARDING: Profile data is NULL!');
+        }
       }
+      
+      debugPrint('✅ ONBOARDING: Initialization complete');
     } catch (e) {
-      // ignore: avoid_print
-      debugPrint('Error loading saved data: $e');
+      debugPrint('❌ ONBOARDING ERROR: $e');
+      debugPrint('❌ ONBOARDING STACK: ${StackTrace.current}');
     }
   }
 
@@ -121,7 +303,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     try {
       final prefs = await SharedPreferences.getInstance();
       final data = {
-        'fullName': _fullNameController.text,
+        'firstName': _firstNameController.text,
+        'lastName': _lastNameController.text,
+        'email': _emailController.text,
         'phone': _phoneController.text,
         'birthDate': _birthDateController.text,
         'address': _addressController.text,
@@ -130,22 +314,54 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         'weight': _weightController.text,
         'waist': _waistController.text,
         'height': _heightController.text,
+        'goalTitle': _goalTitleController.text,
+        'goalDescription': _goalDescriptionController.text,
         'preferredTrainingDays': _preferredTrainingDays.toList(),
         'workoutNotificationsEnabled': _workoutNotificationsEnabled,
       };
       await prefs.setString('onboarding_data', jsonEncode(data));
+      debugPrint('💾 ONBOARDING: Data saved: phone=${data['phone']}, email=${data['email']}');
     } catch (e) {
-      // ignore: avoid_print
-      debugPrint('Error saving data: $e');
+      debugPrint('❌ ONBOARDING SAVE ERROR: $e');
     }
   }
 
+  String _formatDateFrench(DateTime date) {
+    final months = [
+      'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+      'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+    ];
+    return '${date.day} ${months[date.month - 1]} ${date.year}';
+  }
+
   Future<void> _selectDate() async {
+    // Parse date from French format "21 novembre 2025" if available
+    DateTime? initialDate;
+    if (_birthDateController.text.isNotEmpty) {
+      final months = [
+        'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+        'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+      ];
+      
+      try {
+        final parts = _birthDateController.text.split(' ');
+        if (parts.length == 3) {
+          final day = int.tryParse(parts[0]);
+          final monthIndex = months.indexOf(parts[1].toLowerCase());
+          final year = int.tryParse(parts[2]);
+          
+          if (day != null && monthIndex != -1 && year != null) {
+            initialDate = DateTime(year, monthIndex + 1, day);
+          }
+        }
+      } catch (e) {
+        debugPrint('Error parsing date: $e');
+      }
+    }
+    
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: _birthDateController.text.isNotEmpty
-          ? DateTime.tryParse(_birthDateController.text) ?? DateTime.now()
-          : DateTime.now(),
+      initialDate: initialDate ?? DateTime.now(),
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
       builder: (context, child) {
@@ -165,7 +381,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     
     if (picked != null) {
       setState(() {
-        _birthDateController.text = picked.toIso8601String().split('T')[0];
+        // Format date in French: "21 novembre 2025"
+        _birthDateController.text = _formatDateFrench(picked);
       });
       _saveData();
     }
@@ -215,87 +432,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final token = await _authService.loadToken();
-      final profileData = await _authService.getCachedUserProfile();
+      // Save data locally
+      await _saveData();
       
-      if (token == null || profileData == null) {
-        throw Exception('Session expirée');
-      }
-
-      final userId = profileData['id'] as int;
-
-      // 1. Update member profile with photo and mark first login as completed
-      final imageBytes = await _profileImage!.readAsBytes();
-      final base64Image = base64Encode(imageBytes);
-      
-      final profileUpdateData = {
-        'birthDate': _birthDateController.text,
-        'phone': _phoneController.text,
-        'profession': _profession,
-        'fitnessLevel': _fitnessLevel,
-        'profileImage': 'data:image/jpeg;base64,$base64Image',
-        'onboarding': false, // Mark onboarding as completed (false = done)
-        'preferredTrainingDays': _preferredTrainingDays.toList(),
-        'workoutNotificationsEnabled': _workoutNotificationsEnabled,
-      };
-
-      final profileResponse = await _apiService.updateMemberProfile(
-        userId,
-        profileUpdateData,
-        token,
-      );
-
-      if (profileResponse == null || profileResponse['error'] != null) {
-        throw Exception(profileResponse?['error'] ?? 'Erreur lors de la mise à jour du profil');
-      }
-
-      // 2. Create initial measurement
-      if (_weightController.text.isNotEmpty || 
-          _waistController.text.isNotEmpty || 
-          _heightController.text.isNotEmpty) {
-        final measurementData = <String, dynamic>{};
-        
-        if (_weightController.text.isNotEmpty) {
-          measurementData['weight'] = double.parse(_weightController.text);
-        }
-        if (_waistController.text.isNotEmpty) {
-          measurementData['waist'] = double.parse(_waistController.text);
-        }
-        if (_heightController.text.isNotEmpty) {
-          measurementData['height'] = double.parse(_heightController.text);
-        }
-
-        if (measurementData.isNotEmpty) {
-          await _apiService.createMemberMeasurement(
-            userId,
-            measurementData,
-            token,
-          );
-        }
-      }
-
-      // 3. Create initial goal if objectives are filled
-      if (_weightController.text.isNotEmpty && _waistController.text.isNotEmpty) {
-        final goalData = {
-          'title': 'Mon premier objectif',
-          'description': 'Suivi de mes mensurations et progression',
-          'startWeight': double.parse(_weightController.text),
-          'startWaist': double.parse(_waistController.text),
-        };
-
-        await _apiService.createMemberGoal(
-          userId,
-          goalData,
-          token,
-        );
-      }
-
-      // 4. Clear saved data and navigate to home
+      // Also save the profile image path separately
       final prefs = await SharedPreferences.getInstance();
-      await prefs.remove('onboarding_data');
-      
-      // Mark onboarding as completed
-      await prefs.setBool('onboarding_completed', true);
+      await prefs.setString('onboarding_profile_image', _profileImage!.path);
 
       if (!mounted) return;
       
@@ -308,7 +450,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Profil créé avec succès!'),
+          content: Text('Données validées! Veuillez accepter le règlement'),
           backgroundColor: AppColors.success,
         ),
       );
@@ -325,6 +467,39 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         setState(() => _isLoading = false);
       }
     }
+  }
+
+  Widget _buildGoalChip(BuildContext context, String label, String description) {
+    return InkWell(
+      onTap: () {
+        setState(() {
+          // Écrase toujours le contenu existant
+          _goalTitleController.text = label;
+          _goalDescriptionController.text = description;
+        });
+        _saveData();
+      },
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardTheme.color,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+            width: 1,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -436,14 +611,39 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     ),
                     const SizedBox(height: 16),
                     
-                    // Full Name
+                    // First Name
                     TextFormField(
-                      controller: _fullNameController,
+                      controller: _firstNameController,
                       style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary)),
                       decoration: InputDecoration(
-                        labelText: 'Code Postal *',
+                        labelText: 'Prénom *',
                         labelStyle: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)),
-                        prefixIcon: const Icon(Icons.mail, color: AppColors.primary),
+                        prefixIcon: const Icon(Icons.person, color: AppColors.primary),
+                        filled: true,
+                        fillColor: Theme.of(context).cardTheme.color,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Le prénom est requis';
+                        }
+                        return null;
+                      },
+                      onChanged: (_) => _saveData(),
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // Last Name
+                    TextFormField(
+                      controller: _lastNameController,
+                      style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary)),
+                      decoration: InputDecoration(
+                        labelText: 'Nom *',
+                        labelStyle: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)),
+                        prefixIcon: const Icon(Icons.person_outline, color: AppColors.primary),
                         filled: true,
                         fillColor: Theme.of(context).cardTheme.color,
                         border: OutlineInputBorder(
@@ -455,8 +655,34 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         if (value == null || value.trim().isEmpty) {
                           return 'Le nom est requis';
                         }
-                        if (value.trim().split(' ').length < 2) {
-                          return 'Veuillez entrer le nom et prénom complets';
+                        return null;
+                      },
+                      onChanged: (_) => _saveData(),
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // Email (optional)
+                    TextFormField(
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary)),
+                      decoration: InputDecoration(
+                        labelText: 'Email (facultatif)',
+                        labelStyle: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)),
+                        prefixIcon: const Icon(Icons.email, color: AppColors.primary),
+                        filled: true,
+                        fillColor: Theme.of(context).cardTheme.color,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                      validator: (value) {
+                        // Email is optional, but if provided, should be valid
+                        if (value != null && value.trim().isNotEmpty) {
+                          if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value.trim())) {
+                            return 'Veuillez entrer un email valide';
+                          }
                         }
                         return null;
                       },
@@ -579,103 +805,291 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     
                     const SizedBox(height: 32),
                     
-                    // Objectives Section
+                    // Measurements Section (Compact)
                     Text(
-                      'Objectifs',
+                      'Mes mensurations',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            controller: _weightController,
+                            keyboardType: TextInputType.number,
+                            style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary)),
+                            decoration: InputDecoration(
+                              labelText: 'Poids (kg)',
+                              labelStyle: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)),
+                              prefixIcon: const Icon(Icons.monitor_weight, color: AppColors.primary, size: 20),
+                              filled: true,
+                              fillColor: Theme.of(context).cardTheme.color,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide.none,
+                              ),
+                              contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                            ),
+                            onChanged: (_) => _saveData(),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: TextFormField(
+                            controller: _waistController,
+                            keyboardType: TextInputType.number,
+                            style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary)),
+                            decoration: InputDecoration(
+                              labelText: 'Tour taille (cm)',
+                              labelStyle: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)),
+                              prefixIcon: const Icon(Icons.straighten, color: AppColors.primary, size: 20),
+                              filled: true,
+                              fillColor: Theme.of(context).cardTheme.color,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide.none,
+                              ),
+                              contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                            ),
+                            onChanged: (_) => _saveData(),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: TextFormField(
+                            controller: _heightController,
+                            keyboardType: TextInputType.number,
+                            style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary)),
+                            decoration: InputDecoration(
+                              labelText: 'Taille (cm)',
+                              labelStyle: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)),
+                              prefixIcon: const Icon(Icons.height, color: AppColors.primary, size: 20),
+                              filled: true,
+                              fillColor: Theme.of(context).cardTheme.color,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide.none,
+                              ),
+                              contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                            ),
+                            onChanged: (_) => _saveData(),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 32),
                     
-                    // Weight
-                    TextFormField(
-                      controller: _weightController,
-                      keyboardType: TextInputType.number,
-                      style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary)),
-                      decoration: InputDecoration(
-                        labelText: 'Poids (kg) *',
-                        labelStyle: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)),
-                        prefixIcon: const Icon(Icons.monitor_weight, color: AppColors.primary),
-                        filled: true,
-                        fillColor: Theme.of(context).cardTheme.color,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
+                    // Goals Section - Modern & Intuitive
+                    Container(
+                      padding: EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                            Theme.of(context).colorScheme.secondary.withValues(alpha: 0.05),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+                          width: 1.5,
                         ),
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Le poids est requis';
-                        }
-                        if (double.tryParse(value) == null) {
-                          return 'Veuillez entrer un nombre valide';
-                        }
-                        return null;
-                      },
-                      onChanged: (_) => _saveData(),
-                    ),
-                    const SizedBox(height: 16),
-                    
-                    // Waist
-                    TextFormField(
-                      controller: _waistController,
-                      keyboardType: TextInputType.number,
-                      style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary)),
-                      decoration: InputDecoration(
-                        labelText: 'Tour de taille (cm) *',
-                        labelStyle: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)),
-                        prefixIcon: const Icon(Icons.straighten, color: AppColors.primary),
-                        filled: true,
-                        fillColor: Theme.of(context).cardTheme.color,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Icon(
+                                  Icons.emoji_events,
+                                  color: Theme.of(context).colorScheme.primary,
+                                  size: 28,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Mes objectifs',
+                                      style: TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold,
+                                        color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Définissez vos objectifs fitness personnels',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
+                          
+                          // Quick suggestions
+                          Text(
+                            '💡 Suggestions populaires',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: [
+                              _buildGoalChip(context, '🎯 Perdre du poids', 'Perdre du poids et me sentir mieux'),
+                              _buildGoalChip(context, '💪 Gagner en muscle', 'Développer ma masse musculaire'),
+                              _buildGoalChip(context, '🏃 Améliorer endurance', 'Augmenter mon endurance cardio'),
+                              _buildGoalChip(context, '🧘 Être plus flexible', 'Améliorer ma souplesse et mobilité'),
+                              _buildGoalChip(context, '⚡ Plus d\'énergie', 'Avoir plus d\'énergie au quotidien'),
+                              _buildGoalChip(context, '🏆 Me challenger', 'Repousser mes limites'),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
+                          
+                          // Goal Title
+                          TextFormField(
+                            controller: _goalTitleController,
+                            style: TextStyle(
+                              color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            decoration: InputDecoration(
+                              labelText: 'Titre de mon objectif',
+                              hintText: 'Ex: Perdre 10kg en 3 mois',
+                              labelStyle: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)),
+                              hintStyle: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary).withValues(alpha: 0.5)),
+                              prefixIcon: const Icon(Icons.flag, color: AppColors.primary),
+                              filled: true,
+                              fillColor: Theme.of(context).cardTheme.color,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide.none,
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(
+                                  color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary).withValues(alpha: 0.2),
+                                  width: 1,
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  width: 2,
+                                ),
+                              ),
+                            ),
+                            onChanged: (_) => _saveData(),
+                          ),
+                          const SizedBox(height: 16),
+                          
+                          // Goal Description
+                          TextFormField(
+                            controller: _goalDescriptionController,
+                            maxLines: 4,
+                            style: TextStyle(
+                              color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
+                              fontSize: 15,
+                            ),
+                            decoration: InputDecoration(
+                              labelText: 'Décrivez votre objectif',
+                              hintText: 'Pourquoi est-ce important pour vous ?\nComment voulez-vous y arriver ?\nQu\'est-ce qui vous motive ?',
+                              labelStyle: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)),
+                              hintStyle: TextStyle(
+                                color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary).withValues(alpha: 0.5),
+                                fontSize: 13,
+                              ),
+                              prefixIcon: Padding(
+                                padding: EdgeInsets.only(bottom: 60),
+                                child: Icon(Icons.edit_note, color: AppColors.primary),
+                              ),
+                              filled: true,
+                              fillColor: Theme.of(context).cardTheme.color,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide.none,
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(
+                                  color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary).withValues(alpha: 0.2),
+                                  width: 1,
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  width: 2,
+                                ),
+                              ),
+                            ),
+                            onChanged: (_) => _saveData(),
+                          ),
+                          const SizedBox(height: 12),
+                          
+                          // Motivational message
+                          Container(
+                            padding: EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: AppColors.success.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: AppColors.success.withValues(alpha: 0.3),
+                                width: 1,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.lightbulb_outline,
+                                  color: AppColors.success,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    'Des objectifs clairs vous aideront à rester motivé et suivre vos progrès !',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: AppColors.success,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Le tour de taille est requis';
-                        }
-                        if (double.tryParse(value) == null) {
-                          return 'Veuillez entrer un nombre valide';
-                        }
-                        return null;
-                      },
-                      onChanged: (_) => _saveData(),
                     ),
-                    const SizedBox(height: 16),
-                    
-                    // Height
-                    TextFormField(
-                      controller: _heightController,
-                      keyboardType: TextInputType.number,
-                      style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary)),
-                      decoration: InputDecoration(
-                        labelText: 'Email *',
-                        labelStyle: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)),
-                        prefixIcon: const Icon(Icons.email, color: AppColors.primary),
-                        filled: true,
-                        fillColor: Theme.of(context).cardTheme.color,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'La taille est requise';
-                        }
-                        if (double.tryParse(value) == null) {
-                          return 'Veuillez entrer un nombre valide';
-                        }
-                        return null;
-                      },
-                      onChanged: (_) => _saveData(),
-                    ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 24),
                     
                     // Fitness Level
                     DropdownButtonFormField<String>(

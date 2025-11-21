@@ -259,38 +259,42 @@ class AuthService {
       try {
         final valid = await _apiService.verifyToken(token);
         if (valid) {
-          // Token valid, but we need to check onboarding status from server
-          debugPrint('🔍 [Biometric] Token valid, fetching profile for onboarding check...');
+          // Token valid, fetch and cache profile
+          debugPrint('🔍 [Biometric] Token valid, fetching and caching profile...');
           
           // Get user type from storage
           final userType = await getUserType();
           
-          // Fetch fresh profile to get REAL onboarding status from server
-          final profileData = await _apiService.getUserProfile(token);
+          // Fetch and cache profile data (single API call)
+          final success = await fetchAndCacheUserProfile(token);
           
-          if (profileData != null) {
-            // Check onboarding in member object first, then at root level
-            final memberData = profileData['member'] as Map<String, dynamic>?;
-            final needsOnboarding = memberData?['onboarding'] as bool? ?? 
-                                    profileData['onboarding'] as bool? ?? 
-                                    true; // Default to true if not found
+          if (success) {
+            // Get cached profile to check onboarding
+            final profileData = await getCachedUserProfile();
             
-            debugPrint('🔍 [Biometric] Profile fetched - onboarding=$needsOnboarding, userType=$userType');
-            debugPrint('🔍 [Biometric] Member data: $memberData');
-            
-            return {
-              'status': AuthStatus.success,
-              'needsOnboarding': needsOnboarding,
-              'userType': userType ?? 'member',
-            };
-          } else {
-            debugPrint('⚠️ [Biometric] Profile fetch returned null, defaulting to needs onboarding');
-            return {
-              'status': AuthStatus.success,
-              'needsOnboarding': true,
-              'userType': userType ?? 'member',
-            };
+            if (profileData != null) {
+              // Check onboarding in member object first, then at root level
+              final memberData = profileData['member'] as Map<String, dynamic>?;
+              final needsOnboarding = memberData?['onboarding'] as bool? ?? 
+                                      profileData['onboarding'] as bool? ?? 
+                                      true; // Default to true if not found
+              
+              debugPrint('🔍 [Biometric] Profile fetched and cached - onboarding=$needsOnboarding, userType=$userType');
+              
+              return {
+                'status': AuthStatus.success,
+                'needsOnboarding': needsOnboarding,
+                'userType': userType ?? 'member',
+              };
+            }
           }
+          
+          debugPrint('⚠️ [Biometric] Profile fetch failed, defaulting to needs onboarding');
+          return {
+            'status': AuthStatus.success,
+            'needsOnboarding': true,
+            'userType': userType ?? 'member',
+          };
         }
         // token invalid -> fallthrough to credential-based flow
       } catch (e, st) {
@@ -334,6 +338,9 @@ class AuthService {
         // persist token and user type for future biometric logins
         await saveToken(token);
         await saveUserType(userType);
+        
+        // Fetch and cache user profile data
+        await fetchAndCacheUserProfile(token);
         
         // Small delay to ensure token is properly saved and validated
         await Future.delayed(const Duration(milliseconds: 100));

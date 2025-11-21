@@ -1,4 +1,7 @@
+import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/theme/theme.dart';
@@ -30,6 +33,33 @@ class _GymRulesScreenState extends State<GymRulesScreen> {
     super.dispose();
   }
 
+  String? _convertFrenchDateToISO(String? frenchDate) {
+    if (frenchDate == null || frenchDate.isEmpty) return null;
+    
+    final months = [
+      'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+      'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+    ];
+    
+    try {
+      final parts = frenchDate.split(' ');
+      if (parts.length == 3) {
+        final day = int.tryParse(parts[0]);
+        final monthIndex = months.indexOf(parts[1].toLowerCase());
+        final year = int.tryParse(parts[2]);
+        
+        if (day != null && monthIndex != -1 && year != null) {
+          final date = DateTime(year, monthIndex + 1, day);
+          return date.toIso8601String().split('T')[0]; // Format: yyyy-MM-dd
+        }
+      }
+    } catch (e) {
+      debugPrint('Error converting date: $e');
+    }
+    
+    return frenchDate; // Return as-is if conversion fails
+  }
+
   Future<void> _acceptRules() async {
     if (!_isAccepted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -53,16 +83,109 @@ class _GymRulesScreenState extends State<GymRulesScreen> {
 
       final userId = profileData['id'] as int;
 
-      // Update cgAccepted to true
-      final response = await _apiService.updateMemberProfile(
+      // Load saved onboarding data
+      final prefs = await SharedPreferences.getInstance();
+      final savedDataJson = prefs.getString('onboarding_data');
+      final imagePath = prefs.getString('onboarding_profile_image');
+      
+      if (savedDataJson == null || imagePath == null) {
+        throw Exception('Données d\'onboarding manquantes');
+      }
+
+      final savedData = jsonDecode(savedDataJson) as Map<String, dynamic>;
+      final imageFile = File(imagePath);
+      
+      if (!await imageFile.exists()) {
+        throw Exception('Photo de profil manquante');
+      }
+
+      // 1. Update member profile with all data and mark onboarding as completed
+      final imageBytes = await imageFile.readAsBytes();
+      final base64Image = base64Encode(imageBytes);
+      
+      final profileUpdateData = {
+        'birthDate': _convertFrenchDateToISO(savedData['birthDate']),
+        'phone': savedData['phone'],
+        'profession': savedData['profession'],
+        'fitnessLevel': savedData['fitnessLevel'],
+        'profileImage': 'data:image/jpeg;base64,$base64Image',
+        'onboarding': false, // Mark onboarding as completed
+        'cgAccepted': true, // Accept gym rules
+        'preferredTrainingDays': savedData['preferredTrainingDays'],
+        'workoutNotificationsEnabled': savedData['workoutNotificationsEnabled'],
+      };
+      
+      // Add email if provided
+      if (savedData['email'] != null && (savedData['email'] as String).trim().isNotEmpty) {
+        profileUpdateData['email'] = savedData['email'];
+      }
+
+      final profileResponse = await _apiService.updateMemberProfile(
         userId,
-        {'cgAccepted': true},
+        profileUpdateData,
         token,
       );
 
-      if (response == null || response['error'] != null) {
-        throw Exception(response?['error'] ?? 'Erreur lors de l\'acceptation');
+      if (profileResponse == null || profileResponse['error'] != null) {
+        throw Exception(profileResponse?['error'] ?? 'Erreur lors de la mise à jour du profil');
       }
+
+      // 2. Create initial measurement
+      if (savedData['weight'] != null && (savedData['weight'] as String).isNotEmpty || 
+          savedData['waist'] != null && (savedData['waist'] as String).isNotEmpty || 
+          savedData['height'] != null && (savedData['height'] as String).isNotEmpty) {
+        final measurementData = <String, dynamic>{};
+        
+        if (savedData['weight'] != null && (savedData['weight'] as String).isNotEmpty) {
+          measurementData['weight'] = double.parse(savedData['weight']);
+        }
+        if (savedData['waist'] != null && (savedData['waist'] as String).isNotEmpty) {
+          measurementData['waist'] = double.parse(savedData['waist']);
+        }
+        if (savedData['height'] != null && (savedData['height'] as String).isNotEmpty) {
+          measurementData['height'] = double.parse(savedData['height']);
+        }
+
+        if (measurementData.isNotEmpty) {
+          await _apiService.createMemberMeasurement(
+            userId,
+            measurementData,
+            token,
+          );
+        }
+      }
+
+      // 3. Create initial goal if user has defined one
+      if (savedData['goalTitle'] != null && (savedData['goalTitle'] as String).isNotEmpty) {
+        final goalData = <String, dynamic>{
+          'title': savedData['goalTitle'],
+          'description': savedData['goalDescription'] ?? '',
+        };
+
+        // Add measurements if available
+        if (savedData['weight'] != null && (savedData['weight'] as String).isNotEmpty) {
+          goalData['startWeight'] = double.parse(savedData['weight']);
+        }
+        if (savedData['waist'] != null && (savedData['waist'] as String).isNotEmpty) {
+          goalData['startWaist'] = double.parse(savedData['waist']);
+        }
+
+        try {
+          await _apiService.createMemberGoal(
+            userId,
+            goalData,
+            token,
+          );
+        } catch (e) {
+          debugPrint('⚠️ Goal creation failed (server issue): $e');
+          // Don't block the onboarding if goal creation fails
+        }
+      }
+
+      // 4. Clear saved onboarding data
+      await prefs.remove('onboarding_data');
+      await prefs.remove('onboarding_profile_image');
+      await prefs.setBool('onboarding_completed', true);
 
       if (!mounted) return;
       
@@ -517,7 +640,7 @@ class _GymRulesScreenState extends State<GymRulesScreen> {
                 ],
               ),
             );
-          }).toList(),
+          }),
         ],
       ),
     );

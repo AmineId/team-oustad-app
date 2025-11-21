@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'dart:ui';
 import 'dart:io';
 import 'package:firebase_core/firebase_core.dart';
@@ -136,6 +137,15 @@ class _MyAppState extends State<MyApp> {
         darkTheme: AppTheme.darkTheme,
         themeMode: _themeProvider.themeMode,
         debugShowCheckedModeBanner: false,
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('fr', 'FR'),
+        ],
+        locale: const Locale('fr', 'FR'),
         home: const SplashScreen(),
         routes: {
           '/admin/members': (context) => const AdminMembersScreen(),

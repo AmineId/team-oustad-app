@@ -314,7 +314,7 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
                                 Icon(
                                   Icons.receipt_long_outlined,
                                   size: 64,
-                                  color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)?.withValues(alpha: 0.3),
+                                  color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary).withValues(alpha: 0.3),
                                 ),
                                 const SizedBox(height: 16),
                                 Text(

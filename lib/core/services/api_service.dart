@@ -734,6 +734,51 @@ class ApiService {
     }
   }
 
+  /// Get member goals.
+  Future<List<dynamic>> getMemberGoals(
+    int memberId,
+    String token, {
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
+    final uri = baseUri.resolve('/members/$memberId/goals');
+    try {
+      // ignore: avoid_print
+      debugPrint('ApiService.getMemberGoals -> $uri');
+      
+      final resp = await http
+          .get(
+            uri,
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
+          )
+          .timeout(timeout);
+      
+      // ignore: avoid_print
+      debugPrint('ApiService.getMemberGoals response status: ${resp.statusCode}');
+      
+      if (resp.statusCode == 200) {
+        try {
+          final body = jsonDecode(resp.body);
+          if (body is Map && body['goals'] is List) {
+            return body['goals'] as List<dynamic>;
+          }
+          return [];
+        } catch (e) {
+          // ignore: avoid_print
+          debugPrint('ApiService.getMemberGoals parse error: $e');
+          return [];
+        }
+      }
+      return [];
+    } catch (e) {
+      // ignore: avoid_print
+      debugPrint('ApiService.getMemberGoals exception: $e');
+      return [];
+    }
+  }
+
   /// Create member goal (title, description, startWeight, startWaist).
   Future<Map<String, dynamic>?> createMemberGoal(
     int memberId,

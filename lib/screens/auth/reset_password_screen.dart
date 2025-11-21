@@ -197,7 +197,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                               labelStyle: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)),
                               hintText: '000000',
                               hintStyle: TextStyle(
-                                color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)?.withValues(alpha: 0.3),
+                                color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary).withValues(alpha: 0.3),
                                 letterSpacing: 8,
                               ),
                               counterText: '',
@@ -294,7 +294,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                                 },
                               ),
                               filled: true,
-                              fillColor: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary).withValues(alpha: 0.1),
+                              fillColor: Theme.of(context).cardTheme.color,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: BorderSide.none,
