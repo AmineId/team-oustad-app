@@ -251,7 +251,7 @@ jobs:
           echo "✅ AAB found at: $AAB_PATH"
           
           # Créer le dossier pour les notes de version
-          mkdir -p fastlane/metadata/android/fr-FR
+          mkdir -p fastlane/metadata/android/fr-FR/changelogs
           cp release-notes-fr.txt fastlane/metadata/android/fr-FR/changelogs/default.txt
           
           # Déployer avec Fastlane
@@ -315,7 +315,7 @@ jobs:
   # Étape 4: Déploiement OTA
   deploy-ota:
     name: 🚀 Deploy OTA
-    needs: [version, build]
+    needs: [version, build, deploy-playstore]
     runs-on: ubuntu-latest
     environment:
       name: ${{ needs.version.outputs.environment }}
