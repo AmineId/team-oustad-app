@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.26](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.25...v1.0.0-beta.26) (2025-11-21)
+
+
+### 🐛 Bug Fixes
+
+* utiliser release_status draft pour app en mode draft ([1eebd5d](https://github.com/TeamFitness/mobile-app/commit/1eebd5ddcd2003b23ced31fd089531168629b3a1))
+
 ## [1.0.0-beta.25](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.24...v1.0.0-beta.25) (2025-11-21)
 
 
