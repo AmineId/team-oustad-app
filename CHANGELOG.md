@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.21](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.20...v1.0.0-beta.21) (2025-11-21)
+
+
+### 🐛 Bug Fixes
+
+* corriger le chemin du keystore dans le workflow CI ([a84db51](https://github.com/TeamFitness/mobile-app/commit/a84db518982a90ed35313523e8a4d0a90b3b2779))
+
 ## [1.0.0-beta.20](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.19...v1.0.0-beta.20) (2025-11-21)
 
 
