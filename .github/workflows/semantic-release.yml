@@ -150,7 +150,7 @@ jobs:
           storePassword=${{ secrets.KEYSTORE_PASSWORD }}
           keyPassword=${{ secrets.KEY_PASSWORD }}
           keyAlias=${{ secrets.KEY_ALIAS }}
-          storeFile=app/upload-keystore.jks
+          storeFile=upload-keystore.jks
           EOF
             
             echo "✅ Android signing configured with production keystore"
@@ -264,6 +264,48 @@ jobs:
             --skip_upload_metadata \
             --skip_upload_images \
             --skip_upload_screenshots
+
+      - name: 📤 Update version.json on server
+        if: success()
+        run: |
+          echo "📊 Mise à jour du serveur avec les informations de version"
+          
+          # Récupérer les métadonnées de version
+          VERSION_CODE=$(jq -r '.version_code' version-metadata.json)
+          VERSION_NAME=$(jq -r '.version_name' version-metadata.json)
+          CHANGELOG=$(jq -r '.changelog' version-metadata.json)
+          
+          # URL du Play Store (toujours la même pour votre app)
+          PLAY_STORE_URL="https://play.google.com/store/apps/details?id=team.fitness.team_fitness_app"
+          
+          # Créer le JSON pour l'API
+          JSON_PAYLOAD=$(cat <<EOF
+          {
+            "version_code": $VERSION_CODE,
+            "version_name": "$VERSION_NAME",
+            "download_url": "$PLAY_STORE_URL",
+            "changelog": "$CHANGELOG",
+            "force_update": false,
+            "channel": "${{ needs.version.outputs.environment }}"
+          }
+          EOF
+          )
+          
+          # Envoyer au serveur
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+            "https://app.team-oustad.com/android/update-version" \
+            -H "Authorization: Bearer ${{ secrets.OTA_BEARER_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d "$JSON_PAYLOAD")
+          
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          
+          if [ "$HTTP_CODE" -eq 200 ]; then
+            echo "✅ Serveur mis à jour avec succès"
+          else
+            echo "⚠️ Erreur lors de la mise à jour du serveur: HTTP $HTTP_CODE"
+            echo "$RESPONSE" | head -n-1
+          fi
 
       - name: 🧹 Cleanup
         if: always()
