@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.27](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.26...v1.0.0-beta.27) (2025-11-22)
+
+
+### ✨ New Features
+
+* add multi-language support with locale switcher ([#10](https://github.com/TeamFitness/mobile-app/issues/10)) ([f60005c](https://github.com/TeamFitness/mobile-app/commit/f60005c2b457ab5b46b40603e528ea92c5da7761))
+
 ## [1.0.0-beta.26](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.25...v1.0.0-beta.26) (2025-11-21)
 
 
