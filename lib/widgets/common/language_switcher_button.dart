@@ -371,21 +371,23 @@ class LanguageSwitcherButton extends StatelessWidget {
   
   /// Get multilingual subtitle showing "Select Language" in all supported languages
   /// This helps users who may not understand the current language
+  /// Using hardcoded translations to avoid context issues
   String _getMultilingualSubtitle(BuildContext context) {
-    // Get translations for all supported languages
-    final translations = <String>[];
+    // Hardcoded translations for subtitle to help users in any language
+    // This is intentionally hardcoded as it needs to show all languages at once
+    const translations = {
+      'fr': 'Sélectionner la langue',
+      'en': 'Select Language',
+      'ar': 'اختر اللغة',
+    };
     
-    for (final locale in LocaleService.supportedLocales) {
-      final l10n = AppLocalizations(locale);
-      final text = l10n.selectLanguage;
-      
-      // Avoid duplicates (in case translations are the same)
-      if (!translations.contains(text)) {
-        translations.add(text);
-      }
-    }
+    // Build subtitle from all translations
+    final parts = LocaleService.supportedLocales
+        .map((locale) => translations[locale.languageCode])
+        .where((text) => text != null)
+        .toList();
     
     // Join with bullets
-    return translations.join(' • ');
+    return parts.join(' • ');
   }
 }
