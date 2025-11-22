@@ -26,6 +26,7 @@ class AppLocalizations {
       'french': 'Français',
       'english': 'English',
       'arabic': 'العربية',
+      'language_changed': 'Langue changée en',
     },
     'en': {
       'home': 'Home',
@@ -38,6 +39,7 @@ class AppLocalizations {
       'french': 'Français',
       'english': 'English',
       'arabic': 'العربية',
+      'language_changed': 'Language changed to',
     },
     'ar': {
       'home': 'الرئيسية',
@@ -50,6 +52,7 @@ class AppLocalizations {
       'french': 'Français',
       'english': 'English',
       'arabic': 'العربية',
+      'language_changed': 'تم تغيير اللغة إلى',
     },
   };
   
@@ -68,6 +71,7 @@ class AppLocalizations {
   String get french => translate('french');
   String get english => translate('english');
   String get arabic => translate('arabic');
+  String get languageChanged => translate('language_changed');
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

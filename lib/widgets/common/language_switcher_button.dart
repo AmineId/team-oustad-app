@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/services/locale_service.dart';
 import '../../core/theme/theme.dart';
+import '../../core/l10n/app_localizations.dart';
 
 /// Modern, attractive language switcher button
 /// Shows a globe icon with current language flag
@@ -128,7 +129,7 @@ class LanguageSwitcherButton extends StatelessWidget {
                       const SizedBox(width: 16),
                       Expanded(
                         child: Text(
-                          'Sélectionner la langue',
+                          AppLocalizations.of(context).selectLanguage,
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
@@ -231,6 +232,9 @@ class LanguageSwitcherButton extends StatelessWidget {
             Navigator.pop(context);
             
             // Show confirmation snackbar
+            // Note: We get the l10n BEFORE changing locale so the message is in the OLD language
+            // This is intentional - shows what they're switching TO
+            final l10n = AppLocalizations.of(context);
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Row(
@@ -239,7 +243,7 @@ class LanguageSwitcherButton extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'Langue changée en ${localeService.getLocaleName(locale)}',
+                        '${l10n.languageChanged} ${localeService.getLocaleName(locale)}',
                         style: TextStyle(
                           color: isDark
                               ? AppColors.darkTextPrimary
