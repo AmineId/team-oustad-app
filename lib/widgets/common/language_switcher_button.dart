@@ -152,7 +152,7 @@ class LanguageSwitcherButton extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Select Language • اختر اللغة',
+                    _getMultilingualSubtitle(context),
                     style: TextStyle(
                       fontSize: 13,
                       color: Theme.of(context).brightness == Brightness.dark
@@ -367,5 +367,25 @@ class LanguageSwitcherButton extends StatelessWidget {
       default:
         return locale.languageCode.toUpperCase();
     }
+  }
+  
+  /// Get multilingual subtitle showing "Select Language" in all supported languages
+  /// This helps users who may not understand the current language
+  String _getMultilingualSubtitle(BuildContext context) {
+    // Get translations for all supported languages
+    final translations = <String>[];
+    
+    for (final locale in LocaleService.supportedLocales) {
+      final l10n = AppLocalizations(locale);
+      final text = l10n.selectLanguage;
+      
+      // Avoid duplicates (in case translations are the same)
+      if (!translations.contains(text)) {
+        translations.add(text);
+      }
+    }
+    
+    // Join with bullets
+    return translations.join(' • ');
   }
 }
