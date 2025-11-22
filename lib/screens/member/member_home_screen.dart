@@ -7,6 +7,7 @@ import '../../core/services/api_service.dart';
 import '../../core/theme/theme.dart';
 import '../../widgets/common/common_widgets.dart';
 import '../../widgets/responsive/responsive_layout.dart';
+import '../../main.dart';
 import '../auth/login_screen.dart';
 import 'subscription_details_screen.dart';
 import 'edit_profile_screen.dart';
@@ -108,6 +109,9 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Get locale service from context
+    final localeService = LocaleServiceScope.of(context);
+    
     return ResponsiveScaffold(
       title: _titles[_currentIndex],
       navigationItems: [
@@ -141,10 +145,9 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
         });
       },
       body: _pages[_currentIndex],
-      // Theme toggle button hidden - dark theme is default
-      // actions: [
-      //   ThemeToggleButton(themeProvider: themeProvider),
-      // ],
+      actions: [
+        LanguageSwitcherButton(localeService: localeService),
+      ],
     );
   }
 }
