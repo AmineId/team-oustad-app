@@ -9,11 +9,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:team_fitness_app/main.dart';
+import 'package:team_fitness_app/core/services/locale_service.dart';
 
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
+    // Create locale service for test
+    final localeService = LocaleService();
+    
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(MyApp(localeService: localeService));
 
     // Verify that our counter starts at 0.
     expect(find.text('0'), findsOneWidget);

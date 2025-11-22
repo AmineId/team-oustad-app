@@ -1075,7 +1075,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                                     (Theme.of(context).brightness ==
                                                 Brightness.dark
                                             ? AppColors.darkTextSecondary
-                                            : AppColors.lightTextSecondary)!
+                                            : AppColors.lightTextSecondary)
                                         .withValues(alpha: 0.7),
                                 fontSize: 16,
                               ),
@@ -1344,7 +1344,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
             style: TextStyle(
               color: (Theme.of(context).brightness == Brightness.dark
                   ? AppColors.darkTextSecondary
-                  : AppColors.lightTextSecondary)!,
+                  : AppColors.lightTextSecondary),
             ),
           ),
           actions: [
@@ -1978,7 +1978,7 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
                           color:
                               (Theme.of(context).brightness == Brightness.dark
                               ? AppColors.darkTextSecondary
-                              : AppColors.lightTextSecondary)!,
+                              : AppColors.lightTextSecondary),
                           fontSize: 14,
                         ),
                       ),
@@ -2065,7 +2065,7 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
                                     (Theme.of(context).brightness ==
                                                 Brightness.dark
                                             ? AppColors.darkTextSecondary
-                                            : AppColors.lightTextSecondary)!
+                                            : AppColors.lightTextSecondary)
                                         .withValues(alpha: 0.8),
                                 fontSize: 14,
                               ),
