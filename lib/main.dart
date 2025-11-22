@@ -9,6 +9,7 @@ import 'screens/common/common_screens.dart';
 import 'screens/admin/admin_screens.dart';
 import 'core/services/services.dart';
 import 'core/theme/theme.dart';
+import 'core/l10n/app_localizations.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -60,6 +61,17 @@ void main() async {
     debugPrint('Failed to initialize FCM: $e');
   }
 
+  // Initialize locale service
+  final localeService = LocaleService();
+  try {
+    await localeService.initialize();
+    // ignore: avoid_print
+    debugPrint('✅ Locale service initialized: ${localeService.currentLocale}');
+  } catch (e) {
+    // ignore: avoid_print
+    debugPrint('⚠️ Failed to initialize locale service: $e');
+  }
+
   // Flutter framework errors
   FlutterError.onError = (details) {
     // report and also forward to default handler
@@ -73,7 +85,7 @@ void main() async {
     return true; // handled
   };
 
-  runApp(const MyApp());
+  runApp(MyApp(localeService: localeService));
 }
 
 /// Désactive la capture d'écran et l'enregistrement d'écran
@@ -103,7 +115,9 @@ Future<void> _disableScreenCapture() async {
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+  final LocaleService localeService;
+  
+  const MyApp({super.key, required this.localeService});
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -119,6 +133,11 @@ class _MyAppState extends State<MyApp> {
     _themeProvider.addListener(() {
       setState(() {});
     });
+    
+    // Listen to locale changes
+    widget.localeService.addListener(() {
+      setState(() {});
+    });
   }
 
   @override
@@ -131,26 +150,28 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return ThemeProviderScope(
       themeProvider: _themeProvider,
-      child: MaterialApp(
-        title: 'Team Fitness App',
-        theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
-        themeMode: _themeProvider.themeMode,
-        debugShowCheckedModeBanner: false,
-        localizationsDelegates: const [
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: const [
-          Locale('fr', 'FR'),
-        ],
-        locale: const Locale('fr', 'FR'),
-        home: const SplashScreen(),
-        routes: {
-          '/admin/members': (context) => const AdminMembersScreen(),
-          '/admin/plannings': (context) => const AdminPlanningsScreen(),
-        },
+      child: LocaleServiceScope(
+        localeService: widget.localeService,
+        child: MaterialApp(
+          title: 'Team Fitness App',
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: _themeProvider.themeMode,
+          debugShowCheckedModeBanner: false,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: LocaleService.supportedLocales,
+          locale: widget.localeService.currentLocale,
+          home: const SplashScreen(),
+          routes: {
+            '/admin/members': (context) => const AdminMembersScreen(),
+            '/admin/plannings': (context) => const AdminPlanningsScreen(),
+          },
+        ),
       ),
     );
   }
@@ -175,6 +196,28 @@ class ThemeProviderScope extends InheritedWidget {
   @override
   bool updateShouldNotify(ThemeProviderScope oldWidget) {
     return themeProvider != oldWidget.themeProvider;
+  }
+}
+
+// Widget pour fournir le LocaleService dans l'arbre
+class LocaleServiceScope extends InheritedWidget {
+  final LocaleService localeService;
+
+  const LocaleServiceScope({
+    super.key,
+    required this.localeService,
+    required super.child,
+  });
+
+  static LocaleService of(BuildContext context) {
+    final scope = context.dependOnInheritedWidgetOfExactType<LocaleServiceScope>();
+    assert(scope != null, 'No LocaleServiceScope found in context');
+    return scope!.localeService;
+  }
+
+  @override
+  bool updateShouldNotify(LocaleServiceScope oldWidget) {
+    return localeService != oldWidget.localeService;
   }
 }
 

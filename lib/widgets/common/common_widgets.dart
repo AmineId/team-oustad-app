@@ -1,5 +1,6 @@
 // Common Widgets Barrel File
 export 'gym_details_bottom_sheet.dart';
+export 'language_switcher_button.dart';
 export 'theme_toggle_button.dart';
 export 'modern_button.dart';
 export 'modern_card.dart';
