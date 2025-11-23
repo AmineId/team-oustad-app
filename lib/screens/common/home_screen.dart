@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme/theme.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/services/api_service.dart';
+import '../../core/l10n/app_localizations.dart';
 import '../../widgets/responsive/responsive_layout.dart';
 import '../auth/login_screen.dart';
 
@@ -22,37 +23,34 @@ class _HomeScreenState extends State<HomeScreen> {
     const ProfilePage(),
   ];
 
-  final List<String> _titles = [
-    'Accueil',
-    'Recherche',
-    'Nouveau membre',
-    'Profile',
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    
+    final titles = [l10n.home, l10n.search, l10n.newMember, l10n.profile];
+    
     return ResponsiveScaffold(
-      title: _titles[_currentIndex],
-      navigationItems: const [
+      title: titles[_currentIndex],
+      navigationItems: [
         NavigationItem(
           icon: Icons.home_outlined,
           activeIcon: Icons.home,
-          label: 'Accueil',
+          label: l10n.home,
         ),
         NavigationItem(
           icon: Icons.search_outlined,
           activeIcon: Icons.search,
-          label: 'Recherche',
+          label: l10n.search,
         ),
         NavigationItem(
           icon: Icons.person_add_outlined,
           activeIcon: Icons.person_add,
-          label: 'Ajouter',
+          label: l10n.add,
         ),
         NavigationItem(
           icon: Icons.person_outline,
           activeIcon: Icons.person,
-          label: 'Profile',
+          label: l10n.profile,
         ),
       ],
       currentIndex: _currentIndex,

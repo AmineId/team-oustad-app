@@ -1093,7 +1093,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     
                     // Fitness Level
                     DropdownButtonFormField<String>(
-                      value: _fitnessLevel,
+                      initialValue: _fitnessLevel,
                       dropdownColor: Theme.of(context).cardTheme.color,
                       style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary)),
                       decoration: InputDecoration(

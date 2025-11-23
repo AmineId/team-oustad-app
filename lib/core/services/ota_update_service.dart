@@ -16,14 +16,20 @@ class OTAUpdateService {
   // URL du serveur qui héberge les informations de mise à jour
   // Détermine automatiquement l'URL selon l'environnement
   static String get _updateCheckUrl {
-    const environment = String.fromEnvironment('ENVIRONMENT', defaultValue: 'dev');
-    
+    const environment = String.fromEnvironment(
+      'ENVIRONMENT',
+      defaultValue: 'dev',
+    );
+
     // Si une URL custom est définie, l'utiliser en priorité
-    const customUrl = String.fromEnvironment('UPDATE_CHECK_URL', defaultValue: '');
+    const customUrl = String.fromEnvironment(
+      'UPDATE_CHECK_URL',
+      defaultValue: '',
+    );
     if (customUrl.isNotEmpty) {
       return customUrl;
     }
-    
+
     // Sinon, déterminer selon l'environnement
     switch (environment) {
       case 'pprod':
@@ -37,15 +43,13 @@ class OTAUpdateService {
   }
 
   bool _isChecking = false;
-  bool _isDownloading = false;
-  double _downloadProgress = 0.0;
 
   /// Vérifie s'il y a une mise à jour disponible
   Future<UpdateInfo?> checkForUpdate() async {
     if (_isChecking) return null;
-    
+
     _isChecking = true;
-    
+
     try {
       // Récupérer la version actuelle de l'app
       final packageInfo = await PackageInfo.fromPlatform();
@@ -54,32 +58,34 @@ class OTAUpdateService {
 
       // Vérifier auprès du serveur avec le paramètre current_version
       final url = '$_updateCheckUrl?current_version=$currentBuildNumber';
-      final response = await http.get(
-        Uri.parse(url),
-        headers: {'Content-Type': 'application/json'},
-      ).timeout(const Duration(seconds: 10));
+      final response = await http
+          .get(Uri.parse(url), headers: {'Content-Type': 'application/json'})
+          .timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        
+
         // Vérifier si une mise à jour est disponible
         final updateAvailable = data['update_available'] as bool? ?? false;
         if (!updateAvailable) {
           return null; // Pas de mise à jour disponible
         }
-        
+
         // Récupérer les informations de la dernière version
         final versionData = data['latest_version'];
         if (versionData == null) {
           return null; // Pas de données de version
         }
-        
+
         final latestVersion = versionData['version_name'] as String;
         final latestBuildNumber = versionData['version_code'] as int;
         final downloadUrl = versionData['download_url'] as String;
-        final changelog = versionData['changelog'] as String? ?? 'Nouvelles fonctionnalités et corrections';
+        final changelog =
+            versionData['changelog'] as String? ??
+            'Nouvelles fonctionnalités et corrections';
         final forceUpdate = versionData['force_update'] as bool? ?? false;
-        final minSupportedVersion = versionData['min_supported_version'] as int?;
+        final minSupportedVersion =
+            versionData['min_supported_version'] as int?;
 
         // Retourner les informations de mise à jour
         return UpdateInfo(
@@ -104,19 +110,12 @@ class OTAUpdateService {
   }
 
   /// Ouvre le Play Store pour mettre à jour l'application
-  Future<bool> downloadAndInstallUpdate(
-    UpdateInfo updateInfo, {
-    Function(double)? onProgress,
-  }) async {
-    if (_isDownloading) return false;
-    
+  Future<bool> openPlayStoreForUpdate(UpdateInfo updateInfo) async {
     // Ne fonctionne que sur Android
     if (!Platform.isAndroid) {
       debugPrint('⚠️ OTA update non supporté sur cette plateforme');
       return false;
     }
-
-    _isDownloading = true;
 
     try {
       // Ouvrir le Play Store avec l'app ID
@@ -125,8 +124,6 @@ class OTAUpdateService {
     } catch (e) {
       debugPrint('❌ Erreur lors de l\'ouverture du Play Store: $e');
       return false;
-    } finally {
-      _isDownloading = false;
     }
   }
 
@@ -136,16 +133,18 @@ class OTAUpdateService {
 
     try {
       debugPrint('🔗 Ouverture de l\'URL: $downloadUrl');
-      
+
       // Le backend redirige déjà vers le Play Store
       // On ouvre simplement l'URL fournie
       final uri = Uri.parse(downloadUrl);
       final result = await OpenFile.open(uri.toString());
-      
+
       if (result.type == ResultType.done) {
         debugPrint('✅ URL ouverte avec succès');
       } else {
-        debugPrint('⚠️ Résultat de l\'ouverture: ${result.type} - ${result.message}');
+        debugPrint(
+          '⚠️ Résultat de l\'ouverture: ${result.type} - ${result.message}',
+        );
       }
     } catch (e) {
       debugPrint('❌ Erreur lors de l\'ouverture de l\'URL: $e');
@@ -156,7 +155,7 @@ class OTAUpdateService {
   Future<void> autoCheckForUpdates() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      
+
       // Vérifier si l'auto-update est activé
       final autoUpdateEnabled = prefs.getBool('auto_update_enabled') ?? true;
       if (!autoUpdateEnabled) return;
@@ -176,7 +175,7 @@ class OTAUpdateService {
 
       // Vérifier les mises à jour
       final updateInfo = await checkForUpdate();
-      
+
       if (updateInfo != null) {
         debugPrint('🆕 Mise à jour disponible: ${updateInfo.latestVersion}');
         // La notification de mise à jour sera gérée par l'UI
@@ -188,10 +187,8 @@ class OTAUpdateService {
     }
   }
 
-  /// Getters pour l'état actuel
+  /// Getter pour l'état actuel
   bool get isChecking => _isChecking;
-  bool get isDownloading => _isDownloading;
-  double get downloadProgress => _downloadProgress;
 }
 
 /// Informations sur une mise à jour disponible
@@ -233,7 +230,7 @@ class UpdateInfo {
   /// Détermine si la mise à jour est critique (force l'utilisateur à mettre à jour)
   bool get isCritical {
     if (minSupportedVersion == null) return forceUpdate;
-    
+
     // Comparer le build number actuel avec la version minimale supportée
     return currentBuildNumber < minSupportedVersion!;
   }
@@ -242,6 +239,3 @@ class UpdateInfo {
   @Deprecated('Use forceUpdate instead')
   bool get isMandatory => forceUpdate;
 }
-
-
-

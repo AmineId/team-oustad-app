@@ -36,16 +36,30 @@ class LocaleService extends ChangeNotifier {
   
   /// Change the app locale
   Future<void> setLocale(Locale locale) async {
+    debugPrint('LocaleService: setLocale called with $locale');
     if (!supportedLocales.contains(locale)) {
+      debugPrint('LocaleService: Locale $locale not supported');
       return;
     }
     
-    _currentLocale = locale;
-    notifyListeners();
+    if (_currentLocale == locale) {
+      debugPrint('LocaleService: Locale already set to $locale');
+      return;
+    }
     
-    // Persist to preferences
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_localeKey, '${locale.languageCode}_${locale.countryCode}');
+    // Persist to preferences first
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_localeKey, '${locale.languageCode}_${locale.countryCode}');
+      debugPrint('LocaleService: Locale saved to preferences: ${locale.languageCode}_${locale.countryCode}');
+    } catch (e) {
+      debugPrint('LocaleService: Error saving locale: $e');
+    }
+    
+    // Then update and notify
+    _currentLocale = locale;
+    debugPrint('LocaleService: Locale updated to $_currentLocale, notifying listeners');
+    notifyListeners();
   }
   
   /// Get locale display name

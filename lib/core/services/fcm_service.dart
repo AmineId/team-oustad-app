@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'notification_service.dart';
 import 'api_service.dart';
 
@@ -15,7 +16,7 @@ class FCMService {
   FirebaseMessaging? _messaging;
   final NotificationService _localNotifications = NotificationService();
   final ApiService _apiService = ApiService.fromEnv();
-  
+
   String? _fcmToken;
   bool _initialized = false;
   String? _currentUserToken;
@@ -23,7 +24,7 @@ class FCMService {
   /// Obtient l'instance de FirebaseMessaging (s'assure que Firebase est prêt)
   Future<FirebaseMessaging> _getMessaging() async {
     if (_messaging != null) return _messaging!;
-    
+
     // S'assurer que Firebase est initialisé
     try {
       // Firebase.app() lève une exception si Firebase n'est pas initialisé
@@ -41,7 +42,7 @@ class FCMService {
         rethrow;
       }
     }
-    
+
     _messaging = FirebaseMessaging.instance;
     return _messaging!;
   }
@@ -87,7 +88,7 @@ class FCMService {
 
     try {
       final messaging = await _getMessaging();
-      
+
       // Demander les permissions
       final settings = await messaging.requestPermission(
         alert: true,
@@ -159,15 +160,28 @@ class FCMService {
     // ignore: avoid_print
     debugPrint('   Data: ${message.data}');
 
+    // ✅ SÉCURITÉ : Vérifier si les notifications sont activées
+    final prefs = await SharedPreferences.getInstance();
+    final notificationsEnabled = prefs.getBool('notifications_enabled') ?? true;
+
+    if (!notificationsEnabled) {
+      // ignore: avoid_print
+      debugPrint(
+        '⏭️ Notifications désactivées par l\'utilisateur - message ignoré',
+      );
+      return;
+    }
+
     // Vérifier si c'est une demande d'aide
     final type = message.data['type'] as String?;
-    
+
     if (type == 'help_request') {
       // Demande d'aide avec boutons d'action
       final memberName = message.data['memberName'] as String? ?? 'Un membre';
-      final exerciseName = message.data['exerciseName'] as String? ?? 'un exercice';
+      final exerciseName =
+          message.data['exerciseName'] as String? ?? 'un exercice';
       final memberId = message.data['memberId'] as String? ?? '0';
-      
+
       await _localNotifications.showHelpRequestNotification(
         id: message.hashCode,
         memberName: memberName,
@@ -204,8 +218,10 @@ class FCMService {
 
     try {
       // ignore: avoid_print
-      debugPrint('📤 Envoi de la réponse: $response pour le membre $memberId sur exercice: $exerciseName');
-      
+      debugPrint(
+        '📤 Envoi de la réponse: $response pour le membre $memberId sur exercice: $exerciseName',
+      );
+
       final success = await _apiService.respondToHelpRequest(
         memberId,
         exerciseName,
@@ -216,8 +232,10 @@ class FCMService {
       if (success) {
         // ignore: avoid_print
         debugPrint('✅ Réponse envoyée avec succès au serveur');
-        debugPrint('   Le serveur devrait maintenant envoyer une notification FCM au membre $memberId');
-        
+        debugPrint(
+          '   Le serveur devrait maintenant envoyer une notification FCM au membre $memberId',
+        );
+
         // Afficher une notification de confirmation à l'admin
         final responseText = response == 'coming' ? 'J\'arrive 🏃' : 'Occupé ⏰';
         await _localNotifications.showNotification(
@@ -227,7 +245,9 @@ class FCMService {
         );
       } else {
         // ignore: avoid_print
-        debugPrint('❌ Échec de l\'envoi de la réponse - Le serveur a retourné une erreur');
+        debugPrint(
+          '❌ Échec de l\'envoi de la réponse - Le serveur a retourné une erreur',
+        );
         await _localNotifications.showNotification(
           id: DateTime.now().millisecondsSinceEpoch,
           title: '❌ Échec',
@@ -252,7 +272,7 @@ class FCMService {
     debugPrint('📨 App ouverte depuis notification: ${message.messageId}');
     // ignore: avoid_print
     debugPrint('   Data: ${message.data}');
-    
+
     // TODO: Naviguer vers l'écran approprié selon message.data
     _handleNotificationTap(message.data);
   }
@@ -271,7 +291,7 @@ class FCMService {
   /// Gère le tap sur une notification
   void _handleNotificationTap(Map<String, dynamic> data) {
     final type = data['type'] as String?;
-    
+
     switch (type) {
       case 'payment':
         // TODO: Naviguer vers l'écran de paiement
@@ -351,7 +371,7 @@ class FCMService {
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // Initialiser Firebase
   await Firebase.initializeApp();
-  
+
   // ignore: avoid_print
   debugPrint('📨 Message en arrière-plan: ${message.messageId}');
   // ignore: avoid_print
@@ -359,7 +379,3 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // ignore: avoid_print
   debugPrint('   Corps: ${message.notification?.body}');
 }
-
-
-
-

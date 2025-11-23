@@ -29,7 +29,8 @@ class AuthService {
 
   Future<bool> canCheckBiometrics() async {
     try {
-      return await _localAuth.canCheckBiometrics || await _localAuth.isDeviceSupported();
+      return await _localAuth.canCheckBiometrics ||
+          await _localAuth.isDeviceSupported();
     } on PlatformException catch (_) {
       return false;
     }
@@ -43,6 +44,24 @@ class AuthService {
   Future<void> setBiometricEnabled(bool enabled) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('biometric_enabled', enabled);
+  }
+
+  /// Check if user has given consent for biometric authentication
+  Future<bool> hasBiometricConsent() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('biometric_consent') ?? false;
+  }
+
+  /// Set user consent for biometric authentication
+  Future<void> setBiometricConsent(bool consent) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('biometric_consent', consent);
+    // If consent is given, enable biometric
+    if (consent) {
+      await setBiometricEnabled(true);
+    } else {
+      await setBiometricEnabled(false);
+    }
   }
 
   Future<void> saveCredentials(String email, String password) async {
@@ -135,17 +154,15 @@ class AuthService {
             signInTitle: 'Authentification biométrique',
             cancelButton: 'Annuler',
           ),
-          IOSAuthMessages(
-            cancelButton: 'Annuler',
-          ),
+          IOSAuthMessages(cancelButton: 'Annuler'),
         ],
       );
     } catch (e) {
       // Handle all biometric errors
       final errorString = e.toString();
-      
+
       // Check if it's a known non-error case
-      if (errorString.contains('noCredentialsSet') || 
+      if (errorString.contains('noCredentialsSet') ||
           errorString.contains('NotEnrolled') ||
           errorString.contains('NotAvailable') ||
           errorString.contains('PasscodeNotSet')) {
@@ -154,20 +171,27 @@ class AuthService {
         debugPrint('ℹ️ Biométrie non configurée sur cet appareil');
         return false;
       }
-      
+
       // Only print as error if it's an actual error (not user cancellation)
-      if (!errorString.contains('UserCancel') && !errorString.contains('AuthenticationCanceled')) {
+      if (!errorString.contains('UserCancel') &&
+          !errorString.contains('AuthenticationCanceled')) {
         // ignore: avoid_print
         debugPrint('❌ Erreur biométrie: $e');
       }
-      
+
       return false;
     }
   }
 
   /// Full biometric flow: prompt user, load saved credentials and try login via API.
   Future<AuthStatus> authenticateWithBiometrics() async {
-    final ok = await promptBiometric(localizedReason: 'Please authenticate to access the app');
+    // Vérifier le consentement avant d'utiliser la biométrie
+    final hasConsent = await hasBiometricConsent();
+    if (!hasConsent) return AuthStatus.biometricFailed;
+
+    final ok = await promptBiometric(
+      localizedReason: 'Please authenticate to access the app',
+    );
     if (!ok) return AuthStatus.biometricFailed;
 
     // Prefer using a stored JWT token when available.
@@ -179,7 +203,10 @@ class AuthService {
         // token invalid -> fallthrough to credential-based flow
       } catch (e, st) {
         try {
-          await _apiService.reportError('Token verify failed during biometric auth: $e', st.toString());
+          await _apiService.reportError(
+            'Token verify failed during biometric auth: $e',
+            st.toString(),
+          );
         } catch (_) {}
         // fallback
       }
@@ -195,60 +222,90 @@ class AuthService {
     } catch (e, st) {
       // report to backend for developer review
       try {
-        await _apiService.reportError('Health check failed during biometric auth: $e', st.toString());
+        await _apiService.reportError(
+          'Health check failed during biometric auth: $e',
+          st.toString(),
+        );
       } catch (_) {}
       return AuthStatus.serverUnavailable;
     }
 
     // Try login using saved credentials
     try {
-      final loginResult = await _apiService.login(creds['email']!, creds['password']!);
+      final loginResult = await _apiService.login(
+        creds['email']!,
+        creds['password']!,
+      );
       if (loginResult != null) {
         final token = loginResult['token'] as String;
         final userType = loginResult['userType'] as String;
         final userId = loginResult['userId'] as String;
-        
+
         // persist token and user type for future biometric logins
         await saveToken(token);
         await saveUserType(userType);
-        
+
         // Small delay to ensure token is properly saved and validated
         await Future.delayed(const Duration(milliseconds: 100));
-        
+
         // Send FCM token to server for push notifications (after JWT is saved and validated)
         try {
-          debugPrint('🔍 [Biometric] Tentative de récupération du token FCM...');
+          debugPrint(
+            '🔍 [Biometric] Tentative de récupération du token FCM...',
+          );
           final fcmToken = await FCMService().getToken();
           debugPrint('🔍 [Biometric] Token FCM récupéré: $fcmToken');
-          
+
           if (fcmToken != null && fcmToken.isNotEmpty) {
-            debugPrint('📤 [Biometric] Envoi du token FCM au serveur (userId: $userId)...');
-            debugPrint('🔑 [Biometric] JWT utilisé: ${token.substring(0, 20)}...');
-            final result = await _apiService.updateUserFCMToken(int.parse(userId), fcmToken, token);
+            debugPrint(
+              '📤 [Biometric] Envoi du token FCM au serveur (userId: $userId)...',
+            );
+            debugPrint(
+              '🔑 [Biometric] JWT utilisé: ${token.substring(0, 20)}...',
+            );
+            final result = await _apiService.updateUserFCMToken(
+              int.parse(userId),
+              fcmToken,
+              token,
+            );
             debugPrint('✅ [Biometric] Réponse serveur pour FCM token: $result');
           } else {
-            debugPrint('⚠️ [Biometric] Token FCM null ou vide, non envoyé au serveur');
+            debugPrint(
+              '⚠️ [Biometric] Token FCM null ou vide, non envoyé au serveur',
+            );
           }
         } catch (e, stackTrace) {
           debugPrint('❌ [Biometric] Erreur lors de l\'envoi du token FCM: $e');
           debugPrint('Stack trace: $stackTrace');
           // Don't block login if FCM token sending fails
         }
-        
+
         return AuthStatus.success;
       }
       return AuthStatus.serverAuthFailed;
     } catch (e, st) {
       try {
-        await _apiService.reportError('Login failed during biometric auth: $e', st.toString());
+        await _apiService.reportError(
+          'Login failed during biometric auth: $e',
+          st.toString(),
+        );
       } catch (_) {}
       return AuthStatus.error;
     }
   }
 
   /// Full biometric flow with onboarding check
-  Future<Map<String, dynamic>> authenticateWithBiometricsAndCheckOnboarding() async {
-    final ok = await promptBiometric(localizedReason: 'Please authenticate to access the app');
+  Future<Map<String, dynamic>>
+  authenticateWithBiometricsAndCheckOnboarding() async {
+    // Vérifier le consentement avant d'utiliser la biométrie
+    final hasConsent = await hasBiometricConsent();
+    if (!hasConsent) {
+      return {'status': AuthStatus.biometricFailed};
+    }
+
+    final ok = await promptBiometric(
+      localizedReason: 'Please authenticate to access the app',
+    );
     if (!ok) {
       return {'status': AuthStatus.biometricFailed};
     }
@@ -260,27 +317,32 @@ class AuthService {
         final valid = await _apiService.verifyToken(token);
         if (valid) {
           // Token valid, fetch and cache profile
-          debugPrint('🔍 [Biometric] Token valid, fetching and caching profile...');
-          
+          debugPrint(
+            '🔍 [Biometric] Token valid, fetching and caching profile...',
+          );
+
           // Get user type from storage
           final userType = await getUserType();
-          
+
           // Fetch and cache profile data (single API call)
           final success = await fetchAndCacheUserProfile(token);
-          
+
           if (success) {
             // Get cached profile to check onboarding
             final profileData = await getCachedUserProfile();
-            
+
             if (profileData != null) {
               // Check onboarding in member object first, then at root level
               final memberData = profileData['member'] as Map<String, dynamic>?;
-              final needsOnboarding = memberData?['onboarding'] as bool? ?? 
-                                      profileData['onboarding'] as bool? ?? 
-                                      true; // Default to true if not found
-              
-              debugPrint('🔍 [Biometric] Profile fetched and cached - onboarding=$needsOnboarding, userType=$userType');
-              
+              final needsOnboarding =
+                  memberData?['onboarding'] as bool? ??
+                  profileData['onboarding'] as bool? ??
+                  true; // Default to true if not found
+
+              debugPrint(
+                '🔍 [Biometric] Profile fetched and cached - onboarding=$needsOnboarding, userType=$userType',
+              );
+
               return {
                 'status': AuthStatus.success,
                 'needsOnboarding': needsOnboarding,
@@ -288,8 +350,10 @@ class AuthService {
               };
             }
           }
-          
-          debugPrint('⚠️ [Biometric] Profile fetch failed, defaulting to needs onboarding');
+
+          debugPrint(
+            '⚠️ [Biometric] Profile fetch failed, defaulting to needs onboarding',
+          );
           return {
             'status': AuthStatus.success,
             'needsOnboarding': true,
@@ -300,7 +364,10 @@ class AuthService {
       } catch (e, st) {
         debugPrint('❌ [Biometric] Error during token validation: $e');
         try {
-          await _apiService.reportError('Token verify failed during biometric auth: $e', st.toString());
+          await _apiService.reportError(
+            'Token verify failed during biometric auth: $e',
+            st.toString(),
+          );
         } catch (_) {}
         // fallback
       }
@@ -319,52 +386,72 @@ class AuthService {
       }
     } catch (e, st) {
       try {
-        await _apiService.reportError('Health check failed during biometric auth: $e', st.toString());
+        await _apiService.reportError(
+          'Health check failed during biometric auth: $e',
+          st.toString(),
+        );
       } catch (_) {}
       return {'status': AuthStatus.serverUnavailable};
     }
 
     // Try login using saved credentials
     try {
-      final loginResult = await _apiService.login(creds['email']!, creds['password']!);
+      final loginResult = await _apiService.login(
+        creds['email']!,
+        creds['password']!,
+      );
       if (loginResult != null) {
         final token = loginResult['token'] as String;
         final userType = loginResult['userType'] as String;
         final userId = loginResult['userId'] as String;
         final needsOnboarding = loginResult['onboarding'] as bool? ?? true;
-        
-        debugPrint('🔍 [Biometric] Login successful - onboarding=$needsOnboarding, userType=$userType');
-        
+
+        debugPrint(
+          '🔍 [Biometric] Login successful - onboarding=$needsOnboarding, userType=$userType',
+        );
+
         // persist token and user type for future biometric logins
         await saveToken(token);
         await saveUserType(userType);
-        
+
         // Fetch and cache user profile data
         await fetchAndCacheUserProfile(token);
-        
+
         // Small delay to ensure token is properly saved and validated
         await Future.delayed(const Duration(milliseconds: 100));
-        
+
         // Send FCM token to server for push notifications (after JWT is saved and validated)
         try {
-          debugPrint('🔍 [Biometric] Tentative de récupération du token FCM...');
+          debugPrint(
+            '🔍 [Biometric] Tentative de récupération du token FCM...',
+          );
           final fcmToken = await FCMService().getToken();
           debugPrint('🔍 [Biometric] Token FCM récupéré: $fcmToken');
-          
+
           if (fcmToken != null && fcmToken.isNotEmpty) {
-            debugPrint('📤 [Biometric] Envoi du token FCM au serveur (userId: $userId)...');
-            debugPrint('🔑 [Biometric] JWT utilisé: ${token.substring(0, 20)}...');
-            final result = await _apiService.updateUserFCMToken(int.parse(userId), fcmToken, token);
+            debugPrint(
+              '📤 [Biometric] Envoi du token FCM au serveur (userId: $userId)...',
+            );
+            debugPrint(
+              '🔑 [Biometric] JWT utilisé: ${token.substring(0, 20)}...',
+            );
+            final result = await _apiService.updateUserFCMToken(
+              int.parse(userId),
+              fcmToken,
+              token,
+            );
             debugPrint('✅ [Biometric] Réponse serveur pour FCM token: $result');
           } else {
-            debugPrint('⚠️ [Biometric] Token FCM null ou vide, non envoyé au serveur');
+            debugPrint(
+              '⚠️ [Biometric] Token FCM null ou vide, non envoyé au serveur',
+            );
           }
         } catch (e, stackTrace) {
           debugPrint('❌ [Biometric] Erreur lors de l\'envoi du token FCM: $e');
           debugPrint('Stack trace: $stackTrace');
           // Don't block login if FCM token sending fails
         }
-        
+
         return {
           'status': AuthStatus.success,
           'needsOnboarding': needsOnboarding,
@@ -374,7 +461,10 @@ class AuthService {
       return {'status': AuthStatus.serverAuthFailed};
     } catch (e, st) {
       try {
-        await _apiService.reportError('Login failed during biometric auth: $e', st.toString());
+        await _apiService.reportError(
+          'Login failed during biometric auth: $e',
+          st.toString(),
+        );
       } catch (_) {}
       return {'status': AuthStatus.error};
     }
@@ -396,7 +486,10 @@ class AuthService {
       if (profileData != null) {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('user_profile_cache', jsonEncode(profileData));
-        await prefs.setInt('user_profile_cache_time', DateTime.now().millisecondsSinceEpoch);
+        await prefs.setInt(
+          'user_profile_cache_time',
+          DateTime.now().millisecondsSinceEpoch,
+        );
         return true;
       }
       return false;
@@ -425,7 +518,7 @@ class AuthService {
       final prefs = await SharedPreferences.getInstance();
       final cacheTime = prefs.getInt('user_profile_cache_time');
       if (cacheTime == null) return true;
-      
+
       final now = DateTime.now().millisecondsSinceEpoch;
       final oneHour = 60 * 60 * 1000; // 1 hour in milliseconds
       return (now - cacheTime) > oneHour;
@@ -444,7 +537,10 @@ class AuthService {
       if (profileData != null) {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('user_profile_cache', jsonEncode(profileData));
-        await prefs.setInt('user_profile_cache_time', DateTime.now().millisecondsSinceEpoch);
+        await prefs.setInt(
+          'user_profile_cache_time',
+          DateTime.now().millisecondsSinceEpoch,
+        );
         return profileData;
       }
       return null;
@@ -453,7 +549,3 @@ class AuthService {
     }
   }
 }
-
-
-
-

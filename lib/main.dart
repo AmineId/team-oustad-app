@@ -130,14 +130,6 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     _themeProvider = ThemeProvider();
-    _themeProvider.addListener(() {
-      setState(() {});
-    });
-    
-    // Listen to locale changes
-    widget.localeService.addListener(() {
-      setState(() {});
-    });
   }
 
   @override
@@ -148,31 +140,38 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return ThemeProviderScope(
-      themeProvider: _themeProvider,
-      child: LocaleServiceScope(
-        localeService: widget.localeService,
-        child: MaterialApp(
-          title: 'Team Fitness App',
-          theme: AppTheme.lightTheme,
-          darkTheme: AppTheme.darkTheme,
-          themeMode: _themeProvider.themeMode,
-          debugShowCheckedModeBanner: false,
-          localizationsDelegates: const [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          supportedLocales: LocaleService.supportedLocales,
-          locale: widget.localeService.currentLocale,
-          home: const SplashScreen(),
-          routes: {
-            '/admin/members': (context) => const AdminMembersScreen(),
-            '/admin/plannings': (context) => const AdminPlanningsScreen(),
-          },
-        ),
-      ),
+    print('MyApp: build called');
+    return ListenableBuilder(
+      listenable: Listenable.merge([_themeProvider, widget.localeService]),
+      builder: (context, child) {
+        print('MyApp: ListenableBuilder rebuild. Locale: ${widget.localeService.currentLocale}');
+        return ThemeProviderScope(
+          themeProvider: _themeProvider,
+          child: LocaleServiceScope(
+            localeService: widget.localeService,
+            child: MaterialApp(
+              title: 'Team Fitness App',
+              theme: AppTheme.lightTheme,
+              darkTheme: AppTheme.darkTheme,
+              themeMode: _themeProvider.themeMode,
+              debugShowCheckedModeBanner: false,
+              localizationsDelegates: const [
+                AppLocalizations.delegate,
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              supportedLocales: LocaleService.supportedLocales,
+              locale: widget.localeService.currentLocale,
+              home: const SplashScreen(),
+              routes: {
+                '/admin/members': (context) => const AdminMembersScreen(),
+                '/admin/plannings': (context) => const AdminPlanningsScreen(),
+              },
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -195,7 +194,7 @@ class ThemeProviderScope extends InheritedWidget {
 
   @override
   bool updateShouldNotify(ThemeProviderScope oldWidget) {
-    return themeProvider != oldWidget.themeProvider;
+    return true;
   }
 }
 
@@ -217,7 +216,7 @@ class LocaleServiceScope extends InheritedWidget {
 
   @override
   bool updateShouldNotify(LocaleServiceScope oldWidget) {
-    return localeService != oldWidget.localeService;
+    return true;
   }
 }
 

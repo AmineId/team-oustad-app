@@ -490,7 +490,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     ),
                   ),
                   child: DropdownButtonFormField<String>(
-                    value: _selectedFitnessLevel.isNotEmpty ? _selectedFitnessLevel : null,
+                    initialValue: _selectedFitnessLevel.isNotEmpty ? _selectedFitnessLevel : null,
                     decoration: InputDecoration(
                       prefixIcon: Icon(
                         Icons.fitness_center,

@@ -5,6 +5,8 @@ import '../../core/services/auth_service.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/ota_update_service.dart';
 import '../../core/theme/theme.dart';
+import '../../widgets/common/language_switcher_button.dart';
+import '../../main.dart';
 
 class SecuritySettingsPage extends StatefulWidget {
   const SecuritySettingsPage({super.key});
@@ -13,11 +15,13 @@ class SecuritySettingsPage extends StatefulWidget {
   State<SecuritySettingsPage> createState() => _SecuritySettingsPageState();
 }
 
-class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
+class _SecuritySettingsPageState extends State<SecuritySettingsPage>
+    with WidgetsBindingObserver {
   final AuthService _authService = AuthService(ApiService.fromEnv());
   final ApiService _apiService = ApiService.fromEnv();
   final OTAUpdateService _otaService = OTAUpdateService();
   bool _canCheckBiometrics = false;
+  bool _biometricEnabled = false;
   bool _notificationsEnabled = true;
   bool _workoutNotificationsEnabled = true;
   bool _isLoading = true;
@@ -25,31 +29,51 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadSettings();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    // Recharger les paramètres quand l'app revient au premier plan
+    if (state == AppLifecycleState.resumed) {
+      _loadSettings();
+    }
   }
 
   Future<void> _loadSettings() async {
     setState(() => _isLoading = true);
     try {
       final canCheck = await _authService.canCheckBiometrics();
+      final bioEnabled = await _authService.hasBiometricConsent();
       final prefs = await SharedPreferences.getInstance();
       final notifEnabled = prefs.getBool('notifications_enabled') ?? true;
-      
+
       // Charger les préférences de notification depuis le profil utilisateur
       final profileData = await _authService.getCachedUserProfile();
       bool workoutNotifEnabled = true;
-      
+
       if (profileData != null) {
         // Charger depuis le membre si disponible
         final memberData = profileData['member'] as Map<String, dynamic>?;
-        if (memberData != null && memberData['workoutNotificationsEnabled'] != null) {
-          workoutNotifEnabled = memberData['workoutNotificationsEnabled'] as bool;
+        if (memberData != null &&
+            memberData['workoutNotificationsEnabled'] != null) {
+          workoutNotifEnabled =
+              memberData['workoutNotificationsEnabled'] as bool;
         }
       }
-      
+
       if (mounted) {
         setState(() {
           _canCheckBiometrics = canCheck;
+          _biometricEnabled = bioEnabled;
           _notificationsEnabled = notifEnabled;
           _workoutNotificationsEnabled = workoutNotifEnabled;
           _isLoading = false;
@@ -70,39 +94,35 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
         _workoutNotificationsEnabled = false;
       }
     });
-    
+
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('notifications_enabled', value);
-      
+
       // Mettre à jour le profil utilisateur
       final profileData = await _authService.getCachedUserProfile();
       if (profileData != null) {
         final userId = profileData['id'] as int;
         final token = await _authService.loadToken();
-        
+
         if (token != null) {
           // Mettre à jour notificationEnabled sur l'utilisateur
-          await _apiService.updateUserProfile(
-            userId,
-            {'notificationEnabled': value},
-            token,
-          );
-          
+          await _apiService.updateUserProfile(userId, {
+            'notificationEnabled': value,
+          }, token);
+
           // Si on désactive les notifications, mettre aussi workoutNotificationsEnabled à false
           if (!value) {
-            await _apiService.updateMemberProfile(
-              userId,
-              {'workoutNotificationsEnabled': false},
-              token,
-            );
+            await _apiService.updateMemberProfile(userId, {
+              'workoutNotificationsEnabled': false,
+            }, token);
           }
-          
+
           // Rafraîchir le cache du profil
           await _authService.refreshUserProfile();
         }
       }
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -110,26 +130,43 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
               children: [
                 Icon(
                   value ? Icons.notifications_active : Icons.notifications_off,
-                  color: value ? AppColors.success : (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
+                  color: value
+                      ? AppColors.success
+                      : (Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.darkTextSecondary
+                            : AppColors.lightTextSecondary),
                   size: 24,
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    value 
+                    value
                         ? 'Notifications activées'
                         : 'Notifications désactivées',
-                    style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary), fontSize: 14, fontWeight: FontWeight.w500),
+                    style: TextStyle(
+                      color: (Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.darkTextPrimary
+                          : AppColors.lightTextPrimary),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
               ],
             ),
-            backgroundColor: value ? Theme.of(context).cardTheme.color : Theme.of(context).cardTheme.color,
+            backgroundColor: value
+                ? Theme.of(context).cardTheme.color
+                : Theme.of(context).cardTheme.color,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
               side: BorderSide(
-                color: value ? AppColors.success : (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary).withValues(alpha: 0.38),
+                color: value
+                    ? AppColors.success
+                    : (Theme.of(context).brightness == Brightness.dark
+                              ? AppColors.darkTextPrimary
+                              : AppColors.lightTextPrimary)
+                          .withValues(alpha: 0.38),
                 width: 1,
               ),
             ),
@@ -140,14 +177,21 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
       if (mounted) {
         setState(() => _notificationsEnabled = !value);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Row(
+          SnackBar(
+            content: Row(
               children: [
                 Icon(Icons.error_outline, color: AppColors.error, size: 24),
                 SizedBox(width: 12),
                 Expanded(
                   child: Text(
                     'Erreur lors de la sauvegarde',
-                    style: TextStyle(color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary, fontSize: 14, fontWeight: FontWeight.w500),
+                    style: TextStyle(
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.darkTextPrimary
+                          : AppColors.lightTextPrimary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
               ],
@@ -161,27 +205,25 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
 
   Future<void> _toggleWorkoutNotifications(bool value) async {
     setState(() => _workoutNotificationsEnabled = value);
-    
+
     try {
       // Mettre à jour le profil membre
       final profileData = await _authService.getCachedUserProfile();
       if (profileData != null) {
         final userId = profileData['id'] as int;
         final token = await _authService.loadToken();
-        
+
         if (token != null) {
           // Mettre à jour workoutNotificationsEnabled sur le membre
-          await _apiService.updateMemberProfile(
-            userId,
-            {'workoutNotificationsEnabled': value},
-            token,
-          );
-          
+          await _apiService.updateMemberProfile(userId, {
+            'workoutNotificationsEnabled': value,
+          }, token);
+
           // Rafraîchir le cache du profil
           await _authService.refreshUserProfile();
         }
       }
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -189,26 +231,43 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
               children: [
                 Icon(
                   value ? Icons.calendar_today : Icons.event_busy,
-                  color: value ? AppColors.success : (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
+                  color: value
+                      ? AppColors.success
+                      : (Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.darkTextSecondary
+                            : AppColors.lightTextSecondary),
                   size: 24,
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    value 
+                    value
                         ? 'Notifications de planning activées'
                         : 'Notifications de planning désactivées',
-                    style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary), fontSize: 14, fontWeight: FontWeight.w500),
+                    style: TextStyle(
+                      color: (Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.darkTextPrimary
+                          : AppColors.lightTextPrimary),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
               ],
             ),
-            backgroundColor: value ? Theme.of(context).cardTheme.color : Theme.of(context).cardTheme.color,
+            backgroundColor: value
+                ? Theme.of(context).cardTheme.color
+                : Theme.of(context).cardTheme.color,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
               side: BorderSide(
-                color: value ? AppColors.success : (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary).withValues(alpha: 0.38),
+                color: value
+                    ? AppColors.success
+                    : (Theme.of(context).brightness == Brightness.dark
+                              ? AppColors.darkTextPrimary
+                              : AppColors.lightTextPrimary)
+                          .withValues(alpha: 0.38),
                 width: 1,
               ),
             ),
@@ -219,14 +278,25 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
       if (mounted) {
         setState(() => _workoutNotificationsEnabled = !value);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Row(
+          SnackBar(
+            content: Row(
               children: [
-                Icon(Icons.error_outline, color: AppColors.error, size: 24),
-                SizedBox(width: 12),
+                const Icon(
+                  Icons.error_outline,
+                  color: AppColors.error,
+                  size: 24,
+                ),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Text(
                     'Erreur lors de la sauvegarde',
-                    style: TextStyle(color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary, fontSize: 14, fontWeight: FontWeight.w500),
+                    style: TextStyle(
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.darkTextPrimary
+                          : AppColors.lightTextPrimary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
               ],
@@ -238,21 +308,297 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
     }
   }
 
+  Future<void> _toggleBiometric(bool value) async {
+    if (value) {
+      // Activation: demander la biométrie immédiatement
+      final authenticated = await _authService.promptBiometric(
+        localizedReason: 'Authentifiez-vous pour activer la biométrie',
+      );
+
+      if (authenticated) {
+        await _authService.setBiometricConsent(true);
+        setState(() => _biometricEnabled = true);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(
+                    Icons.check_circle,
+                    color: AppColors.success,
+                    size: 24,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Authentification biométrique activée',
+                      style: TextStyle(
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.darkTextPrimary
+                            : AppColors.lightTextPrimary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              backgroundColor: Theme.of(context).cardTheme.color,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: const BorderSide(color: AppColors.success, width: 1),
+              ),
+            ),
+          );
+        }
+      }
+    } else {
+      // Désactivation: demander le mot de passe
+      final confirmed = await _showPasswordConfirmationDialog();
+      if (confirmed) {
+        await _authService.setBiometricConsent(false);
+        setState(() => _biometricEnabled = false);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(
+                    Icons.info_outline,
+                    color: AppColors.info,
+                    size: 24,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Authentification biométrique désactivée',
+                      style: TextStyle(
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.darkTextPrimary
+                            : AppColors.lightTextPrimary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              backgroundColor: Theme.of(context).cardTheme.color,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: const BorderSide(color: AppColors.info, width: 1),
+              ),
+            ),
+          );
+        }
+      }
+    }
+  }
+
+  Future<bool> _showPasswordConfirmationDialog() async {
+    final passwordController = TextEditingController();
+    bool obscurePassword = true;
+
+    final result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              backgroundColor: Theme.of(context).cardTheme.color,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              title: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppColors.warning.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.security,
+                      color: AppColors.warning,
+                      size: 28,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Confirmation requise',
+                      style: TextStyle(
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.darkTextPrimary
+                            : AppColors.lightTextPrimary,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Pour des raisons de sécurité, veuillez confirmer votre mot de passe pour désactiver l\'authentification biométrique.',
+                    style: TextStyle(
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.darkTextSecondary
+                          : AppColors.lightTextSecondary,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  TextField(
+                    controller: passwordController,
+                    obscureText: obscurePassword,
+                    autofocus: true,
+                    style: TextStyle(
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.darkTextPrimary
+                          : AppColors.lightTextPrimary,
+                    ),
+                    decoration: InputDecoration(
+                      labelText: 'Mot de passe',
+                      labelStyle: TextStyle(
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.darkTextSecondary
+                            : AppColors.lightTextSecondary,
+                      ),
+                      prefixIcon: const Icon(
+                        Icons.lock,
+                        color: AppColors.primary,
+                      ),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          obscurePassword
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                          color: AppColors.primary,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            obscurePassword = !obscurePassword;
+                          });
+                        },
+                      ),
+                      filled: true,
+                      fillColor: Theme.of(context).cardTheme.color,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: Theme.of(context).dividerColor,
+                        ),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: Theme.of(context).dividerColor,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(
+                          color: AppColors.primary,
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    passwordController.dispose();
+                    Navigator.of(context).pop(false);
+                  },
+                  child: Text(
+                    'Annuler',
+                    style: TextStyle(
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.darkTextSecondary
+                          : AppColors.lightTextSecondary,
+                    ),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    final password = passwordController.text;
+                    if (password.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Veuillez entrer votre mot de passe'),
+                          backgroundColor: AppColors.error,
+                        ),
+                      );
+                      return;
+                    }
+
+                    // Vérifier le mot de passe
+                    final credentials = await _authService.loadCredentials();
+                    if (credentials != null &&
+                        credentials['password'] == password) {
+                      passwordController.dispose();
+                      if (context.mounted) {
+                        Navigator.of(context).pop(true);
+                      }
+                    } else {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Mot de passe incorrect'),
+                            backgroundColor: AppColors.error,
+                          ),
+                        );
+                      }
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
+                  ),
+                  child: const Text(
+                    'Confirmer',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    passwordController.dispose();
+    return result ?? false;
+  }
+
   Future<void> _checkForUpdates() async {
     // Afficher un dialog de chargement
     if (!mounted) return;
-    
+
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const Center(
-        child: CircularProgressIndicator(color: AppColors.info),
-      ),
+      builder: (context) =>
+          const Center(child: CircularProgressIndicator(color: AppColors.info)),
     );
 
     try {
       final updateInfo = await _otaService.checkForUpdate();
-      
+
       if (!mounted) return;
       Navigator.pop(context); // Fermer le dialog de chargement
 
@@ -271,10 +617,11 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
     } catch (e) {
       if (!mounted) return;
       Navigator.pop(context);
-      
+
       _showUpdateDialog(
         title: 'Erreur',
-        message: 'Impossible de vérifier les mises à jour. Vérifiez votre connexion.',
+        message:
+            'Impossible de vérifier les mises à jour. Vérifiez votre connexion.',
         icon: Icons.error_outline,
         iconColor: AppColors.error,
       );
@@ -299,14 +646,24 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
             Expanded(
               child: Text(
                 title,
-                style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary), fontSize: 20),
+                style: TextStyle(
+                  color: (Theme.of(context).brightness == Brightness.dark
+                      ? AppColors.darkTextPrimary
+                      : AppColors.lightTextPrimary),
+                  fontSize: 20,
+                ),
               ),
             ),
           ],
         ),
         content: Text(
           message,
-          style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary), fontSize: 15),
+          style: TextStyle(
+            color: (Theme.of(context).brightness == Brightness.dark
+                ? AppColors.darkTextSecondary
+                : AppColors.lightTextSecondary),
+            fontSize: 15,
+          ),
         ),
         actions: [
           TextButton(
@@ -314,7 +671,10 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
-            child: const Text('OK', style: TextStyle(color: AppColors.info, fontSize: 16)),
+            child: const Text(
+              'OK',
+              style: TextStyle(color: AppColors.info, fontSize: 16),
+            ),
           ),
         ],
       ),
@@ -323,9 +683,9 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
 
   Future<void> _showUpdateAvailableDialog(UpdateInfo updateInfo) async {
     final packageInfo = await PackageInfo.fromPlatform();
-    
+
     if (!mounted) return;
-    
+
     showDialog(
       context: context,
       barrierDismissible: !updateInfo.forceUpdate,
@@ -354,11 +714,22 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                 children: [
                   Text(
                     'Mise à jour disponible',
-                    style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary), fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      color: (Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.darkTextPrimary
+                          : AppColors.lightTextPrimary),
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   Text(
                     '${packageInfo.version} → ${updateInfo.latestVersion}',
-                    style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary), fontSize: 13),
+                    style: TextStyle(
+                      color: (Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.darkTextSecondary
+                          : AppColors.lightTextSecondary),
+                      fontSize: 13,
+                    ),
                   ),
                 ],
               ),
@@ -376,7 +747,9 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                 decoration: BoxDecoration(
                   color: AppColors.error.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppColors.error.withValues(alpha: 0.5)),
+                  border: Border.all(
+                    color: AppColors.error.withValues(alpha: 0.5),
+                  ),
                 ),
                 child: Row(
                   children: [
@@ -386,7 +759,14 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                       child: Builder(
                         builder: (context) => Text(
                           'Cette mise à jour est obligatoire',
-                          style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary), fontSize: 13, fontWeight: FontWeight.w600),
+                          style: TextStyle(
+                            color:
+                                (Theme.of(context).brightness == Brightness.dark
+                                ? AppColors.darkTextPrimary
+                                : AppColors.lightTextPrimary),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),
@@ -396,13 +776,24 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
             Builder(
               builder: (context) => Text(
                 'Nouveautés :',
-                style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary), fontSize: 14, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                  color: (Theme.of(context).brightness == Brightness.dark
+                      ? AppColors.darkTextPrimary
+                      : AppColors.lightTextPrimary),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
             const SizedBox(height: 8),
             Text(
               updateInfo.changelog,
-              style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary), fontSize: 14),
+              style: TextStyle(
+                color: (Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.darkTextSecondary
+                    : AppColors.lightTextSecondary),
+                fontSize: 14,
+              ),
             ),
           ],
         ),
@@ -411,16 +802,31 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
             TextButton(
               onPressed: () => Navigator.pop(context),
               style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
               ),
               child: Builder(
-                builder: (context) => Text('Plus tard', style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary), fontSize: 16)),
+                builder: (context) => Text(
+                  'Plus tard',
+                  style: TextStyle(
+                    color: (Theme.of(context).brightness == Brightness.dark
+                        ? AppColors.darkTextSecondary
+                        : AppColors.lightTextSecondary),
+                    fontSize: 16,
+                  ),
+                ),
               ),
             ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.info,
-              foregroundColor: Theme.of(context).brightness == Brightness.dark ? (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary) : AppColors.primaryDark,
+              foregroundColor: Theme.of(context).brightness == Brightness.dark
+                  ? (Theme.of(context).brightness == Brightness.dark
+                        ? AppColors.darkTextPrimary
+                        : AppColors.lightTextPrimary)
+                  : AppColors.primaryDark,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
             onPressed: () {
@@ -434,79 +840,34 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
     );
   }
 
-  void _startUpdateDownload(UpdateInfo updateInfo) {
-    // Afficher un dialog de téléchargement avec progress
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) {
-          return AlertDialog(
-            backgroundColor: Theme.of(context).cardTheme.color,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            title: Row(
-              children: [
-                const Icon(Icons.download, color: AppColors.info, size: 28),
-                const SizedBox(width: 12),
-                Builder(
-                  builder: (context) => Text('Téléchargement', style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary))),
-                ),
-              ],
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                LinearProgressIndicator(
-                  value: _otaService.downloadProgress,
-                  backgroundColor: Theme.of(context).dividerColor.withValues(alpha: 0.3),
-                  color: AppColors.info,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  '${(_otaService.downloadProgress * 100).toStringAsFixed(0)}%',
-                  style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary), fontSize: 16),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
+  Future<void> _startUpdateDownload(UpdateInfo updateInfo) async {
+    // Ouvrir directement le Play Store
+    final success = await _otaService.openPlayStoreForUpdate(updateInfo);
 
-    // Démarrer le téléchargement
-    _otaService.downloadAndInstallUpdate(
-      updateInfo,
-      onProgress: (progress) {
-        // Mettre à jour l'UI avec le progrès (simplification ici)
-        if (mounted) setState(() {});
-      },
-    ).then((success) {
-      if (!mounted) return;
-      Navigator.pop(context);
-      
-      if (success) {
-        _showUpdateDialog(
-          title: 'Téléchargement terminé',
-          message: 'La mise à jour a été téléchargée. L\'application va redémarrer.',
-          icon: Icons.check_circle_outline,
-          iconColor: AppColors.success,
-        );
-      } else {
-        _showUpdateDialog(
-          title: 'Échec',
-          message: 'Le téléchargement de la mise à jour a échoué.',
-          icon: Icons.error_outline,
-          iconColor: AppColors.error,
-        );
-      }
-    });
+    if (!mounted) return;
+
+    if (success) {
+      _showUpdateDialog(
+        title: 'Play Store ouvert',
+        message: 'Veuillez installer la mise à jour depuis le Play Store.',
+        icon: Icons.check_circle_outline,
+        iconColor: AppColors.success,
+      );
+    } else {
+      _showUpdateDialog(
+        title: 'Erreur',
+        message: 'Impossible d\'ouvrir le Play Store.',
+        icon: Icons.error_outline,
+        iconColor: AppColors.error,
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -514,15 +875,21 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: isDark
-                ? [Theme.of(context).scaffoldBackgroundColor, Theme.of(context).cardTheme.color!]
-                : [Theme.of(context).scaffoldBackgroundColor, Theme.of(context).cardTheme.color!],
+                ? [
+                    Theme.of(context).scaffoldBackgroundColor,
+                    Theme.of(context).cardTheme.color!,
+                  ]
+                : [
+                    Theme.of(context).scaffoldBackgroundColor,
+                    Theme.of(context).cardTheme.color!,
+                  ],
           ),
         ),
         child: SafeArea(
           child: LayoutBuilder(
             builder: (context, constraints) {
               final isDesktop = constraints.maxWidth > 600;
-              
+
               return Column(
                 children: [
                   // Header
@@ -531,7 +898,10 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                     child: Row(
                       children: [
                         IconButton(
-                          icon: Icon(Icons.arrow_back, color: theme.textTheme.bodyLarge!.color),
+                          icon: Icon(
+                            Icons.arrow_back,
+                            color: theme.textTheme.bodyLarge!.color,
+                          ),
                           onPressed: () => Navigator.of(context).pop(),
                         ),
                         const SizedBox(width: 8),
@@ -544,7 +914,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                       ],
                     ),
                   ),
-                  
+
                   // Content
                   Expanded(
                     child: Center(
@@ -567,68 +937,97 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                                     Text(
                                       'SÉCURITÉ',
                                       style: AppTextStyles.caption.copyWith(
-                                        color: theme.textTheme.bodyMedium!.color,
+                                        color:
+                                            theme.textTheme.bodyMedium!.color,
                                         letterSpacing: 1.2,
                                       ),
                                     ),
                                     const SizedBox(height: 12),
-                                    
-                                    // Info sur la biométrie automatique
-                                    Container(
-                                      padding: const EdgeInsets.all(16),
-                                      decoration: BoxDecoration(
-                                        color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                                        borderRadius: BorderRadius.circular(12),
-                                        border: Border.all(
-                                          color: theme.colorScheme.primary.withValues(alpha: 0.3),
-                                        ),
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          Icon(
-                                            Icons.fingerprint,
-                                            color: theme.colorScheme.primary,
-                                            size: 32,
-                                          ),
-                                          const SizedBox(width: 16),
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  'Authentification biométrique',
-                                                  style: AppTextStyles.body1.copyWith(
-                                                    color: theme.textTheme.bodyLarge!.color,
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 8),
-                                                Text(
-                                                  _canCheckBiometrics
-                                                      ? 'La biométrie est automatiquement activée sur votre appareil. Vous serez invité à vous authentifier avec votre empreinte digitale ou Face ID lors de la connexion.'
-                                                      : 'La biométrie n\'est pas disponible sur cet appareil.',
-                                                  style: AppTextStyles.body2.copyWith(
-                                                    color: theme.textTheme.bodyMedium!.color,
-                                                  ),
-                                                ),
-                                              ],
+
+                                    // Toggle biométrie
+                                    Card(
+                                      color: theme.cardTheme.color,
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(20.0),
+                                        child: Row(
+                                          children: [
+                                            Container(
+                                              padding: const EdgeInsets.all(12),
+                                              decoration: BoxDecoration(
+                                                color: theme.colorScheme.primary
+                                                    .withValues(alpha: 0.2),
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                              ),
+                                              child: Icon(
+                                                Icons.fingerprint,
+                                                color:
+                                                    theme.colorScheme.primary,
+                                                size: 24,
+                                              ),
                                             ),
-                                          ),
-                                        ],
+                                            const SizedBox(width: 16),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    'Authentification biométrique',
+                                                    style: AppTextStyles.body1
+                                                        .copyWith(
+                                                          color: theme
+                                                              .textTheme
+                                                              .bodyLarge!
+                                                              .color,
+                                                        ),
+                                                  ),
+                                                  const SizedBox(height: 4),
+                                                  Text(
+                                                    _canCheckBiometrics
+                                                        ? (_biometricEnabled
+                                                              ? 'Connexion rapide avec empreinte/Face ID'
+                                                              : 'Connexion par mot de passe uniquement')
+                                                        : 'Non disponible sur cet appareil',
+                                                    style: AppTextStyles.body2
+                                                        .copyWith(
+                                                          color: theme
+                                                              .textTheme
+                                                              .bodyMedium!
+                                                              .color,
+                                                        ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            Switch(
+                                              value: _biometricEnabled,
+                                              onChanged: _canCheckBiometrics
+                                                  ? _toggleBiometric
+                                                  : null,
+                                              activeColor:
+                                                  theme.colorScheme.primary,
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
 
-                                    
                                     const SizedBox(height: 16),
-                                    
+
                                     // Changer mot de passe
                                     Card(
                                       color: theme.cardTheme.color,
                                       child: InkWell(
                                         borderRadius: BorderRadius.circular(12),
                                         onTap: () {
-                                          ScaffoldMessenger.of(context).showSnackBar(
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
                                             const SnackBar(
-                                              content: Text('Fonctionnalité à venir'),
+                                              content: Text(
+                                                'Fonctionnalité à venir',
+                                              ),
                                             ),
                                           );
                                         },
@@ -637,14 +1036,21 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                                           child: Row(
                                             children: [
                                               Container(
-                                                padding: const EdgeInsets.all(12),
+                                                padding: const EdgeInsets.all(
+                                                  12,
+                                                ),
                                                 decoration: BoxDecoration(
-                                                  color: theme.colorScheme.primary.withValues(alpha: 0.2),
-                                                  borderRadius: BorderRadius.circular(12),
+                                                  color: theme
+                                                      .colorScheme
+                                                      .primary
+                                                      .withValues(alpha: 0.2),
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
                                                 ),
                                                 child: Icon(
                                                   Icons.lock_outline,
-                                                  color: theme.colorScheme.primary,
+                                                  color:
+                                                      theme.colorScheme.primary,
                                                   size: 24,
                                                 ),
                                               ),
@@ -652,14 +1058,21 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                                               Expanded(
                                                 child: Text(
                                                   'Modifier le mot de passe',
-                                                  style: AppTextStyles.body1.copyWith(
-                                                    color: theme.textTheme.bodyLarge!.color,
-                                                  ),
+                                                  style: AppTextStyles.body1
+                                                      .copyWith(
+                                                        color: theme
+                                                            .textTheme
+                                                            .bodyLarge!
+                                                            .color,
+                                                      ),
                                                 ),
                                               ),
                                               Icon(
                                                 Icons.arrow_forward_ios,
-                                                color: theme.textTheme.bodyMedium!.color,
+                                                color: theme
+                                                    .textTheme
+                                                    .bodyMedium!
+                                                    .color,
                                                 size: 16,
                                               ),
                                             ],
@@ -667,19 +1080,20 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                                         ),
                                       ),
                                     ),
-                                    
+
                                     const SizedBox(height: 32),
-                                    
+
                                     // En-tête Section Notifications
                                     Text(
                                       'NOTIFICATIONS',
                                       style: AppTextStyles.caption.copyWith(
-                                        color: theme.textTheme.bodyMedium!.color,
+                                        color:
+                                            theme.textTheme.bodyMedium!.color,
                                         letterSpacing: 1.2,
                                       ),
                                     ),
                                     const SizedBox(height: 12),
-                                    
+
                                     // Section Notifications
                                     Card(
                                       color: theme.cardTheme.color,
@@ -691,10 +1105,16 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                                             child: Row(
                                               children: [
                                                 Container(
-                                                  padding: const EdgeInsets.all(12),
+                                                  padding: const EdgeInsets.all(
+                                                    12,
+                                                  ),
                                                   decoration: BoxDecoration(
-                                                    color: AppColors.success.withValues(alpha: 0.2),
-                                                    borderRadius: BorderRadius.circular(12),
+                                                    color: AppColors.success
+                                                        .withValues(alpha: 0.2),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          12,
+                                                        ),
                                                   ),
                                                   child: const Icon(
                                                     Icons.notifications_active,
@@ -705,14 +1125,26 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                                                 const SizedBox(width: 16),
                                                 Expanded(
                                                   child: Column(
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
                                                     children: [
                                                       Text(
                                                         'Notifications',
                                                         style: TextStyle(
-                                                          color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
+                                                          color:
+                                                              (Theme.of(
+                                                                    context,
+                                                                  ).brightness ==
+                                                                  Brightness
+                                                                      .dark
+                                                              ? AppColors
+                                                                    .darkTextPrimary
+                                                              : AppColors
+                                                                    .lightTextPrimary),
                                                           fontSize: 16,
-                                                          fontWeight: FontWeight.w600,
+                                                          fontWeight:
+                                                              FontWeight.w600,
                                                         ),
                                                       ),
                                                       const SizedBox(height: 4),
@@ -721,7 +1153,16 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                                                             ? 'Recevoir les notifications push'
                                                             : 'Les notifications sont désactivées',
                                                         style: TextStyle(
-                                                          color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
+                                                          color:
+                                                              (Theme.of(
+                                                                    context,
+                                                                  ).brightness ==
+                                                                  Brightness
+                                                                      .dark
+                                                              ? AppColors
+                                                                    .darkTextSecondary
+                                                              : AppColors
+                                                                    .lightTextSecondary),
                                                           fontSize: 13,
                                                         ),
                                                       ),
@@ -731,9 +1172,19 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                                                 const SizedBox(width: 12),
                                                 Switch(
                                                   value: _notificationsEnabled,
-                                                  onChanged: _toggleNotifications,
-                                                  activeTrackColor: AppColors.success,
-                                                  inactiveThumbColor: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
+                                                  onChanged:
+                                                      _toggleNotifications,
+                                                  activeTrackColor:
+                                                      AppColors.success,
+                                                  inactiveThumbColor:
+                                                      (Theme.of(
+                                                            context,
+                                                          ).brightness ==
+                                                          Brightness.dark
+                                                      ? AppColors
+                                                            .darkTextSecondary
+                                                      : AppColors
+                                                            .lightTextSecondary),
                                                 ),
                                               ],
                                             ),
@@ -741,36 +1192,72 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                                           // Divider
                                           if (_notificationsEnabled)
                                             Padding(
-                                              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 20.0,
+                                                  ),
                                               child: Divider(
-                                                color: Theme.of(context).dividerColor,
+                                                color: Theme.of(
+                                                  context,
+                                                ).dividerColor,
                                                 height: 1,
                                               ),
                                             ),
                                           // Option notifications de planning (sub-option)
                                           if (_notificationsEnabled)
                                             Padding(
-                                              padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+                                              padding:
+                                                  const EdgeInsets.fromLTRB(
+                                                    20,
+                                                    16,
+                                                    20,
+                                                    20,
+                                                  ),
                                               child: Row(
                                                 children: [
-                                                  const SizedBox(width: 56), // Alignement avec le texte au-dessus
+                                                  const SizedBox(
+                                                    width: 56,
+                                                  ), // Alignement avec le texte au-dessus
                                                   Expanded(
                                                     child: Column(
-                                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
                                                       children: [
                                                         Text(
                                                           'Notifier mon planning',
                                                           style: TextStyle(
-                                                            color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
+                                                            color:
+                                                                (Theme.of(
+                                                                      context,
+                                                                    ).brightness ==
+                                                                    Brightness
+                                                                        .dark
+                                                                ? AppColors
+                                                                      .darkTextPrimary
+                                                                : AppColors
+                                                                      .lightTextPrimary),
                                                             fontSize: 15,
-                                                            fontWeight: FontWeight.w500,
+                                                            fontWeight:
+                                                                FontWeight.w500,
                                                           ),
                                                         ),
-                                                        const SizedBox(height: 4),
+                                                        const SizedBox(
+                                                          height: 4,
+                                                        ),
                                                         Text(
                                                           'Recevoir des rappels pour vos séances d\'entraînement',
                                                           style: TextStyle(
-                                                            color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
+                                                            color:
+                                                                (Theme.of(
+                                                                      context,
+                                                                    ).brightness ==
+                                                                    Brightness
+                                                                        .dark
+                                                                ? AppColors
+                                                                      .darkTextSecondary
+                                                                : AppColors
+                                                                      .lightTextSecondary),
                                                             fontSize: 12,
                                                           ),
                                                         ),
@@ -779,10 +1266,23 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                                                   ),
                                                   const SizedBox(width: 12),
                                                   Switch(
-                                                    value: _workoutNotificationsEnabled,
-                                                    onChanged: _notificationsEnabled ? _toggleWorkoutNotifications : null,
-                                                    activeTrackColor: AppColors.success,
-                                                    inactiveThumbColor: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
+                                                    value:
+                                                        _workoutNotificationsEnabled,
+                                                    onChanged:
+                                                        _notificationsEnabled
+                                                        ? _toggleWorkoutNotifications
+                                                        : null,
+                                                    activeTrackColor:
+                                                        AppColors.success,
+                                                    inactiveThumbColor:
+                                                        (Theme.of(
+                                                              context,
+                                                            ).brightness ==
+                                                            Brightness.dark
+                                                        ? AppColors
+                                                              .darkTextSecondary
+                                                        : AppColors
+                                                              .lightTextSecondary),
                                                   ),
                                                 ],
                                               ),
@@ -790,19 +1290,20 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                                         ],
                                       ),
                                     ),
-                                    
+
                                     const SizedBox(height: 32),
-                                    
+
                                     // En-tête Section Mises à jour
                                     Text(
                                       'APPLICATION',
                                       style: AppTextStyles.caption.copyWith(
-                                        color: theme.textTheme.bodyMedium!.color,
+                                        color:
+                                            theme.textTheme.bodyMedium!.color,
                                         letterSpacing: 1.2,
                                       ),
                                     ),
                                     const SizedBox(height: 12),
-                                    
+
                                     // Section Mises à jour
                                     Card(
                                       color: theme.cardTheme.color,
@@ -814,10 +1315,14 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                                           child: Row(
                                             children: [
                                               Container(
-                                                padding: const EdgeInsets.all(12),
+                                                padding: const EdgeInsets.all(
+                                                  12,
+                                                ),
                                                 decoration: BoxDecoration(
-                                                  color: AppColors.info.withValues(alpha: 0.2),
-                                                  borderRadius: BorderRadius.circular(12),
+                                                  color: AppColors.info
+                                                      .withValues(alpha: 0.2),
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
                                                 ),
                                                 child: const Icon(
                                                   Icons.system_update,
@@ -828,15 +1333,26 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                                               const SizedBox(width: 16),
                                               Expanded(
                                                 child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
                                                   children: [
                                                     Builder(
                                                       builder: (context) => Text(
                                                         'Vérifier les mises à jour',
                                                         style: TextStyle(
-                                                          color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
+                                                          color:
+                                                              (Theme.of(
+                                                                    context,
+                                                                  ).brightness ==
+                                                                  Brightness
+                                                                      .dark
+                                                              ? AppColors
+                                                                    .darkTextPrimary
+                                                              : AppColors
+                                                                    .lightTextPrimary),
                                                           fontSize: 16,
-                                                          fontWeight: FontWeight.w600,
+                                                          fontWeight:
+                                                              FontWeight.w600,
                                                         ),
                                                       ),
                                                     ),
@@ -845,7 +1361,16 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                                                       builder: (context) => Text(
                                                         'Maintenir l\'application à jour',
                                                         style: TextStyle(
-                                                          color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
+                                                          color:
+                                                              (Theme.of(
+                                                                    context,
+                                                                  ).brightness ==
+                                                                  Brightness
+                                                                      .dark
+                                                              ? AppColors
+                                                                    .darkTextSecondary
+                                                              : AppColors
+                                                                    .lightTextSecondary),
                                                           fontSize: 13,
                                                         ),
                                                       ),
@@ -855,13 +1380,128 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
                                               ),
                                               Icon(
                                                 Icons.arrow_forward_ios,
-                                                color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
+                                                color:
+                                                    (Theme.of(
+                                                          context,
+                                                        ).brightness ==
+                                                        Brightness.dark
+                                                    ? AppColors
+                                                          .darkTextSecondary
+                                                    : AppColors
+                                                          .lightTextSecondary),
                                                 size: 16,
                                               ),
                                             ],
                                           ),
                                         ),
                                       ),
+                                    ),
+
+                                    const SizedBox(height: 32),
+
+                                    // En-tête Section Langue
+                                    Text(
+                                      'LANGUE',
+                                      style: AppTextStyles.caption.copyWith(
+                                        color:
+                                            theme.textTheme.bodyMedium!.color,
+                                        letterSpacing: 1.2,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 12),
+
+                                    // Bouton changement de langue
+                                    Builder(
+                                      builder: (context) {
+                                        final localeService =
+                                            LocaleServiceScope.of(context);
+                                        return Card(
+                                          color: theme.cardTheme.color,
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(20.0),
+                                            child: Row(
+                                              children: [
+                                                Container(
+                                                  padding: const EdgeInsets.all(
+                                                    12,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                    color: theme
+                                                        .colorScheme
+                                                        .primary
+                                                        .withValues(alpha: 0.2),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          12,
+                                                        ),
+                                                  ),
+                                                  child: Icon(
+                                                    Icons.language,
+                                                    color: theme
+                                                        .colorScheme
+                                                        .primary,
+                                                    size: 28,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 16),
+                                                Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text(
+                                                        'Langue / Language',
+                                                        style: TextStyle(
+                                                          color:
+                                                              (Theme.of(
+                                                                    context,
+                                                                  ).brightness ==
+                                                                  Brightness
+                                                                      .dark
+                                                              ? AppColors
+                                                                    .darkTextPrimary
+                                                              : AppColors
+                                                                    .lightTextPrimary),
+                                                          fontSize: 16,
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(height: 4),
+                                                      Text(
+                                                        localeService
+                                                            .getLocaleName(
+                                                              localeService
+                                                                  .currentLocale,
+                                                            ),
+                                                        style: TextStyle(
+                                                          color:
+                                                              (Theme.of(
+                                                                    context,
+                                                                  ).brightness ==
+                                                                  Brightness
+                                                                      .dark
+                                                              ? AppColors
+                                                                    .darkTextSecondary
+                                                              : AppColors
+                                                                    .lightTextSecondary),
+                                                          fontSize: 13,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                  // Utiliser directement le LanguageSwitcherButton
+                                                LanguageSwitcherButton(
+                                                  localeService: localeService,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        );
+                                      },
                                     ),
                                   ],
                                 ),
@@ -878,13 +1518,3 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
     );
   }
 }
-
-
-
-
-
-
-
-
-
-

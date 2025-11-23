@@ -8,16 +8,12 @@ import '../../core/l10n/app_localizations.dart';
 /// Opens a bottom sheet with all available languages
 class LanguageSwitcherButton extends StatelessWidget {
   final LocaleService localeService;
-  
-  const LanguageSwitcherButton({
-    super.key,
-    required this.localeService,
-  });
-  
+
+  const LanguageSwitcherButton({super.key, required this.localeService});
+
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(right: 8),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -49,13 +45,17 @@ class LanguageSwitcherButton extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: Row(
               mainAxisSize: MainAxisSize.min,
+              textDirection:
+                  TextDirection.ltr, // Force LTR pour garder icône-drapeau
               children: [
                 // Globe icon with gradient
                 ShaderMask(
                   shaderCallback: (bounds) => LinearGradient(
                     colors: [
                       Theme.of(context).colorScheme.primary,
-                      Theme.of(context).colorScheme.primary.withValues(alpha: 0.7),
+                      Theme.of(
+                        context,
+                      ).colorScheme.primary.withValues(alpha: 0.7),
                     ],
                   ).createShader(bounds),
                   child: const Icon(
@@ -77,7 +77,7 @@ class LanguageSwitcherButton extends StatelessWidget {
       ),
     );
   }
-  
+
   void _showLanguageSelector(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -104,7 +104,7 @@ class LanguageSwitcherButton extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // Header
                   Row(
@@ -115,7 +115,9 @@ class LanguageSwitcherButton extends StatelessWidget {
                           gradient: LinearGradient(
                             colors: [
                               Theme.of(context).colorScheme.primary,
-                              Theme.of(context).colorScheme.primary.withValues(alpha: 0.7),
+                              Theme.of(
+                                context,
+                              ).colorScheme.primary.withValues(alpha: 0.7),
                             ],
                           ),
                           borderRadius: BorderRadius.circular(12),
@@ -133,7 +135,8 @@ class LanguageSwitcherButton extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
-                            color: Theme.of(context).brightness == Brightness.dark
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
                                 ? AppColors.darkTextPrimary
                                 : AppColors.lightTextPrimary,
                           ),
@@ -161,17 +164,13 @@ class LanguageSwitcherButton extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  
+
                   // Language options
                   ...LocaleService.supportedLocales.map((locale) {
                     final isSelected = localeService.currentLocale == locale;
-                    return _buildLanguageOption(
-                      context,
-                      locale,
-                      isSelected,
-                    );
+                    return _buildLanguageOption(context, locale, isSelected);
                   }),
-                  
+
                   const SizedBox(height: 16),
                 ],
               ),
@@ -181,14 +180,14 @@ class LanguageSwitcherButton extends StatelessWidget {
       },
     );
   }
-  
+
   Widget _buildLanguageOption(
     BuildContext context,
     Locale locale,
     bool isSelected,
   ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -210,14 +209,16 @@ class LanguageSwitcherButton extends StatelessWidget {
           color: isSelected
               ? Theme.of(context).colorScheme.primary
               : (isDark
-                  ? AppColors.darkTextSecondary.withValues(alpha: 0.2)
-                  : AppColors.lightTextSecondary.withValues(alpha: 0.2)),
-          width: isSelected ? 2 : 1,
+                    ? AppColors.darkTextSecondary.withValues(alpha: 0.2)
+                    : AppColors.lightTextSecondary.withValues(alpha: 0.2)),
+          width: 2,
         ),
         boxShadow: isSelected
             ? [
                 BoxShadow(
-                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.primary.withValues(alpha: 0.2),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -230,7 +231,7 @@ class LanguageSwitcherButton extends StatelessWidget {
           onTap: () {
             localeService.setLocale(locale);
             Navigator.pop(context);
-            
+
             // Show confirmation snackbar
             // Note: We get the l10n BEFORE changing locale so the message is in the OLD language
             // This is intentional - shows what they're switching TO
@@ -251,7 +252,11 @@ class LanguageSwitcherButton extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const Icon(Icons.check_circle, color: Colors.white, size: 20),
+                    const Icon(
+                      Icons.check_circle,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                   ],
                 ),
                 backgroundColor: Theme.of(context).colorScheme.primary,
@@ -274,10 +279,16 @@ class LanguageSwitcherButton extends StatelessWidget {
                   height: 56,
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.15)
+                        ? Theme.of(
+                            context,
+                          ).colorScheme.primary.withValues(alpha: 0.15)
                         : (isDark
-                            ? AppColors.darkTextSecondary.withValues(alpha: 0.1)
-                            : AppColors.lightTextSecondary.withValues(alpha: 0.1)),
+                              ? AppColors.darkTextSecondary.withValues(
+                                  alpha: 0.1,
+                                )
+                              : AppColors.lightTextSecondary.withValues(
+                                  alpha: 0.1,
+                                )),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Center(
@@ -288,7 +299,7 @@ class LanguageSwitcherButton extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 16),
-                
+
                 // Language name
                 Expanded(
                   child: Column(
@@ -302,8 +313,8 @@ class LanguageSwitcherButton extends StatelessWidget {
                           color: isSelected
                               ? Theme.of(context).colorScheme.primary
                               : (isDark
-                                  ? AppColors.darkTextPrimary
-                                  : AppColors.lightTextPrimary),
+                                    ? AppColors.darkTextPrimary
+                                    : AppColors.lightTextPrimary),
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -319,7 +330,7 @@ class LanguageSwitcherButton extends StatelessWidget {
                     ],
                   ),
                 ),
-                
+
                 // Selection indicator
                 if (isSelected)
                   Container(
@@ -343,7 +354,9 @@ class LanguageSwitcherButton extends StatelessWidget {
                       border: Border.all(
                         color: isDark
                             ? AppColors.darkTextSecondary.withValues(alpha: 0.3)
-                            : AppColors.lightTextSecondary.withValues(alpha: 0.3),
+                            : AppColors.lightTextSecondary.withValues(
+                                alpha: 0.3,
+                              ),
                         width: 2,
                       ),
                     ),
@@ -355,7 +368,7 @@ class LanguageSwitcherButton extends StatelessWidget {
       ),
     );
   }
-  
+
   String _getLanguageNativeName(Locale locale) {
     switch (locale.languageCode) {
       case 'fr':
@@ -368,7 +381,7 @@ class LanguageSwitcherButton extends StatelessWidget {
         return locale.languageCode.toUpperCase();
     }
   }
-  
+
   /// Get multilingual subtitle showing "Select Language" in all supported languages
   /// This helps users who may not understand the current language
   /// Using hardcoded translations to avoid context issues
@@ -380,13 +393,13 @@ class LanguageSwitcherButton extends StatelessWidget {
       'en': 'Select Language',
       'ar': 'اختر اللغة',
     };
-    
+
     // Build subtitle from all translations
     final parts = LocaleService.supportedLocales
         .map((locale) => translations[locale.languageCode])
         .where((text) => text != null)
         .toList();
-    
+
     // Join with bullets
     return parts.join(' • ');
   }

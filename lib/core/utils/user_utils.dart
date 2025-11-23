@@ -1,4 +1,5 @@
 /// Utility functions for user data handling
+library;
 
 /// Get full name from user data
 /// Handles both old format (fullName) and new format (firstName + lastName)

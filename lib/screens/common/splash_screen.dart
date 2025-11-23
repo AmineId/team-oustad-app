@@ -50,7 +50,7 @@ class _SplashScreenState extends State<SplashScreen> {
         final valid = await _apiService.verifyToken(token);
         if (valid) {
           if (!mounted) return;
-          
+
           // Determine which home screen based on user type
           final userType = await auth.getUserType();
           Widget homeScreen;
@@ -59,7 +59,7 @@ class _SplashScreenState extends State<SplashScreen> {
           } else {
             homeScreen = const MemberHomeScreen();
           }
-          
+
           if (mounted) {
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (context) => homeScreen),
@@ -85,11 +85,11 @@ class _SplashScreenState extends State<SplashScreen> {
     try {
       final otaService = OTAUpdateService();
       final updateInfo = await otaService.checkForUpdate();
-      
+
       if (updateInfo != null && mounted) {
         // Attendre un peu pour laisser l'utilisateur arriver sur l'écran d'accueil
         await Future.delayed(const Duration(seconds: 2));
-        
+
         if (mounted) {
           _showOTAUpdateDialog(updateInfo);
         }
@@ -113,101 +113,44 @@ class _SplashScreenState extends State<SplashScreen> {
     try {
       final prefs = await SharedPreferences.getInstance();
       final isFirstLaunch = prefs.getBool('first_launch') ?? true;
-      
+
       if (isFirstLaunch) {
         // Marquer que ce n'est plus le premier lancement
         await prefs.setBool('first_launch', false);
-        
-        // Afficher le dialog de demande de notifications
+
+        // Demander directement la permission système Android
+        // (Android affichera sa propre popup système)
         if (mounted) {
-          await _showNotificationPermissionDialog();
+          final granted = await NotificationService().requestPermissions();
+
+          // Mettre à jour le profil utilisateur selon la réponse
+          if (granted) {
+            await prefs.setBool('notifications_enabled', true);
+
+            // Mettre à jour le serveur si l'utilisateur est connecté
+            try {
+              final authService = AuthService(ApiService.fromEnv());
+              final profileData = await authService.getCachedUserProfile();
+              if (profileData != null) {
+                final userId = profileData['id'] as int;
+                final token = await authService.loadToken();
+
+                if (token != null) {
+                  await ApiService.fromEnv().updateUserProfile(userId, {
+                    'notificationEnabled': true,
+                  }, token);
+                  await authService.refreshUserProfile();
+                }
+              }
+            } catch (e) {
+              debugPrint('Erreur lors de la mise à jour du profil: $e');
+            }
+          }
         }
       }
     } catch (e) {
-      // ignore: avoid_print
       debugPrint('Erreur lors de la vérification du premier lancement: $e');
     }
-  }
-
-  Future<void> _showNotificationPermissionDialog() async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: Theme.of(context).cardTheme.color,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: AppColors.success.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(
-                  Icons.notifications_active,
-                  color: AppColors.success,
-                  size: 28,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Builder(
-                  builder: (context) => Text(
-                    'Notifications',
-                    style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary), fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          content: Builder(
-            builder: (context) => Text(
-              'Souhaitez-vous recevoir des notifications pour rester informé des nouveautés, rappels d\'entraînement et messages importants ?',
-              style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary), fontSize: 15),
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: Builder(
-                builder: (context) => Text(
-                  'Plus tard',
-                  style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)),
-                ),
-              ),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.success,
-                foregroundColor: Theme.of(context).brightness == Brightness.dark ? (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary) : AppColors.primaryDark,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child: const Text(
-                'Activer',
-                style: TextStyle(fontWeight: FontWeight.w600),
-              ),
-              onPressed: () async {
-                Navigator.of(context).pop();
-                // Demander les permissions
-                await NotificationService().requestPermissions();
-                
-                // Activer les notifications par défaut
-                final prefs = await SharedPreferences.getInstance();
-                await prefs.setBool('notifications_enabled', true);
-              },
-            ),
-          ],
-        );
-      },
-    );
   }
 
   @override
@@ -229,11 +172,11 @@ class _SplashScreenState extends State<SplashScreen> {
             builder: (context, constraints) {
               final isWatch = constraints.maxWidth < 300;
               final isDesktop = constraints.maxWidth > 600;
-              
+
               final logoSize = isWatch ? 100.0 : (isDesktop ? 400.0 : 300.0);
               final fontSize = isWatch ? 11.0 : (isDesktop ? 20.0 : 16.0);
               final spacing = isWatch ? 16.0 : 32.0;
-              
+
               return Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -249,7 +192,9 @@ class _SplashScreenState extends State<SplashScreen> {
                     'Votre partenaire fitness',
                     style: TextStyle(
                       fontSize: fontSize,
-                      color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
+                      color: (Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.darkTextSecondary
+                          : AppColors.lightTextSecondary),
                     ),
                   ),
                   SizedBox(height: spacing + 16),
@@ -265,7 +210,10 @@ class _SplashScreenState extends State<SplashScreen> {
                         'Vérification de la connexion...',
                         style: TextStyle(
                           fontSize: isWatch ? 10 : 14,
-                          color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
+                          color:
+                              (Theme.of(context).brightness == Brightness.dark
+                              ? AppColors.darkTextSecondary
+                              : AppColors.lightTextSecondary),
                         ),
                       ),
                     ],
@@ -291,41 +239,23 @@ class _OTAUpdateDialog extends StatefulWidget {
 }
 
 class _OTAUpdateDialogState extends State<_OTAUpdateDialog> {
-  bool _isDownloading = false;
-  double _downloadProgress = 0.0;
-
-  Future<void> _startDownload() async {
-    setState(() {
-      _isDownloading = true;
-      _downloadProgress = 0.0;
-    });
-
+  Future<void> _openPlayStore() async {
     try {
       final otaService = OTAUpdateService();
-      final success = await otaService.downloadAndInstallUpdate(
+      final success = await otaService.openPlayStoreForUpdate(
         widget.updateInfo,
-        onProgress: (progress) {
-          if (mounted) {
-            setState(() {
-              _downloadProgress = progress;
-            });
-          }
-        },
       );
 
       if (!mounted) return;
 
       if (success) {
-        // L'installateur Android s'est ouvert automatiquement
+        // Le Play Store s'est ouvert
         Navigator.pop(context);
       } else {
-        setState(() {
-          _isDownloading = false;
-        });
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Erreur lors du téléchargement'),
+              content: Text('Erreur lors de l\'ouverture du Play Store'),
               backgroundColor: AppColors.error,
             ),
           );
@@ -333,9 +263,6 @@ class _OTAUpdateDialogState extends State<_OTAUpdateDialog> {
       }
     } catch (e) {
       if (mounted) {
-        setState(() {
-          _isDownloading = false;
-        });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Erreur: $e'),
@@ -370,7 +297,13 @@ class _OTAUpdateDialogState extends State<_OTAUpdateDialog> {
             child: Builder(
               builder: (context) => Text(
                 'Mise à jour disponible',
-                style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary), fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: (Theme.of(context).brightness == Brightness.dark
+                      ? AppColors.darkTextPrimary
+                      : AppColors.lightTextPrimary),
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),
@@ -387,7 +320,9 @@ class _OTAUpdateDialogState extends State<_OTAUpdateDialog> {
               decoration: BoxDecoration(
                 color: AppColors.error.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppColors.error.withValues(alpha: 0.5)),
+                border: Border.all(
+                  color: AppColors.error.withValues(alpha: 0.5),
+                ),
               ),
               child: Row(
                 children: [
@@ -397,7 +332,14 @@ class _OTAUpdateDialogState extends State<_OTAUpdateDialog> {
                     child: Builder(
                       builder: (context) => Text(
                         'Cette mise à jour est obligatoire',
-                        style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary), fontSize: 13, fontWeight: FontWeight.w600),
+                        style: TextStyle(
+                          color:
+                              (Theme.of(context).brightness == Brightness.dark
+                              ? AppColors.darkTextPrimary
+                              : AppColors.lightTextPrimary),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ),
@@ -406,65 +348,74 @@ class _OTAUpdateDialogState extends State<_OTAUpdateDialog> {
             ),
           Text(
             'Version: ${widget.updateInfo.currentVersion} → ${widget.updateInfo.latestVersion}',
-            style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary), fontSize: 14),
+            style: TextStyle(
+              color: (Theme.of(context).brightness == Brightness.dark
+                  ? AppColors.darkTextSecondary
+                  : AppColors.lightTextSecondary),
+              fontSize: 14,
+            ),
           ),
           const SizedBox(height: 12),
           Builder(
             builder: (context) => Text(
               'Nouveautés :',
-              style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary), fontSize: 14, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                color: (Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.darkTextPrimary
+                    : AppColors.lightTextPrimary),
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
           const SizedBox(height: 8),
           Text(
             widget.updateInfo.changelog,
-            style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary), fontSize: 14),
+            style: TextStyle(
+              color: (Theme.of(context).brightness == Brightness.dark
+                  ? AppColors.darkTextSecondary
+                  : AppColors.lightTextSecondary),
+              fontSize: 14,
+            ),
           ),
-          if (_isDownloading) ...[
-            const SizedBox(height: 20),
-            LinearProgressIndicator(
-              value: _downloadProgress,
-              backgroundColor: Theme.of(context).dividerColor.withValues(alpha: 0.3),
-              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.info),
-              minHeight: 8,
-              borderRadius: BorderRadius.circular(4),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Téléchargement en cours... ${(_downloadProgress * 100).toStringAsFixed(0)}%',
-              style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary), fontSize: 13),
-              textAlign: TextAlign.center,
-            ),
-          ],
         ],
       ),
       actions: [
-        if (!_isDownloading && !widget.updateInfo.forceUpdate)
+        if (!widget.updateInfo.forceUpdate)
           TextButton(
             onPressed: () => Navigator.pop(context),
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
             child: Builder(
-              builder: (context) => Text('Plus tard', style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary), fontSize: 16)),
+              builder: (context) => Text(
+                'Plus tard',
+                style: TextStyle(
+                  color: (Theme.of(context).brightness == Brightness.dark
+                      ? AppColors.darkTextSecondary
+                      : AppColors.lightTextSecondary),
+                  fontSize: 16,
+                ),
+              ),
             ),
           ),
-        if (!_isDownloading)
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.info,
-              foregroundColor: Theme.of(context).brightness == Brightness.dark ? (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary) : AppColors.primaryDark,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            ),
-            onPressed: _startDownload,
-            child: const Text('Mettre à jour', style: TextStyle(fontSize: 16)),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.info,
+            foregroundColor: Theme.of(context).brightness == Brightness.dark
+                ? (Theme.of(context).brightness == Brightness.dark
+                      ? AppColors.darkTextPrimary
+                      : AppColors.lightTextPrimary)
+                : AppColors.primaryDark,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           ),
+          onPressed: _openPlayStore,
+          child: const Text(
+            'Ouvrir Play Store',
+            style: TextStyle(fontSize: 16),
+          ),
+        ),
       ],
     );
   }
 }
-
-
-
-
-

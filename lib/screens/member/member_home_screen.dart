@@ -5,9 +5,9 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/services/api_service.dart';
 import '../../core/theme/theme.dart';
+import '../../core/l10n/app_localizations.dart';
 import '../../widgets/common/common_widgets.dart';
 import '../../widgets/responsive/responsive_layout.dart';
-import '../../main.dart';
 import '../auth/login_screen.dart';
 import 'subscription_details_screen.dart';
 import 'edit_profile_screen.dart';
@@ -32,13 +32,6 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
     MemberProfilePage(),
   ];
 
-  final List<String> _titles = [
-    'Accueil',
-    'Ma Carte',
-    'Mon Planning',
-    'Mon Profil',
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -58,7 +51,7 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
   Widget _buildProfileAvatar(bool isActive) {
     // Try to get photo from root level first (from /me endpoint)
     String? profileImageBase64 = _profileData?['profileImage'] as String?;
-    
+
     // Fallback to member.profileImage if not found at root level
     if (profileImageBase64 == null || profileImageBase64.isEmpty) {
       final member = _profileData?['member'] as Map<String, dynamic>?;
@@ -109,31 +102,32 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Get locale service from context
-    final localeService = LocaleServiceScope.of(context);
-    
+    final l10n = AppLocalizations.of(context);
+
+    final titles = [l10n.home, l10n.myCard, l10n.myPlanning, l10n.myProfile];
+
     return ResponsiveScaffold(
-      title: _titles[_currentIndex],
+      title: titles[_currentIndex],
       navigationItems: [
         NavigationItem(
           icon: Icons.home_outlined,
           activeIcon: Icons.home,
-          label: 'Accueil',
+          label: l10n.home,
         ),
         NavigationItem(
           icon: Icons.qr_code_2_outlined,
           activeIcon: Icons.qr_code_2,
-          label: 'Ma Carte',
+          label: l10n.myCard,
         ),
         NavigationItem(
           icon: Icons.fitness_center_outlined,
           activeIcon: Icons.fitness_center,
-          label: 'Mon Planning',
+          label: l10n.myPlanning,
         ),
         NavigationItem(
           icon: Icons.person_outline,
           activeIcon: Icons.person,
-          label: 'Mon Profil',
+          label: l10n.myProfile,
           customWidget: _buildProfileAvatar(false),
           activeCustomWidget: _buildProfileAvatar(true),
         ),
@@ -145,9 +139,6 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
         });
       },
       body: _pages[_currentIndex],
-      actions: [
-        LanguageSwitcherButton(localeService: localeService),
-      ],
     );
   }
 }
@@ -210,7 +201,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                'Session expirée, veuillez vous reconnecter',
+                AppLocalizations.of(context).sessionExpired,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: (Theme.of(context).brightness == Brightness.dark
@@ -232,7 +223,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              '✓ Données mises à jour',
+              '✓ ${AppLocalizations.of(context).updatedData}',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: (Theme.of(context).brightness == Brightness.dark
@@ -248,7 +239,8 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
       }
     } catch (e) {
       if (mounted) {
-        _showErrorWithRetry('Une erreur est survenue', _refreshDashboard);
+        final l10n = AppLocalizations.of(context);
+        _showErrorWithRetry(l10n.errorOccurred, _refreshDashboard);
       }
     } finally {
       if (mounted) {
@@ -261,6 +253,8 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Container(
       color: Theme.of(context).scaffoldBackgroundColor,
       child: RefreshIndicator(
@@ -281,7 +275,9 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                 builder: (context, snapshot) {
                   final theme = Theme.of(context);
                   final profileData = snapshot.data;
-                  final fullName = profileData?['fullName'] ?? 'Membre';
+                  final fullName =
+                      profileData?['fullName'] ??
+                      AppLocalizations.of(context).member;
 
                   // Get subscription info
                   Map<String, dynamic>? subscription;
@@ -305,117 +301,128 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                   final expiresAt =
                       subscription?['expiresAt'] ?? subscription?['endDate'];
 
-                  String statusText = 'Statut inconnu';
+                  final l10n = AppLocalizations.of(context);
+                  String statusText = l10n.statusUnknown;
                   Color statusColor = Colors.grey;
                   IconData statusIcon = Icons.info;
 
                   if (status == 'active') {
-                    statusText = 'Votre abonnement est actif';
+                    statusText = l10n.subscriptionActive;
                     statusColor = theme.colorScheme.onPrimary;
                     statusIcon = Icons.check_circle;
                   } else if (status == 'expired') {
-                    statusText = 'Votre abonnement a expiré';
+                    statusText = l10n.subscriptionExpired;
                     statusColor = AppColors.error;
                     statusIcon = Icons.cancel;
                   } else if (status == 'cancelled') {
-                    statusText = 'Abonnement annulé';
+                    statusText = l10n.subscriptionCancelled;
                     statusColor = Colors.orange.shade200;
                     statusIcon = Icons.warning;
                   } else {
                     // No active subscription - new member
-                    statusText = 'Bienvenue dans notre communauté !';
+                    final l10n = AppLocalizations.of(context);
+                    statusText = l10n.welcomeCommunity;
                     statusColor = theme.colorScheme.onPrimary;
                     statusIcon = Icons.waving_hand;
                   }
 
-                  return Card(
-                    color: theme.colorScheme.primary,
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Padding(
-                      padding: EdgeInsets.all(20.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  'Bienvenue, $fullName !',
-                                  style: TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                    color: theme.colorScheme.onPrimary,
-                                  ),
-                                ),
-                              ),
-                              if (status != 'active' && status != 'unknown')
-                                Icon(statusIcon, color: statusColor, size: 28),
-                            ],
-                          ),
-                          SizedBox(height: 8),
-                          Row(
-                            children: [
-                              if (status == 'unknown')
-                                Icon(statusIcon, color: statusColor, size: 20)
-                              else if (status == 'active')
-                                Icon(
-                                  Icons.check_circle,
-                                  color: statusColor,
-                                  size: 20,
-                                ),
-                              if (status == 'unknown' || status == 'active')
-                                SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  statusText,
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: statusColor,
-                                    fontWeight: status == 'unknown'
-                                        ? FontWeight.w500
-                                        : FontWeight.normal,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          if (status == 'active' && expiresAt != null) ...[
-                            SizedBox(height: 12),
+                  return ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: double.infinity),
+                    child: Card(
+                      color: theme.colorScheme.primary,
+                      elevation: 4,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Padding(
+                        padding: EdgeInsets.all(20.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
                             Row(
                               children: [
-                                Icon(
-                                  Icons.calendar_today,
-                                  color: theme.colorScheme.onPrimary,
-                                  size: 18,
+                                Expanded(
+                                  child: Text(
+                                    AppLocalizations.of(
+                                      context,
+                                    ).welcomeName(fullName),
+                                    style: TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                      color: theme.colorScheme.onPrimary,
+                                    ),
+                                  ),
                                 ),
-                                SizedBox(width: 8),
-                                Text(
-                                  'Expire le: ${_formatDate(expiresAt)}',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: theme.colorScheme.onPrimary,
-                                    fontWeight: FontWeight.w500,
+                                if (status != 'active' && status != 'unknown')
+                                  Icon(
+                                    statusIcon,
+                                    color: statusColor,
+                                    size: 28,
+                                  ),
+                              ],
+                            ),
+                            SizedBox(height: 8),
+                            Row(
+                              children: [
+                                if (status == 'unknown')
+                                  Icon(statusIcon, color: statusColor, size: 20)
+                                else if (status == 'active')
+                                  Icon(
+                                    Icons.check_circle,
+                                    color: statusColor,
+                                    size: 20,
+                                  ),
+                                if (status == 'unknown' || status == 'active')
+                                  SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    statusText,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: statusColor,
+                                      fontWeight: status == 'unknown'
+                                          ? FontWeight.w500
+                                          : FontWeight.normal,
+                                    ),
                                   ),
                                 ),
                               ],
                             ),
-                          ],
-                          if (status == 'unknown') ...[
-                            SizedBox(height: 12),
-                            Text(
-                              'Rendez-vous à la réception pour activer votre abonnement',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: theme.colorScheme.onPrimary.withValues(
-                                  alpha: 0.9,
+                            if (status == 'active' && expiresAt != null) ...[
+                              SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.calendar_today,
+                                    color: theme.colorScheme.onPrimary,
+                                    size: 18,
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    '${AppLocalizations.of(context).expiresOn} ${_formatDate(expiresAt)}',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: theme.colorScheme.onPrimary,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                            if (status == 'unknown') ...[
+                              SizedBox(height: 12),
+                              Text(
+                                AppLocalizations.of(context).visitReception,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: theme.colorScheme.onPrimary.withValues(
+                                    alpha: 0.9,
+                                  ),
                                 ),
                               ),
-                            ),
+                            ],
                           ],
-                        ],
+                        ),
                       ),
                     ),
                   );
@@ -425,7 +432,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
 
               // Gym information
               Text(
-                'Ma Salle de Sport',
+                l10n.myGym,
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -440,7 +447,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
 
               // Next workout section
               Text(
-                'Mon Prochain Entraînement',
+                l10n.myNextWorkout,
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -455,7 +462,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
 
               // Stats cards
               Text(
-                'Mes Statistiques',
+                l10n.myStats,
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -491,49 +498,52 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
 
                   if (!hasActiveSubscription) {
                     // Show motivational message for new members
-                    return Card(
-                      color: Theme.of(context).cardTheme.color,
-                      elevation: 4,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Padding(
-                        padding: EdgeInsets.all(24.0),
-                        child: Column(
-                          children: [
-                            Icon(
-                              Icons.emoji_events,
-                              size: 48,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                            SizedBox(height: 16),
-                            Text(
-                              'Votre parcours commence ici !',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color:
-                                    (Theme.of(context).brightness ==
-                                        Brightness.dark
-                                    ? AppColors.darkTextPrimary
-                                    : AppColors.lightTextPrimary),
+                    return ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: double.infinity),
+                      child: Card(
+                        color: Theme.of(context).cardTheme.color,
+                        elevation: 4,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Padding(
+                          padding: EdgeInsets.all(24.0),
+                          child: Column(
+                            children: [
+                              Icon(
+                                Icons.emoji_events,
+                                size: 48,
+                                color: Theme.of(context).colorScheme.primary,
                               ),
-                            ),
-                            SizedBox(height: 8),
-                            Text(
-                              'Vos statistiques apparaîtront ici dès que vous commencerez vos entraînements',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 14,
-                                color:
-                                    (Theme.of(context).brightness ==
-                                        Brightness.dark
-                                    ? AppColors.darkTextSecondary
-                                    : AppColors.lightTextSecondary),
+                              SizedBox(height: 16),
+                              Text(
+                                l10n.yourJourneyStarts,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color:
+                                      (Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? AppColors.darkTextPrimary
+                                      : AppColors.lightTextPrimary),
+                                ),
                               ),
-                            ),
-                          ],
+                              SizedBox(height: 8),
+                              Text(
+                                l10n.statsAppearWhenTraining,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color:
+                                      (Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? AppColors.darkTextSecondary
+                                      : AppColors.lightTextSecondary),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     );
@@ -544,7 +554,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                     children: [
                       Expanded(
                         child: _buildStatCard(
-                          'Visites ce mois',
+                          l10n.visitsThisMonth,
                           '12',
                           Icons.calendar_today,
                           AppColors.info,
@@ -553,7 +563,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                       SizedBox(width: 12),
                       Expanded(
                         child: _buildStatCard(
-                          'Total visites',
+                          l10n.totalVisits,
                           '148',
                           Icons.fitness_center,
                           AppColors.success,
@@ -575,17 +585,20 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
       future: _loadNextWorkout(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Card(
-            color: Theme.of(context).cardTheme.color,
-            elevation: 4,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Padding(
-              padding: EdgeInsets.all(20.0),
-              child: Center(
-                child: CircularProgressIndicator(
-                  color: Theme.of(context).colorScheme.primary,
+          return ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: double.infinity),
+            child: Card(
+              color: Theme.of(context).cardTheme.color,
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Padding(
+                padding: EdgeInsets.all(20.0),
+                child: Center(
+                  child: CircularProgressIndicator(
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                 ),
               ),
             ),
@@ -617,97 +630,111 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
 
               final hasActiveSubscription = subscription?['status'] == 'active';
 
-              return Card(
-                color: Theme.of(context).cardTheme.color,
-                elevation: 4,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Padding(
-                  padding: EdgeInsets.all(20.0),
-                  child: Column(
-                    children: [
-                      Icon(
-                        hasActiveSubscription
-                            ? Icons.fitness_center
-                            : Icons.card_membership,
-                        size: 48,
-                        color: hasActiveSubscription
-                            ? (Theme.of(context).brightness == Brightness.dark
-                                  ? AppColors.darkTextSecondary
-                                  : AppColors.lightTextSecondary)
-                            : Theme.of(context).colorScheme.primary,
-                      ),
-                      SizedBox(height: 12),
-                      Text(
-                        hasActiveSubscription
-                            ? 'Aucun entraînement prévu'
-                            : 'Commencez votre parcours fitness',
-                        style: TextStyle(
-                          fontSize: 16,
+              return ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: double.infinity),
+                child: Card(
+                  color: Theme.of(context).cardTheme.color,
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(20.0),
+                    child: Column(
+                      children: [
+                        Icon(
+                          hasActiveSubscription
+                              ? Icons.fitness_center
+                              : Icons.card_membership,
+                          size: 48,
                           color: hasActiveSubscription
                               ? (Theme.of(context).brightness == Brightness.dark
                                     ? AppColors.darkTextSecondary
                                     : AppColors.lightTextSecondary)
-                              : (Theme.of(context).brightness == Brightness.dark
-                                    ? AppColors.darkTextPrimary
-                                    : AppColors.lightTextPrimary),
-                          fontWeight: FontWeight.w500,
+                              : Theme.of(context).colorScheme.primary,
                         ),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        hasActiveSubscription
-                            ? 'Votre coach vous assignera bientôt un programme'
-                            : 'Obtenez un abonnement pour accéder à votre programme personnalisé',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color:
-                              (Theme.of(context).brightness == Brightness.dark
-                              ? AppColors.darkTextSecondary
-                              : AppColors.lightTextSecondary),
-                        ),
-                      ),
-                      if (!hasActiveSubscription) ...[
-                        SizedBox(height: 16),
-                        ElevatedButton.icon(
-                          onPressed: () {
-                            // Navigate to subscription page or show contact message
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Contactez la réception pour choisir votre abonnement',
-                                  textAlign: TextAlign.center,
-                                ),
-                                backgroundColor: Theme.of(
+                        SizedBox(height: 12),
+                        Text(
+                          hasActiveSubscription
+                              ? AppLocalizations.of(context).noWorkoutPlanned
+                              : AppLocalizations.of(
                                   context,
-                                ).colorScheme.primary,
-                                duration: Duration(seconds: 3),
-                              ),
-                            );
-                          },
-                          icon: Icon(Icons.arrow_forward, size: 18),
-                          label: Text('Obtenir un abonnement'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Theme.of(
-                              context,
-                            ).colorScheme.primary,
-                            foregroundColor:
-                                (Theme.of(context).brightness == Brightness.dark
-                                ? AppColors.darkTextPrimary
-                                : AppColors.lightTextPrimary),
-                            padding: EdgeInsets.symmetric(
-                              vertical: 12,
-                              horizontal: 24,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
+                                ).startFitnessJourney,
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: hasActiveSubscription
+                                ? (Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? AppColors.darkTextSecondary
+                                      : AppColors.lightTextSecondary)
+                                : (Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? AppColors.darkTextPrimary
+                                      : AppColors.lightTextPrimary),
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
+                        SizedBox(height: 4),
+                        Text(
+                          hasActiveSubscription
+                              ? AppLocalizations.of(context).coachWillAssign
+                              : AppLocalizations.of(context).getSubscription,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color:
+                                (Theme.of(context).brightness == Brightness.dark
+                                ? AppColors.darkTextSecondary
+                                : AppColors.lightTextSecondary),
+                          ),
+                        ),
+                        if (!hasActiveSubscription) ...[
+                          SizedBox(height: 16),
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              // Navigate to subscription page or show contact message
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    AppLocalizations.of(
+                                      context,
+                                    ).contactReceptionSubscription,
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  backgroundColor: Theme.of(
+                                    context,
+                                  ).colorScheme.primary,
+                                  duration: Duration(seconds: 3),
+                                ),
+                              );
+                            },
+                            icon: Icon(Icons.arrow_forward, size: 18),
+                            label: Text(
+                              AppLocalizations.of(
+                                context,
+                              ).getSubscriptionButton,
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Theme.of(
+                                context,
+                              ).colorScheme.primary,
+                              foregroundColor:
+                                  (Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? AppColors.darkTextPrimary
+                                  : AppColors.lightTextPrimary),
+                              padding: EdgeInsets.symmetric(
+                                vertical: 12,
+                                horizontal: 24,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                          ),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
                 ),
               );
@@ -728,12 +755,12 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
         IconData statusIcon;
 
         if (isToday) {
-          workoutStatus = 'Aujourd\'hui';
+          workoutStatus = AppLocalizations.of(context).today;
           statusColor = AppColors.success;
           statusIcon = Icons.play_circle_outline;
         } else {
           // Formater la date pour afficher "Prochain : DD/MM"
-          workoutStatus = 'Prochain entraînement';
+          workoutStatus = AppLocalizations.of(context).nextWorkout;
           statusColor = Theme.of(context).colorScheme.primary;
           statusIcon = Icons.schedule;
 
@@ -743,176 +770,183 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
               final dayName = _getDayName(parsedDate.weekday % 7);
               workoutStatus = '$dayName ${parsedDate.day}/${parsedDate.month}';
             } catch (_) {
-              workoutStatus = day?['dayName'] ?? 'Prochain';
+              workoutStatus =
+                  day?['dayName'] ?? AppLocalizations.of(context).nextWorkout;
             }
           }
         }
 
-        return Card(
-          color: Theme.of(context).cardTheme.color,
-          elevation: 4,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Padding(
-            padding: EdgeInsets.all(20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header
-                Row(
-                  children: [
-                    Container(
-                      padding: EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: statusColor.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(12),
+        return ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: double.infinity),
+          child: Card(
+            color: Theme.of(context).cardTheme.color,
+            elevation: 4,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Padding(
+              padding: EdgeInsets.all(20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header
+                  Row(
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: statusColor.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(statusIcon, color: statusColor, size: 28),
                       ),
-                      child: Icon(statusIcon, color: statusColor, size: 28),
-                    ),
-                    SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            planning?['title'] ?? 'Mon Entraînement',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color:
-                                  (Theme.of(context).brightness ==
-                                      Brightness.dark
-                                  ? AppColors.darkTextPrimary
-                                  : AppColors.lightTextPrimary),
-                            ),
-                          ),
-                          SizedBox(height: 4),
-                          Row(
-                            children: [
-                              Container(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: statusColor.withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(
-                                    color: statusColor.withValues(alpha: 0.5),
-                                    width: 1,
-                                  ),
-                                ),
-                                child: Text(
-                                  workoutStatus,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: statusColor,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-
-                if (exercises.isNotEmpty) ...[
-                  SizedBox(height: 16),
-                  Divider(color: Theme.of(context).dividerColor),
-                  SizedBox(height: 16),
-
-                  // Exercises preview (show first 3)
-                  ...exercises.take(3).map((ex) {
-                    final exerciseData = ex as Map<String, dynamic>;
-                    final exercise =
-                        exerciseData['exercise'] as Map<String, dynamic>?;
-                    final sets = exerciseData['sets'] as int?;
-                    final reps = exerciseData['reps'] as int?;
-
-                    return Padding(
-                      padding: EdgeInsets.only(bottom: 12.0),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 8,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.primary,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              exercise?['name'] ?? 'Exercice',
+                      SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              planning?['title'] ??
+                                  AppLocalizations.of(context).myWorkout,
                               style: TextStyle(
-                                fontSize: 15,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
                                 color:
                                     (Theme.of(context).brightness ==
                                         Brightness.dark
                                     ? AppColors.darkTextPrimary
                                     : AppColors.lightTextPrimary),
-                                fontWeight: FontWeight.w500,
                               ),
                             ),
-                          ),
-                          if (sets != null && reps != null)
-                            Text(
-                              '$sets × $reps',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color:
-                                    (Theme.of(context).brightness ==
-                                        Brightness.dark
-                                    ? AppColors.darkTextSecondary
-                                    : AppColors.lightTextSecondary),
-                              ),
+                            SizedBox(height: 4),
+                            Row(
+                              children: [
+                                Container(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: statusColor.withValues(alpha: 0.2),
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(
+                                      color: statusColor.withValues(alpha: 0.5),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    workoutStatus,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: statusColor,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                        ],
+                          ],
+                        ),
                       ),
-                    );
-                  }),
+                    ],
+                  ),
 
-                  if (exercises.length > 3) ...[
-                    SizedBox(height: 4),
-                    Text(
-                      '+${exercises.length - 3} autres exercices',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Theme.of(context).colorScheme.primary,
-                        fontWeight: FontWeight.w500,
+                  if (exercises.isNotEmpty) ...[
+                    SizedBox(height: 16),
+                    Divider(color: Theme.of(context).dividerColor),
+                    SizedBox(height: 16),
+
+                    // Exercises preview (show first 3)
+                    ...exercises.take(3).map((ex) {
+                      final exerciseData = ex as Map<String, dynamic>;
+                      final exercise =
+                          exerciseData['exercise'] as Map<String, dynamic>?;
+                      final sets = exerciseData['sets'] as int?;
+                      final reps = exerciseData['reps'] as int?;
+
+                      return Padding(
+                        padding: EdgeInsets.only(bottom: 12.0),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.primary,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                exercise?['name'] ?? 'Exercice',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  color:
+                                      (Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? AppColors.darkTextPrimary
+                                      : AppColors.lightTextPrimary),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                            if (sets != null && reps != null)
+                              Text(
+                                '$sets × $reps',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color:
+                                      (Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? AppColors.darkTextSecondary
+                                      : AppColors.lightTextSecondary),
+                                ),
+                              ),
+                          ],
+                        ),
+                      );
+                    }),
+
+                    if (exercises.length > 3) ...[
+                      SizedBox(height: 4),
+                      Text(
+                        '+${exercises.length - 3} autres exercices',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Theme.of(context).colorScheme.primary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                    SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () => _showNextWorkoutPopup(data),
+                        icon: Icon(Icons.visibility, size: 18),
+                        label: Text(AppLocalizations.of(context).viewDetails),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(
+                            context,
+                          ).colorScheme.primary,
+                          foregroundColor:
+                              (Theme.of(context).brightness == Brightness.dark
+                              ? AppColors.darkTextPrimary
+                              : AppColors.lightTextPrimary),
+                          padding: EdgeInsets.symmetric(
+                            vertical: 12,
+                            horizontal: 24,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
                       ),
                     ),
                   ],
-                  SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: () => _showNextWorkoutPopup(data),
-                      icon: Icon(Icons.visibility, size: 18),
-                      label: Text('Voir les détails'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.primary,
-                        foregroundColor:
-                            (Theme.of(context).brightness == Brightness.dark
-                            ? AppColors.darkTextPrimary
-                            : AppColors.lightTextPrimary),
-                        padding: EdgeInsets.symmetric(
-                          vertical: 12,
-                          horizontal: 24,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                    ),
-                  ),
                 ],
-              ],
+              ),
             ),
           ),
         );
@@ -963,9 +997,11 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
     // Déterminer le statut de l'entraînement
     String workoutStatus;
     if (isToday) {
-      workoutStatus = 'Aujourd\'hui';
+      final l10n = AppLocalizations.of(context);
+      workoutStatus = l10n.today;
     } else {
-      workoutStatus = 'Prochain entraînement';
+      final l10n = AppLocalizations.of(context);
+      workoutStatus = l10n.nextWorkout;
       if (date != null) {
         try {
           final parsedDate = DateTime.parse(date);
@@ -1023,7 +1059,8 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              planning?['title'] ?? 'Mon Entraînement',
+                              planning?['title'] ??
+                                  AppLocalizations.of(context).myWorkout,
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -1251,7 +1288,11 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                                           Icons.help_outline,
                                           size: 18,
                                         ),
-                                        label: Text('Demander de l\'aide'),
+                                        label: Text(
+                                          AppLocalizations.of(
+                                            context,
+                                          ).askForHelp,
+                                        ),
                                         style: OutlinedButton.styleFrom(
                                           foregroundColor: Theme.of(
                                             context,
@@ -1329,10 +1370,11 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
+        final l10n = AppLocalizations.of(context);
         return AlertDialog(
           backgroundColor: Theme.of(context).cardTheme.color,
           title: Text(
-            'Demander de l\'aide',
+            l10n.askForHelp,
             style: TextStyle(
               color: (Theme.of(context).brightness == Brightness.dark
                   ? AppColors.darkTextPrimary
@@ -1340,7 +1382,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
             ),
           ),
           content: Text(
-            'Voulez-vous demander de l\'aide pour l\'exercice "$exerciseName" ?',
+            l10n.askHelpForExercise(exerciseName),
             style: TextStyle(
               color: (Theme.of(context).brightness == Brightness.dark
                   ? AppColors.darkTextSecondary
@@ -1393,13 +1435,15 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
         if (success) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('✅ Demande d\'aide envoyée pour $exerciseName'),
+              content: Text(
+                AppLocalizations.of(context).helpRequestSent(exerciseName),
+              ),
               backgroundColor: AppColors.success,
             ),
           );
         } else {
           _showErrorWithRetry(
-            'Une erreur est survenue',
+            AppLocalizations.of(context).errorOccurred,
             () => _requestHelp(exerciseName),
           );
         }
@@ -1407,7 +1451,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
     } catch (e) {
       if (mounted) {
         _showErrorWithRetry(
-          'Une erreur est survenue',
+          AppLocalizations.of(context).errorOccurred,
           () => _requestHelp(exerciseName),
         );
       }
@@ -1497,7 +1541,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
             child: Padding(
               padding: EdgeInsets.all(20.0),
               child: Text(
-                'Aucune salle assignée',
+                AppLocalizations.of(context).noGymAssigned,
                 style: TextStyle(
                   color: (Theme.of(context).brightness == Brightness.dark
                       ? AppColors.darkTextSecondary
@@ -1508,169 +1552,178 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
           );
         }
 
-        return Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Theme.of(context).brightness == Brightness.dark
-                    ? Color(0xFF2A2D3A)
-                    : Color(0xFFF5F5F7),
-                Theme.of(context).brightness == Brightness.dark
-                    ? Color(0xFF1F2128)
-                    : Color(0xFFFFFFFF),
+        return SizedBox(
+          width: double.infinity,
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Theme.of(context).brightness == Brightness.dark
+                      ? Color(0xFF2A2D3A)
+                      : Color(0xFFF5F5F7),
+                  Theme.of(context).brightness == Brightness.dark
+                      ? Color(0xFF1F2128)
+                      : Color(0xFFFFFFFF),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Color(0xFF3A3D4A).withValues(alpha: 0.5)
+                    : Color(0xFFE0E0E0),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.black.withValues(alpha: 0.3)
+                      : Colors.black.withValues(alpha: 0.08),
+                  blurRadius: 12,
+                  offset: Offset(0, 4),
+                ),
               ],
             ),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? Color(0xFF3A3D4A).withValues(alpha: 0.5)
-                  : Color(0xFFE0E0E0),
-              width: 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.black.withValues(alpha: 0.3)
-                    : Colors.black.withValues(alpha: 0.08),
-                blurRadius: 12,
-                offset: Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () => _showGymDetails(context, gym),
-              borderRadius: BorderRadius.circular(20),
-              child: Padding(
-                padding: EdgeInsets.all(20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [
-                                AppColors.primary,
-                                AppColors.primary.withValues(alpha: 0.7),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () => _showGymDetails(context, gym),
+                borderRadius: BorderRadius.circular(20),
+                child: Padding(
+                  padding: EdgeInsets.all(20.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  AppColors.primary,
+                                  AppColors.primary.withValues(alpha: 0.7),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(14),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.primary.withValues(
+                                    alpha: 0.3,
+                                  ),
+                                  blurRadius: 8,
+                                  offset: Offset(0, 2),
+                                ),
                               ],
                             ),
-                            borderRadius: BorderRadius.circular(14),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.primary.withValues(alpha: 0.3),
-                                blurRadius: 8,
-                                offset: Offset(0, 2),
-                              ),
-                            ],
+                            child: Icon(
+                              Icons.fitness_center,
+                              color: Colors.white,
+                              size: 28,
+                            ),
                           ),
-                          child: Icon(
-                            Icons.fitness_center,
-                            color: Colors.white,
-                            size: 28,
-                          ),
-                        ),
-                        SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                gym['name'] ?? 'Ma Salle',
-                                style: TextStyle(
-                                  fontSize: 19,
-                                  fontWeight: FontWeight.bold,
-                                  color:
-                                      (Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? AppColors.darkTextPrimary
-                                      : AppColors.lightTextPrimary),
-                                  letterSpacing: 0.3,
-                                ),
-                              ),
-                              SizedBox(height: 6),
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.location_on,
-                                    size: 15,
+                          SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  gym['name'] ??
+                                      AppLocalizations.of(context).myGymName,
+                                  style: TextStyle(
+                                    fontSize: 19,
+                                    fontWeight: FontWeight.bold,
                                     color:
                                         (Theme.of(context).brightness ==
                                             Brightness.dark
-                                        ? AppColors.darkTextSecondary
-                                        : AppColors.lightTextSecondary),
+                                        ? AppColors.darkTextPrimary
+                                        : AppColors.lightTextPrimary),
+                                    letterSpacing: 0.3,
                                   ),
-                                  SizedBox(width: 6),
-                                  Expanded(
-                                    child: Text(
-                                      gym['address'] ?? 'Adresse non disponible',
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        color:
-                                            (Theme.of(context).brightness ==
-                                                Brightness.dark
-                                            ? AppColors.darkTextSecondary
-                                            : AppColors.lightTextSecondary),
-                                        height: 1.3,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
+                                ),
+                                SizedBox(height: 6),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.location_on,
+                                      size: 15,
+                                      color:
+                                          (Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? AppColors.darkTextSecondary
+                                          : AppColors.lightTextSecondary),
                                     ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        Icon(
-                          Icons.arrow_forward_ios,
-                          color:
-                              (Theme.of(context).brightness == Brightness.dark
-                                  ? AppColors.darkTextSecondary
-                                  : AppColors.lightTextSecondary)
-                                  .withValues(alpha: 0.6),
-                          size: 18,
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 18),
-
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildGymInfoChip(
-                            Icons.access_time,
-                            'Horaires',
-                            Theme.of(context).brightness == Brightness.dark
-                                ? Color(0xFF3A8BFF)
-                                : Color(0xFF2196F3),
-                            onTap: null,
-                          ),
-                        ),
-                        SizedBox(width: 12),
-                        Expanded(
-                          child: _buildGymInfoChip(
-                            Icons.navigation,
-                            'Navigation',
-                            Theme.of(context).brightness == Brightness.dark
-                                ? Color(0xFF4CAF50)
-                                : Color(0xFF2E7D32),
-                            onTap: () => _openInGoogleMaps(
-                              gym['address'] ?? '',
-                              gym['name'],
+                                    SizedBox(width: 6),
+                                    Expanded(
+                                      child: Text(
+                                        gym['address'] ??
+                                            AppLocalizations.of(
+                                              context,
+                                            ).addressUnavailable,
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          color:
+                                              (Theme.of(context).brightness ==
+                                                  Brightness.dark
+                                              ? AppColors.darkTextSecondary
+                                              : AppColors.lightTextSecondary),
+                                          height: 1.3,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                          Icon(
+                            Icons.arrow_forward_ios,
+                            color:
+                                (Theme.of(context).brightness == Brightness.dark
+                                        ? AppColors.darkTextSecondary
+                                        : AppColors.lightTextSecondary)
+                                    .withValues(alpha: 0.6),
+                            size: 18,
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 18),
+
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildGymInfoChip(
+                              Icons.access_time,
+                              'Horaires',
+                              Theme.of(context).brightness == Brightness.dark
+                                  ? Color(0xFF3A8BFF)
+                                  : Color(0xFF2196F3),
+                              onTap: null,
+                            ),
+                          ),
+                          SizedBox(width: 12),
+                          Expanded(
+                            child: _buildGymInfoChip(
+                              Icons.navigation,
+                              'Navigation',
+                              Theme.of(context).brightness == Brightness.dark
+                                  ? Color(0xFF4CAF50)
+                                  : Color(0xFF2E7D32),
+                              onTap: () => _openInGoogleMaps(
+                                gym['address'] ?? '',
+                                gym['name'],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -1685,7 +1738,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Adresse non disponible'),
+            content: Text(AppLocalizations.of(context).addressUnavailable),
             backgroundColor: AppColors.error,
           ),
         );
@@ -1727,7 +1780,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
     VoidCallback? onTap,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     final chip = Container(
       padding: EdgeInsets.symmetric(vertical: 12, horizontal: 14),
       decoration: BoxDecoration(
@@ -1741,11 +1794,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            icon,
-            size: 18,
-            color: color,
-          ),
+          Icon(icon, size: 18, color: color),
           SizedBox(width: 8),
           Text(
             label,
@@ -1836,12 +1885,13 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
         final profileData = await _authService.getCachedUserProfile();
         if (profileData == null) {
           if (!mounted) return;
+          final l10n = AppLocalizations.of(context);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Une erreur est survenue'),
+              content: Text(l10n.errorOccurred),
               backgroundColor: AppColors.error,
               action: SnackBarAction(
-                label: 'Réessayer',
+                label: l10n.retry,
                 textColor: Theme.of(context).colorScheme.primary,
                 onPressed: _toggleQrCode,
               ),
@@ -1857,12 +1907,13 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
         final token = await _authService.loadToken();
         if (token == null) {
           if (!mounted) return;
+          final l10n = AppLocalizations.of(context);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Une erreur est survenue'),
+              content: Text(l10n.errorOccurred),
               backgroundColor: AppColors.error,
               action: SnackBarAction(
-                label: 'Réessayer',
+                label: l10n.retry,
                 textColor: Theme.of(context).colorScheme.primary,
                 onPressed: _toggleQrCode,
               ),
@@ -1880,12 +1931,13 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
         if (!mounted) return;
 
         if (qrImageBytes == null) {
+          final l10n = AppLocalizations.of(context);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Une erreur est survenue'),
+              content: Text(l10n.errorLoadingQr),
               backgroundColor: AppColors.error,
               action: SnackBarAction(
-                label: 'Réessayer',
+                label: l10n.retry,
                 textColor: Theme.of(context).colorScheme.primary,
                 onPressed: _toggleQrCode,
               ),
@@ -1905,12 +1957,13 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
       } catch (e) {
         if (!mounted) return;
 
+        final l10n = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erreur: $e'),
+            content: Text(l10n.errorLoadingQr),
             backgroundColor: AppColors.error,
             action: SnackBarAction(
-              label: 'Réessayer',
+              label: l10n.retry,
               textColor: Theme.of(context).colorScheme.primary,
               onPressed: _toggleQrCode,
             ),
@@ -1941,7 +1994,7 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                'Ma Carte Membre',
+                AppLocalizations.of(context).myMemberCard,
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
@@ -1952,7 +2005,7 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
               ),
               SizedBox(height: 16),
               Text(
-                'Scannez ce code à l\'entrée',
+                AppLocalizations.of(context).scanAtEntrance,
                 style: TextStyle(
                   fontSize: 16,
                   color: (Theme.of(context).brightness == Brightness.dark
@@ -1973,7 +2026,7 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
                       ),
                       SizedBox(height: 20),
                       Text(
-                        'Chargement du QR code...',
+                        AppLocalizations.of(context).loadingQrCode,
                         style: TextStyle(
                           color:
                               (Theme.of(context).brightness == Brightness.dark
@@ -2059,7 +2112,7 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
                             ),
                             SizedBox(height: 16),
                             Text(
-                              'Présentez ce code à l\'entrée',
+                              AppLocalizations.of(context).presentThisCode,
                               style: TextStyle(
                                 color:
                                     (Theme.of(context).brightness ==
@@ -2080,7 +2133,7 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
                       onPressed: _toggleQrCode,
                       icon: Icon(Icons.visibility_off, size: 24),
                       label: Text(
-                        'Masquer le QR Code',
+                        AppLocalizations.of(context).hideQrCode,
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -2108,7 +2161,7 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
                   onPressed: _toggleQrCode,
                   icon: Icon(Icons.qr_code_2, size: 32),
                   label: Text(
-                    'Afficher mon QR Code',
+                    AppLocalizations.of(context).showMyQrCode,
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                   ),
                   style: ElevatedButton.styleFrom(
@@ -2131,7 +2184,7 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
               if (!_showQrCode && !_isLoading) ...[
                 SizedBox(height: 40),
                 Text(
-                  'Présentez votre QR code au personnel\npour enregistrer votre présence',
+                  AppLocalizations.of(context).presentQrToStaff,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 14,
@@ -2180,7 +2233,7 @@ class MemberSubscriptionPage extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Abonnement Premium',
+                          AppLocalizations.of(context).premiumSubscription,
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
@@ -2200,7 +2253,7 @@ class MemberSubscriptionPage extends StatelessWidget {
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
-                            'ACTIF',
+                            AppLocalizations.of(context).activeStatus,
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
@@ -2219,12 +2272,12 @@ class MemberSubscriptionPage extends StatelessWidget {
                     _buildSubscriptionDetail(context, 'Prix', '50 € / mois'),
                     _buildSubscriptionDetail(
                       context,
-                      'Date de début',
+                      AppLocalizations.of(context).startDate,
                       '1 Nov 2025',
                     ),
                     _buildSubscriptionDetail(
                       context,
-                      'Date d\'expiration',
+                      AppLocalizations.of(context).expirationDate,
                       '31 Déc 2025',
                     ),
                   ],
@@ -2235,7 +2288,7 @@ class MemberSubscriptionPage extends StatelessWidget {
 
             // Payment history
             Text(
-              'Historique des Paiements',
+              AppLocalizations.of(context).paymentHistory,
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -2424,7 +2477,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
 
       if (token == null || profileData == null) {
         setState(() {
-          _errorMessage = 'Session expirée';
+          _errorMessage = AppLocalizations.of(context).sessionExpiredShort;
           _isLoading = false;
           _isRefreshing = false;
         });
@@ -2449,7 +2502,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
         _isLoading = false;
         _isRefreshing = false;
       });
-      
+
       // Also reload goals when refreshing
       _loadGoals();
     } catch (e) {
@@ -2551,7 +2604,8 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        planning?['title'] ?? 'Mon Entraînement',
+                        planning?['title'] ??
+                            AppLocalizations.of(context).myWorkout,
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -2576,7 +2630,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                           ),
                         ),
                         child: Text(
-                          'Aujourd\'hui',
+                          AppLocalizations.of(context).today,
                           style: TextStyle(
                             fontSize: 12,
                             color: AppColors.success,
@@ -2688,7 +2742,8 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              planning?['title'] ?? 'Mon Entraînement',
+                              planning?['title'] ??
+                                  AppLocalizations.of(context).myWorkout,
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -2734,7 +2789,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                           child: Padding(
                             padding: EdgeInsets.all(32.0),
                             child: Text(
-                              'Aucun exercice prévu',
+                              AppLocalizations.of(context).noExercisePlanned,
                               style: TextStyle(
                                 color:
                                     (Theme.of(context).brightness ==
@@ -2886,7 +2941,11 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                         );
                                       },
                                       icon: Icon(Icons.help_outline, size: 18),
-                                      label: Text('Demander aide'),
+                                      label: Text(
+                                        AppLocalizations.of(
+                                          context,
+                                        ).requestHelp,
+                                      ),
                                       style: OutlinedButton.styleFrom(
                                         foregroundColor: Theme.of(
                                           context,
@@ -3003,7 +3062,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Theme.of(context).colorScheme.primary,
                       ),
-                      child: Text('Réessayer'),
+                      child: Text(AppLocalizations.of(context).retry),
                     ),
                   ],
                 ),
@@ -3014,7 +3073,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                   // Goals carousel section
                   if (_goals != null && _goals!.isNotEmpty) ...[
                     Text(
-                      '🎯 Mes Objectifs',
+                      AppLocalizations.of(context).myGoals,
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -3072,7 +3131,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                             _buildTodayWorkoutCard(snapshot.data!),
                             SizedBox(height: 24),
                             Text(
-                              'Mes Plannings',
+                              AppLocalizations.of(context).myPlannings,
                               style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
@@ -3108,15 +3167,20 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                             Icon(
                               Icons.fitness_center,
                               size: 80,
-                              color: (Theme.of(context).brightness == Brightness.dark
-                                  ? AppColors.darkTextSecondary
-                                  : AppColors.lightTextSecondary).withValues(alpha: 0.5),
+                              color:
+                                  (Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? AppColors.darkTextSecondary
+                                          : AppColors.lightTextSecondary)
+                                      .withValues(alpha: 0.5),
                             ),
                             SizedBox(height: 16),
                             Text(
                               'Aucun planning disponible',
                               style: TextStyle(
-                                color: (Theme.of(context).brightness == Brightness.dark
+                                color:
+                                    (Theme.of(context).brightness ==
+                                        Brightness.dark
                                     ? AppColors.darkTextSecondary
                                     : AppColors.lightTextSecondary),
                                 fontSize: 18,
@@ -3128,7 +3192,9 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                               'Votre coach vous assignera bientôt\nun programme d\'entraînement',
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                                color: (Theme.of(context).brightness == Brightness.dark
+                                color:
+                                    (Theme.of(context).brightness ==
+                                        Brightness.dark
                                     ? AppColors.darkTextSecondary
                                     : AppColors.lightTextSecondary),
                                 fontSize: 14,
@@ -3200,7 +3266,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                         ),
                         SizedBox(width: 4),
                         Text(
-                          'Prévu',
+                          AppLocalizations.of(context).upcoming,
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.bold,
@@ -3257,7 +3323,10 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                 ),
                 SizedBox(width: 8),
                 Text(
-                  'Du ${_formatDateSimple(startDate)} au ${_formatDateSimple(endDate)}',
+                  AppLocalizations.of(context).fromToDates(
+                    _formatDateSimple(startDate),
+                    _formatDateSimple(endDate),
+                  ),
                   style: TextStyle(
                     fontSize: 13,
                     color: (Theme.of(context).brightness == Brightness.dark
@@ -3281,7 +3350,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                   ),
                   SizedBox(width: 8),
                   Text(
-                    'Coach: ${coach['fullName'] ?? 'N/A'}',
+                    '${AppLocalizations.of(context).coach}: ${coach['fullName'] ?? 'N/A'}',
                     style: TextStyle(
                       fontSize: 13,
                       color: (Theme.of(context).brightness == Brightness.dark
@@ -3305,7 +3374,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                 ),
                 SizedBox(width: 8),
                 Text(
-                  '${days.length} jour${days.length > 1 ? 's' : ''} d\'entraînement',
+                  AppLocalizations.of(context).trainingDays(days.length),
                   style: TextStyle(
                     fontSize: 13,
                     color: Theme.of(context).colorScheme.primary,
@@ -3368,14 +3437,14 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
       [Color(0xFF10B981), Color(0xFF059669)], // Emerald to Green - Growth
       [Color(0xFFEC4899), Color(0xFF8B5CF6)], // Pink to Purple - Dynamic
     ];
-    
+
     final gradientColors = gradients[index % gradients.length];
-    
+
     // Status configuration
     IconData statusIcon;
     String statusText;
     Color statusBgColor;
-    
+
     switch (status) {
       case 'achieved':
         statusIcon = Icons.stars_rounded;
@@ -3396,12 +3465,18 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
     }
 
     return GestureDetector(
-      onTap: () => _showGoalDetailsModal(goal, gradientColors, statusIcon, statusText, statusBgColor),
+      onTap: () => _showGoalDetailsModal(
+        goal,
+        gradientColors,
+        statusIcon,
+        statusText,
+        statusBgColor,
+      ),
       child: LayoutBuilder(
         builder: (context, constraints) {
           final screenWidth = MediaQuery.of(context).size.width;
           final cardWidth = screenWidth - (16 * 2); // padding left/right
-          
+
           return Container(
             width: cardWidth,
             decoration: BoxDecoration(
@@ -3471,7 +3546,10 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                             children: [
                               // Status badge compact
                               Container(
-                                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 6,
+                                ),
                                 decoration: BoxDecoration(
                                   color: statusBgColor.withValues(alpha: 0.3),
                                   borderRadius: BorderRadius.circular(12),
@@ -3483,7 +3561,11 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(statusIcon, size: 14, color: Colors.white),
+                                    Icon(
+                                      statusIcon,
+                                      size: 14,
+                                      color: Colors.white,
+                                    ),
                                     SizedBox(width: 4),
                                     Text(
                                       statusText,
@@ -3544,7 +3626,10 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                           // Measurements compact horizontal
                           if (startWeight != null || startWaist != null)
                             Container(
-                              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 10,
+                              ),
                               decoration: BoxDecoration(
                                 color: Colors.white.withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(12),
@@ -3554,7 +3639,8 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                 ),
                               ),
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
                                 children: [
                                   if (startWeight != null)
                                     Column(
@@ -3583,7 +3669,9 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                               style: TextStyle(
                                                 fontSize: 11,
                                                 fontWeight: FontWeight.w500,
-                                                color: Colors.white.withValues(alpha: 0.8),
+                                                color: Colors.white.withValues(
+                                                  alpha: 0.8,
+                                                ),
                                               ),
                                             ),
                                           ],
@@ -3594,7 +3682,9 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                     Container(
                                       width: 1,
                                       height: 20,
-                                      color: Colors.white.withValues(alpha: 0.3),
+                                      color: Colors.white.withValues(
+                                        alpha: 0.3,
+                                      ),
                                     ),
                                   if (startWaist != null)
                                     Column(
@@ -3623,7 +3713,9 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                               style: TextStyle(
                                                 fontSize: 11,
                                                 fontWeight: FontWeight.w500,
-                                                color: Colors.white.withValues(alpha: 0.8),
+                                                color: Colors.white.withValues(
+                                                  alpha: 0.8,
+                                                ),
                                               ),
                                             ),
                                           ],
@@ -3637,7 +3729,10 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                           if (targetWeight != null || targetWaist != null) ...[
                             SizedBox(height: 8),
                             Container(
-                              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 10,
+                              ),
                               decoration: BoxDecoration(
                                 color: Colors.white.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(12),
@@ -3647,7 +3742,8 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                 ),
                               ),
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
                                 children: [
                                   if (targetWeight != null)
                                     Row(
@@ -3672,16 +3768,21 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                           style: TextStyle(
                                             fontSize: 11,
                                             fontWeight: FontWeight.w500,
-                                            color: Colors.white.withValues(alpha: 0.8),
+                                            color: Colors.white.withValues(
+                                              alpha: 0.8,
+                                            ),
                                           ),
                                         ),
                                       ],
                                     ),
-                                  if (targetWeight != null && targetWaist != null)
+                                  if (targetWeight != null &&
+                                      targetWaist != null)
                                     Container(
                                       width: 1,
                                       height: 16,
-                                      color: Colors.white.withValues(alpha: 0.3),
+                                      color: Colors.white.withValues(
+                                        alpha: 0.3,
+                                      ),
                                     ),
                                   if (targetWaist != null)
                                     Row(
@@ -3706,7 +3807,9 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                           style: TextStyle(
                                             fontSize: 11,
                                             fontWeight: FontWeight.w500,
-                                            color: Colors.white.withValues(alpha: 0.8),
+                                            color: Colors.white.withValues(
+                                              alpha: 0.8,
+                                            ),
                                           ),
                                         ),
                                       ],
@@ -3734,7 +3837,9 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                         : 'Objectif: ${_formatDateShort(targetDate!)}',
                                     style: TextStyle(
                                       fontSize: 11,
-                                      color: Colors.white.withValues(alpha: 0.85),
+                                      color: Colors.white.withValues(
+                                        alpha: 0.85,
+                                      ),
                                       fontWeight: FontWeight.w500,
                                     ),
                                     overflow: TextOverflow.ellipsis,
@@ -3835,7 +3940,10 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                   child: Row(
                     children: [
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
                           color: statusBgColor.withValues(alpha: 0.3),
                           borderRadius: BorderRadius.circular(12),
@@ -3863,7 +3971,11 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                       Spacer(),
                       IconButton(
                         onPressed: () => Navigator.pop(context),
-                        icon: Icon(Icons.close_rounded, color: Colors.white, size: 28),
+                        icon: Icon(
+                          Icons.close_rounded,
+                          color: Colors.white,
+                          size: 28,
+                        ),
                       ),
                     ],
                   ),
@@ -3913,7 +4025,9 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                           SizedBox(height: 20),
                         ],
                         // Dates
-                        if (createdAt != null || targetDate != null || achievedAt != null) ...[
+                        if (createdAt != null ||
+                            targetDate != null ||
+                            achievedAt != null) ...[
                           Container(
                             padding: EdgeInsets.all(16),
                             decoration: BoxDecoration(
@@ -3930,7 +4044,11 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                 if (createdAt != null)
                                   Row(
                                     children: [
-                                      Icon(Icons.calendar_today_rounded, color: Colors.white, size: 20),
+                                      Icon(
+                                        Icons.calendar_today_rounded,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
                                       SizedBox(width: 12),
                                       Text(
                                         'Créé le ${_formatDate(createdAt)}',
@@ -3947,7 +4065,11 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                 if (targetDate != null)
                                   Row(
                                     children: [
-                                      Icon(Icons.flag_rounded, color: Colors.white, size: 20),
+                                      Icon(
+                                        Icons.flag_rounded,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
                                       SizedBox(width: 12),
                                       Text(
                                         'Objectif: ${_formatDate(targetDate)}',
@@ -3959,12 +4081,17 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                       ),
                                     ],
                                   ),
-                                if ((createdAt != null || targetDate != null) && achievedAt != null)
+                                if ((createdAt != null || targetDate != null) &&
+                                    achievedAt != null)
                                   SizedBox(height: 8),
                                 if (achievedAt != null)
                                   Row(
                                     children: [
-                                      Icon(Icons.stars_rounded, color: Colors.white, size: 20),
+                                      Icon(
+                                        Icons.stars_rounded,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
                                       SizedBox(width: 12),
                                       Text(
                                         'Atteint le ${_formatDate(achievedAt)}',
@@ -3982,7 +4109,10 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                           SizedBox(height: 20),
                         ],
                         // Measurements section
-                        if (startWeight != null || startWaist != null || targetWeight != null || targetWaist != null) ...[
+                        if (startWeight != null ||
+                            startWaist != null ||
+                            targetWeight != null ||
+                            targetWaist != null) ...[
                           Text(
                             'Mesures',
                             style: TextStyle(
@@ -4009,7 +4139,9 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Mesures de départ',
+                                  AppLocalizations.of(
+                                    context,
+                                  ).startingMeasurements,
                                   style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,
@@ -4024,7 +4156,11 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                       Expanded(
                                         child: Row(
                                           children: [
-                                            Icon(Icons.monitor_weight_rounded, color: Colors.white, size: 20),
+                                            Icon(
+                                              Icons.monitor_weight_rounded,
+                                              color: Colors.white,
+                                              size: 20,
+                                            ),
                                             SizedBox(width: 8),
                                             Text(
                                               '$startWeight kg',
@@ -4041,7 +4177,11 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                       Expanded(
                                         child: Row(
                                           children: [
-                                            Icon(Icons.straighten_rounded, color: Colors.white, size: 20),
+                                            Icon(
+                                              Icons.straighten_rounded,
+                                              color: Colors.white,
+                                              size: 20,
+                                            ),
                                             SizedBox(width: 8),
                                             Text(
                                               '$startWaist cm',
@@ -4091,7 +4231,11 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                       Expanded(
                                         child: Row(
                                           children: [
-                                            Icon(Icons.monitor_weight_rounded, color: Colors.white, size: 20),
+                                            Icon(
+                                              Icons.monitor_weight_rounded,
+                                              color: Colors.white,
+                                              size: 20,
+                                            ),
                                             SizedBox(width: 8),
                                             Text(
                                               '$targetWeight kg',
@@ -4108,7 +4252,11 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                       Expanded(
                                         child: Row(
                                           children: [
-                                            Icon(Icons.straighten_rounded, color: Colors.white, size: 20),
+                                            Icon(
+                                              Icons.straighten_rounded,
+                                              color: Colors.white,
+                                              size: 20,
+                                            ),
                                             SizedBox(width: 8),
                                             Text(
                                               '$targetWaist cm',
@@ -4142,7 +4290,20 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
   String _formatDate(String dateStr) {
     try {
       final date = DateTime.parse(dateStr);
-      final months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
+      final months = [
+        'Jan',
+        'Fév',
+        'Mar',
+        'Avr',
+        'Mai',
+        'Jun',
+        'Jul',
+        'Aoû',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Déc',
+      ];
       return '${date.day} ${months[date.month - 1]} ${date.year}';
     } catch (e) {
       return dateStr;
@@ -4158,7 +4319,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Session expirée'),
+            content: Text(AppLocalizations.of(context).sessionExpiredShort),
             backgroundColor: AppColors.error,
           ),
         );
@@ -4398,7 +4559,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
     final email = _profileData?['email'] ?? 'email@exemple.com';
     final phoneNumber = _profileData?['phoneNumber'] ?? '';
     final joinedAt = _profileData?['joinedAt'] ?? 'N/A';
-    
+
     // Extract member data
     final member = _profileData?['member'] as Map<String, dynamic>?;
     final firstName = member?['firstName'] ?? '';
@@ -4406,32 +4567,34 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
     final birthDate = member?['birthDate'] as String?;
     final profession = member?['profession'] ?? '';
     final fitnessLevel = member?['fitnessLevel'] ?? '';
-    final profileImageBase64 = _profileData?['profileImage'] as String? ?? member?['profileImage'] as String?;
-    
+    final profileImageBase64 =
+        _profileData?['profileImage'] as String? ??
+        member?['profileImage'] as String?;
+
     // Format birth date
-    String formattedBirthDate = 'Non renseignée';
+    String formattedBirthDate = AppLocalizations.of(context).notSpecified;
     if (birthDate != null && birthDate.isNotEmpty) {
       try {
         final date = DateTime.parse(birthDate);
-        final months = [
-          'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
-          'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
-        ];
-        formattedBirthDate = '${date.day} ${months[date.month - 1]} ${date.year}';
+        final l10n = AppLocalizations.of(context);
+        formattedBirthDate =
+            '${date.day} ${l10n.getMonthName(date.month)} ${date.year}';
       } catch (e) {
         formattedBirthDate = birthDate;
       }
     }
-    
+
     // Format fitness level
+    final l10n = AppLocalizations.of(context);
     final fitnessLevelLabels = {
-      'debutant': 'Débutant',
-      'intermediaire': 'Intermédiaire',
-      'avance': 'Avancé',
-      'expert': 'Expert',
-      'athletique': 'Athlétique',
+      'debutant': l10n.fitnessBeginner,
+      'intermediaire': l10n.fitnessIntermediate,
+      'avance': l10n.fitnessAdvanced,
+      'expert': l10n.fitnessExpert,
+      'athletique': l10n.fitnessAthletic,
     };
-    final formattedFitnessLevel = fitnessLevelLabels[fitnessLevel] ?? fitnessLevel;
+    final formattedFitnessLevel =
+        fitnessLevelLabels[fitnessLevel] ?? fitnessLevel;
 
     // Handle both 'subscription' (singular) and 'subscriptions' (plural array)
     Map<String, dynamic>? subscription;
@@ -4470,196 +4633,215 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Profile header - Full width, clickable
-              InkWell(
-                onTap: () => _navigateToEditProfile(context),
-                child: Container(
-                  width: double.infinity,
-                  padding: EdgeInsets.all(24.0),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Theme.of(context).cardTheme.color!,
-                        Theme.of(
-                          context,
-                        ).cardTheme.color!.withValues(alpha: 0.8),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Column(
-                    children: [
-                      Stack(
-                        children: [
-                          CircleAvatar(
-                            radius: 50,
-                            backgroundColor: Theme.of(
-                              context,
-                            ).colorScheme.primary,
-                            backgroundImage: profileImageBase64 != null && profileImageBase64.isNotEmpty
-                                ? MemoryImage(
-                                    base64Decode(
-                                      profileImageBase64.contains('base64,')
-                                          ? profileImageBase64.split('base64,')[1]
-                                          : profileImageBase64,
-                                    ),
-                                  )
-                                : null,
-                            child: (profileImageBase64 == null || profileImageBase64.isEmpty)
-                                ? Icon(
-                                    Icons.person,
-                                    size: 50,
-                                    color:
-                                        (Theme.of(context).brightness ==
-                                            Brightness.dark
-                                        ? AppColors.darkTextPrimary
-                                        : AppColors.lightTextPrimary),
-                                  )
-                                : null,
-                          ),
-                          Positioned(
-                            bottom: 0,
-                            right: 0,
-                            child: Container(
-                              padding: EdgeInsets.all(6),
-                              decoration: BoxDecoration(
-                                color: Theme.of(
-                                  context,
-                                ).scaffoldBackgroundColor,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Theme.of(context).colorScheme.primary,
-                                  width: 2,
-                                ),
-                              ),
-                              child: Icon(
-                                Icons.edit,
-                                size: 16,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                            ),
-                          ),
+              SizedBox(
+                width: double.infinity,
+                child: InkWell(
+                  onTap: () => _navigateToEditProfile(context),
+                  child: Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.all(24.0),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Theme.of(context).cardTheme.color!,
+                          Theme.of(
+                            context,
+                          ).cardTheme.color!.withValues(alpha: 0.8),
                         ],
                       ),
-                      SizedBox(height: 16),
-                      Text(
-                        '$firstName $lastName'.trim().isNotEmpty ? '$firstName $lastName' : fullName,
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color:
-                              (Theme.of(context).brightness == Brightness.dark
-                              ? AppColors.darkTextPrimary
-                              : AppColors.lightTextPrimary),
-                        ),
-                      ),
-                      SizedBox(height: 8),
-                      if (email.isNotEmpty && email != 'email@exemple.com')
-                        Padding(
-                          padding: EdgeInsets.only(bottom: 4),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.email,
-                                size: 14,
-                                color: (Theme.of(context).brightness == Brightness.dark
-                                    ? AppColors.darkTextSecondary
-                                    : AppColors.lightTextSecondary),
-                              ),
-                              SizedBox(width: 6),
-                              Text(
-                                email,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color:
-                                      (Theme.of(context).brightness == Brightness.dark
-                                      ? AppColors.darkTextSecondary
-                                      : AppColors.lightTextSecondary),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      if (phoneNumber.isNotEmpty)
-                        Padding(
-                          padding: EdgeInsets.only(bottom: 4),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.phone,
-                                size: 14,
-                                color: (Theme.of(context).brightness == Brightness.dark
-                                    ? AppColors.darkTextSecondary
-                                    : AppColors.lightTextSecondary),
-                              ),
-                              SizedBox(width: 6),
-                              Text(
-                                phoneNumber,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color:
-                                      (Theme.of(context).brightness == Brightness.dark
-                                      ? AppColors.darkTextSecondary
-                                      : AppColors.lightTextSecondary),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      SizedBox(height: 8),
-                      Text(
-                        'Membre depuis: $joinedAt',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color:
-                              (Theme.of(context).brightness == Brightness.dark
-                                      ? AppColors.darkTextSecondary
-                                      : AppColors.lightTextSecondary)
-                                  .withValues(alpha: 0.7),
-                        ),
-                      ),
-                      SizedBox(height: 12),
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.primary.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.primary.withValues(alpha: 0.5),
-                            width: 1,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      children: [
+                        Stack(
                           children: [
-                            Icon(
-                              Icons.edit,
-                              size: 16,
-                              color: Theme.of(context).colorScheme.primary,
+                            CircleAvatar(
+                              radius: 50,
+                              backgroundColor: Theme.of(
+                                context,
+                              ).colorScheme.primary,
+                              backgroundImage:
+                                  profileImageBase64 != null &&
+                                      profileImageBase64.isNotEmpty
+                                  ? MemoryImage(
+                                      base64Decode(
+                                        profileImageBase64.contains('base64,')
+                                            ? profileImageBase64.split(
+                                                'base64,',
+                                              )[1]
+                                            : profileImageBase64,
+                                      ),
+                                    )
+                                  : null,
+                              child:
+                                  (profileImageBase64 == null ||
+                                      profileImageBase64.isEmpty)
+                                  ? Icon(
+                                      Icons.person,
+                                      size: 50,
+                                      color:
+                                          (Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? AppColors.darkTextPrimary
+                                          : AppColors.lightTextPrimary),
+                                    )
+                                  : null,
                             ),
-                            SizedBox(width: 6),
-                            Text(
-                              'Modifier le profil',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Theme.of(context).colorScheme.primary,
-                                fontWeight: FontWeight.w500,
+                            Positioned(
+                              bottom: 0,
+                              right: 0,
+                              child: Container(
+                                padding: EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(
+                                    context,
+                                  ).scaffoldBackgroundColor,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
+                                    width: 2,
+                                  ),
+                                ),
+                                child: Icon(
+                                  Icons.edit,
+                                  size: 16,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
                               ),
                             ),
                           ],
                         ),
-                      ),
-                    ],
+                        SizedBox(height: 16),
+                        Text(
+                          '$firstName $lastName'.trim().isNotEmpty
+                              ? '$firstName $lastName'
+                              : fullName,
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color:
+                                (Theme.of(context).brightness == Brightness.dark
+                                ? AppColors.darkTextPrimary
+                                : AppColors.lightTextPrimary),
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        if (email.isNotEmpty && email != 'email@exemple.com')
+                          Padding(
+                            padding: EdgeInsets.only(bottom: 4),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.email,
+                                  size: 14,
+                                  color:
+                                      (Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? AppColors.darkTextSecondary
+                                      : AppColors.lightTextSecondary),
+                                ),
+                                SizedBox(width: 6),
+                                Text(
+                                  email,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color:
+                                        (Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? AppColors.darkTextSecondary
+                                        : AppColors.lightTextSecondary),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        if (phoneNumber.isNotEmpty)
+                          Padding(
+                            padding: EdgeInsets.only(bottom: 4),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.phone,
+                                  size: 14,
+                                  color:
+                                      (Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? AppColors.darkTextSecondary
+                                      : AppColors.lightTextSecondary),
+                                ),
+                                SizedBox(width: 6),
+                                Text(
+                                  phoneNumber,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color:
+                                        (Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? AppColors.darkTextSecondary
+                                        : AppColors.lightTextSecondary),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        SizedBox(height: 8),
+                        Text(
+                          AppLocalizations.of(context).memberSince(joinedAt),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color:
+                                (Theme.of(context).brightness == Brightness.dark
+                                        ? AppColors.darkTextSecondary
+                                        : AppColors.lightTextSecondary)
+                                    .withValues(alpha: 0.7),
+                          ),
+                        ),
+                        SizedBox(height: 12),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.primary.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.primary.withValues(alpha: 0.5),
+                              width: 1,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.edit,
+                                size: 16,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                              SizedBox(width: 6),
+                              Text(
+                                AppLocalizations.of(context).editProfile,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Theme.of(context).colorScheme.primary,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -4667,7 +4849,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
 
               // Subscription section
               Text(
-                'Mon Abonnement',
+                AppLocalizations.of(context).mySubscription,
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -4677,7 +4859,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                 ),
               ),
               SizedBox(height: 12),
-              
+
               // Check if user has a subscription
               if (subscription != null)
                 Builder(
@@ -4713,13 +4895,18 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Expanded(
                                     child: Text(
                                       subscriptionType == 'premium'
-                                          ? 'Abonnement Premium'
-                                          : 'Abonnement Standard',
+                                          ? AppLocalizations.of(
+                                              context,
+                                            ).premiumSubscriptionType
+                                          : AppLocalizations.of(
+                                              context,
+                                            ).standardSubscriptionType,
                                       style: TextStyle(
                                         fontSize: 20,
                                         fontWeight: FontWeight.bold,
@@ -4761,7 +4948,9 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                               _buildSubscriptionDetail(
                                 context,
                                 'Type',
-                                billingPeriod == 'monthly' ? 'Mensuel' : 'Annuel',
+                                billingPeriod == 'monthly'
+                                    ? 'Mensuel'
+                                    : 'Annuel',
                               ),
                               _buildSubscriptionDetail(
                                 context,
@@ -4788,9 +4977,10 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                                       fontSize: 14,
                                       color:
                                           (Theme.of(context).brightness ==
-                                              Brightness.dark
-                                          ? AppColors.darkTextSecondary
-                                          : AppColors.lightTextSecondary)
+                                                      Brightness.dark
+                                                  ? AppColors.darkTextSecondary
+                                                  : AppColors
+                                                        .lightTextSecondary)
                                               .withValues(alpha: 1.0),
                                       fontWeight: FontWeight.w500,
                                     ),
@@ -4801,9 +4991,9 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                                     size: 14,
                                     color:
                                         (Theme.of(context).brightness ==
-                                            Brightness.dark
-                                        ? AppColors.darkTextSecondary
-                                        : AppColors.lightTextSecondary)
+                                                    Brightness.dark
+                                                ? AppColors.darkTextSecondary
+                                                : AppColors.lightTextSecondary)
                                             .withValues(alpha: 1.0),
                                   ),
                                 ],
@@ -4829,29 +5019,32 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                         Icon(
                           Icons.card_membership_outlined,
                           size: 64,
-                          color: (Theme.of(context).brightness == Brightness.dark
-                              ? AppColors.darkTextSecondary
-                              : AppColors.lightTextSecondary)
-                              .withValues(alpha: 0.5),
+                          color:
+                              (Theme.of(context).brightness == Brightness.dark
+                                      ? AppColors.darkTextSecondary
+                                      : AppColors.lightTextSecondary)
+                                  .withValues(alpha: 0.5),
                         ),
                         SizedBox(height: 16),
                         Text(
-                          'Aucun abonnement actif',
+                          AppLocalizations.of(context).noActiveSubscription,
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: (Theme.of(context).brightness == Brightness.dark
+                            color:
+                                (Theme.of(context).brightness == Brightness.dark
                                 ? AppColors.darkTextPrimary
                                 : AppColors.lightTextPrimary),
                           ),
                         ),
                         SizedBox(height: 8),
                         Text(
-                          'Souscrivez à un abonnement pour accéder à toutes les fonctionnalités.',
+                          AppLocalizations.of(context).subscribeForFeatures,
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 14,
-                            color: (Theme.of(context).brightness == Brightness.dark
+                            color:
+                                (Theme.of(context).brightness == Brightness.dark
                                 ? AppColors.darkTextSecondary
                                 : AppColors.lightTextSecondary),
                           ),
@@ -4862,17 +5055,27 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                             // TODO: Navigate to subscription selection screen
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('Fonctionnalité à venir'),
+                                content: Text(
+                                  AppLocalizations.of(
+                                    context,
+                                  ).featureComingSoon,
+                                ),
                                 duration: Duration(seconds: 2),
                               ),
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Theme.of(context).colorScheme.primary,
-                            foregroundColor: (Theme.of(context).brightness == Brightness.dark
+                            backgroundColor: Theme.of(
+                              context,
+                            ).colorScheme.primary,
+                            foregroundColor:
+                                (Theme.of(context).brightness == Brightness.dark
                                 ? AppColors.darkTextPrimary
                                 : AppColors.lightTextPrimary),
-                            padding: EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 32,
+                              vertical: 14,
+                            ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -4883,7 +5086,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                               Icon(Icons.add_card, size: 20),
                               SizedBox(width: 8),
                               Text(
-                                'Choisir un abonnement',
+                                AppLocalizations.of(context).chooseSubscription,
                                 style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w600,
@@ -4900,7 +5103,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
 
               // Personal Information Section
               Text(
-                'Informations personnelles',
+                AppLocalizations.of(context).personalInfo,
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -4920,19 +5123,22 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                   padding: EdgeInsets.all(20.0),
                   child: Column(
                     children: [
-                      if (formattedBirthDate != 'Non renseignée')
+                      if (formattedBirthDate !=
+                          AppLocalizations.of(context).notSpecified)
                         _buildInfoRow(
                           context,
                           Icons.cake,
-                          'Date de naissance',
+                          AppLocalizations.of(context).birthDate,
                           formattedBirthDate,
-                          isLast: (profession.isEmpty || profession == 'Actif') && formattedFitnessLevel.isEmpty,
+                          isLast:
+                              (profession.isEmpty || profession == 'Actif') &&
+                              formattedFitnessLevel.isEmpty,
                         ),
                       if (profession.isNotEmpty && profession != 'Actif')
                         _buildInfoRow(
                           context,
                           Icons.work,
-                          'Profession',
+                          AppLocalizations.of(context).profession,
                           profession,
                           isLast: formattedFitnessLevel.isEmpty,
                         ),
@@ -4940,13 +5146,14 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                         _buildInfoRow(
                           context,
                           Icons.fitness_center,
-                          'Niveau sportif',
+                          AppLocalizations.of(context).fitnessLevel,
                           formattedFitnessLevel,
                           isLast: true,
                         ),
                       // Show message if no info available
-                      if (formattedBirthDate == 'Non renseignée' && 
-                          (profession.isEmpty || profession == 'Actif') && 
+                      if (formattedBirthDate ==
+                              AppLocalizations.of(context).notSpecified &&
+                          (profession.isEmpty || profession == 'Actif') &&
                           formattedFitnessLevel.isEmpty)
                         Center(
                           child: Padding(
@@ -4956,10 +5163,12 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                                 Icon(
                                   Icons.info_outline,
                                   size: 48,
-                                  color: (Theme.of(context).brightness == Brightness.dark
-                                      ? AppColors.darkTextSecondary
-                                      : AppColors.lightTextSecondary)
-                                      .withValues(alpha: 0.5),
+                                  color:
+                                      (Theme.of(context).brightness ==
+                                                  Brightness.dark
+                                              ? AppColors.darkTextSecondary
+                                              : AppColors.lightTextSecondary)
+                                          .withValues(alpha: 0.5),
                                 ),
                                 SizedBox(height: 12),
                                 Text(
@@ -4967,7 +5176,9 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     fontSize: 14,
-                                    color: (Theme.of(context).brightness == Brightness.dark
+                                    color:
+                                        (Theme.of(context).brightness ==
+                                            Brightness.dark
                                         ? AppColors.darkTextSecondary
                                         : AppColors.lightTextSecondary),
                                   ),
@@ -4984,7 +5195,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
 
               // Settings options
               Text(
-                'Paramètres',
+                AppLocalizations.of(context).parameters,
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -4994,23 +5205,33 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                 ),
               ),
               SizedBox(height: 12),
-              _buildSettingsItem(context, 'Paramètres', Icons.settings, () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => SecuritySettingsPage(),
-                  ),
-                );
-              }),
-              _buildSettingsItem(context, 'À propos', Icons.info_outline, () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => AboutScreen()),
-                );
-              }),
               _buildSettingsItem(
                 context,
-                'Aide & Support',
+                AppLocalizations.of(context).parameters,
+                Icons.settings,
+                () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SecuritySettingsPage(),
+                    ),
+                  );
+                },
+              ),
+              _buildSettingsItem(
+                context,
+                AppLocalizations.of(context).about,
+                Icons.info_outline,
+                () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => AboutScreen()),
+                  );
+                },
+              ),
+              _buildSettingsItem(
+                context,
+                AppLocalizations.of(context).helpSupport,
                 Icons.help_outline,
                 () {},
               ),
@@ -5031,7 +5252,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                         : AppColors.lightTextPrimary),
                   ),
                   title: Text(
-                    'Se déconnecter',
+                    AppLocalizations.of(context).disconnect,
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -5104,9 +5325,9 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
     BuildContext context,
     IconData icon,
     String label,
-    String value,
-    {bool isLast = false}
-  ) {
+    String value, {
+    bool isLast = false,
+  }) {
     return Column(
       children: [
         Padding(
@@ -5164,9 +5385,11 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
         if (!isLast)
           Divider(
             height: 1,
-            color: (Theme.of(context).brightness == Brightness.dark
-                ? AppColors.darkTextSecondary
-                : AppColors.lightTextSecondary).withValues(alpha: 0.2),
+            color:
+                (Theme.of(context).brightness == Brightness.dark
+                        ? AppColors.darkTextSecondary
+                        : AppColors.lightTextSecondary)
+                    .withValues(alpha: 0.2),
           ),
       ],
     );

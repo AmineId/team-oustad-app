@@ -237,7 +237,7 @@ class _AdminCreateAdminScreenState extends State<AdminCreateAdminScreen> {
 
                   // Salle
                   DropdownButtonFormField<int>(
-                    value: _selectedGymId,
+                    initialValue: _selectedGymId,
                     dropdownColor: theme.cardTheme.color,
                     style: TextStyle(color: theme.textTheme.bodyLarge!.color),
                     decoration: InputDecoration(
