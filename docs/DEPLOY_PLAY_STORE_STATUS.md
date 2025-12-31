@@ -57,22 +57,19 @@ Quand vous pushez sur `staging` ou `main` :
    - Met à jour `pubspec.yaml` et `version-metadata.json`
    - Crée un tag Git et un CHANGELOG
 
-2. **Build**
+2. **Build & Deploy** (job unique consolidé)
    - Configure Firebase selon l'environnement
    - Configure la signature de production
    - Build APK signé (pour OTA)
    - Build AAB signé (pour Play Store)
-   - Upload des artifacts
-
-3. **Deploy Play Store**
    - Setup Fastlane
    - Configure le service account Google
-   - Déploie vers Internal Testing
-   - Nettoyage des credentials
-
-4. **Deploy OTA**
+   - Déploie vers Play Store Internal Testing
    - Déploie l'APK vers le serveur OTA
    - Met à jour `version.json`
+   - Nettoyage des credentials
+
+Note: Les artifacts GitHub Actions ne sont plus utilisés. Tous les déploiements se font dans le même job, partageant le même système de fichiers.
 
 ---
 
@@ -261,9 +258,7 @@ https://github.com/TeamFitness/mobile-app/actions
 
 Vérifiez que les jobs passent :
 - ✅ Version & Changelog
-- ✅ Build APK
-- ✅ Deploy to Play Store Internal Testing
-- ✅ Deploy OTA
+- ✅ Build & Deploy (includes: build, Play Store deploy, and OTA deploy)
 
 ### Play Console
 https://play.google.com/console
