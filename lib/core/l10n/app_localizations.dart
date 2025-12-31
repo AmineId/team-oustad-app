@@ -53,6 +53,9 @@ class AppLocalizations {
       'logout': 'Déconnexion',
       'add': 'Ajouter',
       'profile': 'Profil',
+      'store': 'Boutique',
+      'management': 'Gestion',
+      'global_management': 'Gestion Globale',
       'welcome_community': 'Bienvenue dans notre communauté !',
       'welcome_name': 'Bienvenue, {name} !',
       'visit_reception':
@@ -177,6 +180,8 @@ class AppLocalizations {
       'cancel': 'Annuler',
       'confirm': 'Confirmer',
       'active_status': 'ACTIF',
+      'owner_role': 'Propriétaire',
+      'admin_role': 'Administrateur',
     },
     'en': {
       'home': 'Home',
@@ -215,6 +220,9 @@ class AppLocalizations {
       'logout': 'Logout',
       'add': 'Add',
       'profile': 'Profile',
+      'store': 'Store',
+      'management': 'Management',
+      'global_management': 'Global Management',
       'welcome_community': 'Welcome to our community!',
       'welcome_name': 'Welcome, {name}!',
       'visit_reception': 'Visit the reception to activate your subscription',
@@ -333,6 +341,8 @@ class AppLocalizations {
       'cancel': 'Cancel',
       'confirm': 'Confirm',
       'active_status': 'ACTIVE',
+      'owner_role': 'Owner',
+      'admin_role': 'Administrator',
     },
     'ar': {
       'home': 'الرئيسية',
@@ -371,6 +381,9 @@ class AppLocalizations {
       'logout': 'تسجيل الخروج',
       'add': 'إضافة',
       'profile': 'الملف الشخصي',
+      'store': 'المتجر',
+      'management': 'الإدارة',
+      'global_management': 'الإدارة الشاملة',
       'welcome_community': 'مرحباً بك في مجتمعنا!',
       'welcome_name': 'مرحباً، {name}!',
       'visit_reception': 'قم بزيارة الاستقبال لتفعيل اشتراكك',
@@ -486,6 +499,8 @@ class AppLocalizations {
       'cancel': 'إلغاء',
       'confirm': 'تأكيد',
       'active_status': 'نشط',
+      'owner_role': 'المالك',
+      'admin_role': 'مسؤول',
     },
   };
 
@@ -530,6 +545,9 @@ class AppLocalizations {
   String get logout => translate('logout');
   String get add => translate('add');
   String get profile => translate('profile');
+  String get store => translate('store');
+  String get management => translate('management');
+  String get globalManagement => translate('global_management');
   String get welcomeCommunity => translate('welcome_community');
   String welcomeName(String name) =>
       translate('welcome_name').replaceAll('{name}', name);
@@ -670,6 +688,8 @@ class AppLocalizations {
   String get cancel => translate('cancel');
   String get confirm => translate('confirm');
   String get activeStatus => translate('active_status');
+  String get ownerRole => translate('owner_role');
+  String get adminRole => translate('admin_role');
 }
 
 class _AppLocalizationsDelegate

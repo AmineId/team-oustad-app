@@ -208,10 +208,14 @@ class _AdminEditAdminScreenState extends State<AdminEditAdminScreen> {
                   DropdownButtonFormField<int>(
                     initialValue: _selectedGymId,
                     dropdownColor: theme.cardTheme.color,
-                    style: TextStyle(color: theme.textTheme.bodyLarge!.color),
+                    style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark
+                        ? AppColors.darkTextPrimary
+                        : AppColors.lightTextPrimary)),
                     decoration: InputDecoration(
                       labelText: 'Salle de sport',
-                      labelStyle: TextStyle(color: theme.textTheme.bodyMedium!.color),
+                      labelStyle: TextStyle(color: (Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.darkTextSecondary
+                          : AppColors.lightTextSecondary)),
                       prefixIcon: const Icon(Icons.fitness_center, color: AppColors.primary),
                       filled: true,
                       fillColor: theme.cardTheme.color,

@@ -1005,7 +1005,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage>
                                               onChanged: _canCheckBiometrics
                                                   ? _toggleBiometric
                                                   : null,
-                                              activeColor:
+                                              activeThumbColor:
                                                   theme.colorScheme.primary,
                                             ),
                                           ],
@@ -1293,6 +1293,217 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage>
 
                                     const SizedBox(height: 32),
 
+                                    // En-tête Section Apparence
+                                    Text(
+                                      'APPARENCE',
+                                      style: AppTextStyles.caption.copyWith(
+                                        color:
+                                            theme.textTheme.bodyMedium!.color,
+                                        letterSpacing: 1.2,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 12),
+
+                                    // Toggle thème clair/sombre
+                                    Builder(
+                                      builder: (context) {
+                                        final themeProvider =
+                                            ThemeProviderScope.of(context);
+                                        return Card(
+                                          color: theme.cardTheme.color,
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(20.0),
+                                            child: Row(
+                                              children: [
+                                                Container(
+                                                  padding: const EdgeInsets.all(
+                                                    12,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                    color: (isDark
+                                                        ? AppColors.primary
+                                                        : AppColors.info)
+                                                        .withValues(alpha: 0.2),
+                                                    shape: BoxShape.circle,
+                                                  ),
+                                                  child: AnimatedSwitcher(
+                                                    duration: const Duration(
+                                                      milliseconds: 300,
+                                                    ),
+                                                    transitionBuilder:
+                                                        (child, animation) {
+                                                          return RotationTransition(
+                                                            turns: animation,
+                                                            child:
+                                                                ScaleTransition(
+                                                                  scale:
+                                                                      animation,
+                                                                  child: child,
+                                                                ),
+                                                          );
+                                                        },
+                                                    child: Icon(
+                                                      isDark
+                                                          ? Icons
+                                                                .dark_mode_rounded
+                                                          : Icons
+                                                                .light_mode_rounded,
+                                                      key: ValueKey(isDark),
+                                                      color: isDark
+                                                          ? AppColors.info
+                                                          : AppColors.warning,
+                                                      size: 28,
+                                                    ),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 16),
+                                                Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text(
+                                                        'Thème',
+                                                        style: TextStyle(
+                                                          color: isDark
+                                                              ? AppColors
+                                                                    .darkTextPrimary
+                                                              : AppColors
+                                                                    .lightTextPrimary,
+                                                          fontSize: 16,
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(height: 4),
+                                                      Text(
+                                                        isDark
+                                                            ? 'Mode sombre activé'
+                                                            : 'Mode clair activé',
+                                                        style: TextStyle(
+                                                          color: isDark
+                                                              ? AppColors
+                                                                    .darkTextSecondary
+                                                              : AppColors
+                                                                    .lightTextSecondary,
+                                                          fontSize: 13,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 12),
+                                                // Toggle stylé avec icônes
+                                                GestureDetector(
+                                                  onTap: () {
+                                                    themeProvider.toggleTheme();
+                                                  },
+                                                  child: AnimatedContainer(
+                                                    duration: const Duration(
+                                                      milliseconds: 300,
+                                                    ),
+                                                    width: 56,
+                                                    height: 32,
+                                                    decoration: BoxDecoration(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            16,
+                                                          ),
+                                                      gradient: LinearGradient(
+                                                        colors: isDark
+                                                            ? [
+                                                                AppColors
+                                                                    .darkSurface,
+                                                                AppColors
+                                                                    .darkElevated,
+                                                              ]
+                                                            : [
+                                                                AppColors
+                                                                    .info
+                                                                    .withValues(
+                                                                      alpha:
+                                                                          0.3,
+                                                                    ),
+                                                                AppColors
+                                                                    .infoLight
+                                                                    .withValues(
+                                                                      alpha:
+                                                                          0.3,
+                                                                    ),
+                                                              ],
+                                                      ),
+                                                      border: Border.all(
+                                                        color: isDark
+                                                            ? AppColors.warning
+                                                                  .withValues(
+                                                                    alpha: 0.5,
+                                                                  )
+                                                            : AppColors.info
+                                                                  .withValues(
+                                                                    alpha: 0.5,
+                                                                  ),
+                                                        width: 2,
+                                                      ),
+                                                    ),
+                                                    child: AnimatedAlign(
+                                                      duration: const Duration(
+                                                        milliseconds: 300,
+                                                      ),
+                                                      curve: Curves.easeInOut,
+                                                      alignment: isDark
+                                                          ? Alignment.centerRight
+                                                          : Alignment.centerLeft,
+                                                      child: Container(
+                                                        width: 24,
+                                                        height: 24,
+                                                        margin: const EdgeInsets.all(2),
+                                                        decoration: BoxDecoration(
+                                                          shape: BoxShape.circle,
+                                                          gradient: LinearGradient(
+                                                            begin: Alignment.topLeft,
+                                                            end: Alignment.bottomRight,
+                                                            colors: isDark
+                                                                ? [
+                                                                    AppColors.warning,
+                                                                    AppColors.warningLight,
+                                                                  ]
+                                                                : [
+                                                                    AppColors.info,
+                                                                    AppColors.infoLight,
+                                                                  ],
+                                                          ),
+                                                          boxShadow: [
+                                                            BoxShadow(
+                                                              color: (isDark
+                                                                      ? AppColors.warning
+                                                                      : AppColors.info)
+                                                                  .withValues(alpha: 0.4),
+                                                              blurRadius: 8,
+                                                              spreadRadius: 1,
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        child: Icon(
+                                                          isDark
+                                                              ? Icons.nightlight_round
+                                                              : Icons.wb_sunny_rounded,
+                                                          size: 14,
+                                                          color: Colors.white,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+
+                                    const SizedBox(height: 32),
+
                                     // En-tête Section Mises à jour
                                     Text(
                                       'APPLICATION',
@@ -1493,7 +1704,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage>
                                                   ),
                                                 ),
                                                 const SizedBox(width: 8),
-                                                  // Utiliser directement le LanguageSwitcherButton
+                                                // Utiliser directement le LanguageSwitcherButton
                                                 LanguageSwitcherButton(
                                                   localeService: localeService,
                                                 ),

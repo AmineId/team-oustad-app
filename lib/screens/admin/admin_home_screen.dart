@@ -1,9 +1,11 @@
+import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/services/api_service.dart';
 import '../../core/theme/theme.dart';
 import '../../core/utils/user_utils.dart';
+import '../../core/l10n/app_localizations.dart';
 import '../../widgets/responsive/responsive_layout.dart';
 import '../auth/login_screen.dart';
 import 'admin_create_member_screen.dart';
@@ -24,6 +26,7 @@ class AdminHomeScreen extends StatefulWidget {
 class _AdminHomeScreenState extends State<AdminHomeScreen> {
   int _currentIndex = 0;
   bool _isOwner = false;
+  Map<String, dynamic>? _profileData;
   final AuthService _authService = AuthService(ApiService.fromEnv());
 
   List<Widget> get _pages => _isOwner
@@ -39,23 +42,20 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
           const ProfilePage(),
         ];
 
-  List<String> get _titles => _isOwner
-      ? [
-          'Accueil',
-          'Gestion',
-          'Gestion Globale',
-          'Profile',
-        ]
-      : [
-          'Accueil',
-          'Gestion',
-          'Profile',
-        ];
-
   @override
   void initState() {
     super.initState();
     _checkUserRole();
+    _loadProfileData();
+  }
+
+  Future<void> _loadProfileData() async {
+    final data = await _authService.getCachedUserProfile();
+    if (mounted) {
+      setState(() {
+        _profileData = data;
+      });
+    }
   }
 
   Future<void> _checkUserRole() async {
@@ -267,53 +267,114 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     }
   }
 
+  Widget _buildProfileAvatar(bool isActive) {
+    // Try to get photo from root level first (from /me endpoint)
+    String? profileImageBase64 = _profileData?['profileImage'] as String?;
 
-  List<NavigationItem> get _navigationItems => _isOwner
-      ? const [
-          NavigationItem(
-            icon: Icons.home_outlined,
-            activeIcon: Icons.home,
-            label: 'Accueil',
-          ),
-          NavigationItem(
-            icon: Icons.settings_outlined,
-            activeIcon: Icons.settings,
-            label: 'Gestion',
-          ),
-          NavigationItem(
-            icon: Icons.admin_panel_settings_outlined,
-            activeIcon: Icons.admin_panel_settings,
-            label: 'Gestion Globale',
-          ),
-          NavigationItem(
-            icon: Icons.person_outline,
-            activeIcon: Icons.person,
-            label: 'Profile',
-          ),
-        ]
-      : const [
-          NavigationItem(
-            icon: Icons.home_outlined,
-            activeIcon: Icons.home,
-            label: 'Accueil',
-          ),
-          NavigationItem(
-            icon: Icons.settings_outlined,
-            activeIcon: Icons.settings,
-            label: 'Gestion',
-          ),
-          NavigationItem(
-            icon: Icons.person_outline,
-            activeIcon: Icons.person,
-            label: 'Profile',
-          ),
-        ];
+    // Fallback to member.profileImage if not found at root level
+    if (profileImageBase64 == null || profileImageBase64.isEmpty) {
+      final member = _profileData?['member'] as Map<String, dynamic>?;
+      profileImageBase64 = member?['profileImage'] as String?;
+    }
+
+    return Container(
+      width: 32,
+      height: 32,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: isActive ? AppColors.primary : Colors.transparent,
+          width: 2,
+        ),
+      ),
+      child: ClipOval(
+        child: profileImageBase64 != null && profileImageBase64.isNotEmpty
+            ? Image.memory(
+                base64Decode(
+                  profileImageBase64.contains('base64,')
+                      ? profileImageBase64.split('base64,')[1]
+                      : profileImageBase64,
+                ),
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    color: AppColors.primary.withValues(alpha: 0.2),
+                    child: Icon(
+                      Icons.person,
+                      color: isActive ? AppColors.primary : Colors.grey,
+                      size: 20,
+                    ),
+                  );
+                },
+              )
+            : Container(
+                color: AppColors.primary.withValues(alpha: 0.2),
+                child: Icon(
+                  Icons.person,
+                  color: isActive ? AppColors.primary : Colors.grey,
+                  size: 20,
+                ),
+              ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
+    final titles = _isOwner
+        ? [l10n.home, l10n.management, l10n.globalManagement, l10n.myProfile]
+        : [l10n.home, l10n.management, l10n.myProfile];
+
+    final navigationItems = _isOwner
+        ? [
+            NavigationItem(
+              icon: Icons.home_outlined,
+              activeIcon: Icons.home,
+              label: l10n.home,
+            ),
+            NavigationItem(
+              icon: Icons.settings_outlined,
+              activeIcon: Icons.settings,
+              label: l10n.management,
+            ),
+            NavigationItem(
+              icon: Icons.admin_panel_settings_outlined,
+              activeIcon: Icons.admin_panel_settings,
+              label: l10n.globalManagement,
+            ),
+            NavigationItem(
+              icon: Icons.person_outline,
+              activeIcon: Icons.person,
+              label: l10n.myProfile,
+              customWidget: _buildProfileAvatar(false),
+              activeCustomWidget: _buildProfileAvatar(true),
+            ),
+          ]
+        : [
+            NavigationItem(
+              icon: Icons.home_outlined,
+              activeIcon: Icons.home,
+              label: l10n.home,
+            ),
+            NavigationItem(
+              icon: Icons.settings_outlined,
+              activeIcon: Icons.settings,
+              label: l10n.management,
+            ),
+            NavigationItem(
+              icon: Icons.person_outline,
+              activeIcon: Icons.person,
+              label: l10n.myProfile,
+              customWidget: _buildProfileAvatar(false),
+              activeCustomWidget: _buildProfileAvatar(true),
+            ),
+          ];
+
     return ResponsiveScaffold(
-      title: _titles[_currentIndex],
-      navigationItems: _navigationItems,
+      title: titles[_currentIndex],
+      navigationItems: navigationItems,
       currentIndex: _currentIndex,
       onNavigationChanged: (index) {
         setState(() {
@@ -321,16 +382,6 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         });
       },
       body: _pages[_currentIndex],
-      actions: [
-        // Theme toggle button hidden - dark theme is default
-        // if (themeProvider != null)
-        //   ThemeToggleButton(themeProvider: themeProvider),
-        IconButton(
-          icon: const Icon(Icons.qr_code_2),
-          onPressed: _showQrCode,
-          tooltip: 'Mon QR Code',
-        ),
-      ],
     );
   }
 }
@@ -372,11 +423,13 @@ class AccueilPage extends StatelessWidget {
                   
                   // Actions rapides
                   Text(
-                    'Actions rapides',
+                    AppLocalizations.of(context).quickActions,
                     style: TextStyle(
                       fontSize: isWatch ? 14 : (isDesktop ? 24 : 20),
                       fontWeight: FontWeight.bold,
-                      color: theme.textTheme.bodyLarge!.color,
+                      color: (Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.darkTextPrimary
+                          : AppColors.lightTextPrimary),
                     ),
                   ),
                   SizedBox(height: isWatch ? 8 : 16),
@@ -540,8 +593,6 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    
     return LayoutBuilder(
       builder: (context, constraints) {
         final isWatch = constraints.maxWidth < 150;
@@ -549,7 +600,7 @@ class _StatCard extends StatelessWidget {
         return Container(
           padding: EdgeInsets.all(isWatch ? 8 : 16),
           decoration: BoxDecoration(
-            color: theme.cardTheme.color,
+            color: Theme.of(context).cardTheme.color,
             borderRadius: BorderRadius.circular(isWatch ? 8 : 16),
             border: Border.all(color: color.withValues(alpha: 0.3)),
           ),
@@ -565,14 +616,18 @@ class _StatCard extends StatelessWidget {
                           Text(
                             title,
                             style: TextStyle(
-                              color: theme.textTheme.bodyMedium!.color!.withValues(alpha: 0.7),
+                              color: (Theme.of(context).brightness == Brightness.dark
+                                  ? AppColors.darkTextSecondary
+                                  : AppColors.lightTextSecondary).withValues(alpha: 0.7),
                               fontSize: 9,
                             ),
                           ),
                           Text(
                             value,
                             style: TextStyle(
-                              color: theme.textTheme.bodyLarge!.color,
+                              color: (Theme.of(context).brightness == Brightness.dark
+                                  ? AppColors.darkTextPrimary
+                                  : AppColors.lightTextPrimary),
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
                             ),
@@ -590,7 +645,9 @@ class _StatCard extends StatelessWidget {
                     Text(
                       title,
                       style: TextStyle(
-                        color: theme.textTheme.bodyMedium!.color!.withValues(alpha: 0.7),
+                        color: (Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.darkTextSecondary
+                            : AppColors.lightTextSecondary).withValues(alpha: 0.7),
                         fontSize: 12,
                       ),
                     ),
@@ -598,7 +655,9 @@ class _StatCard extends StatelessWidget {
                     Text(
                       value,
                       style: TextStyle(
-                        color: theme.textTheme.bodyLarge!.color,
+                        color: (Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.darkTextPrimary
+                            : AppColors.lightTextPrimary),
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                       ),
@@ -624,8 +683,6 @@ class _QuickActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    
     return LayoutBuilder(
       builder: (context, constraints) {
         final isWatch = constraints.maxWidth < 300;
@@ -639,10 +696,10 @@ class _QuickActionButton extends StatelessWidget {
               vertical: isWatch ? 8 : 18,
             ),
             decoration: BoxDecoration(
-              color: theme.cardTheme.color,
+              color: Theme.of(context).cardTheme.color,
               borderRadius: BorderRadius.circular(isWatch ? 8 : 16),
               border: Border.all(
-                color: theme.dividerColor.withValues(alpha: 0.3),
+                color: Theme.of(context).dividerColor.withValues(alpha: 0.3),
                 width: 1,
               ),
             ),
@@ -652,12 +709,12 @@ class _QuickActionButton extends StatelessWidget {
                   width: isWatch ? 40 : 56,
                   height: isWatch ? 40 : 56,
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(isWatch ? 8 : 12),
                   ),
                   child: Icon(
                     icon,
-                    color: theme.colorScheme.primary,
+                    color: Theme.of(context).colorScheme.primary,
                     size: isWatch ? 16 : 28,
                   ),
                 ),
@@ -666,7 +723,9 @@ class _QuickActionButton extends StatelessWidget {
                   child: Text(
                     title,
                     style: TextStyle(
-                      color: theme.textTheme.bodyLarge!.color,
+                      color: (Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.darkTextPrimary
+                          : AppColors.lightTextPrimary),
                       fontSize: isWatch ? 11 : 17,
                       fontWeight: FontWeight.w600,
                       letterSpacing: -0.2,
@@ -675,7 +734,9 @@ class _QuickActionButton extends StatelessWidget {
                 ),
                 Icon(
                   Icons.chevron_right,
-                  color: theme.textTheme.bodyMedium!.color!.withValues(alpha: 0.5),
+                  color: (Theme.of(context).brightness == Brightness.dark
+                      ? AppColors.darkTextSecondary
+                      : AppColors.lightTextSecondary).withValues(alpha: 0.5),
                   size: isWatch ? 16 : 24,
                 ),
               ],
@@ -786,16 +847,14 @@ class AjoutMembrePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            theme.scaffoldBackgroundColor,
-            theme.cardTheme.color!,
+            Theme.of(context).scaffoldBackgroundColor,
+            Theme.of(context).cardTheme.color!,
           ],
         ),
       ),
@@ -810,32 +869,40 @@ class AjoutMembrePage extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: theme.textTheme.bodyLarge!.color,
+                  color: (Theme.of(context).brightness == Brightness.dark
+                      ? AppColors.darkTextPrimary
+                      : AppColors.lightTextPrimary),
                 ),
               ),
               const SizedBox(height: 32),
               
               TextField(
-                style: TextStyle(color: theme.textTheme.bodyLarge!.color),
+                style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.darkTextPrimary
+                    : AppColors.lightTextPrimary)),
                 decoration: InputDecoration(
                   labelText: 'Nom complet',
-                  prefixIcon: Icon(Icons.person, color: theme.colorScheme.primary),
+                  prefixIcon: Icon(Icons.person, color: Theme.of(context).colorScheme.primary),
                 ),
               ),
               const SizedBox(height: 16),
               TextField(
-                style: TextStyle(color: theme.textTheme.bodyLarge!.color),
+                style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.darkTextPrimary
+                    : AppColors.lightTextPrimary)),
                 decoration: InputDecoration(
                   labelText: 'Email',
-                  prefixIcon: Icon(Icons.email, color: theme.colorScheme.primary),
+                  prefixIcon: Icon(Icons.email, color: Theme.of(context).colorScheme.primary),
                 ),
               ),
               const SizedBox(height: 16),
               TextField(
-                style: TextStyle(color: theme.textTheme.bodyLarge!.color),
+                style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.darkTextPrimary
+                    : AppColors.lightTextPrimary)),
                 decoration: InputDecoration(
                   labelText: 'Téléphone',
-                  prefixIcon: Icon(Icons.phone, color: theme.colorScheme.primary),
+                  prefixIcon: Icon(Icons.phone, color: Theme.of(context).colorScheme.primary),
                 ),
               ),
               const SizedBox(height: 32),
@@ -877,6 +944,7 @@ class _ProfilePageState extends State<ProfilePage> {
   final AuthService _authService = AuthService(ApiService.fromEnv());
   Map<String, dynamic>? _profileData;
   bool _isLoading = true;
+  bool _isRefreshing = false;
 
   @override
   void initState() {
@@ -886,23 +954,60 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _loadProfileData() async {
     setState(() => _isLoading = true);
-    final profileData = await _authService.getCachedUserProfile();
-    if (mounted) {
+
+    // Try to load from cache first
+    final cachedData = await _authService.getCachedUserProfile();
+
+    if (cachedData != null) {
       setState(() {
-        _profileData = profileData;
+        _profileData = cachedData;
         _isLoading = false;
       });
+
+      // Check if cache is stale and refresh in background
+      final isStale = await _authService.isProfileCacheStale();
+      if (isStale) {
+        _refreshProfileDataSilently();
+      }
+    } else {
+      // No cache, fetch from API
+      await _refreshProfileData();
     }
   }
 
   Future<void> _refreshProfileData() async {
-    await _authService.refreshUserProfile();
-    await _loadProfileData();
+    if (_isRefreshing) return;
+
+    setState(() => _isRefreshing = true);
+
+    try {
+      final freshData = await _authService.refreshUserProfile();
+
+      if (mounted) {
+        setState(() {
+          if (freshData != null) {
+            _profileData = freshData;
+          }
+          _isLoading = false;
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isRefreshing = false);
+      }
+    }
+  }
+
+  Future<void> _refreshProfileDataSilently() async {
+    final freshData = await _authService.refreshUserProfile();
+    if (mounted && freshData != null) {
+      setState(() => _profileData = freshData);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     
     if (_isLoading) {
       return Container(
@@ -911,21 +1016,22 @@ class _ProfilePageState extends State<ProfilePage> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              theme.scaffoldBackgroundColor,
-              theme.cardTheme.color!,
+              Theme.of(context).scaffoldBackgroundColor,
+              Theme.of(context).cardTheme.color!,
             ],
           ),
         ),
         child: Center(
           child: CircularProgressIndicator(
-            color: theme.colorScheme.primary,
+            color: Theme.of(context).colorScheme.primary,
           ),
         ),
       );
     }
 
     final fullName = _profileData?['fullName'] ?? 'Administrateur';
-    final email = _profileData?['email'] ?? 'admin@gymmanager.com';
+    final email = _profileData?['email'] ?? '';
+    final phoneNumber = _profileData?['phoneNumber'] ?? '';
     final role = _profileData?['role'] ?? 'admin';
     final joinedAt = _profileData?['joinedAt'] ?? 'N/A';
     
@@ -935,23 +1041,25 @@ class _ProfilePageState extends State<ProfilePage> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            theme.scaffoldBackgroundColor,
-            theme.cardTheme.color!,
+            Theme.of(context).scaffoldBackgroundColor,
+            Theme.of(context).cardTheme.color!,
           ],
         ),
       ),
-      child: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: _refreshProfileData,
-          color: theme.colorScheme.primary,
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Profile header - Full width
-                Container(
+      child: RefreshIndicator(
+        onRefresh: _refreshProfileData,
+        color: Theme.of(context).colorScheme.primary,
+        notificationPredicate: (notification) => !_isRefreshing,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Profile header - Full width
+              SizedBox(
+                width: double.infinity,
+                child: Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(24.0),
                   decoration: BoxDecoration(
@@ -959,8 +1067,8 @@ class _ProfilePageState extends State<ProfilePage> {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        theme.cardTheme.color!,
-                        theme.cardTheme.color!.withValues(alpha: 0.8),
+                        Theme.of(context).cardTheme.color!,
+                        Theme.of(context).cardTheme.color!.withValues(alpha: 0.8),
                       ],
                     ),
                     borderRadius: BorderRadius.circular(16),
@@ -971,11 +1079,13 @@ class _ProfilePageState extends State<ProfilePage> {
                         children: [
                           CircleAvatar(
                             radius: 50,
-                            backgroundColor: theme.colorScheme.primary,
+                            backgroundColor: Theme.of(context).colorScheme.primary,
                             child: Icon(
                               Icons.person,
                               size: 50,
-                              color: theme.textTheme.bodyLarge!.color,
+                              color: (Theme.of(context).brightness == Brightness.dark
+                                  ? AppColors.darkTextPrimary
+                                  : AppColors.lightTextPrimary),
                             ),
                           ),
                           Positioned(
@@ -984,17 +1094,17 @@ class _ProfilePageState extends State<ProfilePage> {
                             child: Container(
                               padding: const EdgeInsets.all(6),
                               decoration: BoxDecoration(
-                                color: theme.scaffoldBackgroundColor,
+                                color: Theme.of(context).scaffoldBackgroundColor,
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: theme.colorScheme.primary,
+                                  color: Theme.of(context).colorScheme.primary,
                                   width: 2,
                                 ),
                               ),
                               child: Icon(
                                 role == 'owner' ? Icons.verified : Icons.admin_panel_settings,
                                 size: 16,
-                                color: theme.colorScheme.primary,
+                                color: Theme.of(context).colorScheme.primary,
                               ),
                             ),
                           ),
@@ -1006,33 +1116,83 @@ class _ProfilePageState extends State<ProfilePage> {
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
-                          color: theme.textTheme.bodyLarge!.color,
+                          color: (Theme.of(context).brightness == Brightness.dark
+                              ? AppColors.darkTextPrimary
+                              : AppColors.lightTextPrimary),
                         ),
                       ),
                       const SizedBox(height: 8),
-                      Text(
-                        email,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: theme.textTheme.bodyMedium!.color,
+                      if (email.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 4),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.email,
+                                size: 14,
+                                color: (Theme.of(context).brightness == Brightness.dark
+                                    ? AppColors.darkTextSecondary
+                                    : AppColors.lightTextSecondary),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                email,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: (Theme.of(context).brightness == Brightness.dark
+                                      ? AppColors.darkTextSecondary
+                                      : AppColors.lightTextSecondary),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
+                      if (phoneNumber.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 4),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.phone,
+                                size: 14,
+                                color: (Theme.of(context).brightness == Brightness.dark
+                                    ? AppColors.darkTextSecondary
+                                    : AppColors.lightTextSecondary),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                phoneNumber,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: (Theme.of(context).brightness == Brightness.dark
+                                      ? AppColors.darkTextSecondary
+                                      : AppColors.lightTextSecondary),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       const SizedBox(height: 8),
                       Text(
-                        'Membre depuis: $joinedAt',
+                        l10n.memberSince(joinedAt),
                         style: TextStyle(
                           fontSize: 12,
-                          color: theme.textTheme.bodyMedium!.color!.withValues(alpha: 0.7),
+                          color: (Theme.of(context).brightness == Brightness.dark
+                                  ? AppColors.darkTextSecondary
+                                  : AppColors.lightTextSecondary)
+                              .withValues(alpha: 0.7),
                         ),
                       ),
                       const SizedBox(height: 12),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         decoration: BoxDecoration(
-                          color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: theme.colorScheme.primary.withValues(alpha: 0.5),
+                            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
                             width: 1,
                           ),
                         ),
@@ -1042,14 +1202,14 @@ class _ProfilePageState extends State<ProfilePage> {
                             Icon(
                               role == 'owner' ? Icons.verified : Icons.admin_panel_settings,
                               size: 16,
-                              color: theme.colorScheme.primary,
+                              color: Theme.of(context).colorScheme.primary,
                             ),
                             const SizedBox(width: 6),
                             Text(
-                              role == 'owner' ? 'Propriétaire' : 'Administrateur',
+                              role == 'owner' ? l10n.ownerRole : l10n.adminRole,
                               style: TextStyle(
                                 fontSize: 13,
-                                color: theme.colorScheme.primary,
+                                color: Theme.of(context).colorScheme.primary,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -1059,91 +1219,99 @@ class _ProfilePageState extends State<ProfilePage> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 24),
+              ),
+              const SizedBox(height: 24),
 
-                // Settings options
-                Text(
-                  'Paramètres',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: theme.textTheme.bodyLarge!.color,
-                  ),
+              // Settings options
+              Text(
+                l10n.parameters,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: (Theme.of(context).brightness == Brightness.dark
+                      ? AppColors.darkTextPrimary
+                      : AppColors.lightTextPrimary),
                 ),
-                const SizedBox(height: 12),
-                _buildSettingsItem(
-                  context,
-                  'Paramètres',
-                  Icons.settings,
-                  () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const SecuritySettingsPage(),
-                      ),
-                    );
+              ),
+              const SizedBox(height: 12),
+              _buildSettingsItem(
+                context,
+                l10n.parameters,
+                Icons.settings,
+                () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SecuritySettingsPage(),
+                    ),
+                  );
+                },
+              ),
+              _buildSettingsItem(
+                context,
+                l10n.about,
+                Icons.info_outline,
+                () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AboutScreen(),
+                    ),
+                  );
+                },
+              ),
+              _buildSettingsItem(
+                context,
+                l10n.helpSupport,
+                Icons.help_outline,
+                () {},
+              ),
+              const SizedBox(height: 16),
+              
+              // Logout button
+              Card(
+                color: AppColors.error,
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: ListTile(
+                  leading: Icon(
+                    Icons.logout,
+                    color: (Theme.of(context).brightness == Brightness.dark
+                        ? AppColors.darkTextPrimary
+                        : AppColors.lightTextPrimary),
+                  ),
+                  title: Text(
+                    l10n.disconnect,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: (Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.darkTextPrimary
+                          : AppColors.lightTextPrimary),
+                    ),
+                  ),
+                  trailing: Icon(
+                    Icons.arrow_forward_ios,
+                    color: (Theme.of(context).brightness == Brightness.dark
+                        ? AppColors.darkTextPrimary
+                        : AppColors.lightTextPrimary),
+                    size: 16,
+                  ),
+                  onTap: () async {
+                    await _authService.clearAll();
+                    if (context.mounted) {
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(builder: (context) => const LoginScreen()),
+                        (route) => false,
+                      );
+                    }
                   },
                 ),
-                _buildSettingsItem(
-                  context,
-                  'À propos',
-                  Icons.info_outline,
-                  () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const AboutScreen(),
-                      ),
-                    );
-                  },
-                ),
-                _buildSettingsItem(
-                  context,
-                  'Aide & Support',
-                  Icons.help_outline,
-                  () {},
-                ),
-                const SizedBox(height: 16),
-                
-                // Logout button
-                Card(
-                  color: AppColors.error,
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: ListTile(
-                    leading: Icon(
-                      Icons.logout,
-                      color: theme.textTheme.bodyLarge!.color,
-                    ),
-                    title: Text(
-                      'Se déconnecter',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: theme.textTheme.bodyLarge!.color,
-                      ),
-                    ),
-                    trailing: Icon(
-                      Icons.arrow_forward_ios,
-                      color: theme.textTheme.bodyLarge!.color,
-                      size: 16,
-                    ),
-                    onTap: () async {
-                      await _authService.clearAll();
-                      if (context.mounted) {
-                        Navigator.of(context).pushAndRemoveUntil(
-                          MaterialPageRoute(builder: (context) => const LoginScreen()),
-                          (route) => false,
-                        );
-                      }
-                    },
-                  ),
-                ),
-                const SizedBox(height: 24),
-              ],
-            ),
+              ),
+              const SizedBox(height: 24),
+            ],
           ),
         ),
       ),
@@ -1156,9 +1324,8 @@ class _ProfilePageState extends State<ProfilePage> {
     IconData icon,
     VoidCallback onTap,
   ) {
-    final theme = Theme.of(context);
     return Card(
-      color: theme.cardTheme.color,
+      color: Theme.of(context).cardTheme.color,
       elevation: 2,
       margin: const EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(
@@ -1166,14 +1333,14 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
       child: ListTile(
         leading: Container(
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: theme.colorScheme.primary.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(8),
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+            shape: BoxShape.circle,
           ),
           child: Icon(
             icon,
-            color: theme.colorScheme.primary,
+            color: Theme.of(context).colorScheme.primary,
             size: 24,
           ),
         ),
@@ -1182,12 +1349,17 @@ class _ProfilePageState extends State<ProfilePage> {
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w500,
-            color: theme.textTheme.bodyLarge!.color,
+            color: (Theme.of(context).brightness == Brightness.dark
+                ? AppColors.darkTextPrimary
+                : AppColors.lightTextPrimary),
           ),
         ),
         trailing: Icon(
           Icons.arrow_forward_ios,
-          color: theme.textTheme.bodyMedium!.color!.withValues(alpha: 0.8),
+          color: (Theme.of(context).brightness == Brightness.dark
+                  ? AppColors.darkTextSecondary
+                  : AppColors.lightTextSecondary)
+              .withValues(alpha: 0.8),
           size: 16,
         ),
         onTap: onTap,
@@ -1324,18 +1496,16 @@ class _GestionGlobalePageState extends State<GestionGlobalePage> {
     required String description,
     required VoidCallback onTap,
   }) {
-    final theme = Theme.of(context);
-    
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
         decoration: BoxDecoration(
-          color: theme.cardTheme.color,
+          color: Theme.of(context).cardTheme.color,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: theme.dividerColor.withValues(alpha: 0.3),
+            color: Theme.of(context).dividerColor.withValues(alpha: 0.3),
             width: 1,
           ),
         ),
@@ -1345,12 +1515,12 @@ class _GestionGlobalePageState extends State<GestionGlobalePage> {
               width: 56,
               height: 56,
               decoration: BoxDecoration(
-                color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
                 icon,
-                color: theme.colorScheme.primary,
+                color: Theme.of(context).colorScheme.primary,
                 size: 28,
               ),
             ),
@@ -1362,7 +1532,9 @@ class _GestionGlobalePageState extends State<GestionGlobalePage> {
                   Text(
                     title,
                     style: TextStyle(
-                      color: theme.textTheme.bodyLarge!.color,
+                      color: (Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.darkTextPrimary
+                          : AppColors.lightTextPrimary),
                       fontSize: 17,
                       fontWeight: FontWeight.w600,
                       letterSpacing: -0.2,
@@ -1372,7 +1544,9 @@ class _GestionGlobalePageState extends State<GestionGlobalePage> {
                   Text(
                     description,
                     style: TextStyle(
-                      color: theme.textTheme.bodyMedium!.color!.withValues(alpha: 0.7),
+                      color: (Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.darkTextSecondary
+                          : AppColors.lightTextSecondary).withValues(alpha: 0.7),
                       fontSize: 13,
                       letterSpacing: -0.1,
                     ),
@@ -1382,7 +1556,9 @@ class _GestionGlobalePageState extends State<GestionGlobalePage> {
             ),
             Icon(
               Icons.chevron_right,
-              color: theme.textTheme.bodyMedium!.color!.withValues(alpha: 0.5),
+              color: (Theme.of(context).brightness == Brightness.dark
+                  ? AppColors.darkTextSecondary
+                  : AppColors.lightTextSecondary).withValues(alpha: 0.5),
               size: 20,
             ),
           ],
@@ -1517,7 +1693,9 @@ class _AdminsListViewState extends State<_AdminsListView> {
                 child: Row(
                   children: [
                     IconButton(
-                      icon: Icon(Icons.arrow_back, color: theme.textTheme.bodyLarge!.color),
+                      icon: Icon(Icons.arrow_back, color: (Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.darkTextPrimary
+                          : AppColors.lightTextPrimary)),
                       onPressed: widget.onBack,
                     ),
                     Text(
@@ -1525,7 +1703,9 @@ class _AdminsListViewState extends State<_AdminsListView> {
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: theme.textTheme.bodyLarge!.color,
+                        color: (Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.darkTextPrimary
+                            : AppColors.lightTextPrimary),
                       ),
                     ),
                   ],
@@ -1537,14 +1717,20 @@ class _AdminsListViewState extends State<_AdminsListView> {
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: TextField(
                 controller: _searchController,
-                style: TextStyle(color: theme.textTheme.bodyLarge!.color),
+                style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.darkTextPrimary
+                    : AppColors.lightTextPrimary)),
                 decoration: InputDecoration(
                   hintText: 'Rechercher un administrateur...',
-                  hintStyle: TextStyle(color: theme.textTheme.bodyMedium!.color!.withValues(alpha: 0.6)),
+                  hintStyle: TextStyle(color: (Theme.of(context).brightness == Brightness.dark
+                      ? AppColors.darkTextSecondary
+                      : AppColors.lightTextSecondary).withValues(alpha: 0.6)),
                   prefixIcon: Icon(Icons.search, color: theme.colorScheme.primary),
                   suffixIcon: _searchController.text.isNotEmpty
                       ? IconButton(
-                          icon: Icon(Icons.clear, color: theme.textTheme.bodyMedium!.color!.withValues(alpha: 0.6)),
+                          icon: Icon(Icons.clear, color: (Theme.of(context).brightness == Brightness.dark
+                              ? AppColors.darkTextSecondary
+                              : AppColors.lightTextSecondary).withValues(alpha: 0.6)),
                           onPressed: () {
                             _searchController.clear();
                           },
@@ -1583,7 +1769,9 @@ class _AdminsListViewState extends State<_AdminsListView> {
                               Text(
                                 _errorMessage,
                                 style: TextStyle(
-                                  color: theme.textTheme.bodyLarge!.color,
+                                  color: (Theme.of(context).brightness == Brightness.dark
+                                      ? AppColors.darkTextPrimary
+                                      : AppColors.lightTextPrimary),
                                   fontSize: 16,
                                 ),
                                 textAlign: TextAlign.center,
@@ -1606,7 +1794,9 @@ class _AdminsListViewState extends State<_AdminsListView> {
                                 children: [
                                   Icon(
                                     Icons.admin_panel_settings_outlined,
-                                    color: theme.textTheme.bodyMedium!.color!.withValues(alpha: 0.6),
+                                    color: (Theme.of(context).brightness == Brightness.dark
+                                        ? AppColors.darkTextSecondary
+                                        : AppColors.lightTextSecondary).withValues(alpha: 0.6),
                                     size: 48,
                                   ),
                                   const SizedBox(height: 16),
@@ -1615,7 +1805,9 @@ class _AdminsListViewState extends State<_AdminsListView> {
                                         ? 'Aucun administrateur trouvé'
                                         : 'Aucun administrateur',
                                     style: TextStyle(
-                                      color: theme.textTheme.bodyMedium!.color!.withValues(alpha: 0.6),
+                                      color: (Theme.of(context).brightness == Brightness.dark
+                                          ? AppColors.darkTextSecondary
+                                          : AppColors.lightTextSecondary).withValues(alpha: 0.6),
                                       fontSize: 16,
                                     ),
                                   ),
@@ -1642,7 +1834,9 @@ class _AdminsListViewState extends State<_AdminsListView> {
       floatingActionButton: FloatingActionButton(
         onPressed: widget.onCreate,
         backgroundColor: theme.colorScheme.primary,
-        child: Icon(Icons.add, color: theme.textTheme.bodyLarge!.color),
+        child: Icon(Icons.add, color: (Theme.of(context).brightness == Brightness.dark
+            ? AppColors.darkTextPrimary
+            : AppColors.lightTextPrimary)),
       ),
     );
   }
@@ -1703,7 +1897,9 @@ class _AdminsListViewState extends State<_AdminsListView> {
                     Text(
                       fullName,
                       style: TextStyle(
-                        color: theme.textTheme.bodyLarge!.color,
+                        color: (Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.darkTextPrimary
+                            : AppColors.lightTextPrimary),
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
@@ -1712,7 +1908,9 @@ class _AdminsListViewState extends State<_AdminsListView> {
                     Text(
                       email,
                       style: TextStyle(
-                        color: theme.textTheme.bodyMedium!.color!.withValues(alpha: 0.7),
+                        color: (Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.darkTextSecondary
+                            : AppColors.lightTextSecondary).withValues(alpha: 0.7),
                         fontSize: 14,
                       ),
                     ),
@@ -1735,7 +1933,9 @@ class _AdminsListViewState extends State<_AdminsListView> {
                   ],
                 ),
               ),
-              Icon(Icons.arrow_forward_ios, color: theme.textTheme.bodyMedium!.color!.withValues(alpha: 0.6), size: 16),
+              Icon(Icons.arrow_forward_ios, color: (Theme.of(context).brightness == Brightness.dark
+                  ? AppColors.darkTextSecondary
+                  : AppColors.lightTextSecondary).withValues(alpha: 0.6), size: 16),
             ],
           ),
         ),
