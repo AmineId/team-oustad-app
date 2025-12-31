@@ -6,6 +6,7 @@ import '../../core/services/api_service.dart';
 import '../../core/theme/theme.dart';
 import '../../core/utils/user_utils.dart';
 import '../../core/l10n/app_localizations.dart';
+import '../../widgets/common/common_widgets.dart';
 import '../../widgets/responsive/responsive_layout.dart';
 import '../auth/login_screen.dart';
 import 'admin_create_member_screen.dart';
@@ -416,6 +417,15 @@ class AccueilPage extends StatelessWidget {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Banner carousel avec statistiques pour les admins
+                  BannerCarousel(
+                    height: 180,
+                    autoScroll: true,
+                    autoScrollDuration: Duration(seconds: 5),
+                    showStatistics: true,
+                  ),
+                  SizedBox(height: isWatch ? 16 : 24),
+                  
                   // Statistiques - responsive grid
                   _buildStatsGrid(context, isDesktop, isWatch),
                   

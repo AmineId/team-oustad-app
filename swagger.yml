@@ -5072,3 +5072,395 @@ paths:
           description: Membre non trouvé
         '500':
           description: Erreur serveur
+
+  # ==================== BANNERS API ====================
+  /banners:
+    get:
+      summary: Récupérer les bannières actives
+      description: Récupère la liste des bannières actives avec possibilité de filtrage
+      tags:
+        - Banners
+      parameters:
+        - in: query
+          name: type
+          schema:
+            type: string
+            enum: [seasonal, event, promotion, info, announcement]
+          description: Filtrer par type de bannière
+        - in: query
+          name: gymId
+          schema:
+            type: integer
+          description: Filtrer par ID de salle (optionnel)
+        - in: query
+          name: activeOnly
+          schema:
+            type: boolean
+            default: true
+          description: Afficher uniquement les bannières actives
+      responses:
+        '200':
+          description: Liste des bannières
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  banners:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Banner'
+        '500':
+          description: Erreur serveur
+    
+    post:
+      summary: Créer une nouvelle bannière
+      description: Créer une nouvelle bannière (Admin/Owner uniquement)
+      tags:
+        - Banners
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+                - imageUrl
+                - type
+                - startDate
+                - endDate
+              properties:
+                title:
+                  type: string
+                  example: "Offre spéciale été"
+                description:
+                  type: string
+                  example: "Profitez de -30% sur tous les abonnements"
+                imageUrl:
+                  type: string
+                  format: uri
+                  example: "https://example.com/banner.jpg"
+                imageBase64:
+                  type: string
+                  description: Image encodée en base64 (optionnel)
+                type:
+                  type: string
+                  enum: [seasonal, event, promotion, info, announcement]
+                  example: "seasonal"
+                startDate:
+                  type: string
+                  format: date-time
+                  example: "2024-06-01T00:00:00Z"
+                endDate:
+                  type: string
+                  format: date-time
+                  example: "2024-08-31T23:59:59Z"
+                action:
+                  type: object
+                  properties:
+                    type:
+                      type: string
+                      enum: [navigate, externalUrl, showDetails, none]
+                    data:
+                      type: string
+                    params:
+                      type: object
+                priority:
+                  type: integer
+                  default: 0
+                  example: 10
+                isActive:
+                  type: boolean
+                  default: true
+                gymId:
+                  type: integer
+                  description: ID de la salle (null = toutes les salles)
+                backgroundColor:
+                  type: string
+                  example: "#FF5733"
+                textColor:
+                  type: string
+                  example: "#FFFFFF"
+      responses:
+        '201':
+          description: Bannière créée avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Banner'
+        '400':
+          description: Données invalides
+        '403':
+          description: Accès interdit
+        '500':
+          description: Erreur serveur
+
+  /banners/{id}:
+    get:
+      summary: Récupérer une bannière par ID
+      description: Récupère les détails d'une bannière spécifique
+      tags:
+        - Banners
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID de la bannière
+      responses:
+        '200':
+          description: Détails de la bannière
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Banner'
+        '404':
+          description: Bannière non trouvée
+        '500':
+          description: Erreur serveur
+
+    put:
+      summary: Mettre à jour une bannière
+      description: Mettre à jour les informations d'une bannière (Admin/Owner uniquement)
+      tags:
+        - Banners
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                imageUrl:
+                  type: string
+                imageBase64:
+                  type: string
+                type:
+                  type: string
+                  enum: [seasonal, event, promotion, info, announcement]
+                startDate:
+                  type: string
+                  format: date-time
+                endDate:
+                  type: string
+                  format: date-time
+                action:
+                  type: object
+                priority:
+                  type: integer
+                isActive:
+                  type: boolean
+                gymId:
+                  type: integer
+                backgroundColor:
+                  type: string
+                textColor:
+                  type: string
+      responses:
+        '200':
+          description: Bannière mise à jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Banner'
+        '400':
+          description: Données invalides
+        '403':
+          description: Accès interdit
+        '404':
+          description: Bannière non trouvée
+        '500':
+          description: Erreur serveur
+
+    delete:
+      summary: Supprimer une bannière
+      description: Supprimer une bannière (Admin/Owner uniquement)
+      tags:
+        - Banners
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Bannière supprimée
+        '403':
+          description: Accès interdit
+        '404':
+          description: Bannière non trouvée
+        '500':
+          description: Erreur serveur
+
+  /banners/{id}/track/view:
+    post:
+      summary: Tracker la vue d'une bannière
+      description: Enregistrer qu'une bannière a été vue
+      tags:
+        - Banners
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Vue enregistrée
+        '404':
+          description: Bannière non trouvée
+        '500':
+          description: Erreur serveur
+
+  /banners/{id}/track/click:
+    post:
+      summary: Tracker le clic sur une bannière
+      description: Enregistrer qu'une bannière a été cliquée
+      tags:
+        - Banners
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Clic enregistré
+        '404':
+          description: Bannière non trouvée
+        '500':
+          description: Erreur serveur
+
+  /banners/{id}/stats:
+    get:
+      summary: Récupérer les statistiques d'une bannière
+      description: Récupère les statistiques de vues et clics (Admin/Owner uniquement)
+      tags:
+        - Banners
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Statistiques de la bannière
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  bannerId:
+                    type: integer
+                  viewCount:
+                    type: integer
+                  clickCount:
+                    type: integer
+                  clickThroughRate:
+                    type: number
+                    format: float
+                  lastViewed:
+                    type: string
+                    format: date-time
+                  lastClicked:
+                    type: string
+                    format: date-time
+        '403':
+          description: Accès interdit
+        '404':
+          description: Bannière non trouvée
+        '500':
+          description: Erreur serveur
+
+components:
+  schemas:
+    Banner:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: "Offre spéciale été"
+        description:
+          type: string
+          example: "Profitez de -30% sur tous les abonnements"
+        imageUrl:
+          type: string
+          format: uri
+          example: "https://example.com/banner.jpg"
+        imageBase64:
+          type: string
+          description: Image encodée en base64
+        type:
+          type: string
+          enum: [seasonal, event, promotion, info, announcement]
+          example: "seasonal"
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        action:
+          type: object
+          properties:
+            type:
+              type: string
+              enum: [navigate, externalUrl, showDetails, none]
+            data:
+              type: string
+            params:
+              type: object
+        priority:
+          type: integer
+          example: 10
+        isActive:
+          type: boolean
+          example: true
+        gymId:
+          type: integer
+          nullable: true
+        backgroundColor:
+          type: string
+          example: "#FF5733"
+        textColor:
+          type: string
+          example: "#FFFFFF"
+        viewCount:
+          type: integer
+          example: 150
+        clickCount:
+          type: integer
+          example: 25
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
