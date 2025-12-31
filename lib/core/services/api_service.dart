@@ -2324,6 +2324,249 @@ class ApiService {
       return false;
     }
   }
+
+  // ==================== BANNERS MANAGEMENT ====================
+
+  /// Get all active banners
+  /// GET /banners
+  Future<List<dynamic>?> getBanners({
+    String? type,
+    int? gymId,
+    bool activeOnly = true,
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
+    var path = '/banners';
+    final queryParams = <String>[];
+    if (type != null) queryParams.add('type=$type');
+    if (gymId != null) queryParams.add('gymId=$gymId');
+    if (activeOnly) queryParams.add('activeOnly=true');
+    
+    if (queryParams.isNotEmpty) {
+      path += '?${queryParams.join('&')}';
+    }
+    
+    final uri = baseUri.resolve(path);
+    try {
+      // ignore: avoid_print
+      debugPrint('ApiService.getBanners -> $uri');
+      
+      final resp = await http.get(uri).timeout(timeout);
+      
+      if (resp.statusCode == 200) {
+        try {
+          final body = jsonDecode(resp.body);
+          return body['banners'] as List<dynamic>;
+        } catch (_) {
+          return null;
+        }
+      }
+      return null;
+    } catch (e) {
+      // ignore: avoid_print
+      debugPrint('Error getting banners: $e');
+      return null;
+    }
+  }
+
+  /// Get banner by ID
+  /// GET /banners/{id}
+  Future<Map<String, dynamic>?> getBannerById(
+    int bannerId, {
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
+    final uri = baseUri.resolve('/banners/$bannerId');
+    try {
+      // ignore: avoid_print
+      debugPrint('ApiService.getBannerById -> $uri');
+      
+      final resp = await http.get(uri).timeout(timeout);
+      
+      if (resp.statusCode == 200) {
+        try {
+          final body = jsonDecode(resp.body);
+          return body as Map<String, dynamic>;
+        } catch (_) {
+          return null;
+        }
+      }
+      return null;
+    } catch (e) {
+      // ignore: avoid_print
+      debugPrint('Error getting banner: $e');
+      return null;
+    }
+  }
+
+  /// Create a new banner (Admin/Owner only)
+  /// POST /banners
+  Future<Map<String, dynamic>?> createBanner(
+    Map<String, dynamic> bannerData,
+    String token, {
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
+    final uri = baseUri.resolve('/banners');
+    try {
+      // ignore: avoid_print
+      debugPrint('ApiService.createBanner -> $uri');
+      // ignore: avoid_print
+      debugPrint('Data: $bannerData');
+      
+      final resp = await http
+          .post(
+            uri,
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+            body: jsonEncode(bannerData),
+          )
+          .timeout(timeout);
+      
+      // ignore: avoid_print
+      debugPrint('createBanner status: ${resp.statusCode}');
+      
+      if (resp.statusCode == 201 || resp.statusCode == 200) {
+        try {
+          final body = jsonDecode(resp.body);
+          return body as Map<String, dynamic>;
+        } catch (_) {
+          return null;
+        }
+      }
+      return null;
+    } catch (e) {
+      // ignore: avoid_print
+      debugPrint('Error creating banner: $e');
+      return null;
+    }
+  }
+
+  /// Update a banner (Admin/Owner only)
+  /// PUT /banners/{id}
+  Future<Map<String, dynamic>?> updateBanner(
+    int bannerId,
+    Map<String, dynamic> bannerData,
+    String token, {
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
+    final uri = baseUri.resolve('/banners/$bannerId');
+    try {
+      // ignore: avoid_print
+      debugPrint('ApiService.updateBanner -> $uri');
+      
+      final resp = await http
+          .put(
+            uri,
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+            body: jsonEncode(bannerData),
+          )
+          .timeout(timeout);
+      
+      if (resp.statusCode == 200) {
+        try {
+          final body = jsonDecode(resp.body);
+          return body as Map<String, dynamic>;
+        } catch (_) {
+          return null;
+        }
+      }
+      return null;
+    } catch (e) {
+      // ignore: avoid_print
+      debugPrint('Error updating banner: $e');
+      return null;
+    }
+  }
+
+  /// Delete a banner (Admin/Owner only)
+  /// DELETE /banners/{id}
+  Future<bool> deleteBanner(
+    int bannerId,
+    String token, {
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
+    final uri = baseUri.resolve('/banners/$bannerId');
+    try {
+      // ignore: avoid_print
+      debugPrint('ApiService.deleteBanner -> $uri');
+      
+      final resp = await http
+          .delete(uri, headers: {'Authorization': 'Bearer $token'})
+          .timeout(timeout);
+      
+      return resp.statusCode == 200 || resp.statusCode == 204;
+    } catch (e) {
+      // ignore: avoid_print
+      debugPrint('Error deleting banner: $e');
+      return false;
+    }
+  }
+
+  /// Track banner view
+  /// POST /banners/{id}/track/view
+  Future<bool> trackBannerView(
+    int bannerId, {
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
+    final uri = baseUri.resolve('/banners/$bannerId/track/view');
+    try {
+      final resp = await http.post(uri).timeout(timeout);
+      return resp.statusCode == 200;
+    } catch (e) {
+      // ignore: avoid_print
+      debugPrint('Error tracking banner view: $e');
+      return false;
+    }
+  }
+
+  /// Track banner click
+  /// POST /banners/{id}/track/click
+  Future<bool> trackBannerClick(
+    int bannerId, {
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
+    final uri = baseUri.resolve('/banners/$bannerId/track/click');
+    try {
+      final resp = await http.post(uri).timeout(timeout);
+      return resp.statusCode == 200;
+    } catch (e) {
+      // ignore: avoid_print
+      debugPrint('Error tracking banner click: $e');
+      return false;
+    }
+  }
+
+  /// Get banner statistics (Admin/Owner only)
+  /// GET /banners/{id}/stats
+  Future<Map<String, dynamic>?> getBannerStats(
+    int bannerId,
+    String token, {
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
+    final uri = baseUri.resolve('/banners/$bannerId/stats');
+    try {
+      final resp = await http
+          .get(uri, headers: {'Authorization': 'Bearer $token'})
+          .timeout(timeout);
+      
+      if (resp.statusCode == 200) {
+        try {
+          final body = jsonDecode(resp.body);
+          return body as Map<String, dynamic>;
+        } catch (_) {
+          return null;
+        }
+      }
+      return null;
+    } catch (e) {
+      // ignore: avoid_print
+      debugPrint('Error getting banner stats: $e');
+      return null;
+    }
+  }
 }
 
 
