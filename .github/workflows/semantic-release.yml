@@ -89,6 +89,8 @@ jobs:
     needs: version
     if: needs.version.outputs.released == 'true'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     environment:
       name: ${{ needs.version.outputs.environment }}
       url: https://app.team-oustad.com/android/version.json
