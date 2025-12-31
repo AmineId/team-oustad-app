@@ -417,13 +417,8 @@ class AccueilPage extends StatelessWidget {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Banner carousel avec statistiques pour les admins
-                  BannerCarousel(
-                    height: 180,
-                    autoScroll: true,
-                    autoScrollDuration: Duration(seconds: 5),
-                    showStatistics: true,
-                  ),
+                  // Banner carousel - only shows when banners exist
+                  const BannerCarousel(height: 180),
                   SizedBox(height: isWatch ? 16 : 24),
                   
                   // Statistiques - responsive grid

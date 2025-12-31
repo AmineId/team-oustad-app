@@ -326,13 +326,9 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Banner carousel
-              BannerCarousel(
-                height: 180,
-                autoScroll: true,
-                autoScrollDuration: Duration(seconds: 5),
-              ),
-              SizedBox(height: 16),
+              // Banner carousel - only shows when banners exist
+              const BannerCarousel(height: 180),
+              const SizedBox(height: 16),
               
               // Welcome card
               FutureBuilder<Map<String, dynamic>?>(
