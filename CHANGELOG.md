@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.29](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.28...v1.0.0-beta.29) (2025-12-31)
+
+
+### ✨ New Features
+
+* apply consistent styling across admin/owner/member screens ([844a2fe](https://github.com/TeamFitness/mobile-app/commit/844a2fe23f9b4b66742ff563608325ab988ca3ad))
+
 ## [1.0.0-beta.28](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.27...v1.0.0-beta.28) (2025-11-23)
 
 
