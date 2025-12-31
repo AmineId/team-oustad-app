@@ -66,11 +66,11 @@ Liste complète des fichiers créés et modifiés pour le déploiement automatiq
 **Modifications** :
 - ✅ Ajout step "Setup Android signing" (lignes ~140-160)
 - ✅ Ajout step "Build AAB (for Play Store)" (ligne ~165)
-- ✅ Ajout job "deploy-playstore" complet (lignes ~180-220)
-- ✅ Renommage job "deploy" → "deploy-ota"
-- ✅ Mise à jour artifacts pour inclure AAB
+- ✅ Consolidation des jobs build, deploy-playstore et deploy-ota en un seul job "build-and-deploy"
+- ✅ Suppression de l'utilisation des artifacts GitHub Actions
+- ✅ Les fichiers APK/AAB restent sur le même runner, évitant upload/download
 
-**Lignes ajoutées** : ~60 lignes
+**Lignes ajoutées** : ~60 lignes (puis optimisées lors de la consolidation)
 
 ### Documentation Projet
 
