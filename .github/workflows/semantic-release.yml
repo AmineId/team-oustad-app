@@ -221,6 +221,8 @@ jobs:
           echo "✅ Notes de version générées"
 
       - name: 📤 Deploy to Play Store Internal Testing
+        env:
+          FASTLANE_SKIP_UPDATE_CHECK: "true"
         run: |
           # Trouver le fichier AAB
           AAB_PATH="build/app/outputs/bundle/release/app-release.aab"
