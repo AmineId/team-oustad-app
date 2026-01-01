@@ -1,10 +1,10 @@
 {
-  "version_name": "1.0.0-beta.31",
-  "version_code": 33,
+  "version_name": "1.0.0-beta.32",
+  "version_code": 34,
   "changelog": "Version update",
   "force_update": false,
   "min_supported_version": 1,
-  "release_date": "2025-12-31",
+  "release_date": "2026-01-01",
   "release_notes": {
     "new_features": [
       "improve OTA update dialog UX ([f1111fb](https://github.com/TeamFitness/mobile-app/commit/f1111fbdf223f3d510be0db3326209f927e159a8))"
@@ -18,7 +18,7 @@
   },
   "build_info": {
     "environment": "pprod",
-    "build_date": "2025-12-31T15:05:39.089Z",
+    "build_date": "2026-01-01T01:13:05.137Z",
     "flutter_version": "3.24.5",
     "dart_version": "3.5.4"
   }
