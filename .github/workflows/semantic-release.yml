@@ -223,14 +223,14 @@ jobs:
       - name: 📤 Deploy to Play Store Internal Testing
         run: |
           # Trouver le fichier AAB
-          AAB_PATH="../build/app/outputs/bundle/release/app-release.aab"
+          AAB_PATH="build/app/outputs/bundle/release/app-release.aab"
           
-          if [ ! -f "build/app/outputs/bundle/release/app-release.aab" ]; then
-            echo "❌ AAB file not found at build/app/outputs/bundle/release/app-release.aab"
+          if [ ! -f "$AAB_PATH" ]; then
+            echo "❌ AAB file not found at $AAB_PATH"
             exit 1
           fi
           
-          echo "✅ AAB found at: build/app/outputs/bundle/release/app-release.aab"
+          echo "✅ AAB found at: $AAB_PATH"
           
           # Vérifier que le service account existe
           if [ ! -f "android/fastlane/service-account-key.json" ]; then
@@ -247,9 +247,9 @@ jobs:
           # Changer vers le répertoire android pour exécuter fastlane
           cd android
           
-          # Déployer avec Fastlane
+          # Déployer avec Fastlane (chemin AAB relatif depuis android/)
           fastlane supply \
-            --aab "$AAB_PATH" \
+            --aab "../$AAB_PATH" \
             --track internal \
             --release_status draft \
             --json_key fastlane/service-account-key.json \
