@@ -240,16 +240,19 @@ jobs:
           
           echo "✅ Service account found"
           
-          # Créer le dossier pour les notes de version
-          mkdir -p fastlane/metadata/android/fr-FR/changelogs
-          cp release-notes-fr.txt fastlane/metadata/android/fr-FR/changelogs/default.txt
+          # Créer le dossier pour les notes de version dans le répertoire android/fastlane
+          mkdir -p android/fastlane/metadata/android/fr-FR/changelogs
+          cp release-notes-fr.txt android/fastlane/metadata/android/fr-FR/changelogs/default.txt
           
-          # Déployer avec Fastlane (utiliser le chemin absolu)
+          # Changer vers le répertoire android pour exécuter fastlane
+          cd android
+          
+          # Déployer avec Fastlane (chemin AAB relatif depuis android/)
           fastlane supply \
-            --aab "$AAB_PATH" \
+            --aab "../$AAB_PATH" \
             --track internal \
             --release_status draft \
-            --json_key "$(pwd)/android/fastlane/service-account-key.json" \
+            --json_key fastlane/service-account-key.json \
             --package_name team.fitness.team_fitness_app \
             --skip_upload_metadata \
             --skip_upload_images \
