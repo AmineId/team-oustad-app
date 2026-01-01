@@ -232,6 +232,10 @@ jobs:
           
           echo "✅ AAB found at: $AAB_PATH"
           
+          # Get absolute path to AAB before changing directory
+          AAB_ABSOLUTE_PATH="$(pwd)/$AAB_PATH"
+          echo "📍 Absolute AAB path: $AAB_ABSOLUTE_PATH"
+          
           # Vérifier que le service account existe
           if [ ! -f "android/fastlane/service-account-key.json" ]; then
             echo "❌ Service account JSON not found!"
@@ -247,9 +251,9 @@ jobs:
           # Changer vers le répertoire android pour exécuter fastlane
           cd android
           
-          # Déployer avec Fastlane (chemin AAB relatif depuis android/)
+          # Déployer avec Fastlane en utilisant le chemin absolu
           fastlane supply \
-            --aab "../$AAB_PATH" \
+            --aab "$AAB_ABSOLUTE_PATH" \
             --track internal \
             --release_status draft \
             --json_key fastlane/service-account-key.json \
