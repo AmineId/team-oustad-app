@@ -39,6 +39,7 @@ class ResponsiveScaffold extends StatelessWidget {
   final Function(int) onNavigationChanged;
   final Widget body;
   final List<Widget>? actions;
+  final Widget? leading;
 
   const ResponsiveScaffold({
     super.key,
@@ -48,6 +49,7 @@ class ResponsiveScaffold extends StatelessWidget {
     required this.onNavigationChanged,
     required this.body,
     this.actions,
+    this.leading,
   });
 
   @override
@@ -68,13 +70,27 @@ class ResponsiveScaffold extends StatelessWidget {
   Widget _buildMobileLayout(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          title,
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).appBarTheme.titleTextStyle?.color,
-          ),
+        automaticallyImplyLeading: false,
+        centerTitle: false,
+        titleSpacing: 0,
+        title: Row(
+          children: [
+            if (leading != null) ...[
+              leading!,
+            ],
+            Expanded(
+              child: Center(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).appBarTheme.titleTextStyle?.color,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
         actions: actions,
       ),

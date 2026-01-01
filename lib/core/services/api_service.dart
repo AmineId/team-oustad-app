@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
@@ -483,6 +482,56 @@ class ApiService {
       }
       return null;
     } catch (_) {
+      return null;
+    }
+  }
+
+  /// Check-in via QR code scan.
+  /// Returns check-in result with member info and updated quota.
+  /// Expected backend endpoint: POST /check-in/scan
+  Future<Map<String, dynamic>?> checkInScan({
+    required String qrCode,
+    required int gymId,
+    required String token,
+    String? notes,
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
+    final uri = baseUri.resolve('/check-in/scan');
+    try {
+      final resp = await http
+          .post(
+            uri,
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+            body: jsonEncode({
+              'qrCode': qrCode,
+              'gymId': gymId,
+              if (notes != null) 'notes': notes,
+            }),
+          )
+          .timeout(timeout);
+
+      if (resp.statusCode == 201 || resp.statusCode == 200) {
+        try {
+          final body = jsonDecode(resp.body);
+          return body as Map<String, dynamic>;
+        } catch (_) {
+          return null;
+        }
+      } else if (resp.statusCode == 400 || resp.statusCode == 403) {
+        // Return error details
+        try {
+          final body = jsonDecode(resp.body);
+          return body as Map<String, dynamic>;
+        } catch (_) {
+          return null;
+        }
+      }
+      return null;
+    } catch (e) {
+      debugPrint('Error in checkInScan: $e');
       return null;
     }
   }

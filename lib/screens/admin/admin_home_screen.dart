@@ -18,6 +18,7 @@ import '../common/security_settings_screen.dart';
 import '../common/about_screen.dart';
 import 'admin_banners_screen.dart';
 import 'admin_products_screen.dart';
+import 'admin_qr_scanner_screen.dart';
 
 class AdminHomeScreen extends StatefulWidget {
   const AdminHomeScreen({super.key});
@@ -577,9 +578,11 @@ class AccueilPage extends StatelessWidget {
               icon: Icons.qr_code_scanner,
               title: 'Scanner une carte',
               onTap: () {
-                // TODO: Navigate to QR scanner
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Scanner non disponible')),
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AdminQrScannerScreen(),
+                  ),
                 );
               },
             ),
@@ -1331,6 +1334,8 @@ class _ProfilePageState extends State<ProfilePage> {
                     size: 16,
                   ),
                   onTap: () async {
+                    // Vider le cache du profil mais garder les credentials pour biométrie
+                    await _authService.clearProfileCache();
                     await _authService.clearAll();
                     if (context.mounted) {
                       Navigator.of(context).pushAndRemoveUntil(

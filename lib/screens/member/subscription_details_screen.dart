@@ -23,11 +23,72 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
   
   List<Map<String, dynamic>> _payments = [];
   bool _isLoadingPayments = true;
+  Map<String, dynamic>? _quotaData;
+  bool _isLoadingQuota = true;
 
   @override
   void initState() {
     super.initState();
     _loadPaymentHistory();
+    _loadQuotaData();
+  }
+
+  Future<void> _loadQuotaData() async {
+    setState(() {
+      _isLoadingQuota = true;
+    });
+
+    try {
+      final token = await _authService.loadToken();
+      final subscription = widget.subscriptionData?['subscription'] as Map<String, dynamic>?;
+      final subscriptionId = subscription?['id'];
+      
+      print('🔍 [QUOTA] Chargement quota pour subscriptionId: $subscriptionId');
+      print('🔍 [QUOTA] subscription: $subscription');
+      
+      if (token == null || subscriptionId == null) {
+        print('❌ [QUOTA] Token ou subscriptionId absent');
+        setState(() {
+          _isLoadingQuota = false;
+        });
+        return;
+      }
+      
+      // Appel API pour récupérer le quota
+      final uri = _apiService.baseUri.resolve('/check-in/subscription/$subscriptionId/quota');
+      print('🌐 [QUOTA] Requête GET: $uri');
+      
+      final resp = await http.get(
+        uri,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      print('📡 [QUOTA] Status: ${resp.statusCode}');
+      print('📦 [QUOTA] Body: ${resp.body}');
+
+      if (resp.statusCode == 200) {
+        final data = jsonDecode(resp.body);
+        setState(() {
+          _quotaData = data as Map<String, dynamic>;
+          _isLoadingQuota = false;
+        });
+        print('✅ [QUOTA] Quota chargé: $_quotaData');
+      } else {
+        print('⚠️ [QUOTA] Erreur: ${resp.statusCode}');
+        setState(() {
+          _isLoadingQuota = false;
+        });
+      }
+    } catch (e) {
+      print('❌ [QUOTA] Exception: $e');
+      debugPrint('Error loading quota data: $e');
+      setState(() {
+        _isLoadingQuota = false;
+      });
+    }
   }
 
   Future<void> _loadPaymentHistory() async {
@@ -37,16 +98,20 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
 
     try {
       final token = await _authService.loadToken();
-      final profileData = await _authService.getCachedUserProfile();
+      final subscription = widget.subscriptionData?['subscription'] as Map<String, dynamic>?;
+      final subscriptionId = subscription?['id'];
       
-      if (token == null || profileData == null) {
-        throw Exception('Non authentifié');
+      print('💰 [PAYMENTS] subscriptionId: $subscriptionId');
+      
+      if (token == null || subscriptionId == null) {
+        print('❌ [PAYMENTS] Token ou subscriptionId manquant');
+        throw Exception('Token ou subscriptionId manquant');
       }
-
-      final memberId = profileData['id'] as int;
       
-      // Appel API pour récupérer l'historique des paiements
-      final uri = _apiService.baseUri.resolve('/api/members/$memberId/payments');
+      // Appel API pour récupérer l'historique des paiements depuis /subscriptions/{id}
+      final uri = _apiService.baseUri.resolve('/subscriptions/$subscriptionId');
+      print('🌐 [PAYMENTS] Requête: $uri');
+      
       final resp = await http.get(
         uri,
         headers: {
@@ -55,71 +120,32 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
         },
       );
 
+      print('📡 [PAYMENTS] Status: ${resp.statusCode}');
+
       if (resp.statusCode == 200) {
         final data = jsonDecode(resp.body);
+        print('📦 [PAYMENTS] Response: $data');
+        print('📦 [PAYMENTS] Payments array: ${data['payments']}');
+        
         setState(() {
           _payments = List<Map<String, dynamic>>.from(data['payments'] ?? []);
           _isLoadingPayments = false;
         });
+        
+        print('✅ [PAYMENTS] ${_payments.length} paiements chargés');
       } else {
-        // Si l'API n'existe pas encore, utiliser des données fictives
-        _loadMockPayments();
+        print('⚠️ [PAYMENTS] Erreur ${resp.statusCode}: ${resp.body}');
+        setState(() {
+          _isLoadingPayments = false;
+        });
       }
     } catch (e) {
-      // ignore: avoid_print
+      print('❌ [PAYMENTS] Exception: $e');
       debugPrint('Error loading payment history: $e');
-      // Charger des données fictives en cas d'erreur
-      _loadMockPayments();
+      setState(() {
+        _isLoadingPayments = false;
+      });
     }
-  }
-
-  void _loadMockPayments() {
-    // Données fictives pour l'instant - exemples de tous les statuts
-    setState(() {
-      _payments = [
-        {
-          'id': 1,
-          'date': '2025-11-01T13:28:58.110Z',
-          'amount': 49.99,
-          'status': 'completed',
-          'method': 'Carte bancaire',
-          'description': 'Abonnement Premium - Novembre 2025',
-        },
-        {
-          'id': 2,
-          'date': '2025-10-01T10:15:22.000Z',
-          'amount': 49.99,
-          'status': 'overdue',
-          'method': 'Prélèvement automatique',
-          'description': 'Abonnement Premium - Octobre 2025',
-        },
-        {
-          'id': 3,
-          'date': '2025-09-15T09:30:45.000Z',
-          'amount': 49.99,
-          'status': 'failed',
-          'method': 'Carte bancaire',
-          'description': 'Abonnement Premium - Septembre 2025',
-        },
-        {
-          'id': 4,
-          'date': '2025-09-01T09:30:45.000Z',
-          'amount': 49.99,
-          'status': 'completed',
-          'method': 'Carte bancaire',
-          'description': 'Abonnement Premium - Septembre 2025',
-        },
-        {
-          'id': 5,
-          'date': '2025-08-01T08:20:30.000Z',
-          'amount': 49.99,
-          'status': 'refunded',
-          'method': 'Carte bancaire',
-          'description': 'Abonnement Premium - Août 2025',
-        },
-      ];
-      _isLoadingPayments = false;
-    });
   }
 
   String _formatDate(String dateStr) {
@@ -152,12 +178,32 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final subscriptionType = widget.subscriptionData?['type'] ?? 'premium';
-    final subscriptionStatus = widget.subscriptionData?['status'] ?? 'unknown';
-    final billingPeriod = widget.subscriptionData?['billingPeriod'] ?? 'monthly';
-    final price = widget.subscriptionData?['price'] ?? 0;
-    final startDate = widget.subscriptionData?['startDate'] ?? 'N/A';
-    final expiresAt = widget.subscriptionData?['expiresAt'] ?? 'N/A';
+    // Extraire subscription puis SubscriptionType (avec majuscule)
+    final subscription = widget.subscriptionData?['subscription'] as Map<String, dynamic>?;
+    final subscriptionTypeData = subscription?['SubscriptionType'] as Map<String, dynamic>?;
+    final subscriptionName = subscriptionTypeData?['name'] ?? 'Abonnement';
+    final monthlyPrice = subscriptionTypeData?['monthlyPrice'] ?? 0;
+    final durationMonths = subscriptionTypeData?['durationMonths'] ?? 1;
+    
+    // Logs pour debug
+    print('🔍 [SUBSCRIPTION DETAILS] subscription: $subscription');
+    print('🔍 [SUBSCRIPTION DETAILS] subscriptionTypeData: $subscriptionTypeData');
+    print('🔍 [SUBSCRIPTION DETAILS] subscriptionName: $subscriptionName');
+    print('🔍 [SUBSCRIPTION DETAILS] monthlyPrice: $monthlyPrice');
+    
+    final subscriptionStatus = subscription?['status'] ?? 'unknown';
+    final startDate = subscription?['startDate'] ?? 'N/A';
+    final expiresAt = subscription?['endDate'] ?? subscription?['expiresAt'] ?? 'N/A';
+    
+    // Quota information from API - utiliser subscriptionType.sessionQuota
+    final quotaSubscriptionTypeData = _quotaData?['subscriptionType'] as Map<String, dynamic>?;
+    final sessionType = quotaSubscriptionTypeData?['sessionType'] as String?;
+    final sessionQuota = quotaSubscriptionTypeData?['sessionQuota'] as int?;
+    final sessionsUsed = _quotaData?['sessionsUsed'] as int? ?? 0;
+    final sessionsRemaining = (sessionQuota != null && sessionQuota > 0) 
+        ? sessionQuota - sessionsUsed 
+        : null;
+    final isUnlimited = sessionType == 'unlimited' || sessionQuota == null || sessionQuota == 0;
 
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
@@ -178,22 +224,19 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
           child: Column(
             children: [
               // Custom app bar
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  children: [
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: Icon(Icons.arrow_back, color: theme.textTheme.bodyLarge!.color),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Mon Abonnement',
-                      style: AppTextStyles.h4.copyWith(
-                        color: theme.textTheme.bodyLarge!.color,
-                      ),
-                    ),
-                  ],
+              AppBar(
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                leading: IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: Icon(Icons.arrow_back, color: theme.textTheme.bodyLarge!.color),
+                ),
+                centerTitle: true,
+                title: Text(
+                  'Mon Abonnement',
+                  style: AppTextStyles.h4.copyWith(
+                    color: theme.textTheme.bodyLarge!.color,
+                  ),
                 ),
               ),
               
@@ -221,9 +264,7 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
                                 children: [
                                   Expanded(
                                     child: Text(
-                                      subscriptionType == 'premium' 
-                                          ? 'Abonnement Premium' 
-                                          : 'Abonnement Standard',
+                                      subscriptionName,
                                       style: TextStyle(
                                         fontSize: 22,
                                         fontWeight: FontWeight.bold,
@@ -255,15 +296,49 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
                               ),
                               const SizedBox(height: 20),
                               _buildDetailRow(
-                                'Type',
-                                billingPeriod == 'monthly' ? 'Mensuel' : 'Annuel',
+                                'Durée',
+                                '$durationMonths mois',
                               ),
                               Divider(color: Theme.of(context).dividerColor, height: 24),
                               _buildDetailRow(
                                 'Prix',
-                                '$price MAD / ${billingPeriod == 'monthly' ? 'mois' : 'an'}',
+                                '$monthlyPrice MAD',
                               ),
                               Divider(color: Theme.of(context).dividerColor, height: 24),
+                              // Quota de séances
+                              if (_isLoadingQuota)
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      'Séances',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary).withValues(alpha: 0.7),
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              else if (isUnlimited)
+                                _buildDetailRow(
+                                  'Séances',
+                                  'Illimité ∞',
+                                )
+                              else if (sessionQuota != null)
+                                _buildDetailRow(
+                                  'Séances',
+                                  '$sessionsRemaining restantes sur $sessionQuota',
+                                ),
+                              if (!_isLoadingQuota && (!isUnlimited || sessionQuota != null))
+                                Divider(color: Theme.of(context).dividerColor, height: 24),
                               _buildDetailRow(
                                 'Date de début',
                                 _formatDate(startDate),

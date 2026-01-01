@@ -479,6 +479,15 @@ class AuthService {
     } catch (_) {}
   }
 
+  /// Clear only profile cache (keep credentials for biometric)
+  Future<void> clearProfileCache() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('user_profile_cache');
+      await prefs.remove('user_profile_cache_time');
+    } catch (_) {}
+  }
+
   /// Fetch user profile from API and cache it locally
   Future<bool> fetchAndCacheUserProfile(String token) async {
     try {

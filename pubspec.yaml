@@ -75,6 +75,9 @@ dependencies:
   
   # Open files for OTA APK installation
   open_file: ^3.5.9
+  
+  # QR code scanner for admin check-in
+  mobile_scanner: ^7.1.4
 
 dev_dependencies:
   flutter_test:

@@ -38,8 +38,8 @@ class _AdminCreateProductScreenState extends State<AdminCreateProductScreen> {
   // Form state
   bool _isActive = true;
   List<String> _existingImageUrls = []; // Images déjà uploadées
-  List<Uint8List> _newImagesBytes = []; // Nouvelles images à uploader
-  List<File> _newImageFiles = []; // Fichiers des nouvelles images
+  final List<Uint8List> _newImagesBytes = []; // Nouvelles images à uploader
+  final List<File> _newImageFiles = []; // Fichiers des nouvelles images
   bool _isLoading = false;
   
   static const int _maxImages = 5;
@@ -870,7 +870,7 @@ class _AdminCreateProductScreenState extends State<AdminCreateProductScreen> {
           Switch(
             value: _isActive,
             onChanged: (value) => setState(() => _isActive = value),
-            activeColor: AppColors.success,
+            activeThumbColor: AppColors.success,
           ),
         ],
       ),

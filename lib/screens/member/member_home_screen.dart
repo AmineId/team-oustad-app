@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/services/api_service.dart';
@@ -25,6 +26,10 @@ class MemberHomeScreen extends StatefulWidget {
 class _MemberHomeScreenState extends State<MemberHomeScreen> {
   int _currentIndex = 0;
   Map<String, dynamic>? _profileData;
+  Map<String, dynamic>? _quotaData;
+  bool _isLoadingQuota = true;
+  Map<String, dynamic>? _subscriptionData;
+  bool _isLoadingSubscription = true;
 
   final List<Widget> _pages = [
     MemberDashboardPage(),
@@ -37,6 +42,12 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
   void initState() {
     super.initState();
     _loadProfileData();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    await _loadSubscription();
+    await _loadQuota();
   }
 
   Future<void> _loadProfileData() async {
@@ -47,6 +58,266 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
         _profileData = data;
       });
     }
+  }
+
+  Future<void> _loadSubscription() async {
+    try {
+      final authService = AuthService(ApiService.fromEnv());
+      final apiService = ApiService.fromEnv();
+      final token = await authService.loadToken();
+      final profile = await authService.getCachedUserProfile();
+      final memberId = profile?['id'];
+
+      print('🔍 [SUBSCRIPTION] memberId: $memberId');
+
+      if (token == null || memberId == null) {
+        setState(() {
+          _isLoadingSubscription = false;
+        });
+        return;
+      }
+
+      // Charger les abonnements du membre
+      final subscriptions = await apiService.getMemberSubscriptions(memberId, token);
+      print('📦 [SUBSCRIPTION] subscriptions: $subscriptions');
+
+      if (subscriptions != null && subscriptions.isNotEmpty) {
+        // Prendre le premier abonnement actif
+        final activeSubscription = subscriptions.firstWhere(
+          (sub) => (sub as Map<String, dynamic>)['status'] == 'active',
+          orElse: () => subscriptions.first,
+        ) as Map<String, dynamic>?;
+
+        if (activeSubscription != null) {
+          // Charger les détails complets de l'abonnement pour avoir le subscriptionType
+          final subscriptionId = activeSubscription['id'];
+          print('🔍 [SUBSCRIPTION] Chargement détails pour subscriptionId: $subscriptionId');
+          
+          final fullSubscription = await apiService.getSubscriptionById(subscriptionId, token);
+          print('📋 [SUBSCRIPTION] fullSubscription: $fullSubscription');
+
+          if (mounted) {
+            setState(() {
+              _subscriptionData = fullSubscription ?? activeSubscription;
+              _isLoadingSubscription = false;
+            });
+          }
+          print('✅ [SUBSCRIPTION] Abonnement chargé: ${fullSubscription ?? activeSubscription}');
+        } else {
+          if (mounted) {
+            setState(() {
+              _isLoadingSubscription = false;
+            });
+          }
+        }
+      } else {
+        if (mounted) {
+          setState(() {
+            _isLoadingSubscription = false;
+          });
+        }
+        print('⚠️ [SUBSCRIPTION] Aucun abonnement trouvé');
+      }
+    } catch (e) {
+      print('❌ [SUBSCRIPTION] Exception: $e');
+      if (mounted) {
+        setState(() {
+          _isLoadingSubscription = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _loadQuota() async {
+    try {
+      final authService = AuthService(ApiService.fromEnv());
+      final apiService = ApiService.fromEnv();
+      final token = await authService.loadToken();
+      // Utiliser l'abonnement chargé au lieu du cache
+      final subscription = _subscriptionData?['subscription'] as Map<String, dynamic>?;
+      final subscriptionId = subscription?['id'];
+
+      print('🔍 [HOME QUOTA] subscription: $subscription');
+      print('🔍 [HOME QUOTA] subscriptionId: $subscriptionId');
+
+      if (token == null || subscriptionId == null) {
+        setState(() {
+          _isLoadingQuota = false;
+        });
+        return;
+      }
+
+      final uri = apiService.baseUri.resolve('/check-in/subscription/$subscriptionId/quota');
+      print('🌐 [HOME QUOTA] Requête: $uri');
+      
+      final response = await http.get(
+        uri,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      print('📡 [HOME QUOTA] Status: ${response.statusCode}');
+      print('📦 [HOME QUOTA] Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (mounted) {
+          setState(() {
+            _quotaData = data;
+            _isLoadingQuota = false;
+          });
+        }
+        print('✅ [HOME QUOTA] Quota chargé: $data');
+      } else {
+        if (mounted) {
+          setState(() {
+            _isLoadingQuota = false;
+          });
+        }
+      }
+    } catch (e) {
+      print('❌ [HOME QUOTA] Exception: $e');
+      debugPrint('Error loading quota: $e');
+      if (mounted) {
+        setState(() {
+          _isLoadingQuota = false;
+        });
+      }
+    }
+  }
+
+  Widget? _buildQuotaWidget() {
+    print('🎯 [QUOTA WIDGET] _isLoadingQuota: $_isLoadingQuota, _quotaData: $_quotaData');
+    
+    // Afficher un placeholder pendant le chargement
+    if (_isLoadingQuota || _quotaData == null) {
+      return ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 80, maxHeight: 36),
+        child: Container(
+          margin: const EdgeInsets.only(left: 8),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                AppColors.primary.withValues(alpha: 0.1),
+                AppColors.primary.withValues(alpha: 0.05),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: AppColors.primary.withValues(alpha: 0.2),
+              width: 1,
+            ),
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 8,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        AppColors.primary.withValues(alpha: 0.5),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Utiliser subscriptionType.sessionQuota au lieu de sessionQuota
+    final subscriptionTypeData = _quotaData!['subscriptionType'] as Map<String, dynamic>?;
+    final sessionType = subscriptionTypeData?['sessionType'] as String?;
+    final sessionQuota = subscriptionTypeData?['sessionQuota'] as int?;
+    final sessionsUsed = _quotaData!['sessionsUsed'] as int? ?? 0;
+    final sessionsRemaining = (sessionQuota != null && sessionQuota > 0) 
+        ? sessionQuota - sessionsUsed 
+        : null;
+    final isUnlimited = sessionType == 'unlimited' || sessionQuota == null || sessionQuota == 0;
+
+    print('🎯 [QUOTA WIDGET] sessionQuota: $sessionQuota, sessionsUsed: $sessionsUsed, remaining: $sessionsRemaining, unlimited: $isUnlimited');
+
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 80, maxHeight: 36),
+      child: Container(
+        margin: const EdgeInsets.only(left: 8),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              (isUnlimited || (sessionsRemaining ?? 0) > 5)
+                  ? AppColors.success.withValues(alpha: 0.2)
+                  : AppColors.warning.withValues(alpha: 0.2),
+              (isUnlimited || (sessionsRemaining ?? 0) > 5)
+                  ? AppColors.success.withValues(alpha: 0.1)
+                  : AppColors.warning.withValues(alpha: 0.1),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: (isUnlimited || (sessionsRemaining ?? 0) > 5)
+                ? AppColors.success.withValues(alpha: 0.3)
+                : AppColors.warning.withValues(alpha: 0.3),
+            width: 1,
+          ),
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 8,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  isUnlimited
+                      ? Icons.all_inclusive
+                      : Icons.fitness_center,
+                  color: (isUnlimited || (sessionsRemaining ?? 0) > 5)
+                      ? AppColors.success
+                      : AppColors.warning,
+                  size: 20,
+                ),
+                const SizedBox(width: 6),
+                Flexible(
+                  child: Text(
+                    isUnlimited
+                        ? '∞'
+                        : '$sessionsRemaining',
+                    style: TextStyle(
+                      color: (isUnlimited || (sessionsRemaining ?? 0) > 5)
+                          ? AppColors.success
+                          : AppColors.warning,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                    overflow: TextOverflow.clip,
+                    maxLines: 1,
+                    textDirection: TextDirection.ltr,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildProfileAvatar(bool isActive) {
@@ -109,6 +380,7 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
 
     return ResponsiveScaffold(
       title: titles[_currentIndex],
+      leading: _currentIndex == 0 ? _buildQuotaWidget() : null,
       navigationItems: [
         NavigationItem(
           icon: Icons.home_outlined,
@@ -4518,14 +4790,18 @@ class MemberProfilePage extends StatefulWidget {
 
 class _MemberProfilePageState extends State<MemberProfilePage> {
   final _authService = AuthService(ApiService.fromEnv());
+  final _apiService = ApiService.fromEnv();
   Map<String, dynamic>? _profileData;
+  Map<String, dynamic>? _subscriptionData;
   bool _isLoading = true;
   bool _isRefreshing = false;
+  bool _isLoadingSubscription = true;
 
   @override
   void initState() {
     super.initState();
     _loadProfileData();
+    _loadSubscription();
   }
 
   Future<void> _loadProfileData() async {
@@ -4578,6 +4854,63 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
     final freshData = await _authService.refreshUserProfile();
     if (mounted && freshData != null) {
       setState(() => _profileData = freshData);
+    }
+  }
+
+  Future<void> _loadSubscription() async {
+    try {
+      final token = await _authService.loadToken();
+      final profile = await _authService.getCachedUserProfile();
+      final memberId = profile?['id'];
+
+      if (token == null || memberId == null) {
+        setState(() {
+          _isLoadingSubscription = false;
+        });
+        return;
+      }
+
+      // Charger les abonnements du membre
+      final subscriptions = await _apiService.getMemberSubscriptions(memberId, token);
+
+      if (subscriptions != null && subscriptions.isNotEmpty) {
+        // Prendre le premier abonnement actif
+        final activeSubscription = subscriptions.firstWhere(
+          (sub) => (sub as Map<String, dynamic>)['status'] == 'active',
+          orElse: () => subscriptions.first,
+        ) as Map<String, dynamic>?;
+
+        if (activeSubscription != null) {
+          // Charger les détails complets
+          final subscriptionId = activeSubscription['id'];
+          final fullSubscription = await _apiService.getSubscriptionById(subscriptionId, token);
+
+          if (mounted) {
+            setState(() {
+              _subscriptionData = fullSubscription ?? activeSubscription;
+              _isLoadingSubscription = false;
+            });
+          }
+        } else {
+          if (mounted) {
+            setState(() {
+              _isLoadingSubscription = false;
+            });
+          }
+        }
+      } else {
+        if (mounted) {
+          setState(() {
+            _isLoadingSubscription = false;
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingSubscription = false;
+        });
+      }
     }
   }
 
@@ -4922,16 +5255,47 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
               SizedBox(height: 12),
 
               // Check if user has a subscription
-              if (subscription != null)
+              if (_isLoadingSubscription)
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(32.0),
+                    child: CircularProgressIndicator(
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                )
+              else if (_subscriptionData != null)
                 Builder(
                   builder: (context) {
-                    final sub = subscription!;
-                    final subscriptionType = sub['type'] ?? 'premium';
-                    final subscriptionStatus = sub['status'] ?? 'unknown';
-                    final billingPeriod = sub['billingPeriod'] ?? 'monthly';
-                    final price = sub['price'] ?? 0;
-                    final startDate = sub['startDate'] ?? 'N/A';
-                    final expiresAt = sub['expiresAt'] ?? 'N/A';
+                    final data = _subscriptionData!;
+                    print('📋 [SUBSCRIPTION CARD] data: $data');
+                    
+                    final sub = data['subscription'] as Map<String, dynamic>?;
+                    final subscriptionTypeData = sub?['SubscriptionType'] as Map<String, dynamic>?;
+                    print('📋 [SUBSCRIPTION CARD] sub: $sub');
+                    print('📋 [SUBSCRIPTION CARD] subscriptionTypeData: $subscriptionTypeData');
+                    
+                    final subscriptionTypeName = subscriptionTypeData?['name'] ?? 'Abonnement';
+                    final monthlyPrice = subscriptionTypeData?['monthlyPrice'] ?? 0;
+                    final durationMonths = subscriptionTypeData?['durationMonths'] ?? 1;
+                    final subscriptionStatus = sub?['status'] ?? 'unknown';
+                    final startDate = sub?['startDate'] ?? 'N/A';
+                    final expiresAt = sub?['endDate'] ?? sub?['expiresAt'] ?? 'N/A';
+                    
+                    print('📋 [SUBSCRIPTION CARD] name: $subscriptionTypeName, price: $monthlyPrice, duration: $durationMonths');
+                    print('📋 [SUBSCRIPTION CARD] status: $subscriptionStatus, start: $startDate, expires: $expiresAt');
+                    
+                    // Formater les dates
+                    String formatDate(String dateStr) {
+                      if (dateStr == 'N/A') return 'N/A';
+                      try {
+                        final date = DateTime.parse(dateStr);
+                        final months = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+                        return '${date.day} ${months[date.month - 1]} ${date.year}';
+                      } catch (e) {
+                        return dateStr;
+                      }
+                    }
 
                     return InkWell(
                       onTap: () {
@@ -4939,7 +5303,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                           context,
                           MaterialPageRoute(
                             builder: (context) => SubscriptionDetailsScreen(
-                              subscriptionData: subscription,
+                              subscriptionData: _subscriptionData,
                             ),
                           ),
                         );
@@ -4961,13 +5325,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                                 children: [
                                   Expanded(
                                     child: Text(
-                                      subscriptionType == 'premium'
-                                          ? AppLocalizations.of(
-                                              context,
-                                            ).premiumSubscriptionType
-                                          : AppLocalizations.of(
-                                              context,
-                                            ).standardSubscriptionType,
+                                      subscriptionTypeName,
                                       style: TextStyle(
                                         fontSize: 20,
                                         fontWeight: FontWeight.bold,
@@ -5009,24 +5367,22 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                               _buildSubscriptionDetail(
                                 context,
                                 'Type',
-                                billingPeriod == 'monthly'
-                                    ? 'Mensuel'
-                                    : 'Annuel',
+                                durationMonths == 12 ? 'Annuel' : 'Mensuel',
                               ),
                               _buildSubscriptionDetail(
                                 context,
                                 'Prix',
-                                '$price MAD / ${billingPeriod == 'monthly' ? 'mois' : 'an'}',
+                                '$monthlyPrice MAD / mois',
                               ),
                               _buildSubscriptionDetail(
                                 context,
                                 'Date de début',
-                                startDate,
+                                formatDate(startDate),
                               ),
                               _buildSubscriptionDetail(
                                 context,
                                 'Expire le',
-                                expiresAt,
+                                formatDate(expiresAt),
                               ),
                               SizedBox(height: 12),
                               Row(
@@ -5285,6 +5641,8 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                     size: 16,
                   ),
                   onTap: () async {
+                    // Vider le cache du profil mais garder les credentials pour biométrie
+                    await _authService.clearProfileCache();
                     await _authService.clearAll();
                     if (context.mounted) {
                       Navigator.of(context).pushAndRemoveUntil(

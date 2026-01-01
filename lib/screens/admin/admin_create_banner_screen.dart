@@ -483,7 +483,7 @@ class _AdminCreateBannerScreenState extends State<AdminCreateBannerScreen> {
                         fontSize: 12,
                       ),
                     ),
-                    activeColor: AppColors.primary,
+                    activeThumbColor: AppColors.primary,
                     contentPadding: EdgeInsets.zero,
                   ),
                 ],
