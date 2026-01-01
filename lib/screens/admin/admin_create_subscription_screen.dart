@@ -403,7 +403,7 @@ class _AdminCreateSubscriptionScreenState extends State<AdminCreateSubscriptionS
               
               // Prix
               Text(
-                '$monthlyPrice € / mois',
+                '$monthlyPrice MAD / mois',
                 style: const TextStyle(
                   color: AppColors.primary,
                   fontSize: 20,

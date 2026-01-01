@@ -83,8 +83,26 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
       List<Map<String, dynamic>> allPayments = [];
       try {
         final subsData = await _apiService.getMemberSubscriptions(widget.memberId, token);
+        debugPrint('📋 Member subscriptions raw data: $subsData');
         if (subsData != null) {
           subscriptions = subsData.map((s) => s as Map<String, dynamic>).toList();
+          debugPrint('📋 Subscriptions count: ${subscriptions.length}');
+          
+          // Charger le nom du type d'abonnement pour chaque subscription
+          for (var subscription in subscriptions) {
+            final subscriptionTypeId = subscription['subscriptionTypeId'] as int?;
+            if (subscriptionTypeId != null) {
+              try {
+                final subscriptionTypeData = await _apiService.getSubscriptionTypeById(subscriptionTypeId);
+                if (subscriptionTypeData != null) {
+                  subscription['subscriptionType'] = subscriptionTypeData;
+                  debugPrint('📋 Loaded subscription type: ${subscriptionTypeData['name']}');
+                }
+              } catch (e) {
+                debugPrint('Erreur chargement type abonnement $subscriptionTypeId: $e');
+              }
+            }
+          }
           
           // Récupérer tous les paiements de tous les abonnements
           for (var subscription in subscriptions) {
@@ -532,6 +550,12 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
     final startDate = subscription['startDate'] as String?;
     final endDate = subscription['endDate'] as String?;
     
+    // Le type est dans subscriptionType['type']
+    final typeData = subscriptionType?['type'] as Map<String, dynamic>?;
+    final typeName = typeData?['name'] as String? ?? 'Abonnement';
+    final typeDescription = typeData?['description'] as String?;
+    final monthlyPrice = typeData?['monthlyPrice'];
+    
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       color: Theme.of(context).cardTheme.color,
@@ -563,7 +587,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                 children: [
                   Expanded(
                     child: Text(
-                      subscriptionType?['name'] ?? 'Abonnement',
+                      typeName,
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 16,
@@ -596,10 +620,10 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                 ],
               ),
               
-              if (subscriptionType?['description'] != null) ...[
+              if (typeDescription != null) ...[
                 const SizedBox(height: 8),
                 Text(
-                  subscriptionType!['description'] as String,
+                  typeDescription,
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.7),
                     fontSize: 13,
@@ -610,9 +634,9 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
               const SizedBox(height: 12),
               
               // Prix
-              if (subscriptionType?['monthlyPrice'] != null)
+              if (monthlyPrice != null)
                 Text(
-                  '${subscriptionType!['monthlyPrice']} € / mois',
+                  '$monthlyPrice MAD / mois',
                   style: const TextStyle(
                     color: AppColors.primary,
                     fontSize: 16,

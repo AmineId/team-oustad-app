@@ -6,6 +6,7 @@ import '../../core/services/api_service.dart';
 import '../../core/theme/theme.dart';
 import '../../core/utils/user_utils.dart';
 import '../../core/l10n/app_localizations.dart';
+import '../../widgets/common/common_widgets.dart';
 import '../../widgets/responsive/responsive_layout.dart';
 import '../auth/login_screen.dart';
 import 'admin_create_member_screen.dart';
@@ -15,6 +16,8 @@ import 'admin_member_details_screen.dart';
 import 'admin_create_planning_screen.dart';
 import '../common/security_settings_screen.dart';
 import '../common/about_screen.dart';
+import 'admin_banners_screen.dart';
+import 'admin_products_screen.dart';
 
 class AdminHomeScreen extends StatefulWidget {
   const AdminHomeScreen({super.key});
@@ -416,6 +419,10 @@ class AccueilPage extends StatelessWidget {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Banner carousel - only shows when banners exist
+                  const BannerCarousel(height: 140),
+                  SizedBox(height: isWatch ? 16 : 24),
+                  
                   // Statistiques - responsive grid
                   _buildStatsGrid(context, isDesktop, isWatch),
                   
@@ -537,6 +544,30 @@ class AccueilPage extends StatelessWidget {
               // TODO: Navigate to payment screen
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Fonctionnalité en développement')),
+              );
+            },
+          ),
+          _QuickActionButton(
+            icon: Icons.campaign_rounded,
+            title: 'Événements',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AdminBannersScreen(),
+                ),
+              );
+            },
+          ),
+          _QuickActionButton(
+            icon: Icons.store_rounded,
+            title: 'Produits Store',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AdminProductsScreen(),
+                ),
               );
             },
           ),

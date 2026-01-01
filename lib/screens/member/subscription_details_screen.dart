@@ -261,7 +261,7 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
                               Divider(color: Theme.of(context).dividerColor, height: 24),
                               _buildDetailRow(
                                 'Prix',
-                                '$price € / ${billingPeriod == 'monthly' ? 'mois' : 'an'}',
+                                '$price MAD / ${billingPeriod == 'monthly' ? 'mois' : 'an'}',
                               ),
                               Divider(color: Theme.of(context).dividerColor, height: 24),
                               _buildDetailRow(
@@ -465,7 +465,7 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  '${payment['amount']} €',
+                  '${payment['amount']} MAD',
                   style: TextStyle(
                     color: theme.textTheme.bodyLarge!.color,
                     fontWeight: FontWeight.bold,

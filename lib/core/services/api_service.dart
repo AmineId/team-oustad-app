@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
@@ -24,10 +25,10 @@ class ApiService {
 
   factory ApiService.fromEnv() {
     String apiUrl;
-    
+
     // Priority 1: Check for custom API_BASE_URL (optional override)
     const customUrl = String.fromEnvironment('API_BASE_URL', defaultValue: '');
-    
+
     if (customUrl.isNotEmpty) {
       apiUrl = customUrl;
       // ignore: avoid_print
@@ -37,19 +38,25 @@ class ApiService {
       final config = AppConfig.fromEnvironment();
       apiUrl = config.apiBaseUrl;
       // ignore: avoid_print
-      debugPrint('🌐 ApiService: Using ${config.environment} environment → $apiUrl');
+      debugPrint(
+        '🌐 ApiService: Using ${config.environment} environment → $apiUrl',
+      );
     }
 
     return ApiService(Uri.parse(apiUrl));
   }
 
   /// Health check - returns true when backend is reachable and returns 200.
-  Future<bool> healthCheck({Duration timeout = const Duration(seconds: 8)}) async {
+  Future<bool> healthCheck({
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
     final uri = baseUri.resolve('/health');
     try {
       // Helpful debug log while developing
       // ignore: avoid_print
-      debugPrint('ApiService.healthCheck -> $uri (timeout: ${timeout.inSeconds}s)');
+      debugPrint(
+        'ApiService.healthCheck -> $uri (timeout: ${timeout.inSeconds}s)',
+      );
       final resp = await http.get(uri);
       return resp.statusCode == 200;
     } catch (exception) {
@@ -62,55 +69,72 @@ class ApiService {
   /// Clean string by removing null bytes and other invalid characters
   String _cleanString(String input) {
     // Remove null bytes and other control characters except newlines/tabs
-    return input.replaceAll(RegExp(r'[\x00-\x08\x0B-\x0C\x0E-\x1F]'), '').trim();
+    return input
+        .replaceAll(RegExp(r'[\x00-\x08\x0B-\x0C\x0E-\x1F]'), '')
+        .trim();
   }
 
   /// Attempt login against the API. Returns a map with token and user info on success,
   /// or null on failure. The backend returns JSON like:
   /// {"token":"...", "user": {"id":"...", "email":"...", "fullName":"...", "gymId":"...", "type":"admin|member|owner"}}
   /// Supports login with email OR phoneNumber
-  Future<Map<String, dynamic>?> login(String emailOrPhone, String password, {Duration timeout = const Duration(seconds: 8)}) async {
+  Future<Map<String, dynamic>?> login(
+    String emailOrPhone,
+    String password, {
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
     final uri = baseUri.resolve('/auth/login');
     try {
       // Clean input to remove null bytes and invalid characters
       final cleanEmailOrPhone = _cleanString(emailOrPhone);
       final cleanPassword = _cleanString(password);
-      
+
       // Determine if input is email or phone number
       final isEmail = cleanEmailOrPhone.contains('@');
-      final requestBody = isEmail 
-        ? {'email': cleanEmailOrPhone, 'password': cleanPassword}
-        : {'phoneNumber': cleanEmailOrPhone, 'password': cleanPassword};
-      
+      final requestBody = isEmail
+          ? {'email': cleanEmailOrPhone, 'password': cleanPassword}
+          : {'phoneNumber': cleanEmailOrPhone, 'password': cleanPassword};
+
       // ignore: avoid_print
-      debugPrint('ApiService.login -> $uri with ${isEmail ? "email" : "phoneNumber"}: $cleanEmailOrPhone');
-      
+      debugPrint(
+        'ApiService.login -> $uri with ${isEmail ? "email" : "phoneNumber"}: $cleanEmailOrPhone',
+      );
+
       final resp = await http
-          .post(uri, headers: {'Content-Type': 'application/json'}, body: jsonEncode(requestBody)).timeout(timeout);
-      
+          .post(
+            uri,
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode(requestBody),
+          )
+          .timeout(timeout);
+
       // ignore: avoid_print
       debugPrint('ApiService.login response status: ${resp.statusCode}');
       // ignore: avoid_print
       debugPrint('ApiService.login response body: ${resp.body}');
-      
+
       if (resp.statusCode == 200) {
         try {
           final body = jsonDecode(resp.body);
           if (body is Map && body['token'] is String && body['user'] is Map) {
             final user = body['user'] as Map<String, dynamic>;
-            
+
             // Extraire le type depuis l'objet user (priorité) ou depuis le JWT (fallback)
             String userType = 'member'; // Par défaut
-            
+
             // Priorité 1: user.type directement dans la réponse
             if (user['type'] != null) {
               userType = user['type'] as String;
               // ignore: avoid_print
-              debugPrint('ApiService.login extracted type from user object: $userType');
+              debugPrint(
+                'ApiService.login extracted type from user object: $userType',
+              );
             } else if (user['role'] != null) {
               userType = user['role'] as String;
               // ignore: avoid_print
-              debugPrint('ApiService.login extracted role from user object: $userType');
+              debugPrint(
+                'ApiService.login extracted role from user object: $userType',
+              );
             } else {
               // Priorité 2: Fallback vers JWT decode
               try {
@@ -121,13 +145,18 @@ class ApiService {
                   final payload = parts[1];
                   // Ajouter le padding nécessaire pour base64
                   final normalized = base64Url.normalize(payload);
-                  final payloadString = utf8.decode(base64Url.decode(normalized));
-                  final payloadMap = jsonDecode(payloadString) as Map<String, dynamic>;
-                  
+                  final payloadString = utf8.decode(
+                    base64Url.decode(normalized),
+                  );
+                  final payloadMap =
+                      jsonDecode(payloadString) as Map<String, dynamic>;
+
                   if (payloadMap['type'] != null) {
                     userType = payloadMap['type'] as String;
                     // ignore: avoid_print
-                    debugPrint('ApiService.login extracted type from JWT: $userType');
+                    debugPrint(
+                      'ApiService.login extracted type from JWT: $userType',
+                    );
                   }
                 }
               } catch (jwtError) {
@@ -135,28 +164,35 @@ class ApiService {
                 debugPrint('ApiService.login JWT decode error: $jwtError');
               }
             }
-            
+
             // ignore: avoid_print
             debugPrint('ApiService.login final userType: $userType');
-            
+
             // Extract onboarding status from member object or body root
             // true = needs onboarding, false = onboarding completed
             // Check multiple locations: body.onboarding, user.member.onboarding, user.onboarding
             bool onboarding = true; // Default: needs onboarding
             if (body['onboarding'] != null) {
               onboarding = body['onboarding'] as bool;
-              debugPrint('ApiService.login onboarding from body root: $onboarding');
-            } else if (user['member'] != null && user['member']['onboarding'] != null) {
+              debugPrint(
+                'ApiService.login onboarding from body root: $onboarding',
+              );
+            } else if (user['member'] != null &&
+                user['member']['onboarding'] != null) {
               onboarding = user['member']['onboarding'] as bool;
-              debugPrint('ApiService.login onboarding from user.member: $onboarding');
+              debugPrint(
+                'ApiService.login onboarding from user.member: $onboarding',
+              );
             } else if (user['onboarding'] != null) {
               onboarding = user['onboarding'] as bool;
               debugPrint('ApiService.login onboarding from user: $onboarding');
             } else {
               // Default to true if not provided (needs onboarding for new members)
-              debugPrint('ApiService.login onboarding not found, defaulting to: true (needs onboarding)');
+              debugPrint(
+                'ApiService.login onboarding not found, defaulting to: true (needs onboarding)',
+              );
             }
-            
+
             return {
               'token': body['token'] as String,
               'userType': userType,
@@ -182,10 +218,15 @@ class ApiService {
   }
 
   /// Verify a JWT by calling the backend. Returns true when token is valid.
-  Future<bool> verifyToken(String token, {Duration timeout = const Duration(seconds: 8)}) async {
+  Future<bool> verifyToken(
+    String token, {
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
     final uri = baseUri.resolve('/auth/verify');
     try {
-      final resp = await http.get(uri, headers: {'Authorization': 'Bearer $token'}).timeout(timeout);
+      final resp = await http
+          .get(uri, headers: {'Authorization': 'Bearer $token'})
+          .timeout(timeout);
       return resp.statusCode == 200;
     } catch (_) {
       return false;
@@ -194,15 +235,21 @@ class ApiService {
 
   /// Report an exception to the backend for operator review. The backend
   /// can forward this to an email or store it.
-  Future<bool> reportError(String message, String? stack, {Map<String, dynamic>? extra}) async {
+  Future<bool> reportError(
+    String message,
+    String? stack, {
+    Map<String, dynamic>? extra,
+  }) async {
     final uri = baseUri.resolve('/errors');
     try {
-      final body = {
-        'message': message,
-        'stack': stack,
-        'extra': extra ?? {},
-      };
-      final resp = await http.post(uri, headers: {'Content-Type': 'application/json'}, body: jsonEncode(body)).timeout(const Duration(seconds: 8));
+      final body = {'message': message, 'stack': stack, 'extra': extra ?? {}};
+      final resp = await http
+          .post(
+            uri,
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode(body),
+          )
+          .timeout(const Duration(seconds: 8));
       return resp.statusCode == 200 || resp.statusCode == 201;
     } catch (e) {
       // ignore network/reporting errors here
@@ -212,11 +259,18 @@ class ApiService {
 
   /// Request a password reset code for the given email.
   /// Returns true if the request was successful (note: backend doesn't reveal if email exists).
-  Future<bool> forgotPassword(String email, {Duration timeout = const Duration(seconds: 8)}) async {
+  Future<bool> forgotPassword(
+    String email, {
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
     final uri = baseUri.resolve('/auth/forgot-password');
     try {
       final resp = await http
-          .post(uri, headers: {'Content-Type': 'application/json'}, body: jsonEncode({'email': email}))
+          .post(
+            uri,
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({'email': email}),
+          )
           .timeout(timeout);
       return resp.statusCode == 200;
     } catch (_) {
@@ -238,20 +292,28 @@ class ApiService {
           .post(
             uri,
             headers: {'Content-Type': 'application/json'},
-            body: jsonEncode({'email': email, 'token': token, 'newPassword': newPassword}),
+            body: jsonEncode({
+              'email': email,
+              'token': token,
+              'newPassword': newPassword,
+            }),
           )
           .timeout(timeout);
-      
+
       if (resp.statusCode == 200) {
         return {'success': true};
       } else {
         // Try to parse error message from body
         try {
           final body = jsonDecode(resp.body);
-          final errorMsg = body['error'] ?? 'Erreur lors de la réinitialisation';
+          final errorMsg =
+              body['error'] ?? 'Erreur lors de la réinitialisation';
           return {'success': false, 'error': errorMsg};
         } catch (_) {
-          return {'success': false, 'error': 'Erreur lors de la réinitialisation'};
+          return {
+            'success': false,
+            'error': 'Erreur lors de la réinitialisation',
+          };
         }
       }
     } catch (e) {
@@ -292,8 +354,10 @@ class ApiService {
   }) async {
     final uri = baseUri.resolve('/auth/check-phone');
     try {
-      debugPrint('ApiService.checkPhone -> $uri with phoneNumber: $phoneNumber');
-      
+      debugPrint(
+        'ApiService.checkPhone -> $uri with phoneNumber: $phoneNumber',
+      );
+
       final resp = await http
           .post(
             uri,
@@ -301,10 +365,10 @@ class ApiService {
             body: jsonEncode({'phoneNumber': phoneNumber}),
           )
           .timeout(timeout);
-      
+
       debugPrint('ApiService.checkPhone response status: ${resp.statusCode}');
       debugPrint('ApiService.checkPhone response body: ${resp.body}');
-      
+
       if (resp.statusCode == 200) {
         final body = jsonDecode(resp.body);
         // exists: true, hasPassword: true/false, user data
@@ -325,11 +389,7 @@ class ApiService {
         };
       } else if (resp.statusCode == 404) {
         // Phone not found
-        return {
-          'success': true,
-          'exists': false,
-          'hasPassword': false,
-        };
+        return {'success': true, 'exists': false, 'hasPassword': false};
       } else {
         final body = jsonDecode(resp.body);
         return {
@@ -339,10 +399,7 @@ class ApiService {
       }
     } catch (e) {
       debugPrint('ApiService.checkPhone exception: $e');
-      return {
-        'success': false,
-        'error': e.toString(),
-      };
+      return {'success': false, 'error': e.toString()};
     }
   }
 
@@ -359,10 +416,10 @@ class ApiService {
     try {
       // Determine if input is email or phone number
       final isEmail = emailOrPhone.contains('@');
-      final requestBody = isEmail 
-        ? {'email': emailOrPhone, 'token': token, 'password': password}
-        : {'phoneNumber': emailOrPhone, 'token': token, 'password': password};
-      
+      final requestBody = isEmail
+          ? {'email': emailOrPhone, 'token': token, 'password': password}
+          : {'phoneNumber': emailOrPhone, 'token': token, 'password': password};
+
       final resp = await http
           .post(
             uri,
@@ -370,7 +427,7 @@ class ApiService {
             body: jsonEncode(requestBody),
           )
           .timeout(timeout);
-      
+
       if (resp.statusCode == 200) {
         return {'success': true};
       } else {
@@ -407,7 +464,7 @@ class ApiService {
             body: jsonEncode({'qrData': qrData}),
           )
           .timeout(timeout);
-      
+
       if (resp.statusCode == 200) {
         try {
           final body = jsonDecode(resp.body);
@@ -443,7 +500,7 @@ class ApiService {
       final resp = await http
           .get(uri, headers: {'Authorization': 'Bearer $token'})
           .timeout(timeout);
-      
+
       if (resp.statusCode == 200) {
         return resp.bodyBytes;
       }
@@ -484,7 +541,7 @@ class ApiService {
             body: jsonEncode(body),
           )
           .timeout(timeout);
-      
+
       if (resp.statusCode == 201) {
         try {
           final body = jsonDecode(resp.body);
@@ -530,7 +587,7 @@ class ApiService {
             body: jsonEncode(body),
           )
           .timeout(timeout);
-      
+
       if (resp.statusCode == 201) {
         try {
           final body = jsonDecode(resp.body);
@@ -556,7 +613,7 @@ class ApiService {
       final resp = await http
           .get(uri, headers: {'Authorization': 'Bearer $token'})
           .timeout(timeout);
-      
+
       if (resp.statusCode == 200) {
         try {
           final body = jsonDecode(resp.body);
@@ -582,7 +639,7 @@ class ApiService {
       final resp = await http
           .get(uri, headers: {'Authorization': 'Bearer $token'})
           .timeout(timeout);
-      
+
       if (resp.statusCode == 200) {
         try {
           final body = jsonDecode(resp.body);
@@ -608,16 +665,18 @@ class ApiService {
     try {
       // ignore: avoid_print
       debugPrint('ApiService.getUserProfile -> $uri');
-      
+
       final resp = await http
           .get(uri, headers: {'Authorization': 'Bearer $token'})
           .timeout(timeout);
-      
+
       // ignore: avoid_print
-      debugPrint('ApiService.getUserProfile response status: ${resp.statusCode}');
+      debugPrint(
+        'ApiService.getUserProfile response status: ${resp.statusCode}',
+      );
       // ignore: avoid_print
       debugPrint('ApiService.getUserProfile response body: ${resp.body}');
-      
+
       if (resp.statusCode == 200) {
         try {
           final body = jsonDecode(resp.body);
@@ -653,7 +712,7 @@ class ApiService {
       debugPrint('ApiService.updateMemberProfile -> $uri');
       // ignore: avoid_print
       debugPrint('ApiService.updateMemberProfile data: $profileData');
-      
+
       final resp = await http
           .put(
             uri,
@@ -664,12 +723,14 @@ class ApiService {
             body: jsonEncode(profileData),
           )
           .timeout(timeout);
-      
+
       // ignore: avoid_print
-      debugPrint('ApiService.updateMemberProfile response status: ${resp.statusCode}');
+      debugPrint(
+        'ApiService.updateMemberProfile response status: ${resp.statusCode}',
+      );
       // ignore: avoid_print
       debugPrint('ApiService.updateMemberProfile response body: ${resp.body}');
-      
+
       if (resp.statusCode == 200) {
         try {
           final body = jsonDecode(resp.body);
@@ -701,7 +762,7 @@ class ApiService {
       debugPrint('ApiService.createMemberMeasurement -> $uri');
       // ignore: avoid_print
       debugPrint('ApiService.createMemberMeasurement data: $measurementData');
-      
+
       final resp = await http
           .post(
             uri,
@@ -712,10 +773,12 @@ class ApiService {
             body: jsonEncode(measurementData),
           )
           .timeout(timeout);
-      
+
       // ignore: avoid_print
-      debugPrint('ApiService.createMemberMeasurement response status: ${resp.statusCode}');
-      
+      debugPrint(
+        'ApiService.createMemberMeasurement response status: ${resp.statusCode}',
+      );
+
       if (resp.statusCode == 201 || resp.statusCode == 200) {
         try {
           final body = jsonDecode(resp.body);
@@ -744,7 +807,7 @@ class ApiService {
     try {
       // ignore: avoid_print
       debugPrint('ApiService.getMemberGoals -> $uri');
-      
+
       final resp = await http
           .get(
             uri,
@@ -754,10 +817,12 @@ class ApiService {
             },
           )
           .timeout(timeout);
-      
+
       // ignore: avoid_print
-      debugPrint('ApiService.getMemberGoals response status: ${resp.statusCode}');
-      
+      debugPrint(
+        'ApiService.getMemberGoals response status: ${resp.statusCode}',
+      );
+
       if (resp.statusCode == 200) {
         try {
           final body = jsonDecode(resp.body);
@@ -792,7 +857,7 @@ class ApiService {
       debugPrint('ApiService.createMemberGoal -> $uri');
       // ignore: avoid_print
       debugPrint('ApiService.createMemberGoal data: $goalData');
-      
+
       final resp = await http
           .post(
             uri,
@@ -803,10 +868,12 @@ class ApiService {
             body: jsonEncode(goalData),
           )
           .timeout(timeout);
-      
+
       // ignore: avoid_print
-      debugPrint('ApiService.createMemberGoal response status: ${resp.statusCode}');
-      
+      debugPrint(
+        'ApiService.createMemberGoal response status: ${resp.statusCode}',
+      );
+
       if (resp.statusCode == 201 || resp.statusCode == 200) {
         try {
           final body = jsonDecode(resp.body);
@@ -858,7 +925,7 @@ class ApiService {
             body: jsonEncode(body),
           )
           .timeout(timeout);
-      
+
       if (resp.statusCode == 201) {
         try {
           final responseBody = jsonDecode(resp.body);
@@ -884,7 +951,7 @@ class ApiService {
       final resp = await http
           .get(uri, headers: {'Authorization': 'Bearer $token'})
           .timeout(timeout);
-      
+
       if (resp.statusCode == 200) {
         try {
           final body = jsonDecode(resp.body);
@@ -911,7 +978,7 @@ class ApiService {
       final resp = await http
           .get(uri, headers: {'Authorization': 'Bearer $token'})
           .timeout(timeout);
-      
+
       if (resp.statusCode == 200) {
         try {
           final body = jsonDecode(resp.body);
@@ -957,7 +1024,7 @@ class ApiService {
             body: jsonEncode(body),
           )
           .timeout(timeout);
-      
+
       if (resp.statusCode == 200) {
         try {
           final responseBody = jsonDecode(resp.body);
@@ -984,7 +1051,7 @@ class ApiService {
       final resp = await http
           .delete(uri, headers: {'Authorization': 'Bearer $token'})
           .timeout(timeout);
-      
+
       return resp.statusCode == 200;
     } catch (_) {
       return false;
@@ -1013,7 +1080,7 @@ class ApiService {
             body: jsonEncode(openingHours),
           )
           .timeout(timeout);
-      
+
       if (resp.statusCode == 200) {
         try {
           final body = jsonDecode(resp.body);
@@ -1040,7 +1107,7 @@ class ApiService {
       final resp = await http
           .get(uri, headers: {'Authorization': 'Bearer $token'})
           .timeout(timeout);
-      
+
       if (resp.statusCode == 200) {
         try {
           final body = jsonDecode(resp.body);
@@ -1068,14 +1135,14 @@ class ApiService {
       path += '?status=$status';
     }
     final uri = baseUri.resolve(path);
-    
+
     try {
       // ignore: avoid_print
       debugPrint('ApiService.getMemberPlannings -> $uri');
       final resp = await http
           .get(uri, headers: {'Authorization': 'Bearer $token'})
           .timeout(timeout);
-      
+
       if (resp.statusCode == 200) {
         return jsonDecode(resp.body) as Map<String, dynamic>;
       } else {
@@ -1096,14 +1163,14 @@ class ApiService {
     Duration timeout = const Duration(seconds: 8),
   }) async {
     final uri = baseUri.resolve('/plannings/next-day/$memberId');
-    
+
     try {
       // ignore: avoid_print
       debugPrint('ApiService.getNextPlanningDay -> $uri');
       final resp = await http
           .get(uri, headers: {'Authorization': 'Bearer $token'})
           .timeout(timeout);
-      
+
       if (resp.statusCode == 200) {
         return jsonDecode(resp.body) as Map<String, dynamic>;
       } else if (resp.statusCode == 204) {
@@ -1128,7 +1195,7 @@ class ApiService {
     Duration timeout = const Duration(seconds: 8),
   }) async {
     final uri = baseUri.resolve('/users/$userId');
-    
+
     try {
       // ignore: avoid_print
       debugPrint('ApiService.updateUserProfile -> $uri');
@@ -1142,7 +1209,7 @@ class ApiService {
             body: jsonEncode(updateData),
           )
           .timeout(timeout);
-      
+
       if (resp.statusCode == 200) {
         try {
           final body = jsonDecode(resp.body);
@@ -1154,7 +1221,9 @@ class ApiService {
         }
       } else {
         // ignore: avoid_print
-        debugPrint('Failed to update profile: ${resp.statusCode} - ${resp.body}');
+        debugPrint(
+          'Failed to update profile: ${resp.statusCode} - ${resp.body}',
+        );
         throw Exception('Failed to update profile: ${resp.statusCode}');
       }
     } catch (e) {
@@ -1173,7 +1242,7 @@ class ApiService {
     Duration timeout = const Duration(seconds: 15),
   }) async {
     final uri = baseUri.resolve('/users/$userId/profile-image');
-    
+
     try {
       // ignore: avoid_print
       debugPrint('ApiService.uploadProfileImage -> $uri');
@@ -1187,7 +1256,7 @@ class ApiService {
             body: jsonEncode({'imageData': imageDataBase64}),
           )
           .timeout(timeout);
-      
+
       if (resp.statusCode == 200) {
         try {
           final body = jsonDecode(resp.body);
@@ -1199,7 +1268,9 @@ class ApiService {
         }
       } else {
         // ignore: avoid_print
-        debugPrint('Failed to upload profile image: ${resp.statusCode} - ${resp.body}');
+        debugPrint(
+          'Failed to upload profile image: ${resp.statusCode} - ${resp.body}',
+        );
         throw Exception('Failed to upload profile image: ${resp.statusCode}');
       }
     } catch (e) {
@@ -1221,7 +1292,7 @@ class ApiService {
     Duration timeout = const Duration(seconds: 8),
   }) async {
     final uri = baseUri.resolve('/users/fcm-token');
-    
+
     try {
       // ignore: avoid_print
       debugPrint('ApiService.updateUserFCMToken -> $uri');
@@ -1229,7 +1300,7 @@ class ApiService {
       debugPrint('  FCM Token: $fcmToken');
       // ignore: avoid_print
       debugPrint('  JWT: Bearer ${token.substring(0, 30)}...');
-      
+
       // Décoder le JWT pour voir ce qu'il contient
       try {
         final parts = token.split('.');
@@ -1244,7 +1315,7 @@ class ApiService {
         // ignore: avoid_print
         debugPrint('  Erreur décodage JWT: $e');
       }
-      
+
       final resp = await http
           .put(
             uri,
@@ -1255,12 +1326,12 @@ class ApiService {
             body: jsonEncode({'fcmToken': fcmToken}),
           )
           .timeout(timeout);
-      
+
       // ignore: avoid_print
       debugPrint('updateUserFCMToken status: ${resp.statusCode}');
       // ignore: avoid_print
       debugPrint('updateUserFCMToken response: ${resp.body}');
-      
+
       if (resp.statusCode == 200) {
         try {
           return jsonDecode(resp.body) as Map<String, dynamic>;
@@ -1287,7 +1358,7 @@ class ApiService {
     Duration timeout = const Duration(seconds: 8),
   }) async {
     final uri = baseUri.resolve('/notifications/send');
-    
+
     try {
       final requestBody = {
         'userId': userId,
@@ -1306,7 +1377,7 @@ class ApiService {
             body: jsonEncode(requestBody),
           )
           .timeout(timeout);
-      
+
       return resp.statusCode == 200;
     } catch (e) {
       // ignore: avoid_print
@@ -1326,7 +1397,7 @@ class ApiService {
     Duration timeout = const Duration(seconds: 8),
   }) async {
     final uri = baseUri.resolve('/notifications/send-bulk');
-    
+
     try {
       final requestBody = {
         'userIds': userIds,
@@ -1345,7 +1416,7 @@ class ApiService {
             body: jsonEncode(requestBody),
           )
           .timeout(timeout);
-      
+
       return resp.statusCode == 200;
     } catch (e) {
       // ignore: avoid_print
@@ -1365,7 +1436,7 @@ class ApiService {
     Duration timeout = const Duration(seconds: 8),
   }) async {
     final uri = baseUri.resolve('/notifications/send-to-gym');
-    
+
     try {
       final requestBody = {
         'gymId': gymId,
@@ -1384,7 +1455,7 @@ class ApiService {
             body: jsonEncode(requestBody),
           )
           .timeout(timeout);
-      
+
       return resp.statusCode == 200;
     } catch (e) {
       // ignore: avoid_print
@@ -1403,7 +1474,7 @@ class ApiService {
     Duration timeout = const Duration(seconds: 8),
   }) async {
     final uri = baseUri.resolve('/plannings/request-help');
-    
+
     try {
       final requestBody = {
         'exerciseName': exerciseName,
@@ -1425,10 +1496,10 @@ class ApiService {
             body: jsonEncode(requestBody),
           )
           .timeout(timeout);
-      
+
       // ignore: avoid_print
       debugPrint('requestExerciseHelp status: ${resp.statusCode}');
-      
+
       return resp.statusCode == 200;
     } catch (e) {
       // ignore: avoid_print
@@ -1448,7 +1519,7 @@ class ApiService {
     Duration timeout = const Duration(seconds: 8),
   }) async {
     final uri = baseUri.resolve('/plannings/respond-help');
-    
+
     try {
       final requestBody = {
         'memberId': memberId,
@@ -1471,10 +1542,10 @@ class ApiService {
             body: jsonEncode(requestBody),
           )
           .timeout(timeout);
-      
+
       // ignore: avoid_print
       debugPrint('respondToHelpRequest status: ${resp.statusCode}');
-      
+
       return resp.statusCode == 200;
     } catch (e) {
       // ignore: avoid_print
@@ -1496,7 +1567,7 @@ class ApiService {
       final resp = await http
           .get(uri, headers: {'Authorization': 'Bearer $token'})
           .timeout(timeout);
-      
+
       if (resp.statusCode == 200) {
         try {
           final body = jsonDecode(resp.body);
@@ -1526,12 +1597,12 @@ class ApiService {
       final resp = await http
           .get(uri, headers: {'Authorization': 'Bearer $token'})
           .timeout(timeout);
-      
+
       // ignore: avoid_print
       debugPrint('getUserById status: ${resp.statusCode}');
       // ignore: avoid_print
       debugPrint('getUserById body: ${resp.body}');
-      
+
       if (resp.statusCode == 200) {
         try {
           final body = jsonDecode(resp.body);
@@ -1544,7 +1615,9 @@ class ApiService {
         }
       } else {
         // ignore: avoid_print
-        debugPrint('getUserById failed with status ${resp.statusCode}: ${resp.body}');
+        debugPrint(
+          'getUserById failed with status ${resp.statusCode}: ${resp.body}',
+        );
         return null;
       }
     } catch (e) {
@@ -1594,12 +1667,12 @@ class ApiService {
             body: jsonEncode(body),
           )
           .timeout(timeout);
-      
+
       // ignore: avoid_print
       debugPrint('createMember status: ${resp.statusCode}');
       // ignore: avoid_print
       debugPrint('createMember response: ${resp.body}');
-      
+
       if (resp.statusCode == 201) {
         try {
           final responseBody = jsonDecode(resp.body);
@@ -1630,7 +1703,7 @@ class ApiService {
       final resp = await http
           .delete(uri, headers: {'Authorization': 'Bearer $token'})
           .timeout(timeout);
-      
+
       return resp.statusCode == 200;
     } catch (_) {
       return false;
@@ -1650,7 +1723,7 @@ class ApiService {
       final resp = await http
           .get(uri, headers: {'Authorization': 'Bearer $token'})
           .timeout(timeout);
-      
+
       if (resp.statusCode == 200) {
         try {
           final body = jsonDecode(resp.body);
@@ -1669,8 +1742,8 @@ class ApiService {
 
   /// Get subscription types
   /// GET /subscription-types
-  Future<List<dynamic>?> getSubscriptionTypes(
-    {bool includeInactive = false,
+  Future<List<dynamic>?> getSubscriptionTypes({
+    bool includeInactive = false,
     Duration timeout = const Duration(seconds: 8),
   }) async {
     var path = '/subscription-types';
@@ -1678,27 +1751,29 @@ class ApiService {
       path += '?includeInactive=true';
     }
     final uri = baseUri.resolve(path);
-    
+
     try {
       // ignore: avoid_print
       debugPrint('🔍 Fetching subscription types from: $uri');
-      
+
       final resp = await http.get(uri).timeout(timeout);
-      
+
       // ignore: avoid_print
       debugPrint('📥 Response status: ${resp.statusCode}');
       // ignore: avoid_print
       debugPrint('📥 Response body type: ${resp.body.runtimeType}');
-      
+
       if (resp.statusCode == 200) {
         try {
           final body = jsonDecode(resp.body);
-          
+
           // ignore: avoid_print
           debugPrint('🔍 Decoded body type: ${body.runtimeType}');
           // ignore: avoid_print
-          debugPrint('🔍 Body keys: ${body is Map ? body.keys.toList() : "not a map"}');
-          
+          debugPrint(
+            '🔍 Body keys: ${body is Map ? body.keys.toList() : "not a map"}',
+          );
+
           // Check if the body is a Map with 'subscriptionTypes' key
           if (body is Map && body.containsKey('subscriptionTypes')) {
             final types = body['subscriptionTypes'] as List<dynamic>;
@@ -1708,7 +1783,9 @@ class ApiService {
           } else if (body is List) {
             // API might return array directly
             // ignore: avoid_print
-            debugPrint('✅ Got direct array with ${body.length} subscription types');
+            debugPrint(
+              '✅ Got direct array with ${body.length} subscription types',
+            );
             return body;
           } else {
             // ignore: avoid_print
@@ -1741,7 +1818,7 @@ class ApiService {
     final uri = baseUri.resolve('/subscription-types/$subscriptionTypeId');
     try {
       final resp = await http.get(uri).timeout(timeout);
-      
+
       if (resp.statusCode == 200) {
         try {
           final body = jsonDecode(resp.body);
@@ -1763,12 +1840,14 @@ class ApiService {
     String token, {
     Duration timeout = const Duration(seconds: 8),
   }) async {
-    final uri = baseUri.resolve('/subscription-types/$subscriptionTypeId/subscriptions');
+    final uri = baseUri.resolve(
+      '/subscription-types/$subscriptionTypeId/subscriptions',
+    );
     try {
       final resp = await http
           .get(uri, headers: {'Authorization': 'Bearer $token'})
           .timeout(timeout);
-      
+
       if (resp.statusCode == 200) {
         try {
           final body = jsonDecode(resp.body);
@@ -1814,7 +1893,7 @@ class ApiService {
             body: jsonEncode(body),
           )
           .timeout(timeout);
-      
+
       if (resp.statusCode == 201) {
         try {
           final responseBody = jsonDecode(resp.body);
@@ -1860,7 +1939,7 @@ class ApiService {
             body: jsonEncode(body),
           )
           .timeout(timeout);
-      
+
       if (resp.statusCode == 200) {
         try {
           final responseBody = jsonDecode(resp.body);
@@ -1887,7 +1966,7 @@ class ApiService {
       final resp = await http
           .delete(uri, headers: {'Authorization': 'Bearer $token'})
           .timeout(timeout);
-      
+
       return resp.statusCode == 200;
     } catch (_) {
       return false;
@@ -1906,7 +1985,7 @@ class ApiService {
       final resp = await http
           .get(uri, headers: {'Authorization': 'Bearer $token'})
           .timeout(timeout);
-      
+
       if (resp.statusCode == 200) {
         try {
           final body = jsonDecode(resp.body);
@@ -1933,7 +2012,7 @@ class ApiService {
       final resp = await http
           .get(uri, headers: {'Authorization': 'Bearer $token'})
           .timeout(timeout);
-      
+
       if (resp.statusCode == 200) {
         try {
           final body = jsonDecode(resp.body);
@@ -1981,12 +2060,12 @@ class ApiService {
             body: jsonEncode(body),
           )
           .timeout(timeout);
-      
+
       // ignore: avoid_print
       debugPrint('createSubscription status: ${resp.statusCode}');
       // ignore: avoid_print
       debugPrint('createSubscription body: ${resp.body}');
-      
+
       if (resp.statusCode == 201) {
         try {
           final responseBody = jsonDecode(resp.body);
@@ -1998,7 +2077,9 @@ class ApiService {
         }
       } else {
         // ignore: avoid_print
-        debugPrint('createSubscription failed with status ${resp.statusCode}: ${resp.body}');
+        debugPrint(
+          'createSubscription failed with status ${resp.statusCode}: ${resp.body}',
+        );
         return null;
       }
     } catch (e) {
@@ -2018,7 +2099,9 @@ class ApiService {
     String? transactionId,
     Duration timeout = const Duration(seconds: 8),
   }) async {
-    final uri = baseUri.resolve('/subscriptions/payments/$paymentId/acknowledge');
+    final uri = baseUri.resolve(
+      '/subscriptions/payments/$paymentId/acknowledge',
+    );
     try {
       final body = {
         'paymentMethod': paymentMethod,
@@ -2035,7 +2118,7 @@ class ApiService {
             body: jsonEncode(body),
           )
           .timeout(timeout);
-      
+
       if (resp.statusCode == 200) {
         try {
           final responseBody = jsonDecode(resp.body);
@@ -2078,7 +2161,7 @@ class ApiService {
             body: jsonEncode(body),
           )
           .timeout(timeout);
-      
+
       if (resp.statusCode == 200) {
         try {
           final responseBody = jsonDecode(resp.body);
@@ -2105,7 +2188,7 @@ class ApiService {
       final resp = await http
           .get(uri, headers: {'Authorization': 'Bearer $token'})
           .timeout(timeout);
-      
+
       if (resp.statusCode == 200) {
         try {
           final body = jsonDecode(resp.body);
@@ -2136,17 +2219,17 @@ class ApiService {
     if (category != null) queryParams.add('category=$category');
     if (difficulty != null) queryParams.add('difficulty=$difficulty');
     if (muscleGroup != null) queryParams.add('muscleGroup=$muscleGroup');
-    
+
     if (queryParams.isNotEmpty) {
       path += '?${queryParams.join('&')}';
     }
-    
+
     final uri = baseUri.resolve(path);
     try {
       final resp = await http
           .get(uri, headers: {'Authorization': 'Bearer $token'})
           .timeout(timeout);
-      
+
       if (resp.statusCode == 200) {
         try {
           final body = jsonDecode(resp.body);
@@ -2173,17 +2256,17 @@ class ApiService {
     final queryParams = <String>[];
     if (memberId != null) queryParams.add('memberId=$memberId');
     if (status != null) queryParams.add('status=$status');
-    
+
     if (queryParams.isNotEmpty) {
       path += '?${queryParams.join('&')}';
     }
-    
+
     final uri = baseUri.resolve(path);
     try {
       final resp = await http
           .get(uri, headers: {'Authorization': 'Bearer $token'})
           .timeout(timeout);
-      
+
       if (resp.statusCode == 200) {
         try {
           final body = jsonDecode(resp.body);
@@ -2229,7 +2312,7 @@ class ApiService {
             body: jsonEncode(body),
           )
           .timeout(timeout);
-      
+
       if (resp.statusCode == 201) {
         try {
           final responseBody = jsonDecode(resp.body);
@@ -2260,7 +2343,9 @@ class ApiService {
     int? order,
     Duration timeout = const Duration(seconds: 8),
   }) async {
-    final uri = baseUri.resolve('/plannings/$planningId/days/$dayOfWeek/exercises');
+    final uri = baseUri.resolve(
+      '/plannings/$planningId/days/$dayOfWeek/exercises',
+    );
     try {
       final body = {
         'exerciseId': exerciseId,
@@ -2283,7 +2368,7 @@ class ApiService {
             body: jsonEncode(body),
           )
           .timeout(timeout);
-      
+
       if (resp.statusCode == 201) {
         try {
           final responseBody = jsonDecode(resp.body);
@@ -2309,14 +2394,14 @@ class ApiService {
     try {
       // ignore: avoid_print
       debugPrint('ApiService.deletePlanning -> $uri');
-      
+
       final resp = await http
           .delete(uri, headers: {'Authorization': 'Bearer $token'})
           .timeout(timeout);
-      
+
       // ignore: avoid_print
       debugPrint('deletePlanning status: ${resp.statusCode}');
-      
+
       return resp.statusCode == 200 || resp.statusCode == 204;
     } catch (e) {
       // ignore: avoid_print
@@ -2324,8 +2409,447 @@ class ApiService {
       return false;
     }
   }
+
+  // ==================== BANNERS ====================
+
+  /// Get all banners with optional filters
+  /// GET /banners
+  Future<List<dynamic>?> getBanners({
+    String? token,
+    String? type,
+    int? gymId,
+    bool activeOnly = true,
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
+    final queryParams = <String, String>{};
+    // Toujours envoyer activeOnly pour être explicite avec le backend
+    queryParams['activeOnly'] = activeOnly.toString();
+    if (type != null) queryParams['type'] = type;
+    if (gymId != null) queryParams['gymId'] = gymId.toString();
+
+    final uri = baseUri
+        .resolve('/banners')
+        .replace(queryParameters: queryParams.isNotEmpty ? queryParams : null);
+    try {
+      debugPrint('ApiService.getBanners -> $uri');
+
+      final headers = <String, String>{};
+      if (token != null) headers['Authorization'] = 'Bearer $token';
+
+      final resp = await http
+          .get(uri, headers: headers.isNotEmpty ? headers : null)
+          .timeout(timeout);
+
+      debugPrint('ApiService.getBanners response: ${resp.statusCode}');
+      debugPrint('ApiService.getBanners body: ${resp.body}');
+
+      if (resp.statusCode == 200) {
+        try {
+          final body = jsonDecode(resp.body);
+          final banners = body['banners'] as List<dynamic>;
+          debugPrint('ApiService.getBanners found ${banners.length} banners');
+          return banners;
+        } catch (_) {
+          return null;
+        }
+      }
+      return null;
+    } catch (e) {
+      debugPrint('Error getting banners: $e');
+      return null;
+    }
+  }
+
+  /// Get a single banner by ID
+  /// GET /banners/{id}
+  Future<Map<String, dynamic>?> getBanner(
+    int bannerId, {
+    String? token,
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
+    final uri = baseUri.resolve('/banners/$bannerId');
+    try {
+      final headers = <String, String>{};
+      if (token != null) headers['Authorization'] = 'Bearer $token';
+
+      final resp = await http
+          .get(uri, headers: headers.isNotEmpty ? headers : null)
+          .timeout(timeout);
+      if (resp.statusCode == 200) {
+        return jsonDecode(resp.body) as Map<String, dynamic>;
+      }
+      return null;
+    } catch (e) {
+      debugPrint('Error getting banner $bannerId: $e');
+      return null;
+    }
+  }
+
+  /// Create a new banner
+  /// POST /banners
+  Future<Map<String, dynamic>?> createBanner(
+    String token,
+    Map<String, dynamic> data, {
+    Duration timeout = const Duration(seconds: 15),
+  }) async {
+    final uri = baseUri.resolve('/banners');
+    try {
+      debugPrint('ApiService.createBanner -> $uri');
+      final resp = await http
+          .post(
+            uri,
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+            body: jsonEncode(data),
+          )
+          .timeout(timeout);
+
+      if (resp.statusCode == 201 || resp.statusCode == 200) {
+        return jsonDecode(resp.body) as Map<String, dynamic>;
+      }
+      throw Exception('Failed to create banner: ${resp.statusCode}');
+    } catch (e) {
+      debugPrint('Error creating banner: $e');
+      rethrow;
+    }
+  }
+
+  /// Update a banner
+  /// PUT /banners/{id}
+  Future<Map<String, dynamic>?> updateBanner(
+    String token,
+    int bannerId,
+    Map<String, dynamic> data, {
+    Duration timeout = const Duration(seconds: 15),
+  }) async {
+    final uri = baseUri.resolve('/banners/$bannerId');
+    try {
+      debugPrint('ApiService.updateBanner -> $uri');
+      final resp = await http
+          .put(
+            uri,
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+            body: jsonEncode(data),
+          )
+          .timeout(timeout);
+
+      if (resp.statusCode == 200) {
+        return jsonDecode(resp.body) as Map<String, dynamic>;
+      }
+      throw Exception('Failed to update banner: ${resp.statusCode}');
+    } catch (e) {
+      debugPrint('Error updating banner $bannerId: $e');
+      rethrow;
+    }
+  }
+
+  /// Delete a banner
+  /// DELETE /banners/{id}
+  Future<void> deleteBanner(
+    String token,
+    int bannerId, {
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
+    final uri = baseUri.resolve('/banners/$bannerId');
+    try {
+      final resp = await http
+          .delete(uri, headers: {'Authorization': 'Bearer $token'})
+          .timeout(timeout);
+      if (resp.statusCode != 200) {
+        throw Exception('Failed to delete banner: ${resp.statusCode}');
+      }
+    } catch (e) {
+      debugPrint('Error deleting banner $bannerId: $e');
+      rethrow;
+    }
+  }
+
+  /// Track banner view
+  /// POST /banners/{id}/track/view
+  Future<bool> trackBannerView(
+    int bannerId, {
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
+    final uri = baseUri.resolve('/banners/$bannerId/track/view');
+    try {
+      final resp = await http.post(uri).timeout(timeout);
+      return resp.statusCode == 200;
+    } catch (e) {
+      debugPrint('Error tracking banner view: $e');
+      return false;
+    }
+  }
+
+  /// Track banner click
+  /// POST /banners/{id}/track/click
+  Future<bool> trackBannerClick(
+    int bannerId, {
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
+    final uri = baseUri.resolve('/banners/$bannerId/track/click');
+    try {
+      final resp = await http.post(uri).timeout(timeout);
+      return resp.statusCode == 200;
+    } catch (e) {
+      debugPrint('Error tracking banner click: $e');
+      return false;
+    }
+  }
+
+  /// Get banner statistics
+  /// GET /banners/{id}/stats
+  Future<Map<String, dynamic>?> getBannerStats(
+    int bannerId, {
+    String? token,
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
+    final uri = baseUri.resolve('/banners/$bannerId/stats');
+    try {
+      final headers = <String, String>{};
+      if (token != null) headers['Authorization'] = 'Bearer $token';
+
+      final resp = await http
+          .get(uri, headers: headers.isNotEmpty ? headers : null)
+          .timeout(timeout);
+      if (resp.statusCode == 200) {
+        return jsonDecode(resp.body) as Map<String, dynamic>;
+      }
+      return null;
+    } catch (e) {
+      debugPrint('Error getting banner stats: $e');
+      return null;
+    }
+  }
+
+  // ============================================
+  // STORE PRODUCTS ENDPOINTS
+  // ============================================
+
+  /// Get all store products
+  /// GET /store/products
+  Future<List<dynamic>?> getStoreProducts({
+    String? token,
+    int? gymId,
+    String? category,
+    bool? available,
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
+    final queryParams = <String, String>{};
+    if (gymId != null) queryParams['gymId'] = gymId.toString();
+    if (category != null) queryParams['category'] = category;
+    if (available != null) queryParams['available'] = available.toString();
+
+    final uri = baseUri.resolve('/store/products').replace(
+          queryParameters: queryParams.isNotEmpty ? queryParams : null,
+        );
+    try {
+      debugPrint('ApiService.getStoreProducts -> $uri');
+
+      final headers = <String, String>{};
+      if (token != null) headers['Authorization'] = 'Bearer $token';
+
+      final resp = await http
+          .get(uri, headers: headers.isNotEmpty ? headers : null)
+          .timeout(timeout);
+
+      if (resp.statusCode == 200) {
+        try {
+          final body = jsonDecode(resp.body);
+          final products = body['products'] as List<dynamic>;
+          
+          // Log pour debug des images
+          if (products.isNotEmpty) {
+            debugPrint('📦 Store products count: ${products.length}');
+            final firstProduct = products.first as Map<String, dynamic>;
+            debugPrint('📦 First product keys: ${firstProduct.keys.toList()}');
+            debugPrint('📦 Has imagesBase64: ${firstProduct.containsKey('imagesBase64')}');
+            debugPrint('📦 Has images: ${firstProduct.containsKey('images')}');
+            debugPrint('📦 Has imageUrl: ${firstProduct.containsKey('imageUrl')}');
+            if (firstProduct.containsKey('imagesBase64')) {
+              debugPrint('📦 imagesBase64 type: ${firstProduct['imagesBase64'].runtimeType}');
+              if (firstProduct['imagesBase64'] is List) {
+                debugPrint('📦 imagesBase64 length: ${(firstProduct['imagesBase64'] as List).length}');
+              }
+            }
+          }
+          
+          return products;
+        } catch (_) {
+          return null;
+        }
+      }
+      return null;
+    } catch (e) {
+      debugPrint('Error getting store products: $e');
+      return null;
+    }
+  }
+
+  /// Get a single store product by ID
+  /// GET /store/products/{id}
+  Future<Map<String, dynamic>?> getStoreProduct(
+    String displayId, {
+    String? token,
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
+    final uri = baseUri.resolve('/store/products/$displayId');
+    try {
+      final headers = <String, String>{};
+      if (token != null) headers['Authorization'] = 'Bearer $token';
+
+      final resp = await http
+          .get(uri, headers: headers.isNotEmpty ? headers : null)
+          .timeout(timeout);
+      if (resp.statusCode == 200) {
+        final body = jsonDecode(resp.body);
+        return body['product'] as Map<String, dynamic>;
+      }
+      return null;
+    } catch (e) {
+      debugPrint('Error getting store product $displayId: $e');
+      return null;
+    }
+  }
+
+  /// Create a new store product with multiple images upload
+  /// POST /store/products (multipart/form-data)
+  Future<Map<String, dynamic>?> createStoreProduct(
+    String token, {
+    required String name,
+    String? description,
+    required double price,
+    required int stock,
+    String? category,
+    int? gymId,
+    List<Uint8List>? imagesBytes,
+    List<String>? imageNames,
+    Duration timeout = const Duration(seconds: 30),
+  }) async {
+    final uri = baseUri.resolve('/store/products');
+    try {
+      debugPrint('ApiService.createStoreProduct -> $uri');
+
+      final request = http.MultipartRequest('POST', uri);
+      request.headers['Authorization'] = 'Bearer $token';
+
+      // Add form fields
+      request.fields['name'] = name;
+      if (description != null) request.fields['description'] = description;
+      request.fields['price'] = price.toString();
+      request.fields['stock'] = stock.toString();
+      if (category != null) request.fields['category'] = category;
+      if (gymId != null) request.fields['gymId'] = gymId.toString();
+
+      // Add multiple images if provided (max 5)
+      if (imagesBytes != null && imagesBytes.isNotEmpty) {
+        for (int i = 0; i < imagesBytes.length && i < 5; i++) {
+          final imageName = (imageNames != null && i < imageNames.length)
+              ? imageNames[i]
+              : 'product_image_$i.jpg';
+          request.files.add(http.MultipartFile.fromBytes(
+            'images', // Field name for multiple images
+            imagesBytes[i],
+            filename: imageName,
+          ));
+        }
+      }
+
+      final streamedResponse = await request.send().timeout(timeout);
+      final resp = await http.Response.fromStream(streamedResponse);
+
+      if (resp.statusCode == 201 || resp.statusCode == 200) {
+        final body = jsonDecode(resp.body);
+        return body['product'] as Map<String, dynamic>;
+      }
+      throw Exception('Failed to create product: ${resp.statusCode} - ${resp.body}');
+    } catch (e) {
+      debugPrint('Error creating store product: $e');
+      rethrow;
+    }
+  }
+
+  /// Update a store product with multiple images
+  /// PUT /store/products/{id} (multipart/form-data)
+  Future<Map<String, dynamic>?> updateStoreProduct(
+    String token,
+    String displayId, {
+    String? name,
+    String? description,
+    double? price,
+    int? stock,
+    String? category,
+    bool? isActive,
+    List<Uint8List>? imagesBytes,
+    List<String>? imageNames,
+    Duration timeout = const Duration(seconds: 30),
+  }) async {
+    final uri = baseUri.resolve('/store/products/$displayId');
+    try {
+      debugPrint('ApiService.updateStoreProduct -> $uri');
+
+      final request = http.MultipartRequest('PUT', uri);
+      request.headers['Authorization'] = 'Bearer $token';
+
+      // Add form fields only if provided
+      if (name != null) request.fields['name'] = name;
+      if (description != null) request.fields['description'] = description;
+      if (price != null) request.fields['price'] = price.toString();
+      if (stock != null) request.fields['stock'] = stock.toString();
+      if (category != null) request.fields['category'] = category;
+      if (isActive != null) request.fields['isActive'] = isActive.toString();
+
+      // Add multiple images if provided (max 5)
+      if (imagesBytes != null && imagesBytes.isNotEmpty) {
+        for (int i = 0; i < imagesBytes.length && i < 5; i++) {
+          final imageName = (imageNames != null && i < imageNames.length)
+              ? imageNames[i]
+              : 'product_image_$i.jpg';
+          request.files.add(http.MultipartFile.fromBytes(
+            'images', // Field name for multiple images
+            imagesBytes[i],
+            filename: imageName,
+          ));
+        }
+      }
+
+      final streamedResponse = await request.send().timeout(timeout);
+      final resp = await http.Response.fromStream(streamedResponse);
+
+      if (resp.statusCode == 200) {
+        final body = jsonDecode(resp.body);
+        return body['product'] as Map<String, dynamic>;
+      }
+      throw Exception('Failed to update product: ${resp.statusCode} - ${resp.body}');
+    } catch (e) {
+      debugPrint('Error updating store product $displayId: $e');
+      rethrow;
+    }
+  }
+
+  /// Delete a store product
+  /// DELETE /store/products/{id}
+  Future<void> deleteStoreProduct(
+    String token,
+    String displayId, {
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
+    final uri = baseUri.resolve('/store/products/$displayId');
+    try {
+      final resp = await http
+          .delete(uri, headers: {'Authorization': 'Bearer $token'})
+          .timeout(timeout);
+      if (resp.statusCode != 200) {
+        final body = jsonDecode(resp.body);
+        throw Exception(body['message'] ?? 'Failed to delete product: ${resp.statusCode}');
+      }
+    } catch (e) {
+      debugPrint('Error deleting store product $displayId: $e');
+      rethrow;
+    }
+  }
 }
-
-
-
-

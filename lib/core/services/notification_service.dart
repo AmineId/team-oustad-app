@@ -358,7 +358,7 @@ class NotificationService {
       await scheduleNotification(
         id: paymentId * 10 + 1,
         title: 'Rappel de paiement',
-        body: 'Le paiement de $amount€ pour $memberName est dû dans 3 jours',
+        body: 'Le paiement de $amount MAD pour $memberName est dû dans 3 jours',
         scheduledDate: reminder3Days,
         payload: 'payment_$paymentId',
       );
@@ -369,7 +369,7 @@ class NotificationService {
       await scheduleNotification(
         id: paymentId * 10 + 2,
         title: 'Paiement dû aujourd\'hui',
-        body: 'Le paiement de $amount€ pour $memberName est dû aujourd\'hui',
+        body: 'Le paiement de $amount MAD pour $memberName est dû aujourd\'hui',
         scheduledDate: dueDate,
         payload: 'payment_$paymentId',
       );

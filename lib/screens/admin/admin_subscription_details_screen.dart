@@ -48,6 +48,23 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
       final details = await _apiService.getSubscriptionById(widget.subscriptionId, token);
       
       if (details != null) {
+        // Charger le type d'abonnement si subscriptionTypeId est présent
+        final subscription = details['subscription'] as Map<String, dynamic>?;
+        if (subscription != null) {
+          final subscriptionTypeId = subscription['subscriptionTypeId'] as int?;
+          if (subscriptionTypeId != null) {
+            try {
+              final subscriptionTypeData = await _apiService.getSubscriptionTypeById(subscriptionTypeId);
+              if (subscriptionTypeData != null) {
+                subscription['subscriptionType'] = subscriptionTypeData;
+                debugPrint('📋 Loaded subscription type: ${subscriptionTypeData['name']}');
+              }
+            } catch (e) {
+              debugPrint('Erreur chargement type abonnement $subscriptionTypeId: $e');
+            }
+          }
+        }
+        
         setState(() {
           _subscriptionDetails = details;
           _isLoading = false;
@@ -403,6 +420,11 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
     if (subscription == null) return const SizedBox();
     
     final subscriptionType = subscription['subscriptionType'] as Map<String, dynamic>?;
+    final typeData = subscriptionType?['type'] as Map<String, dynamic>?;
+    final typeName = typeData?['name'] as String? ?? 'Abonnement';
+    final typeDescription = typeData?['description'] as String?;
+    final monthlyPrice = typeData?['monthlyPrice'];
+    
     final status = subscription['status'] as String? ?? 'unknown';
     final startDate = subscription['startDate'] as String?;
     final endDate = subscription['endDate'] as String?;
@@ -423,7 +445,7 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
             children: [
               Expanded(
                 child: Text(
-                  subscriptionType?['name'] ?? 'Abonnement',
+                  typeName,
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 20,
@@ -456,10 +478,10 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
             ],
           ),
           
-          if (subscriptionType?['description'] != null) ...[
+          if (typeDescription != null) ...[
             const SizedBox(height: 12),
             Text(
-              subscriptionType!['description'] as String,
+              typeDescription,
               style: TextStyle(
                 color: Colors.white.withValues(alpha: 0.7),
                 fontSize: 14,
@@ -472,11 +494,11 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
           const SizedBox(height: 16),
           
           // Prix
-          if (subscriptionType?['monthlyPrice'] != null)
+          if (monthlyPrice != null)
             _buildInfoRow(
               Icons.euro,
               'Prix mensuel',
-              '${subscriptionType!['monthlyPrice']} €',
+              '$monthlyPrice MAD',
             ),
           
           const SizedBox(height: 12),
@@ -494,15 +516,6 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
             Icons.event,
             'Fin',
             _formatDate(endDate),
-          ),
-          
-          const SizedBox(height: 12),
-          
-          // Renouvellement automatique
-          _buildInfoRow(
-            Icons.autorenew,
-            'Renouvellement auto',
-            autoRenew ? 'Oui' : 'Non',
           ),
         ],
       ),
@@ -611,7 +624,7 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  '$amount €',
+                  '$amount MAD',
                   style: const TextStyle(
                     color: AppColors.primary,
                     fontSize: 20,

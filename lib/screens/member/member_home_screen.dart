@@ -326,6 +326,10 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Banner carousel - only shows when banners exist
+              const BannerCarousel(height: 140),
+              const SizedBox(height: 16),
+              
               // Welcome card
               FutureBuilder<Map<String, dynamic>?>(
                 future: _authService.getCachedUserProfile(),
@@ -2326,7 +2330,7 @@ class MemberSubscriptionPage extends StatelessWidget {
                     ),
                     SizedBox(height: 16),
                     _buildSubscriptionDetail(context, 'Type', 'Mensuel'),
-                    _buildSubscriptionDetail(context, 'Prix', '50 € / mois'),
+                    _buildSubscriptionDetail(context, 'Prix', '50 MAD / mois'),
                     _buildSubscriptionDetail(
                       context,
                       AppLocalizations.of(context).startDate,
@@ -2355,9 +2359,9 @@ class MemberSubscriptionPage extends StatelessWidget {
               ),
             ),
             SizedBox(height: 16),
-            _buildPaymentItem(context, 'Nov 2025', '50 €', '1 Nov 2025', true),
-            _buildPaymentItem(context, 'Oct 2025', '50 €', '1 Oct 2025', true),
-            _buildPaymentItem(context, 'Sep 2025', '50 €', '1 Sep 2025', true),
+            _buildPaymentItem(context, 'Nov 2025', '50 MAD', '1 Nov 2025', true),
+            _buildPaymentItem(context, 'Oct 2025', '50 MAD', '1 Oct 2025', true),
+            _buildPaymentItem(context, 'Sep 2025', '50 MAD', '1 Sep 2025', true),
           ],
         ),
       ),
@@ -5012,7 +5016,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                               _buildSubscriptionDetail(
                                 context,
                                 'Prix',
-                                '$price € / ${billingPeriod == 'monthly' ? 'mois' : 'an'}',
+                                '$price MAD / ${billingPeriod == 'monthly' ? 'mois' : 'an'}',
                               ),
                               _buildSubscriptionDetail(
                                 context,
