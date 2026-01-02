@@ -2901,4 +2901,293 @@ class ApiService {
       rethrow;
     }
   }
+
+  // ============================================================================
+  // NEW API ENDPOINTS - January 2, 2026
+  // ============================================================================
+
+  /// Checkout from gym (record exit time).
+  /// POST /check-in/{id}/checkout
+  Future<Map<String, dynamic>?> checkoutMember(
+    int checkInId,
+    String token, {
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
+    final uri = baseUri.resolve('/check-in/$checkInId/checkout');
+    try {
+      debugPrint('ApiService.checkoutMember -> $uri');
+
+      final resp = await http
+          .post(
+            uri,
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
+          )
+          .timeout(timeout);
+
+      debugPrint('ApiService.checkoutMember response status: ${resp.statusCode}');
+
+      if (resp.statusCode == 200) {
+        try {
+          final body = jsonDecode(resp.body);
+          return body as Map<String, dynamic>;
+        } catch (e) {
+          debugPrint('ApiService.checkoutMember parse error: $e');
+          return null;
+        }
+      } else if (resp.statusCode == 400 || resp.statusCode == 404) {
+        // Return error details for "Already checked out" or "Check-in not found"
+        try {
+          final body = jsonDecode(resp.body);
+          return body as Map<String, dynamic>;
+        } catch (_) {
+          return {'error': 'Status code: ${resp.statusCode}'};
+        }
+      }
+      return {'error': 'Status code: ${resp.statusCode}'};
+    } catch (e) {
+      debugPrint('ApiService.checkoutMember exception: $e');
+      return {'error': e.toString()};
+    }
+  }
+
+  /// Update member onboarding status.
+  /// PUT /members/{id}/onboarding
+  Future<Map<String, dynamic>?> updateOnboardingStatus(
+    int memberId,
+    bool onboarding,
+    String token, {
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
+    final uri = baseUri.resolve('/members/$memberId/onboarding');
+    try {
+      debugPrint('ApiService.updateOnboardingStatus -> $uri (onboarding: $onboarding)');
+
+      final resp = await http
+          .put(
+            uri,
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
+            body: jsonEncode({'onboarding': onboarding}),
+          )
+          .timeout(timeout);
+
+      debugPrint('ApiService.updateOnboardingStatus response status: ${resp.statusCode}');
+
+      if (resp.statusCode == 200) {
+        try {
+          final body = jsonDecode(resp.body);
+          return body as Map<String, dynamic>;
+        } catch (e) {
+          debugPrint('ApiService.updateOnboardingStatus parse error: $e');
+          return null;
+        }
+      } else if (resp.statusCode == 400 || resp.statusCode == 403) {
+        try {
+          final body = jsonDecode(resp.body);
+          return body as Map<String, dynamic>;
+        } catch (_) {
+          return {'error': 'Status code: ${resp.statusCode}'};
+        }
+      }
+      return {'error': 'Status code: ${resp.statusCode}'};
+    } catch (e) {
+      debugPrint('ApiService.updateOnboardingStatus exception: $e');
+      return {'error': e.toString()};
+    }
+  }
+
+  /// Upload profile picture for a member.
+  /// PUT /members/{id}/profile-picture
+  /// imageData can be a full data URI (with data:image/...;base64, prefix) or just raw base64 string
+  Future<Map<String, dynamic>?> uploadProfilePicture(
+    int memberId,
+    String imageData,
+    String token, {
+    Duration timeout = const Duration(seconds: 15),
+  }) async {
+    final uri = baseUri.resolve('/members/$memberId/profile-picture');
+    try {
+      debugPrint('ApiService.uploadProfilePicture -> $uri');
+
+      final resp = await http
+          .put(
+            uri,
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
+            body: jsonEncode({'imageData': imageData}),
+          )
+          .timeout(timeout);
+
+      debugPrint('ApiService.uploadProfilePicture response status: ${resp.statusCode}');
+
+      if (resp.statusCode == 200) {
+        try {
+          final body = jsonDecode(resp.body);
+          return body as Map<String, dynamic>;
+        } catch (e) {
+          debugPrint('ApiService.uploadProfilePicture parse error: $e');
+          return null;
+        }
+      } else if (resp.statusCode == 400 || resp.statusCode == 403) {
+        try {
+          final body = jsonDecode(resp.body);
+          return body as Map<String, dynamic>;
+        } catch (_) {
+          return {'error': 'Status code: ${resp.statusCode}'};
+        }
+      }
+      return {'error': 'Status code: ${resp.statusCode}'};
+    } catch (e) {
+      debugPrint('ApiService.uploadProfilePicture exception: $e');
+      return {'error': e.toString()};
+    }
+  }
+
+  /// Get profile picture for a member.
+  /// GET /members/{id}/profile-picture
+  /// Returns base64-encoded image data
+  Future<Map<String, dynamic>?> getProfilePicture(
+    int memberId,
+    String token, {
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
+    final uri = baseUri.resolve('/members/$memberId/profile-picture');
+    try {
+      debugPrint('ApiService.getProfilePicture -> $uri');
+
+      final resp = await http
+          .get(
+            uri,
+            headers: {
+              'Authorization': 'Bearer $token',
+            },
+          )
+          .timeout(timeout);
+
+      debugPrint('ApiService.getProfilePicture response status: ${resp.statusCode}');
+
+      if (resp.statusCode == 200) {
+        try {
+          final body = jsonDecode(resp.body);
+          return body as Map<String, dynamic>;
+        } catch (e) {
+          debugPrint('ApiService.getProfilePicture parse error: $e');
+          return null;
+        }
+      } else if (resp.statusCode == 403 || resp.statusCode == 404) {
+        try {
+          final body = jsonDecode(resp.body);
+          return body as Map<String, dynamic>;
+        } catch (_) {
+          return {'error': 'Status code: ${resp.statusCode}'};
+        }
+      }
+      return {'error': 'Status code: ${resp.statusCode}'};
+    } catch (e) {
+      debugPrint('ApiService.getProfilePicture exception: $e');
+      return {'error': e.toString()};
+    }
+  }
+
+  /// Delete profile picture for a member.
+  /// DELETE /members/{id}/profile-picture
+  Future<Map<String, dynamic>?> deleteProfilePicture(
+    int memberId,
+    String token, {
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
+    final uri = baseUri.resolve('/members/$memberId/profile-picture');
+    try {
+      debugPrint('ApiService.deleteProfilePicture -> $uri');
+
+      final resp = await http
+          .delete(
+            uri,
+            headers: {
+              'Authorization': 'Bearer $token',
+            },
+          )
+          .timeout(timeout);
+
+      debugPrint('ApiService.deleteProfilePicture response status: ${resp.statusCode}');
+
+      if (resp.statusCode == 200) {
+        try {
+          final body = jsonDecode(resp.body);
+          return body as Map<String, dynamic>;
+        } catch (e) {
+          debugPrint('ApiService.deleteProfilePicture parse error: $e');
+          return null;
+        }
+      } else if (resp.statusCode == 403) {
+        try {
+          final body = jsonDecode(resp.body);
+          return body as Map<String, dynamic>;
+        } catch (_) {
+          return {'error': 'Status code: ${resp.statusCode}'};
+        }
+      }
+      return {'error': 'Status code: ${resp.statusCode}'};
+    } catch (e) {
+      debugPrint('ApiService.deleteProfilePicture exception: $e');
+      return {'error': e.toString()};
+    }
+  }
+
+  /// Update preferred training days for a member.
+  /// PUT /members/{id}/preferred-training-days
+  /// days can be numbers (0-6) or day names (sunday, monday, etc.)
+  /// Alternative field name 'preferredTrainingDays' is also accepted
+  Future<Map<String, dynamic>?> updatePreferredTrainingDays(
+    int memberId,
+    List<dynamic> days,
+    String token, {
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
+    final uri = baseUri.resolve('/members/$memberId/preferred-training-days');
+    try {
+      debugPrint('ApiService.updatePreferredTrainingDays -> $uri (days: $days)');
+
+      final resp = await http
+          .put(
+            uri,
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
+            body: jsonEncode({'days': days}),
+          )
+          .timeout(timeout);
+
+      debugPrint('ApiService.updatePreferredTrainingDays response status: ${resp.statusCode}');
+
+      if (resp.statusCode == 200) {
+        try {
+          final body = jsonDecode(resp.body);
+          return body as Map<String, dynamic>;
+        } catch (e) {
+          debugPrint('ApiService.updatePreferredTrainingDays parse error: $e');
+          return null;
+        }
+      } else if (resp.statusCode == 400 || resp.statusCode == 403) {
+        try {
+          final body = jsonDecode(resp.body);
+          return body as Map<String, dynamic>;
+        } catch (_) {
+          return {'error': 'Status code: ${resp.statusCode}'};
+        }
+      }
+      return {'error': 'Status code: ${resp.statusCode}'};
+    } catch (e) {
+      debugPrint('ApiService.updatePreferredTrainingDays exception: $e');
+      return {'error': e.toString()};
+    }
+  }
 }

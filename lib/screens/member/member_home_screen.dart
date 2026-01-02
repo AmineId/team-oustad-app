@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/services/api_service.dart';
 import '../../core/theme/theme.dart';
@@ -78,22 +79,32 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
       }
 
       // Charger les abonnements du membre
-      final subscriptions = await apiService.getMemberSubscriptions(memberId, token);
+      final subscriptions = await apiService.getMemberSubscriptions(
+        memberId,
+        token,
+      );
       print('📦 [SUBSCRIPTION] subscriptions: $subscriptions');
 
       if (subscriptions != null && subscriptions.isNotEmpty) {
         // Prendre le premier abonnement actif
-        final activeSubscription = subscriptions.firstWhere(
-          (sub) => (sub as Map<String, dynamic>)['status'] == 'active',
-          orElse: () => subscriptions.first,
-        ) as Map<String, dynamic>?;
+        final activeSubscription =
+            subscriptions.firstWhere(
+                  (sub) => (sub as Map<String, dynamic>)['status'] == 'active',
+                  orElse: () => subscriptions.first,
+                )
+                as Map<String, dynamic>?;
 
         if (activeSubscription != null) {
           // Charger les détails complets de l'abonnement pour avoir le subscriptionType
           final subscriptionId = activeSubscription['id'];
-          print('🔍 [SUBSCRIPTION] Chargement détails pour subscriptionId: $subscriptionId');
-          
-          final fullSubscription = await apiService.getSubscriptionById(subscriptionId, token);
+          print(
+            '🔍 [SUBSCRIPTION] Chargement détails pour subscriptionId: $subscriptionId',
+          );
+
+          final fullSubscription = await apiService.getSubscriptionById(
+            subscriptionId,
+            token,
+          );
           print('📋 [SUBSCRIPTION] fullSubscription: $fullSubscription');
 
           if (mounted) {
@@ -102,7 +113,9 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
               _isLoadingSubscription = false;
             });
           }
-          print('✅ [SUBSCRIPTION] Abonnement chargé: ${fullSubscription ?? activeSubscription}');
+          print(
+            '✅ [SUBSCRIPTION] Abonnement chargé: ${fullSubscription ?? activeSubscription}',
+          );
         } else {
           if (mounted) {
             setState(() {
@@ -134,7 +147,8 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
       final apiService = ApiService.fromEnv();
       final token = await authService.loadToken();
       // Utiliser l'abonnement chargé au lieu du cache
-      final subscription = _subscriptionData?['subscription'] as Map<String, dynamic>?;
+      final subscription =
+          _subscriptionData?['subscription'] as Map<String, dynamic>?;
       final subscriptionId = subscription?['id'];
 
       print('🔍 [HOME QUOTA] subscription: $subscription');
@@ -147,9 +161,11 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
         return;
       }
 
-      final uri = apiService.baseUri.resolve('/check-in/subscription/$subscriptionId/quota');
+      final uri = apiService.baseUri.resolve(
+        '/check-in/subscription/$subscriptionId/quota',
+      );
       print('🌐 [HOME QUOTA] Requête: $uri');
-      
+
       final response = await http.get(
         uri,
         headers: {
@@ -189,8 +205,10 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
   }
 
   Widget? _buildQuotaWidget() {
-    print('🎯 [QUOTA WIDGET] _isLoadingQuota: $_isLoadingQuota, _quotaData: $_quotaData');
-    
+    print(
+      '🎯 [QUOTA WIDGET] _isLoadingQuota: $_isLoadingQuota, _quotaData: $_quotaData',
+    );
+
     // Afficher un placeholder pendant le chargement
     if (_isLoadingQuota || _quotaData == null) {
       return ConstrainedBox(
@@ -213,10 +231,7 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
           child: Material(
             color: Colors.transparent,
             child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 8,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -240,16 +255,20 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
     }
 
     // Utiliser subscriptionType.sessionQuota au lieu de sessionQuota
-    final subscriptionTypeData = _quotaData!['subscriptionType'] as Map<String, dynamic>?;
+    final subscriptionTypeData =
+        _quotaData!['subscriptionType'] as Map<String, dynamic>?;
     final sessionType = subscriptionTypeData?['sessionType'] as String?;
     final sessionQuota = subscriptionTypeData?['sessionQuota'] as int?;
     final sessionsUsed = _quotaData!['sessionsUsed'] as int? ?? 0;
-    final sessionsRemaining = (sessionQuota != null && sessionQuota > 0) 
-        ? sessionQuota - sessionsUsed 
+    final sessionsRemaining = (sessionQuota != null && sessionQuota > 0)
+        ? sessionQuota - sessionsUsed
         : null;
-    final isUnlimited = sessionType == 'unlimited' || sessionQuota == null || sessionQuota == 0;
+    final isUnlimited =
+        sessionType == 'unlimited' || sessionQuota == null || sessionQuota == 0;
 
-    print('🎯 [QUOTA WIDGET] sessionQuota: $sessionQuota, sessionsUsed: $sessionsUsed, remaining: $sessionsRemaining, unlimited: $isUnlimited');
+    print(
+      '🎯 [QUOTA WIDGET] sessionQuota: $sessionQuota, sessionsUsed: $sessionsUsed, remaining: $sessionsRemaining, unlimited: $isUnlimited',
+    );
 
     return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 80, maxHeight: 36),
@@ -277,18 +296,13 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
         child: Material(
           color: Colors.transparent,
           child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 8,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  isUnlimited
-                      ? Icons.all_inclusive
-                      : Icons.fitness_center,
+                  isUnlimited ? Icons.all_inclusive : Icons.fitness_center,
                   color: (isUnlimited || (sessionsRemaining ?? 0) > 5)
                       ? AppColors.success
                       : AppColors.warning,
@@ -297,9 +311,7 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
                 const SizedBox(width: 6),
                 Flexible(
                   child: Text(
-                    isUnlimited
-                        ? '∞'
-                        : '$sessionsRemaining',
+                    isUnlimited ? '∞' : '$sessionsRemaining',
                     style: TextStyle(
                       color: (isUnlimited || (sessionsRemaining ?? 0) > 5)
                           ? AppColors.success
@@ -601,7 +613,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
               // Banner carousel - only shows when banners exist
               const BannerCarousel(height: 140),
               const SizedBox(height: 16),
-              
+
               // Welcome card
               FutureBuilder<Map<String, dynamic>?>(
                 future: _authService.getCachedUserProfile(),
@@ -2183,11 +2195,15 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
   bool _isLoading = false;
   List<int>? _qrImageBytes;
   Map<String, dynamic>? _profileData;
+  bool _hasConnectivity = true;
+  bool _isCheckingConnectivity = true;
 
   @override
   void initState() {
     super.initState();
     _loadProfileData();
+    _checkConnectivity();
+    _tryLoadCachedQr();
   }
 
   Future<void> _loadProfileData() async {
@@ -2199,6 +2215,41 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
     }
   }
 
+  Future<void> _checkConnectivity() async {
+    try {
+      final connectivityResult = await Connectivity().checkConnectivity();
+      final hasConnection = !connectivityResult.contains(
+        ConnectivityResult.none,
+      );
+
+      if (mounted) {
+        setState(() {
+          _hasConnectivity = hasConnection;
+          _isCheckingConnectivity = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _hasConnectivity = false;
+          _isCheckingConnectivity = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _tryLoadCachedQr() async {
+    // Try to load QR from cache if no connectivity
+    if (!_hasConnectivity) {
+      final cachedQr = await _authService.getQrCodeCache();
+      if (cachedQr != null && mounted) {
+        setState(() {
+          _qrImageBytes = cachedQr;
+        });
+      }
+    }
+  }
+
   Future<void> _toggleQrCode() async {
     if (_showQrCode) {
       // Hide QR code
@@ -2206,6 +2257,31 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
         _showQrCode = false;
       });
       return;
+    }
+
+    // Check connectivity again before loading
+    await _checkConnectivity();
+
+    // If no connectivity, try to use cached QR
+    if (!_hasConnectivity) {
+      final cachedQr = await _authService.getQrCodeCache();
+      if (cachedQr != null) {
+        setState(() {
+          _qrImageBytes = cachedQr;
+          _showQrCode = true;
+        });
+        return;
+      } else {
+        // No cache and no connectivity
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Pas de connexion et aucun QR code en cache'),
+            backgroundColor: AppColors.warning,
+          ),
+        );
+        return;
+      }
     }
 
     // Show QR code - load it if not already loaded
@@ -2282,6 +2358,9 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
           return;
         }
 
+        // Save QR code to cache for offline use
+        await _authService.saveQrCodeCache(qrImageBytes);
+
         setState(() {
           _qrImageBytes = qrImageBytes;
           _showQrCode = true;
@@ -2346,6 +2425,52 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
                       : AppColors.lightTextSecondary),
                 ),
               ),
+
+              // Connectivity status indicator
+              if (!_isCheckingConnectivity) ...[
+                SizedBox(height: 16),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color:
+                        (_hasConnectivity
+                                ? AppColors.success
+                                : AppColors.warning)
+                            .withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: _hasConnectivity
+                          ? AppColors.success
+                          : AppColors.warning,
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        _hasConnectivity ? Icons.wifi : Icons.wifi_off,
+                        color: _hasConnectivity
+                            ? AppColors.success
+                            : AppColors.warning,
+                        size: 16,
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        _hasConnectivity ? 'En ligne' : 'Hors ligne',
+                        style: TextStyle(
+                          color: _hasConnectivity
+                              ? AppColors.success
+                              : AppColors.warning,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+
               SizedBox(height: 40),
 
               // Show QR Code or Button
@@ -2374,6 +2499,42 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
               else if (_showQrCode && _qrImageBytes != null)
                 Column(
                   children: [
+                    // Offline indicator on QR card if applicable
+                    if (!_hasConnectivity)
+                      Container(
+                        margin: EdgeInsets.only(bottom: 12),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.info.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: AppColors.info, width: 1),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.info_outline,
+                              color: AppColors.info,
+                              size: 18,
+                            ),
+                            SizedBox(width: 8),
+                            Flexible(
+                              child: Text(
+                                'QR code chargé depuis le cache',
+                                style: TextStyle(
+                                  color: AppColors.info,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     Card(
                       color: Theme.of(context).cardTheme.color,
                       elevation: 8,
@@ -2631,9 +2792,27 @@ class MemberSubscriptionPage extends StatelessWidget {
               ),
             ),
             SizedBox(height: 16),
-            _buildPaymentItem(context, 'Nov 2025', '50 MAD', '1 Nov 2025', true),
-            _buildPaymentItem(context, 'Oct 2025', '50 MAD', '1 Oct 2025', true),
-            _buildPaymentItem(context, 'Sep 2025', '50 MAD', '1 Sep 2025', true),
+            _buildPaymentItem(
+              context,
+              'Nov 2025',
+              '50 MAD',
+              '1 Nov 2025',
+              true,
+            ),
+            _buildPaymentItem(
+              context,
+              'Oct 2025',
+              '50 MAD',
+              '1 Oct 2025',
+              true,
+            ),
+            _buildPaymentItem(
+              context,
+              'Sep 2025',
+              '50 MAD',
+              '1 Sep 2025',
+              true,
+            ),
           ],
         ),
       ),
@@ -4871,19 +5050,27 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
       }
 
       // Charger les abonnements du membre
-      final subscriptions = await _apiService.getMemberSubscriptions(memberId, token);
+      final subscriptions = await _apiService.getMemberSubscriptions(
+        memberId,
+        token,
+      );
 
       if (subscriptions != null && subscriptions.isNotEmpty) {
         // Prendre le premier abonnement actif
-        final activeSubscription = subscriptions.firstWhere(
-          (sub) => (sub as Map<String, dynamic>)['status'] == 'active',
-          orElse: () => subscriptions.first,
-        ) as Map<String, dynamic>?;
+        final activeSubscription =
+            subscriptions.firstWhere(
+                  (sub) => (sub as Map<String, dynamic>)['status'] == 'active',
+                  orElse: () => subscriptions.first,
+                )
+                as Map<String, dynamic>?;
 
         if (activeSubscription != null) {
           // Charger les détails complets
           final subscriptionId = activeSubscription['id'];
-          final fullSubscription = await _apiService.getSubscriptionById(subscriptionId, token);
+          final fullSubscription = await _apiService.getSubscriptionById(
+            subscriptionId,
+            token,
+          );
 
           if (mounted) {
             setState(() {
@@ -5269,28 +5456,52 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                   builder: (context) {
                     final data = _subscriptionData!;
                     print('📋 [SUBSCRIPTION CARD] data: $data');
-                    
+
                     final sub = data['subscription'] as Map<String, dynamic>?;
-                    final subscriptionTypeData = sub?['SubscriptionType'] as Map<String, dynamic>?;
+                    final subscriptionTypeData =
+                        sub?['SubscriptionType'] as Map<String, dynamic>?;
                     print('📋 [SUBSCRIPTION CARD] sub: $sub');
-                    print('📋 [SUBSCRIPTION CARD] subscriptionTypeData: $subscriptionTypeData');
-                    
-                    final subscriptionTypeName = subscriptionTypeData?['name'] ?? 'Abonnement';
-                    final monthlyPrice = subscriptionTypeData?['monthlyPrice'] ?? 0;
-                    final durationMonths = subscriptionTypeData?['durationMonths'] ?? 1;
+                    print(
+                      '📋 [SUBSCRIPTION CARD] subscriptionTypeData: $subscriptionTypeData',
+                    );
+
+                    final subscriptionTypeName =
+                        subscriptionTypeData?['name'] ?? 'Abonnement';
+                    final monthlyPrice =
+                        subscriptionTypeData?['monthlyPrice'] ?? 0;
+                    final durationMonths =
+                        subscriptionTypeData?['durationMonths'] ?? 1;
                     final subscriptionStatus = sub?['status'] ?? 'unknown';
                     final startDate = sub?['startDate'] ?? 'N/A';
-                    final expiresAt = sub?['endDate'] ?? sub?['expiresAt'] ?? 'N/A';
-                    
-                    print('📋 [SUBSCRIPTION CARD] name: $subscriptionTypeName, price: $monthlyPrice, duration: $durationMonths');
-                    print('📋 [SUBSCRIPTION CARD] status: $subscriptionStatus, start: $startDate, expires: $expiresAt');
-                    
+                    final expiresAt =
+                        sub?['endDate'] ?? sub?['expiresAt'] ?? 'N/A';
+
+                    print(
+                      '📋 [SUBSCRIPTION CARD] name: $subscriptionTypeName, price: $monthlyPrice, duration: $durationMonths',
+                    );
+                    print(
+                      '📋 [SUBSCRIPTION CARD] status: $subscriptionStatus, start: $startDate, expires: $expiresAt',
+                    );
+
                     // Formater les dates
                     String formatDate(String dateStr) {
                       if (dateStr == 'N/A') return 'N/A';
                       try {
                         final date = DateTime.parse(dateStr);
-                        final months = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+                        final months = [
+                          'janvier',
+                          'février',
+                          'mars',
+                          'avril',
+                          'mai',
+                          'juin',
+                          'juillet',
+                          'août',
+                          'septembre',
+                          'octobre',
+                          'novembre',
+                          'décembre',
+                        ];
                         return '${date.day} ${months[date.month - 1]} ${date.year}';
                       } catch (e) {
                         return dateStr;
@@ -5466,7 +5677,6 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                                 : AppColors.lightTextSecondary),
                           ),
                         ),
-
                       ],
                     ),
                   ),

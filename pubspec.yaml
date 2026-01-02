@@ -51,6 +51,9 @@ dependencies:
   flutter_secure_storage: ^9.2.4
   url_launcher: ^6.1.10
 
+  # Network connectivity check
+  connectivity_plus: ^6.0.5
+
   # Direct PostgreSQL client for Dart/Flutter (mobile and desktop only; not for web).
   http: ^1.6.0
 

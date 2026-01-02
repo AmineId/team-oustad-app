@@ -452,6 +452,28 @@ class AuthService {
           // Don't block login if FCM token sending fails
         }
 
+        // Download and cache QR code for offline access (only for members who completed onboarding)
+        if (userType.toLowerCase() == 'member' && !needsOnboarding) {
+          try {
+            debugPrint(
+              '📥 [Biometric] Téléchargement du QR code pour le cache offline...',
+            );
+            final qrCodeBytes = await _apiService.getUserQrCode(
+              int.parse(userId),
+              token,
+            );
+            if (qrCodeBytes != null) {
+              await saveQrCodeCache(qrCodeBytes);
+              debugPrint('✅ [Biometric] QR code mis en cache avec succès');
+            }
+          } catch (e) {
+            debugPrint(
+              '❌ [Biometric] Erreur lors du téléchargement du QR code: $e',
+            );
+            // Don't block login if QR code download fails
+          }
+        }
+
         return {
           'status': AuthStatus.success,
           'needsOnboarding': needsOnboarding,
@@ -470,12 +492,65 @@ class AuthService {
     }
   }
 
+  /// Authenticate with biometrics in offline mode (use cached data only)
+  Future<Map<String, dynamic>> authenticateWithBiometricsOffline() async {
+    // Vérifier le consentement avant d'utiliser la biométrie
+    final hasConsent = await hasBiometricConsent();
+    if (!hasConsent) {
+      return {'status': AuthStatus.biometricFailed};
+    }
+
+    // Prompt for biometric authentication
+    final ok = await promptBiometric(
+      localizedReason:
+          'Authentifiez-vous pour accéder à vos données hors ligne',
+    );
+    if (!ok) {
+      return {'status': AuthStatus.biometricFailed};
+    }
+
+    debugPrint('🔍 [Biometric Offline] Checking for cached credentials...');
+
+    // Check if we have cached credentials
+    final creds = await loadCredentials();
+    if (creds == null) {
+      debugPrint('❌ [Biometric Offline] No cached credentials found');
+      return {'status': AuthStatus.noSavedCredentials};
+    }
+
+    // Check if we have a cached profile
+    final profileData = await getCachedUserProfile();
+    if (profileData == null) {
+      debugPrint('❌ [Biometric Offline] No cached profile found');
+      return {'status': AuthStatus.noSavedCredentials};
+    }
+
+    // Get user type from storage
+    final userType = await getUserType();
+    if (userType == null) {
+      debugPrint('❌ [Biometric Offline] No user type found');
+      return {'status': AuthStatus.noSavedCredentials};
+    }
+
+    debugPrint(
+      '✅ [Biometric Offline] Authentication successful - userType=$userType',
+    );
+
+    return {
+      'status': AuthStatus.success,
+      'userType': userType,
+      'needsOnboarding': false, // Assume onboarding done if cached
+    };
+  }
+
   /// Clear all stored credentials and tokens (for logout)
   Future<void> clearAll() async {
     try {
       await _secureStorage.deleteAll();
       final prefs = await SharedPreferences.getInstance();
       await prefs.clear();
+      // Clear QR code cache on logout
+      await clearQrCodeCache();
     } catch (_) {}
   }
 
@@ -485,6 +560,44 @@ class AuthService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('user_profile_cache');
       await prefs.remove('user_profile_cache_time');
+    } catch (_) {}
+  }
+
+  /// Save QR code to cache
+  Future<void> saveQrCodeCache(List<int> qrCodeBytes) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      // Convert bytes to base64 string for storage
+      final base64Qr = base64Encode(qrCodeBytes);
+      await prefs.setString('qr_code_cache', base64Qr);
+      await prefs.setInt(
+        'qr_code_cache_time',
+        DateTime.now().millisecondsSinceEpoch,
+      );
+    } catch (_) {}
+  }
+
+  /// Get cached QR code
+  Future<List<int>?> getQrCodeCache() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final base64Qr = prefs.getString('qr_code_cache');
+      if (base64Qr != null) {
+        // Convert base64 string back to bytes
+        return base64Decode(base64Qr);
+      }
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Clear QR code cache
+  Future<void> clearQrCodeCache() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('qr_code_cache');
+      await prefs.remove('qr_code_cache_time');
     } catch (_) {}
   }
 
