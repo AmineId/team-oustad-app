@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.37](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.36...v1.0.0-beta.37) (2026-01-02)
+
+
+### ✨ New Features
+
+* **api:** add new member endpoints and QR code auto-caching ([6c4e32e](https://github.com/TeamFitness/mobile-app/commit/6c4e32e3d9598c72db24a42f6b31b89abb3d7049))
+
 ## [1.0.0-beta.36](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.35...v1.0.0-beta.36) (2026-01-01)
 
 
