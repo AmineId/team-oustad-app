@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.39](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.38...v1.0.0-beta.39) (2026-01-02)
+
+
+### 🐛 Bug Fixes
+
+* build failure & add missing phone and shouldSendSetupEmail parameters to createMember ([#17](https://github.com/TeamFitness/mobile-app/issues/17)) ([7615e6e](https://github.com/TeamFitness/mobile-app/commit/7615e6e039f82b4f70d2144a762fe50a8bbff332))
+
 ## [1.0.0-beta.38](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.37...v1.0.0-beta.38) (2026-01-02)
 
 
