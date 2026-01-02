@@ -575,7 +575,9 @@ class ApiService {
     try {
       final body = {
         'email': email,
-        'fullName': '$firstName $lastName',
+        'firstName': firstName,
+        'lastName': lastName,
+        'role': 'admin',
         'gymId': gymId,
         if (password != null) 'password': password,
       };
@@ -1685,20 +1687,17 @@ class ApiService {
     int gymId,
     String token, {
     String? password,
-    String? phone,
-    bool sendSetupEmail = true,
     Duration timeout = const Duration(seconds: 8),
   }) async {
     final uri = baseUri.resolve('/users');
     try {
       final body = {
         'email': email,
-        'fullName': '$firstName $lastName',
-        'gymId': gymId,
+        'firstName': firstName,
+        'lastName': lastName,
         'role': 'member',
+        'gymId': gymId,
         if (password != null) 'password': password,
-        if (phone != null) 'phoneNumber': phone,
-        'sendSetupEmail': sendSetupEmail,
       };
 
       // ignore: avoid_print
