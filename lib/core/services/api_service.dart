@@ -1688,7 +1688,7 @@ class ApiService {
     String token, {
     String? password,
     String? phone,
-    bool sendSetupEmail = false,
+    bool shouldSendSetupEmail = false,
     Duration timeout = const Duration(seconds: 8),
   }) async {
     final uri = baseUri.resolve('/users');
@@ -1728,10 +1728,12 @@ class ApiService {
         try {
           final responseBody = jsonDecode(resp.body);
           
-          // If sendSetupEmail is true and email is provided, send setup email
-          if (sendSetupEmail && email.isNotEmpty && password == null) {
+          // If shouldSendSetupEmail flag is true and email is provided, send setup email
+          if (shouldSendSetupEmail && email.isNotEmpty && password == null) {
             debugPrint('Sending setup email to: $email');
-            await this.sendSetupEmail(email, token);
+            // Call the sendSetupEmail method defined elsewhere in this class
+            final emailSent = await sendSetupEmail(email, token);
+            debugPrint('Setup email sent: $emailSent');
           }
           
           return responseBody as Map<String, dynamic>;

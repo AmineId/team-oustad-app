@@ -181,7 +181,7 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
         token,
         password: password,
         phone: phone,
-        sendSetupEmail: shouldSendEmail,
+        shouldSendSetupEmail: shouldSendEmail,
       );
 
       if (result != null) {
