@@ -1730,10 +1730,15 @@ class ApiService {
           
           // If shouldSendSetupEmail flag is true and email is provided, send setup email
           if (shouldSendSetupEmail && email.isNotEmpty && password == null) {
-            debugPrint('Sending setup email to: $email');
-            // Call the sendSetupEmail method defined elsewhere in this class
-            final emailSent = await sendSetupEmail(email, token);
-            debugPrint('Setup email sent: $emailSent');
+            try {
+              debugPrint('Sending setup email to: $email');
+              // Call the sendSetupEmail method defined elsewhere in this class
+              final emailSent = await sendSetupEmail(email, token);
+              debugPrint('Setup email sent: $emailSent');
+            } catch (emailError) {
+              // Log the error but don't fail the member creation
+              debugPrint('Failed to send setup email: $emailError');
+            }
           }
           
           return responseBody as Map<String, dynamic>;
