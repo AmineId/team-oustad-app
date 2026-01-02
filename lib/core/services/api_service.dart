@@ -1687,6 +1687,8 @@ class ApiService {
     int gymId,
     String token, {
     String? password,
+    String? phone,
+    bool sendSetupEmail = false,
     Duration timeout = const Duration(seconds: 8),
   }) async {
     final uri = baseUri.resolve('/users');
@@ -1698,6 +1700,7 @@ class ApiService {
         'role': 'member',
         'gymId': gymId,
         if (password != null) 'password': password,
+        if (phone != null) 'phoneNumber': phone,
       };
 
       // ignore: avoid_print
@@ -1724,6 +1727,13 @@ class ApiService {
       if (resp.statusCode == 201) {
         try {
           final responseBody = jsonDecode(resp.body);
+          
+          // If sendSetupEmail is true and email is provided, send setup email
+          if (sendSetupEmail && email.isNotEmpty && password == null) {
+            debugPrint('Sending setup email to: $email');
+            await this.sendSetupEmail(email, token);
+          }
+          
           return responseBody as Map<String, dynamic>;
         } catch (e) {
           // ignore: avoid_print
