@@ -7,28 +7,28 @@ class AdminCreateMemberScreen extends StatefulWidget {
   final VoidCallback? onBack;
   final VoidCallback? onSuccess;
 
-  const AdminCreateMemberScreen({
-    super.key,
-    this.onBack,
-    this.onSuccess,
-  });
+  const AdminCreateMemberScreen({super.key, this.onBack, this.onSuccess});
 
   @override
-  State<AdminCreateMemberScreen> createState() => _AdminCreateMemberScreenState();
+  State<AdminCreateMemberScreen> createState() =>
+      _AdminCreateMemberScreenState();
 }
 
 class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
   final ApiService _apiService = ApiService.fromEnv();
   final AuthService _authService = AuthService(ApiService.fromEnv());
   final _formKey = GlobalKey<FormState>();
-  
+
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _gymController = TextEditingController(text: 'Ma salle');
-  
+  final TextEditingController _gymController = TextEditingController(
+    text: 'Ma salle',
+  );
+
   bool _isLoading = false;
   bool _isLoadingGym = true;
   bool _sendSetupEmail = true;
@@ -48,6 +48,7 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
     _phoneController.dispose();
     _firstNameController.dispose();
     _lastNameController.dispose();
+    _addressController.dispose();
     _passwordController.dispose();
     _gymController.dispose();
     super.dispose();
@@ -62,19 +63,19 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
       }
 
       debugPrint('🔍 Chargement de la salle admin...');
-      
+
       // Récupérer la liste des salles (pour un admin, ce sera sa salle)
       final gyms = await _apiService.getGyms(token);
-      
+
       debugPrint('📊 Gyms reçus: $gyms');
-      
+
       if (gyms != null && gyms.isNotEmpty) {
         final gym = gyms.first as Map<String, dynamic>;
         final gymId = gym['id'] as int;
         final gymName = gym['name'] as String? ?? 'Ma salle';
-        
+
         debugPrint('✅ Gym admin trouvé: $gymName (ID: $gymId)');
-        
+
         if (mounted) {
           setState(() {
             _gymId = gymId;
@@ -125,7 +126,9 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
       return;
     }
 
-    debugPrint('🔍 Création membre - _isLoadingGym: $_isLoadingGym, _gymId: $_gymId');
+    debugPrint(
+      '🔍 Création membre - _isLoadingGym: $_isLoadingGym, _gymId: $_gymId',
+    );
 
     if (_isLoadingGym) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -166,17 +169,25 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
       final phone = _phoneController.text.trim();
       final firstName = _firstNameController.text.trim();
       final lastName = _lastNameController.text.trim();
-      final password = _passwordController.text.isNotEmpty ? _passwordController.text : null;
+      final address = _addressController.text.trim();
+      final password = _passwordController.text.isNotEmpty
+          ? _passwordController.text
+          : null;
       // Envoyer l'email seulement si un email est fourni et pas de mot de passe
-      final shouldSendEmail = email.isNotEmpty && password == null ? _sendSetupEmail : false;
+      final shouldSendEmail = email.isNotEmpty && password == null
+          ? _sendSetupEmail
+          : false;
 
       // ignore: avoid_print
       debugPrint('Création du membre: $firstName $lastName ($phone)');
 
       final result = await _apiService.createMember(
-        email.isNotEmpty ? email : phone, // Utiliser le téléphone si pas d'email
+        email.isNotEmpty
+            ? email
+            : phone, // Utiliser le téléphone si pas d'email
         firstName,
         lastName,
+        address,
         _gymId!,
         token,
         password: password,
@@ -186,19 +197,21 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
 
       if (result != null) {
         if (!mounted) return;
-        
+
         // Afficher un message de succès
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              _emailController.text.isNotEmpty && _passwordController.text.isEmpty && _sendSetupEmail
+              _emailController.text.isNotEmpty &&
+                      _passwordController.text.isEmpty &&
+                      _sendSetupEmail
                   ? 'Membre créé avec succès. Un email d\'activation a été envoyé.'
                   : 'Membre créé avec succès',
             ),
             backgroundColor: AppColors.success,
           ),
         );
-        
+
         // Retourner à l'écran précédent
         if (widget.onSuccess != null) {
           widget.onSuccess!();
@@ -256,9 +269,7 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
         child: SafeArea(
           child: _isLoading
               ? const Center(
-                  child: CircularProgressIndicator(
-                    color: AppColors.primary,
-                  ),
+                  child: CircularProgressIndicator(color: AppColors.primary),
                 )
               : SingleChildScrollView(
                   padding: const EdgeInsets.all(24.0),
@@ -279,12 +290,17 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                             ),
                             child: Row(
                               children: [
-                                const Icon(Icons.error_outline, color: AppColors.error),
+                                const Icon(
+                                  Icons.error_outline,
+                                  color: AppColors.error,
+                                ),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
                                     _errorMessage!,
-                                    style: const TextStyle(color: AppColors.error),
+                                    style: const TextStyle(
+                                      color: AppColors.error,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -324,7 +340,9 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                         Text(
                           'Remplissez les informations du membre',
                           style: TextStyle(
-                            color: Theme.of(context).textTheme.bodyMedium!.color,
+                            color: Theme.of(
+                              context,
+                            ).textTheme.bodyMedium!.color,
                             fontSize: 14,
                           ),
                           textAlign: TextAlign.center,
@@ -335,26 +353,37 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                         TextFormField(
                           controller: _gymController,
                           enabled: false,
-                          style: TextStyle(color: Theme.of(context).textTheme.bodyLarge!.color),
+                          style: TextStyle(
+                            color: Theme.of(context).textTheme.bodyLarge!.color,
+                          ),
                           decoration: InputDecoration(
                             labelText: 'Salle de sport',
-                            labelStyle: TextStyle(color: Theme.of(context).textTheme.bodyMedium!.color),
-                            prefixIcon: const Icon(Icons.fitness_center, color: AppColors.primary),
-                            suffixIcon: _isLoadingGym 
-                              ? const Padding(
-                                  padding: EdgeInsets.all(12.0),
-                                  child: SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: AppColors.primary,
+                            labelStyle: TextStyle(
+                              color: Theme.of(
+                                context,
+                              ).textTheme.bodyMedium!.color,
+                            ),
+                            prefixIcon: const Icon(
+                              Icons.fitness_center,
+                              color: AppColors.primary,
+                            ),
+                            suffixIcon: _isLoadingGym
+                                ? const Padding(
+                                    padding: EdgeInsets.all(12.0),
+                                    child: SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: AppColors.primary,
+                                      ),
                                     ),
-                                  ),
-                                )
-                              : null,
+                                  )
+                                : null,
                             filled: true,
-                            fillColor: Theme.of(context).cardTheme.color!.withValues(alpha: 0.5),
+                            fillColor: Theme.of(
+                              context,
+                            ).cardTheme.color!.withValues(alpha: 0.5),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                               borderSide: BorderSide.none,
@@ -366,12 +395,21 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                         // Numéro de téléphone (obligatoire)
                         TextFormField(
                           controller: _phoneController,
-                          style: TextStyle(color: Theme.of(context).textTheme.bodyLarge!.color),
+                          style: TextStyle(
+                            color: Theme.of(context).textTheme.bodyLarge!.color,
+                          ),
                           keyboardType: TextInputType.phone,
                           decoration: InputDecoration(
                             labelText: 'Numéro de téléphone *',
-                            labelStyle: TextStyle(color: Theme.of(context).textTheme.bodyMedium!.color),
-                            prefixIcon: const Icon(Icons.phone, color: AppColors.primary),
+                            labelStyle: TextStyle(
+                              color: Theme.of(
+                                context,
+                              ).textTheme.bodyMedium!.color,
+                            ),
+                            prefixIcon: const Icon(
+                              Icons.phone,
+                              color: AppColors.primary,
+                            ),
                             filled: true,
                             fillColor: Theme.of(context).cardTheme.color,
                             border: OutlineInputBorder(
@@ -384,7 +422,9 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                               return 'Numéro de téléphone requis';
                             }
                             // Validation basique du format
-                            if (!RegExp(r'^\+?[0-9\s\-\(\)]+$').hasMatch(value.trim())) {
+                            if (!RegExp(
+                              r'^\+?[0-9\s\-\(\)]+$',
+                            ).hasMatch(value.trim())) {
                               return 'Numéro de téléphone invalide';
                             }
                             return null;
@@ -395,14 +435,29 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                         // Email (optionnel)
                         TextFormField(
                           controller: _emailController,
-                          style: TextStyle(color: Theme.of(context).textTheme.bodyLarge!.color),
+                          style: TextStyle(
+                            color: Theme.of(context).textTheme.bodyLarge!.color,
+                          ),
                           keyboardType: TextInputType.emailAddress,
                           decoration: InputDecoration(
                             labelText: 'Email (optionnel)',
-                            labelStyle: TextStyle(color: Theme.of(context).textTheme.bodyMedium!.color),
+                            labelStyle: TextStyle(
+                              color: Theme.of(
+                                context,
+                              ).textTheme.bodyMedium!.color,
+                            ),
                             hintText: 'Pour recevoir l\'email de configuration',
-                            hintStyle: TextStyle(color: Theme.of(context).textTheme.bodyMedium!.color!.withValues(alpha: 0.5)),
-                            prefixIcon: const Icon(Icons.email, color: AppColors.primary),
+                            hintStyle: TextStyle(
+                              color: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium!
+                                  .color!
+                                  .withValues(alpha: 0.5),
+                            ),
+                            prefixIcon: const Icon(
+                              Icons.email,
+                              color: AppColors.primary,
+                            ),
                             filled: true,
                             fillColor: Theme.of(context).cardTheme.color,
                             border: OutlineInputBorder(
@@ -412,7 +467,9 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                           ),
                           validator: (value) {
                             // Email optionnel, mais s'il est fourni, il doit être valide
-                            if (value != null && value.isNotEmpty && !value.contains('@')) {
+                            if (value != null &&
+                                value.isNotEmpty &&
+                                !value.contains('@')) {
                               return 'Email invalide';
                             }
                             return null;
@@ -423,11 +480,20 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                         // Prénom
                         TextFormField(
                           controller: _firstNameController,
-                          style: TextStyle(color: Theme.of(context).textTheme.bodyLarge!.color),
+                          style: TextStyle(
+                            color: Theme.of(context).textTheme.bodyLarge!.color,
+                          ),
                           decoration: InputDecoration(
                             labelText: 'Prénom *',
-                            labelStyle: TextStyle(color: Theme.of(context).textTheme.bodyMedium!.color),
-                            prefixIcon: const Icon(Icons.person, color: AppColors.primary),
+                            labelStyle: TextStyle(
+                              color: Theme.of(
+                                context,
+                              ).textTheme.bodyMedium!.color,
+                            ),
+                            prefixIcon: const Icon(
+                              Icons.person,
+                              color: AppColors.primary,
+                            ),
                             filled: true,
                             fillColor: Theme.of(context).cardTheme.color,
                             border: OutlineInputBorder(
@@ -447,11 +513,20 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                         // Nom de famille
                         TextFormField(
                           controller: _lastNameController,
-                          style: TextStyle(color: Theme.of(context).textTheme.bodyLarge!.color),
+                          style: TextStyle(
+                            color: Theme.of(context).textTheme.bodyLarge!.color,
+                          ),
                           decoration: InputDecoration(
                             labelText: 'Nom de famille *',
-                            labelStyle: TextStyle(color: Theme.of(context).textTheme.bodyMedium!.color),
-                            prefixIcon: const Icon(Icons.person_outline, color: AppColors.primary),
+                            labelStyle: TextStyle(
+                              color: Theme.of(
+                                context,
+                              ).textTheme.bodyMedium!.color,
+                            ),
+                            prefixIcon: const Icon(
+                              Icons.person_outline,
+                              color: AppColors.primary,
+                            ),
                             filled: true,
                             fillColor: Theme.of(context).cardTheme.color,
                             border: OutlineInputBorder(
@@ -468,20 +543,70 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                         ),
                         const SizedBox(height: 16),
 
+                        // Adresse
+                        TextFormField(
+                          controller: _addressController,
+                          style: TextStyle(
+                            color: Theme.of(context).textTheme.bodyLarge!.color,
+                          ),
+                          decoration: InputDecoration(
+                            labelText: 'Adresse *',
+                            labelStyle: TextStyle(
+                              color: Theme.of(
+                                context,
+                              ).textTheme.bodyMedium!.color,
+                            ),
+                            prefixIcon: const Icon(
+                              Icons.home,
+                              color: AppColors.primary,
+                            ),
+                            filled: true,
+                            fillColor: Theme.of(context).cardTheme.color,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Adresse requise';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+
                         // Mot de passe (optionnel)
                         TextFormField(
                           controller: _passwordController,
-                          style: TextStyle(color: Theme.of(context).textTheme.bodyLarge!.color),
+                          style: TextStyle(
+                            color: Theme.of(context).textTheme.bodyLarge!.color,
+                          ),
                           obscureText: _obscurePassword,
                           decoration: InputDecoration(
                             labelText: 'Mot de passe (optionnel)',
-                            labelStyle: TextStyle(color: Theme.of(context).textTheme.bodyMedium!.color),
+                            labelStyle: TextStyle(
+                              color: Theme.of(
+                                context,
+                              ).textTheme.bodyMedium!.color,
+                            ),
                             hintText: 'Laisser vide pour envoyer un email',
-                            hintStyle: TextStyle(color: Theme.of(context).textTheme.bodyMedium!.color!.withValues(alpha: 0.5)),
-                            prefixIcon: const Icon(Icons.lock, color: AppColors.primary),
+                            hintStyle: TextStyle(
+                              color: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium!
+                                  .color!
+                                  .withValues(alpha: 0.5),
+                            ),
+                            prefixIcon: const Icon(
+                              Icons.lock,
+                              color: AppColors.primary,
+                            ),
                             suffixIcon: IconButton(
                               icon: Icon(
-                                _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                                _obscurePassword
+                                    ? Icons.visibility
+                                    : Icons.visibility_off,
                                 color: Colors.white60,
                               ),
                               onPressed: () {
@@ -498,7 +623,9 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                             ),
                           ),
                           validator: (value) {
-                            if (value != null && value.isNotEmpty && value.length < 6) {
+                            if (value != null &&
+                                value.isNotEmpty &&
+                                value.length < 6) {
                               return 'Le mot de passe doit contenir au moins 6 caractères';
                             }
                             return null;
@@ -523,11 +650,14 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                                       _sendSetupEmail = value ?? true;
                                     });
                                   },
-                                  fillColor: WidgetStateProperty.all(AppColors.primary),
+                                  fillColor: WidgetStateProperty.all(
+                                    AppColors.primary,
+                                  ),
                                 ),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       const Text(
                                         'Envoyer un email de configuration',
@@ -541,7 +671,9 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                                       Text(
                                         'Le membre recevra un email avec un lien pour créer son mot de passe',
                                         style: TextStyle(
-                                          color: Colors.white.withValues(alpha: 0.7),
+                                          color: Colors.white.withValues(
+                                            alpha: 0.7,
+                                          ),
                                           fontSize: 12,
                                         ),
                                       ),
@@ -593,7 +725,10 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                               child: TextButton(
                                 onPressed: () => Navigator.pop(context),
                                 style: TextButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 12,
+                                  ),
                                 ),
                                 child: const Text(
                                   'Annuler',
@@ -611,7 +746,10 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                                 onPressed: _createMember,
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppColors.primary,
-                                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 24,
+                                    vertical: 16,
+                                  ),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),
@@ -637,5 +775,3 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
     );
   }
 }
-
-

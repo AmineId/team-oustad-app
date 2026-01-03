@@ -4157,6 +4157,7 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
   List<Map<String, dynamic>> _gyms = [];
@@ -4175,6 +4176,7 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
     _emailController.dispose();
     _firstNameController.dispose();
     _lastNameController.dispose();
+    _addressController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -4212,6 +4214,7 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
         _emailController.text.trim(),
         _firstNameController.text.trim(),
         _lastNameController.text.trim(),
+        _addressController.text.trim(),
         _selectedGymId!,
         token,
         password: _sendSetupEmail ? null : _passwordController.text.trim(),
@@ -4385,6 +4388,33 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
                           }
                           if (!value.contains('@')) {
                             return 'Email invalide';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Adresse
+                      TextFormField(
+                        controller: _addressController,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: InputDecoration(
+                          labelText: 'Adresse',
+                          labelStyle: const TextStyle(color: Colors.white60),
+                          prefixIcon: const Icon(
+                            Icons.home,
+                            color: AppColors.primary,
+                          ),
+                          filled: true,
+                          fillColor: Theme.of(context).cardTheme.color,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'L\'adresse est requise';
                           }
                           return null;
                         },

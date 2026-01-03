@@ -581,6 +581,7 @@ class ApiService {
     String email,
     String firstName,
     String lastName,
+    String address,
     int gymId,
     String token, {
     String? password,
@@ -592,6 +593,7 @@ class ApiService {
         'email': email,
         'firstName': firstName,
         'lastName': lastName,
+        'address': address,
         'role': 'admin',
         'gymId': gymId,
         if (password != null) 'password': password,
@@ -1618,6 +1620,7 @@ class ApiService {
     String email,
     String firstName,
     String lastName,
+    String address,
     int gymId,
     String token, {
     String? password,
@@ -1631,6 +1634,7 @@ class ApiService {
         'email': email,
         'firstName': firstName,
         'lastName': lastName,
+        'address': address,
         'role': 'member',
         'gymId': gymId,
         if (password != null) 'password': password,
