@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.41](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.40...v1.0.0-beta.41) (2026-01-03)
+
+
+### ✨ New Features
+
+* add required address field to admin and member creation ([be62cb8](https://github.com/TeamFitness/mobile-app/commit/be62cb88698220b33ad2734dc7ea067cd542ba36))
+
 ## [1.0.0-beta.40](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.39...v1.0.0-beta.40) (2026-01-03)
 
 
