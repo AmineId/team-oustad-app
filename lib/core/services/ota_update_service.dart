@@ -112,7 +112,7 @@ class OTAUpdateService {
   /// Ouvre le Play Store pour mettre à jour l'application
   Future<bool> openPlayStoreForUpdate(UpdateInfo updateInfo) async {
     // Ne fonctionne que sur Android
-    if (!Platform.isAndroid) {
+    if (kIsWeb || !Platform.isAndroid) {
       debugPrint('⚠️ OTA update non supporté sur cette plateforme');
       return false;
     }
@@ -129,7 +129,7 @@ class OTAUpdateService {
 
   /// Ouvre l'URL de téléchargement (Play Store ou autre)
   Future<void> _openPlayStore(String downloadUrl) async {
-    if (!Platform.isAndroid) return;
+    if (kIsWeb || !Platform.isAndroid) return;
 
     try {
       debugPrint('🔗 Ouverture de l\'URL: $downloadUrl');

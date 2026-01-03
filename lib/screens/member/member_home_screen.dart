@@ -2208,7 +2208,23 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
   }
 
   Future<void> _loadProfileData() async {
-    final profileData = await _authService.getCachedUserProfile();
+    // Try to refresh profile from API first (to get displayId)
+    var profileData = await _authService.refreshUserProfile();
+    
+    // If refresh fails, fallback to cache
+    if (profileData == null) {
+      profileData = await _authService.getCachedUserProfile();
+    }
+    
+    // Debug logs
+    if (profileData != null) {
+      debugPrint('🔍 Profile data loaded:');
+      debugPrint('   - displayId: ${profileData['displayId']}');
+      debugPrint('   - uniqueCode: ${profileData['uniqueCode']}');
+      debugPrint('   - id: ${profileData['id']}');
+      debugPrint('   - All keys: ${profileData.keys.toList()}');
+    }
+    
     if (mounted) {
       setState(() {
         _profileData = profileData;
@@ -2598,7 +2614,7 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
                                 ),
                               ),
                               child: Text(
-                                _profileData?['displayId'] ?? '',
+                                _profileData?['displayId'] ?? _profileData?['uniqueCode'] ?? '',
                                 style: TextStyle(
                                   color: Theme.of(context).colorScheme.primary,
                                   fontSize: 18,

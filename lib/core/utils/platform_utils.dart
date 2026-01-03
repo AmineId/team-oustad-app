@@ -13,11 +13,16 @@ enum DeviceType {
 /// Utility class for platform and device detection
 class PlatformUtils {
   /// Check if running on mobile (iOS or Android)
-  static bool get isMobile => !kIsWeb && (Platform.isAndroid || Platform.isIOS);
+  static bool get isMobile {
+    if (kIsWeb) return false;
+    return Platform.isAndroid || Platform.isIOS;
+  }
 
   /// Check if running on desktop (Windows, macOS, or Linux)
-  static bool get isDesktop =>
-      !kIsWeb && (Platform.isWindows || Platform.isMacOS || Platform.isLinux);
+  static bool get isDesktop {
+    if (kIsWeb) return false;
+    return Platform.isWindows || Platform.isMacOS || Platform.isLinux;
+  }
 
   /// Check if running on web
   static bool get isWeb => kIsWeb;

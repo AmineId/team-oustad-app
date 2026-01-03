@@ -29,8 +29,12 @@ class AppConfig {
 
   /// Get platform-specific dev URL
   static String _getPlatformDevUrl() {
+    // Web always uses localhost
+    if (kIsWeb) {
+      return 'http://localhost:3000';
+    }
     // Android emulator needs special IP, others use localhost
-    if (!kIsWeb && Platform.isAndroid) {
+    if (Platform.isAndroid) {
       return 'http://10.0.2.2:3000';
     }
     return 'http://localhost:3000';

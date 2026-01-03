@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'dart:ui';
 import 'dart:io';
@@ -90,27 +91,29 @@ void main() async {
 
 /// Désactive la capture d'écran et l'enregistrement d'écran
 Future<void> _disableScreenCapture() async {
-  if (Platform.isAndroid) {
-    try {
+  // Ne pas exécuter sur le web
+  if (kIsWeb) {
+    debugPrint('🌐 Protection des screenshots non applicable sur le web');
+    return;
+  }
+
+  // Protection native (Android/iOS uniquement)
+  try {
+    if (Platform.isAndroid) {
       // Sur Android, empêcher les screenshots et l'enregistrement d'écran
       const platform = MethodChannel('team.fitness.security');
       await platform.invokeMethod('disableScreenCapture');
       // ignore: avoid_print
       debugPrint('🔒 Protection des screenshots activée (Android)');
-    } catch (e) {
-      // ignore: avoid_print
-      debugPrint('⚠️ Erreur lors de l\'activation de la protection: $e');
-    }
-  } else if (Platform.isIOS) {
-    try {
+    } else if (Platform.isIOS) {
       // Sur iOS, masquer le contenu dans le task switcher
       // La protection contre les screenshots est gérée au niveau système iOS
       // ignore: avoid_print
       debugPrint('🔒 Protection des screenshots activée (iOS)');
-    } catch (e) {
-      // ignore: avoid_print
-      debugPrint('⚠️ Erreur iOS: $e');
     }
+  } catch (e) {
+    // ignore: avoid_print
+    debugPrint('⚠️ Erreur lors de l\'activation de la protection: $e');
   }
 }
 
