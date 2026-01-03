@@ -35,7 +35,7 @@ if ($VPS_IP -eq "VOTRE-IP-VPS-ICI") {
 Write-Host "📦 Build Flutter Web ($ENVIRONMENT)..." -ForegroundColor Yellow
 Write-Host "   └─ Compilation en cours..." -ForegroundColor Gray
 
-flutter build web --release --dart-define=ENVIRONMENT=$ENVIRONMENT
+flutter build web --release --dart-define=ENVIRONMENT=$ENVIRONMENT --no-source-maps
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "❌ Erreur lors du build Flutter" -ForegroundColor Red

@@ -217,10 +217,10 @@ class ApiService {
             // Construire fullName depuis firstName/lastName ou utiliser fullName si présent
             final String fullName;
             if (user['fullName'] != null) {
-              fullName = user['fullName'] as String;
+              fullName = user['fullName'].toString();
             } else {
-              final firstName = (user['firstName'] as String?) ?? '';
-              final lastName = (user['lastName'] as String?) ?? '';
+              final firstName = user['firstName']?.toString() ?? '';
+              final lastName = user['lastName']?.toString() ?? '';
               fullName = '$firstName $lastName'.trim();
             }
 

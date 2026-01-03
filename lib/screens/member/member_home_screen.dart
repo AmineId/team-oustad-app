@@ -335,12 +335,23 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
 
   Widget _buildProfileAvatar(bool isActive) {
     // Try to get photo from root level first (from /me endpoint)
-    String? profileImageBase64 = _profileData?['profileImage'] as String?;
+    String? profileImageBase64;
+    
+    // Safe extraction without casting
+    final rootImage = _profileData?['profileImage'];
+    if (rootImage is String && rootImage.isNotEmpty) {
+      profileImageBase64 = rootImage;
+    }
 
     // Fallback to member.profileImage if not found at root level
     if (profileImageBase64 == null || profileImageBase64.isEmpty) {
-      final member = _profileData?['member'] as Map<String, dynamic>?;
-      profileImageBase64 = member?['profileImage'] as String?;
+      final member = _profileData?['member'];
+      if (member is Map<String, dynamic>) {
+        final memberImage = member['profileImage'];
+        if (memberImage is String && memberImage.isNotEmpty) {
+          profileImageBase64 = memberImage;
+        }
+      }
     }
 
     return Container(
@@ -2614,7 +2625,8 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
                                 ),
                               ),
                               child: Text(
-                                _profileData?['displayId'] ?? _profileData?['uniqueCode'] ?? '',
+                                (_profileData?['displayId']?.toString() ?? 
+                                 _profileData?['uniqueCode']?.toString() ?? ''),
                                 style: TextStyle(
                                   color: Theme.of(context).colorScheme.primary,
                                   fontSize: 18,
@@ -5162,16 +5174,26 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
     final phoneNumber = _profileData?['phoneNumber'] ?? '';
     final joinedAt = _profileData?['joinedAt'] ?? 'N/A';
 
-    // Extract member data
-    final member = _profileData?['member'] as Map<String, dynamic>?;
-    final firstName = member?['firstName'] ?? '';
-    final lastName = member?['lastName'] ?? '';
-    final birthDate = member?['birthDate'] as String?;
-    final profession = member?['profession'] ?? '';
-    final fitnessLevel = member?['fitnessLevel'] ?? '';
-    final profileImageBase64 =
-        _profileData?['profileImage'] as String? ??
-        member?['profileImage'] as String?;
+    // Extract member data safely
+    final member = _profileData?['member'];
+    final memberData = member is Map<String, dynamic> ? member : null;
+    final firstName = memberData?['firstName']?.toString() ?? '';
+    final lastName = memberData?['lastName']?.toString() ?? '';
+    final birthDate = memberData?['birthDate']?.toString();
+    final profession = memberData?['profession']?.toString() ?? '';
+    final fitnessLevel = memberData?['fitnessLevel']?.toString() ?? '';
+    
+    // Safe profile image extraction
+    String? profileImageBase64;
+    final rootImage = _profileData?['profileImage'];
+    if (rootImage is String && rootImage.isNotEmpty) {
+      profileImageBase64 = rootImage;
+    } else {
+      final memberImage = memberData?['profileImage'];
+      if (memberImage is String && memberImage.isNotEmpty) {
+        profileImageBase64 = memberImage;
+      }
+    }
 
     // Format birth date
     String formattedBirthDate = AppLocalizations.of(context).notSpecified;

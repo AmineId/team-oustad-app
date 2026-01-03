@@ -7,14 +7,14 @@ String getUserFullName(Map<String, dynamic>? user, {String defaultValue = 'Sans 
   if (user == null) return defaultValue;
   
   // Try fullName first (for existing users)
-  final fullName = user['fullName'] as String?;
+  final fullName = user['fullName']?.toString();
   if (fullName != null && fullName.isNotEmpty) {
     return fullName;
   }
   
   // Try firstName + lastName (for new format)
-  final firstName = user['firstName'] as String?;
-  final lastName = user['lastName'] as String?;
+  final firstName = user['firstName']?.toString();
+  final lastName = user['lastName']?.toString();
   
   if (firstName != null && lastName != null) {
     return '$firstName $lastName'.trim();
