@@ -40,11 +40,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
           const GestionGlobalePage(),
           const ProfilePage(),
         ]
-      : [
-          const AccueilPage(),
-          const GestionPage(),
-          const ProfilePage(),
-        ];
+      : [const AccueilPage(), const GestionPage(), const ProfilePage()];
 
   @override
   void initState() {
@@ -114,10 +110,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       barrierDismissible: true,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: theme.cardTheme.color,
-        title: const Text(
-          'Mon QR Code',
-          style: TextStyle(color: Colors.white),
-        ),
+        title: const Text('Mon QR Code', style: TextStyle(color: Colors.white)),
         content: SizedBox(
           width: 250,
           child: Column(
@@ -126,9 +119,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
               const SizedBox(
                 height: 200,
                 child: Center(
-                  child: CircularProgressIndicator(
-                    color: AppColors.primary,
-                  ),
+                  child: CircularProgressIndicator(color: AppColors.primary),
                 ),
               ),
               const SizedBox(height: 16),
@@ -147,13 +138,16 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
 
     try {
       // Charger le QR code
-      final qrImageBytes = await ApiService.fromEnv().getUserQrCode(userId, token);
-      
+      final qrImageBytes = await ApiService.fromEnv().getUserQrCode(
+        userId,
+        token,
+      );
+
       if (!mounted) return;
-      
+
       // Fermer le dialog de loading
       Navigator.of(context).pop();
-      
+
       if (qrImageBytes == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -176,7 +170,11 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
           backgroundColor: theme.cardTheme.color,
           title: const Text(
             'Mon QR Code',
-            style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -196,7 +194,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
               ),
               const SizedBox(height: 20),
               Text(
-                profileData['fullName'] ?? 'Utilisateur',
+                getUserFullName(profileData, defaultValue: 'Utilisateur'),
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 18,
@@ -206,7 +204,10 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
               ),
               const SizedBox(height: 8),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.primary.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
@@ -240,7 +241,10 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
               style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
               ),
               child: const Text(
                 'Fermer',
@@ -252,10 +256,10 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       );
     } catch (e) {
       if (!mounted) return;
-      
+
       // Fermer le dialog de loading s'il est encore ouvert
       Navigator.of(context).pop();
-      
+
       // Afficher l'erreur
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -397,16 +401,13 @@ class AccueilPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            theme.scaffoldBackgroundColor,
-            theme.cardTheme.color!,
-          ],
+          colors: [theme.scaffoldBackgroundColor, theme.cardTheme.color!],
         ),
       ),
       child: SafeArea(
@@ -416,19 +417,19 @@ class AccueilPage extends StatelessWidget {
             builder: (context, constraints) {
               final isDesktop = constraints.maxWidth > 600;
               final isWatch = constraints.maxWidth < 300;
-              
+
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Banner carousel - only shows when banners exist
                   const BannerCarousel(height: 140),
                   SizedBox(height: isWatch ? 16 : 24),
-                  
+
                   // Statistiques - responsive grid
                   _buildStatsGrid(context, isDesktop, isWatch),
-                  
+
                   SizedBox(height: isWatch ? 16 : 32),
-                  
+
                   // Actions rapides
                   Text(
                     AppLocalizations.of(context).quickActions,
@@ -483,20 +484,28 @@ class AccueilPage extends StatelessWidget {
     if (isWatch) {
       // Watch: single column
       return Column(
-        children: stats.map((stat) => Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: stat,
-        )).toList(),
+        children: stats
+            .map(
+              (stat) => Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: stat,
+              ),
+            )
+            .toList(),
       );
     } else if (isDesktop) {
       // Desktop: 4 columns
       return Row(
-        children: stats.map((stat) => Expanded(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: stat,
-          ),
-        )).toList(),
+        children: stats
+            .map(
+              (stat) => Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: stat,
+                ),
+              ),
+            )
+            .toList(),
       );
     } else {
       // Mobile: 2x2 grid
@@ -544,7 +553,9 @@ class AccueilPage extends StatelessWidget {
             onTap: () {
               // TODO: Navigate to payment screen
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Fonctionnalité en développement')),
+                const SnackBar(
+                  content: Text('Fonctionnalité en développement'),
+                ),
               );
             },
           ),
@@ -591,20 +602,28 @@ class AccueilPage extends StatelessWidget {
         if (isDesktop) {
           // Desktop: 2 columns (without scanner)
           return Row(
-            children: actions.map((action) => Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: action,
-              ),
-            )).toList(),
+            children: actions
+                .map(
+                  (action) => Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: action,
+                    ),
+                  ),
+                )
+                .toList(),
           );
         } else {
           // Mobile & Watch: single column
           return Column(
-            children: actions.map((action) => Padding(
-              padding: EdgeInsets.only(bottom: isWatch ? 8 : 12),
-              child: action,
-            )).toList(),
+            children: actions
+                .map(
+                  (action) => Padding(
+                    padding: EdgeInsets.only(bottom: isWatch ? 8 : 12),
+                    child: action,
+                  ),
+                )
+                .toList(),
           );
         }
       },
@@ -630,7 +649,7 @@ class _StatCard extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final isWatch = constraints.maxWidth < 150;
-        
+
         return Container(
           padding: EdgeInsets.all(isWatch ? 8 : 16),
           decoration: BoxDecoration(
@@ -650,16 +669,21 @@ class _StatCard extends StatelessWidget {
                           Text(
                             title,
                             style: TextStyle(
-                              color: (Theme.of(context).brightness == Brightness.dark
-                                  ? AppColors.darkTextSecondary
-                                  : AppColors.lightTextSecondary).withValues(alpha: 0.7),
+                              color:
+                                  (Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? AppColors.darkTextSecondary
+                                          : AppColors.lightTextSecondary)
+                                      .withValues(alpha: 0.7),
                               fontSize: 9,
                             ),
                           ),
                           Text(
                             value,
                             style: TextStyle(
-                              color: (Theme.of(context).brightness == Brightness.dark
+                              color:
+                                  (Theme.of(context).brightness ==
+                                      Brightness.dark
                                   ? AppColors.darkTextPrimary
                                   : AppColors.lightTextPrimary),
                               fontSize: 14,
@@ -679,9 +703,11 @@ class _StatCard extends StatelessWidget {
                     Text(
                       title,
                       style: TextStyle(
-                        color: (Theme.of(context).brightness == Brightness.dark
-                            ? AppColors.darkTextSecondary
-                            : AppColors.lightTextSecondary).withValues(alpha: 0.7),
+                        color:
+                            (Theme.of(context).brightness == Brightness.dark
+                                    ? AppColors.darkTextSecondary
+                                    : AppColors.lightTextSecondary)
+                                .withValues(alpha: 0.7),
                         fontSize: 12,
                       ),
                     ),
@@ -720,7 +746,7 @@ class _QuickActionButton extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final isWatch = constraints.maxWidth < 300;
-        
+
         return InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(isWatch ? 8 : 16),
@@ -743,7 +769,9 @@ class _QuickActionButton extends StatelessWidget {
                   width: isWatch ? 40 : 56,
                   height: isWatch ? 40 : 56,
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.primary.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(isWatch ? 8 : 12),
                   ),
                   child: Icon(
@@ -768,9 +796,11 @@ class _QuickActionButton extends StatelessWidget {
                 ),
                 Icon(
                   Icons.chevron_right,
-                  color: (Theme.of(context).brightness == Brightness.dark
-                      ? AppColors.darkTextSecondary
-                      : AppColors.lightTextSecondary).withValues(alpha: 0.5),
+                  color:
+                      (Theme.of(context).brightness == Brightness.dark
+                              ? AppColors.darkTextSecondary
+                              : AppColors.lightTextSecondary)
+                          .withValues(alpha: 0.5),
                   size: isWatch ? 16 : 24,
                 ),
               ],
@@ -792,7 +822,8 @@ class GestionPage extends StatefulWidget {
 }
 
 class _GestionPageState extends State<GestionPage> {
-  String _currentView = 'menu'; // 'menu', 'members', 'plannings', 'member_details', 'member_create', 'planning_create'
+  String _currentView =
+      'menu'; // 'menu', 'members', 'plannings', 'member_details', 'member_create', 'planning_create'
   int? _selectedMemberId;
 
   @override
@@ -810,7 +841,8 @@ class _GestionPageState extends State<GestionPage> {
     } else if (_currentView == 'plannings') {
       return AdminPlanningsScreen(
         onBack: () => setState(() => _currentView = 'menu'),
-        onCreatePlanning: () => setState(() => _currentView = 'planning_create'),
+        onCreatePlanning: () =>
+            setState(() => _currentView = 'planning_create'),
       );
     } else if (_currentView == 'member_details' && _selectedMemberId != null) {
       return AdminMemberDetailsScreen(
@@ -831,16 +863,13 @@ class _GestionPageState extends State<GestionPage> {
 
     // Vue menu par défaut
     final theme = Theme.of(context);
-    
+
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            theme.scaffoldBackgroundColor,
-            theme.cardTheme.color!,
-          ],
+          colors: [theme.scaffoldBackgroundColor, theme.cardTheme.color!],
         ),
       ),
       child: SafeArea(
@@ -848,7 +877,7 @@ class _GestionPageState extends State<GestionPage> {
           padding: const EdgeInsets.all(24.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [              
+            children: [
               // Bouton pour aller à la liste des membres
               _QuickActionButton(
                 icon: Icons.people,
@@ -858,7 +887,7 @@ class _GestionPageState extends State<GestionPage> {
                 },
               ),
               const SizedBox(height: 12),
-              
+
               // Bouton pour aller à la liste des plannings
               _QuickActionButton(
                 icon: Icons.calendar_today,
@@ -909,44 +938,61 @@ class AjoutMembrePage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 32),
-              
+
               TextField(
-                style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark
-                    ? AppColors.darkTextPrimary
-                    : AppColors.lightTextPrimary)),
+                style: TextStyle(
+                  color: (Theme.of(context).brightness == Brightness.dark
+                      ? AppColors.darkTextPrimary
+                      : AppColors.lightTextPrimary),
+                ),
                 decoration: InputDecoration(
                   labelText: 'Nom complet',
-                  prefixIcon: Icon(Icons.person, color: Theme.of(context).colorScheme.primary),
+                  prefixIcon: Icon(
+                    Icons.person,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
               TextField(
-                style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark
-                    ? AppColors.darkTextPrimary
-                    : AppColors.lightTextPrimary)),
+                style: TextStyle(
+                  color: (Theme.of(context).brightness == Brightness.dark
+                      ? AppColors.darkTextPrimary
+                      : AppColors.lightTextPrimary),
+                ),
                 decoration: InputDecoration(
                   labelText: 'Email',
-                  prefixIcon: Icon(Icons.email, color: Theme.of(context).colorScheme.primary),
+                  prefixIcon: Icon(
+                    Icons.email,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
               TextField(
-                style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark
-                    ? AppColors.darkTextPrimary
-                    : AppColors.lightTextPrimary)),
+                style: TextStyle(
+                  color: (Theme.of(context).brightness == Brightness.dark
+                      ? AppColors.darkTextPrimary
+                      : AppColors.lightTextPrimary),
+                ),
                 decoration: InputDecoration(
                   labelText: 'Téléphone',
-                  prefixIcon: Icon(Icons.phone, color: Theme.of(context).colorScheme.primary),
+                  prefixIcon: Icon(
+                    Icons.phone,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                 ),
               ),
               const SizedBox(height: 32),
-              
+
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Fonctionnalité à implémenter')),
+                      const SnackBar(
+                        content: Text('Fonctionnalité à implémenter'),
+                      ),
                     );
                   },
                   style: ElevatedButton.styleFrom(
@@ -1042,7 +1088,7 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    
+
     if (_isLoading) {
       return Container(
         decoration: BoxDecoration(
@@ -1063,12 +1109,15 @@ class _ProfilePageState extends State<ProfilePage> {
       );
     }
 
-    final fullName = _profileData?['fullName'] ?? 'Administrateur';
+    final fullName = getUserFullName(
+      _profileData,
+      defaultValue: 'Administrateur',
+    );
     final email = _profileData?['email'] ?? '';
     final phoneNumber = _profileData?['phoneNumber'] ?? '';
     final role = _profileData?['role'] ?? 'admin';
     final joinedAt = _profileData?['joinedAt'] ?? 'N/A';
-    
+
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -1102,7 +1151,9 @@ class _ProfilePageState extends State<ProfilePage> {
                       end: Alignment.bottomRight,
                       colors: [
                         Theme.of(context).cardTheme.color!,
-                        Theme.of(context).cardTheme.color!.withValues(alpha: 0.8),
+                        Theme.of(
+                          context,
+                        ).cardTheme.color!.withValues(alpha: 0.8),
                       ],
                     ),
                     borderRadius: BorderRadius.circular(16),
@@ -1113,11 +1164,15 @@ class _ProfilePageState extends State<ProfilePage> {
                         children: [
                           CircleAvatar(
                             radius: 50,
-                            backgroundColor: Theme.of(context).colorScheme.primary,
+                            backgroundColor: Theme.of(
+                              context,
+                            ).colorScheme.primary,
                             child: Icon(
                               Icons.person,
                               size: 50,
-                              color: (Theme.of(context).brightness == Brightness.dark
+                              color:
+                                  (Theme.of(context).brightness ==
+                                      Brightness.dark
                                   ? AppColors.darkTextPrimary
                                   : AppColors.lightTextPrimary),
                             ),
@@ -1128,7 +1183,9 @@ class _ProfilePageState extends State<ProfilePage> {
                             child: Container(
                               padding: const EdgeInsets.all(6),
                               decoration: BoxDecoration(
-                                color: Theme.of(context).scaffoldBackgroundColor,
+                                color: Theme.of(
+                                  context,
+                                ).scaffoldBackgroundColor,
                                 shape: BoxShape.circle,
                                 border: Border.all(
                                   color: Theme.of(context).colorScheme.primary,
@@ -1136,7 +1193,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                 ),
                               ),
                               child: Icon(
-                                role == 'owner' ? Icons.verified : Icons.admin_panel_settings,
+                                role == 'owner'
+                                    ? Icons.verified
+                                    : Icons.admin_panel_settings,
                                 size: 16,
                                 color: Theme.of(context).colorScheme.primary,
                               ),
@@ -1150,7 +1209,8 @@ class _ProfilePageState extends State<ProfilePage> {
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
-                          color: (Theme.of(context).brightness == Brightness.dark
+                          color:
+                              (Theme.of(context).brightness == Brightness.dark
                               ? AppColors.darkTextPrimary
                               : AppColors.lightTextPrimary),
                         ),
@@ -1165,7 +1225,9 @@ class _ProfilePageState extends State<ProfilePage> {
                               Icon(
                                 Icons.email,
                                 size: 14,
-                                color: (Theme.of(context).brightness == Brightness.dark
+                                color:
+                                    (Theme.of(context).brightness ==
+                                        Brightness.dark
                                     ? AppColors.darkTextSecondary
                                     : AppColors.lightTextSecondary),
                               ),
@@ -1174,7 +1236,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                 email,
                                 style: TextStyle(
                                   fontSize: 13,
-                                  color: (Theme.of(context).brightness == Brightness.dark
+                                  color:
+                                      (Theme.of(context).brightness ==
+                                          Brightness.dark
                                       ? AppColors.darkTextSecondary
                                       : AppColors.lightTextSecondary),
                                 ),
@@ -1191,7 +1255,9 @@ class _ProfilePageState extends State<ProfilePage> {
                               Icon(
                                 Icons.phone,
                                 size: 14,
-                                color: (Theme.of(context).brightness == Brightness.dark
+                                color:
+                                    (Theme.of(context).brightness ==
+                                        Brightness.dark
                                     ? AppColors.darkTextSecondary
                                     : AppColors.lightTextSecondary),
                               ),
@@ -1200,7 +1266,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                 phoneNumber,
                                 style: TextStyle(
                                   fontSize: 13,
-                                  color: (Theme.of(context).brightness == Brightness.dark
+                                  color:
+                                      (Theme.of(context).brightness ==
+                                          Brightness.dark
                                       ? AppColors.darkTextSecondary
                                       : AppColors.lightTextSecondary),
                                 ),
@@ -1213,20 +1281,28 @@ class _ProfilePageState extends State<ProfilePage> {
                         l10n.memberSince(joinedAt),
                         style: TextStyle(
                           fontSize: 12,
-                          color: (Theme.of(context).brightness == Brightness.dark
-                                  ? AppColors.darkTextSecondary
-                                  : AppColors.lightTextSecondary)
-                              .withValues(alpha: 0.7),
+                          color:
+                              (Theme.of(context).brightness == Brightness.dark
+                                      ? AppColors.darkTextSecondary
+                                      : AppColors.lightTextSecondary)
+                                  .withValues(alpha: 0.7),
                         ),
                       ),
                       const SizedBox(height: 12),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.primary.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.primary.withValues(alpha: 0.5),
                             width: 1,
                           ),
                         ),
@@ -1234,7 +1310,9 @@ class _ProfilePageState extends State<ProfilePage> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
-                              role == 'owner' ? Icons.verified : Icons.admin_panel_settings,
+                              role == 'owner'
+                                  ? Icons.verified
+                                  : Icons.admin_panel_settings,
                               size: 16,
                               color: Theme.of(context).colorScheme.primary,
                             ),
@@ -1268,32 +1346,20 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ),
               const SizedBox(height: 12),
-              _buildSettingsItem(
-                context,
-                l10n.parameters,
-                Icons.settings,
-                () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const SecuritySettingsPage(),
-                    ),
-                  );
-                },
-              ),
-              _buildSettingsItem(
-                context,
-                l10n.about,
-                Icons.info_outline,
-                () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const AboutScreen(),
-                    ),
-                  );
-                },
-              ),
+              _buildSettingsItem(context, l10n.parameters, Icons.settings, () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const SecuritySettingsPage(),
+                  ),
+                );
+              }),
+              _buildSettingsItem(context, l10n.about, Icons.info_outline, () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AboutScreen()),
+                );
+              }),
               _buildSettingsItem(
                 context,
                 l10n.helpSupport,
@@ -1301,7 +1367,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 () {},
               ),
               const SizedBox(height: 16),
-              
+
               // Logout button
               Card(
                 color: AppColors.error,
@@ -1339,7 +1405,9 @@ class _ProfilePageState extends State<ProfilePage> {
                     await _authService.clearAll();
                     if (context.mounted) {
                       Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute(builder: (context) => const LoginScreen()),
+                        MaterialPageRoute(
+                          builder: (context) => const LoginScreen(),
+                        ),
                         (route) => false,
                       );
                     }
@@ -1364,9 +1432,7 @@ class _ProfilePageState extends State<ProfilePage> {
       color: Theme.of(context).cardTheme.color,
       elevation: 2,
       margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ListTile(
         leading: Container(
           padding: const EdgeInsets.all(10),
@@ -1392,10 +1458,11 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         trailing: Icon(
           Icons.arrow_forward_ios,
-          color: (Theme.of(context).brightness == Brightness.dark
-                  ? AppColors.darkTextSecondary
-                  : AppColors.lightTextSecondary)
-              .withValues(alpha: 0.8),
+          color:
+              (Theme.of(context).brightness == Brightness.dark
+                      ? AppColors.darkTextSecondary
+                      : AppColors.lightTextSecondary)
+                  .withValues(alpha: 0.8),
           size: 16,
         ),
         onTap: onTap,
@@ -1413,7 +1480,8 @@ class GestionGlobalePage extends StatefulWidget {
 }
 
 class _GestionGlobalePageState extends State<GestionGlobalePage> {
-  String _currentView = 'menu'; // 'menu', 'admins', 'gyms', 'admin_details', 'gym_details', 'admin_edit', 'gym_edit', 'gym_hours', 'admin_create', 'gym_create'
+  String _currentView =
+      'menu'; // 'menu', 'admins', 'gyms', 'admin_details', 'gym_details', 'admin_edit', 'gym_edit', 'gym_hours', 'admin_create', 'gym_create'
   Map<String, dynamic>? _selectedAdmin;
   Map<String, dynamic>? _selectedGym;
 
@@ -1482,16 +1550,13 @@ class _GestionGlobalePageState extends State<GestionGlobalePage> {
 
     // Vue menu par défaut
     final theme = Theme.of(context);
-    
+
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            theme.scaffoldBackgroundColor,
-            theme.cardTheme.color!,
-          ],
+          colors: [theme.scaffoldBackgroundColor, theme.cardTheme.color!],
         ),
       ),
       child: SafeArea(
@@ -1505,7 +1570,8 @@ class _GestionGlobalePageState extends State<GestionGlobalePage> {
                 context,
                 icon: Icons.admin_panel_settings,
                 title: 'Gestion des Admins',
-                description: 'Ajouter, modifier ou supprimer des administrateurs',
+                description:
+                    'Ajouter, modifier ou supprimer des administrateurs',
                 onTap: () => setState(() => _currentView = 'admins'),
               ),
               const SizedBox(height: 16),
@@ -1551,7 +1617,9 @@ class _GestionGlobalePageState extends State<GestionGlobalePage> {
               width: 56,
               height: 56,
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+                color: Theme.of(
+                  context,
+                ).colorScheme.primary.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
@@ -1580,9 +1648,11 @@ class _GestionGlobalePageState extends State<GestionGlobalePage> {
                   Text(
                     description,
                     style: TextStyle(
-                      color: (Theme.of(context).brightness == Brightness.dark
-                          ? AppColors.darkTextSecondary
-                          : AppColors.lightTextSecondary).withValues(alpha: 0.7),
+                      color:
+                          (Theme.of(context).brightness == Brightness.dark
+                                  ? AppColors.darkTextSecondary
+                                  : AppColors.lightTextSecondary)
+                              .withValues(alpha: 0.7),
                       fontSize: 13,
                       letterSpacing: -0.1,
                     ),
@@ -1592,9 +1662,11 @@ class _GestionGlobalePageState extends State<GestionGlobalePage> {
             ),
             Icon(
               Icons.chevron_right,
-              color: (Theme.of(context).brightness == Brightness.dark
-                  ? AppColors.darkTextSecondary
-                  : AppColors.lightTextSecondary).withValues(alpha: 0.5),
+              color:
+                  (Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.darkTextSecondary
+                          : AppColors.lightTextSecondary)
+                      .withValues(alpha: 0.5),
               size: 20,
             ),
           ],
@@ -1624,7 +1696,7 @@ class _AdminsListViewState extends State<_AdminsListView> {
   final ApiService _apiService = ApiService.fromEnv();
   final AuthService _authService = AuthService(ApiService.fromEnv());
   final TextEditingController _searchController = TextEditingController();
-  
+
   List<Map<String, dynamic>> _admins = [];
   List<Map<String, dynamic>> _filteredAdmins = [];
   bool _isLoading = true;
@@ -1660,12 +1732,14 @@ class _AdminsListViewState extends State<_AdminsListView> {
       }
 
       final users = await _apiService.getUsers(token);
-      
+
       if (users != null) {
         setState(() {
           // Ne lister QUE les admins, PAS les owners
           _admins = users
-              .where((user) => user['role'] == 'admin' && user['role'] != 'owner')
+              .where(
+                (user) => user['role'] == 'admin' && user['role'] != 'owner',
+              )
               .map((user) => user as Map<String, dynamic>)
               .toList();
           _filteredAdmins = _admins;
@@ -1692,12 +1766,12 @@ class _AdminsListViewState extends State<_AdminsListView> {
         _filteredAdmins = _admins;
       } else {
         _filteredAdmins = _admins.where((admin) {
-          final fullName = (admin['fullName'] as String? ?? '').toLowerCase();
+          final fullName = getUserFullName(admin).toLowerCase();
           final email = (admin['email'] as String? ?? '').toLowerCase();
           final role = (admin['role'] as String? ?? '').toLowerCase();
-          return fullName.contains(query) || 
-                 email.contains(query) || 
-                 role.contains(query);
+          return fullName.contains(query) ||
+              email.contains(query) ||
+              role.contains(query);
         }).toList();
       }
     });
@@ -1706,7 +1780,7 @@ class _AdminsListViewState extends State<_AdminsListView> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Container(
@@ -1714,10 +1788,7 @@ class _AdminsListViewState extends State<_AdminsListView> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              theme.scaffoldBackgroundColor,
-              theme.cardTheme.color!,
-            ],
+            colors: [theme.scaffoldBackgroundColor, theme.cardTheme.color!],
           ),
         ),
         child: SafeArea(
@@ -1729,9 +1800,12 @@ class _AdminsListViewState extends State<_AdminsListView> {
                 child: Row(
                   children: [
                     IconButton(
-                      icon: Icon(Icons.arrow_back, color: (Theme.of(context).brightness == Brightness.dark
-                          ? AppColors.darkTextPrimary
-                          : AppColors.lightTextPrimary)),
+                      icon: Icon(
+                        Icons.arrow_back,
+                        color: (Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.darkTextPrimary
+                            : AppColors.lightTextPrimary),
+                      ),
                       onPressed: widget.onBack,
                     ),
                     Text(
@@ -1747,132 +1821,164 @@ class _AdminsListViewState extends State<_AdminsListView> {
                   ],
                 ),
               ),
-            
-            // Barre de recherche
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: TextField(
-                controller: _searchController,
-                style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark
-                    ? AppColors.darkTextPrimary
-                    : AppColors.lightTextPrimary)),
-                decoration: InputDecoration(
-                  hintText: 'Rechercher un administrateur...',
-                  hintStyle: TextStyle(color: (Theme.of(context).brightness == Brightness.dark
-                      ? AppColors.darkTextSecondary
-                      : AppColors.lightTextSecondary).withValues(alpha: 0.6)),
-                  prefixIcon: Icon(Icons.search, color: theme.colorScheme.primary),
-                  suffixIcon: _searchController.text.isNotEmpty
-                      ? IconButton(
-                          icon: Icon(Icons.clear, color: (Theme.of(context).brightness == Brightness.dark
-                              ? AppColors.darkTextSecondary
-                              : AppColors.lightTextSecondary).withValues(alpha: 0.6)),
-                          onPressed: () {
-                            _searchController.clear();
-                          },
-                        )
-                      : null,
-                  filled: true,
-                  fillColor: theme.cardTheme.color,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(24),
-                    borderSide: BorderSide.none,
+
+              // Barre de recherche
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: TextField(
+                  controller: _searchController,
+                  style: TextStyle(
+                    color: (Theme.of(context).brightness == Brightness.dark
+                        ? AppColors.darkTextPrimary
+                        : AppColors.lightTextPrimary),
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'Rechercher un administrateur...',
+                    hintStyle: TextStyle(
+                      color:
+                          (Theme.of(context).brightness == Brightness.dark
+                                  ? AppColors.darkTextSecondary
+                                  : AppColors.lightTextSecondary)
+                              .withValues(alpha: 0.6),
+                    ),
+                    prefixIcon: Icon(
+                      Icons.search,
+                      color: theme.colorScheme.primary,
+                    ),
+                    suffixIcon: _searchController.text.isNotEmpty
+                        ? IconButton(
+                            icon: Icon(
+                              Icons.clear,
+                              color:
+                                  (Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? AppColors.darkTextSecondary
+                                          : AppColors.lightTextSecondary)
+                                      .withValues(alpha: 0.6),
+                            ),
+                            onPressed: () {
+                              _searchController.clear();
+                            },
+                          )
+                        : null,
+                    filled: true,
+                    fillColor: theme.cardTheme.color,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(24),
+                      borderSide: BorderSide.none,
+                    ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            
-            // Liste des administrateurs
-            Expanded(
-              child: _isLoading
-                  ? Center(
-                      child: CircularProgressIndicator(
-                        color: theme.colorScheme.primary,
-                      ),
-                    )
-                  : _errorMessage.isNotEmpty
-                      ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(
-                                Icons.error_outline,
-                                color: AppColors.error,
-                                size: 48,
+              const SizedBox(height: 16),
+
+              // Liste des administrateurs
+              Expanded(
+                child: _isLoading
+                    ? Center(
+                        child: CircularProgressIndicator(
+                          color: theme.colorScheme.primary,
+                        ),
+                      )
+                    : _errorMessage.isNotEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.error_outline,
+                              color: AppColors.error,
+                              size: 48,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              _errorMessage,
+                              style: TextStyle(
+                                color:
+                                    (Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? AppColors.darkTextPrimary
+                                    : AppColors.lightTextPrimary),
+                                fontSize: 16,
                               ),
-                              const SizedBox(height: 16),
-                              Text(
-                                _errorMessage,
-                                style: TextStyle(
-                                  color: (Theme.of(context).brightness == Brightness.dark
-                                      ? AppColors.darkTextPrimary
-                                      : AppColors.lightTextPrimary),
-                                  fontSize: 16,
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 16),
+                            ElevatedButton(
+                              onPressed: _loadAdmins,
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                  vertical: 12,
                                 ),
-                                textAlign: TextAlign.center,
                               ),
-                              const SizedBox(height: 16),
-                              ElevatedButton(
-                                onPressed: _loadAdmins,
-                                style: ElevatedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                                ),
-                                child: const Text('Réessayer'),
-                              ),
-                            ],
-                          ),
-                        )
-                      : _filteredAdmins.isEmpty
-                          ? Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.admin_panel_settings_outlined,
-                                    color: (Theme.of(context).brightness == Brightness.dark
-                                        ? AppColors.darkTextSecondary
-                                        : AppColors.lightTextSecondary).withValues(alpha: 0.6),
-                                    size: 48,
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    _searchController.text.isNotEmpty
-                                        ? 'Aucun administrateur trouvé'
-                                        : 'Aucun administrateur',
-                                    style: TextStyle(
-                                      color: (Theme.of(context).brightness == Brightness.dark
+                              child: const Text('Réessayer'),
+                            ),
+                          ],
+                        ),
+                      )
+                    : _filteredAdmins.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.admin_panel_settings_outlined,
+                              color:
+                                  (Theme.of(context).brightness ==
+                                              Brightness.dark
                                           ? AppColors.darkTextSecondary
-                                          : AppColors.lightTextSecondary).withValues(alpha: 0.6),
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            )
-                          : RefreshIndicator(
-                              onRefresh: _loadAdmins,
-                              color: theme.colorScheme.primary,
-                              child: ListView.builder(
-                                padding: const EdgeInsets.symmetric(horizontal: 16),
-                                itemCount: _filteredAdmins.length,
-                                itemBuilder: (context, index) {
-                                  final admin = _filteredAdmins[index];
-                                  return _buildAdminCard(admin, () => widget.onAdminTap(admin));
-                                },
+                                          : AppColors.lightTextSecondary)
+                                      .withValues(alpha: 0.6),
+                              size: 48,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              _searchController.text.isNotEmpty
+                                  ? 'Aucun administrateur trouvé'
+                                  : 'Aucun administrateur',
+                              style: TextStyle(
+                                color:
+                                    (Theme.of(context).brightness ==
+                                                Brightness.dark
+                                            ? AppColors.darkTextSecondary
+                                            : AppColors.lightTextSecondary)
+                                        .withValues(alpha: 0.6),
+                                fontSize: 16,
                               ),
                             ),
-            ),
-          ],
-        ),
-      ), // SafeArea
+                          ],
+                        ),
+                      )
+                    : RefreshIndicator(
+                        onRefresh: _loadAdmins,
+                        color: theme.colorScheme.primary,
+                        child: ListView.builder(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          itemCount: _filteredAdmins.length,
+                          itemBuilder: (context, index) {
+                            final admin = _filteredAdmins[index];
+                            return _buildAdminCard(
+                              admin,
+                              () => widget.onAdminTap(admin),
+                            );
+                          },
+                        ),
+                      ),
+              ),
+            ],
+          ),
+        ), // SafeArea
       ), // Container
       floatingActionButton: FloatingActionButton(
         onPressed: widget.onCreate,
         backgroundColor: theme.colorScheme.primary,
-        child: Icon(Icons.add, color: (Theme.of(context).brightness == Brightness.dark
-            ? AppColors.darkTextPrimary
-            : AppColors.lightTextPrimary)),
+        child: Icon(
+          Icons.add,
+          color: (Theme.of(context).brightness == Brightness.dark
+              ? AppColors.darkTextPrimary
+              : AppColors.lightTextPrimary),
+        ),
       ),
     );
   }
@@ -1882,7 +1988,7 @@ class _AdminsListViewState extends State<_AdminsListView> {
     final fullName = getUserFullName(admin);
     final email = admin['email'] as String? ?? '';
     final role = admin['role'] as String? ?? 'N/A';
-    
+
     final initials = fullName
         .split(' ')
         .where((word) => word.isNotEmpty)
@@ -1890,15 +1996,19 @@ class _AdminsListViewState extends State<_AdminsListView> {
         .map((word) => word[0].toUpperCase())
         .join();
 
-    final roleBadge = role == 'owner' ? 'Propriétaire' : role == 'admin' ? 'Administrateur' : role;
-    final roleColor = role == 'owner' ? Colors.purple : theme.colorScheme.primary;
+    final roleBadge = role == 'owner'
+        ? 'Propriétaire'
+        : role == 'admin'
+        ? 'Administrateur'
+        : role;
+    final roleColor = role == 'owner'
+        ? Colors.purple
+        : theme.colorScheme.primary;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       color: theme.cardTheme.color,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
@@ -1944,15 +2054,20 @@ class _AdminsListViewState extends State<_AdminsListView> {
                     Text(
                       email,
                       style: TextStyle(
-                        color: (Theme.of(context).brightness == Brightness.dark
-                            ? AppColors.darkTextSecondary
-                            : AppColors.lightTextSecondary).withValues(alpha: 0.7),
+                        color:
+                            (Theme.of(context).brightness == Brightness.dark
+                                    ? AppColors.darkTextSecondary
+                                    : AppColors.lightTextSecondary)
+                                .withValues(alpha: 0.7),
                         fontSize: 14,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: roleColor.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
@@ -1969,9 +2084,15 @@ class _AdminsListViewState extends State<_AdminsListView> {
                   ],
                 ),
               ),
-              Icon(Icons.arrow_forward_ios, color: (Theme.of(context).brightness == Brightness.dark
-                  ? AppColors.darkTextSecondary
-                  : AppColors.lightTextSecondary).withValues(alpha: 0.6), size: 16),
+              Icon(
+                Icons.arrow_forward_ios,
+                color:
+                    (Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.darkTextSecondary
+                            : AppColors.lightTextSecondary)
+                        .withValues(alpha: 0.6),
+                size: 16,
+              ),
             ],
           ),
         ),
@@ -2000,7 +2121,7 @@ class _GymsListViewState extends State<_GymsListView> {
   final ApiService _apiService = ApiService.fromEnv();
   final AuthService _authService = AuthService(ApiService.fromEnv());
   final TextEditingController _searchController = TextEditingController();
-  
+
   List<Map<String, dynamic>> _gyms = [];
   List<Map<String, dynamic>> _filteredGyms = [];
   bool _isLoading = true;
@@ -2036,7 +2157,7 @@ class _GymsListViewState extends State<_GymsListView> {
       }
 
       final gyms = await _apiService.getGyms(token);
-      
+
       if (gyms != null) {
         setState(() {
           _gyms = gyms.map((gym) => gym as Map<String, dynamic>).toList();
@@ -2082,10 +2203,7 @@ class _GymsListViewState extends State<_GymsListView> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              theme.scaffoldBackgroundColor,
-              theme.cardTheme.color!,
-            ],
+            colors: [theme.scaffoldBackgroundColor, theme.cardTheme.color!],
           ),
         ),
         child: SafeArea(
@@ -2111,113 +2229,125 @@ class _GymsListViewState extends State<_GymsListView> {
                   ],
                 ),
               ),
-            
-            // Barre de recherche
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: TextField(
-                controller: _searchController,
-                style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  hintText: 'Rechercher une salle...',
-                  hintStyle: const TextStyle(color: Colors.white60),
-                  prefixIcon: const Icon(Icons.search, color: AppColors.primary),
-                  suffixIcon: _searchController.text.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.clear, color: Colors.white60),
-                          onPressed: () {
-                            _searchController.clear();
-                          },
-                        )
-                      : null,
-                  filled: true,
-                  fillColor: theme.cardTheme.color,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(24),
-                    borderSide: BorderSide.none,
+
+              // Barre de recherche
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: TextField(
+                  controller: _searchController,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    hintText: 'Rechercher une salle...',
+                    hintStyle: const TextStyle(color: Colors.white60),
+                    prefixIcon: const Icon(
+                      Icons.search,
+                      color: AppColors.primary,
+                    ),
+                    suffixIcon: _searchController.text.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(
+                              Icons.clear,
+                              color: Colors.white60,
+                            ),
+                            onPressed: () {
+                              _searchController.clear();
+                            },
+                          )
+                        : null,
+                    filled: true,
+                    fillColor: theme.cardTheme.color,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(24),
+                      borderSide: BorderSide.none,
+                    ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            
-            // Liste des salles
-            Expanded(
-              child: _isLoading
-                  ? const Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.primary,
-                      ),
-                    )
-                  : _errorMessage.isNotEmpty
-                      ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(
-                                Icons.error_outline,
-                                color: AppColors.error,
-                                size: 48,
+              const SizedBox(height: 16),
+
+              // Liste des salles
+              Expanded(
+                child: _isLoading
+                    ? const Center(
+                        child: CircularProgressIndicator(
+                          color: AppColors.primary,
+                        ),
+                      )
+                    : _errorMessage.isNotEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.error_outline,
+                              color: AppColors.error,
+                              size: 48,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              _errorMessage,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
                               ),
-                              const SizedBox(height: 16),
-                              Text(
-                                _errorMessage,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 16),
+                            ElevatedButton(
+                              onPressed: _loadGyms,
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                  vertical: 12,
                                 ),
-                                textAlign: TextAlign.center,
                               ),
-                              const SizedBox(height: 16),
-                              ElevatedButton(
-                                onPressed: _loadGyms,
-                                style: ElevatedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                                ),
-                                child: const Text('Réessayer'),
-                              ),
-                            ],
-                          ),
-                        )
-                      : _filteredGyms.isEmpty
-                          ? Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(
-                                    Icons.fitness_center_outlined,
-                                    color: Colors.white60,
-                                    size: 48,
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    _searchController.text.isNotEmpty
-                                        ? 'Aucune salle trouvée'
-                                        : 'Aucune salle',
-                                    style: const TextStyle(
-                                      color: Colors.white60,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            )
-                          : RefreshIndicator(
-                              onRefresh: _loadGyms,
-                              color: AppColors.primary,
-                              child: ListView.builder(
-                                padding: const EdgeInsets.symmetric(horizontal: 16),
-                                itemCount: _filteredGyms.length,
-                                itemBuilder: (context, index) {
-                                  final gym = _filteredGyms[index];
-                                  return _buildGymCard(gym, () => widget.onGymTap(gym));
-                                },
+                              child: const Text('Réessayer'),
+                            ),
+                          ],
+                        ),
+                      )
+                    : _filteredGyms.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.fitness_center_outlined,
+                              color: Colors.white60,
+                              size: 48,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              _searchController.text.isNotEmpty
+                                  ? 'Aucune salle trouvée'
+                                  : 'Aucune salle',
+                              style: const TextStyle(
+                                color: Colors.white60,
+                                fontSize: 16,
                               ),
                             ),
-            ),
-          ],
-        ),
-      ), // SafeArea
+                          ],
+                        ),
+                      )
+                    : RefreshIndicator(
+                        onRefresh: _loadGyms,
+                        color: AppColors.primary,
+                        child: ListView.builder(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          itemCount: _filteredGyms.length,
+                          itemBuilder: (context, index) {
+                            final gym = _filteredGyms[index];
+                            return _buildGymCard(
+                              gym,
+                              () => widget.onGymTap(gym),
+                            );
+                          },
+                        ),
+                      ),
+              ),
+            ],
+          ),
+        ), // SafeArea
       ), // Container
       floatingActionButton: FloatingActionButton(
         onPressed: widget.onCreate,
@@ -2236,9 +2366,7 @@ class _GymsListViewState extends State<_GymsListView> {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       color: theme.cardTheme.color,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
@@ -2252,10 +2380,7 @@ class _GymsListViewState extends State<_GymsListView> {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: AppColors.primary.withValues(alpha: 0.2),
-                  border: Border.all(
-                    color: AppColors.primary,
-                    width: 2,
-                  ),
+                  border: Border.all(color: AppColors.primary, width: 2),
                 ),
                 child: const Center(
                   child: Icon(
@@ -2290,7 +2415,10 @@ class _GymsListViewState extends State<_GymsListView> {
                     ),
                     const SizedBox(height: 4),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.primary.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
@@ -2307,7 +2435,11 @@ class _GymsListViewState extends State<_GymsListView> {
                   ],
                 ),
               ),
-              const Icon(Icons.arrow_forward_ios, color: Colors.white60, size: 16),
+              const Icon(
+                Icons.arrow_forward_ios,
+                color: Colors.white60,
+                size: 16,
+              ),
             ],
           ),
         ),
@@ -2317,7 +2449,7 @@ class _GymsListViewState extends State<_GymsListView> {
 }
 
 // Vue détails d'un admin
-class _AdminDetailsView extends StatelessWidget {
+class _AdminDetailsView extends StatefulWidget {
   final Map<String, dynamic> admin;
   final VoidCallback onBack;
   final VoidCallback onEdit;
@@ -2329,14 +2461,22 @@ class _AdminDetailsView extends StatelessWidget {
   });
 
   @override
+  State<_AdminDetailsView> createState() => _AdminDetailsViewState();
+}
+
+class _AdminDetailsViewState extends State<_AdminDetailsView> {
+  final ApiService _apiService = ApiService.fromEnv();
+  final AuthService _authService = AuthService(ApiService.fromEnv());
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final fullName = getUserFullName(admin);
-    final email = admin['email'] as String? ?? '';
-    final uniqueCode = admin['uniqueCode'] as String? ?? '';
-    final gymId = admin['gymId']?.toString() ?? 'N/A';
-    final createdAt = admin['createdAt'] as String? ?? '';
-    
+    final fullName = getUserFullName(widget.admin);
+    final email = widget.admin['email'] as String? ?? '';
+    final uniqueCode = widget.admin['uniqueCode'] as String? ?? '';
+    final gymId = widget.admin['gymId']?.toString() ?? 'N/A';
+    final createdAt = widget.admin['createdAt'] as String? ?? '';
+
     // Obtenir les initiales pour l'avatar
     final initials = fullName
         .split(' ')
@@ -2350,10 +2490,7 @@ class _AdminDetailsView extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            theme.scaffoldBackgroundColor,
-            theme.cardTheme.color!,
-          ],
+          colors: [theme.scaffoldBackgroundColor, theme.cardTheme.color!],
         ),
       ),
       child: SafeArea(
@@ -2366,7 +2503,7 @@ class _AdminDetailsView extends StatelessWidget {
                 children: [
                   IconButton(
                     icon: const Icon(Icons.arrow_back, color: Colors.white),
-                    onPressed: onBack,
+                    onPressed: widget.onBack,
                   ),
                   const Text(
                     'Détails Administrateur',
@@ -2379,12 +2516,12 @@ class _AdminDetailsView extends StatelessWidget {
                   const Spacer(),
                   IconButton(
                     icon: const Icon(Icons.edit, color: AppColors.primary),
-                    onPressed: onEdit,
+                    onPressed: widget.onEdit,
                   ),
                 ],
               ),
             ),
-            
+
             // Contenu
             Expanded(
               child: SingleChildScrollView(
@@ -2398,10 +2535,7 @@ class _AdminDetailsView extends StatelessWidget {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: AppColors.primary.withValues(alpha: 0.2),
-                        border: Border.all(
-                          color: AppColors.primary,
-                          width: 3,
-                        ),
+                        border: Border.all(color: AppColors.primary, width: 3),
                       ),
                       child: Center(
                         child: Text(
@@ -2415,7 +2549,7 @@ class _AdminDetailsView extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    
+
                     // Nom
                     Text(
                       fullName,
@@ -2427,10 +2561,13 @@ class _AdminDetailsView extends StatelessWidget {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 8),
-                    
+
                     // Badge rôle
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.primary.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(20),
@@ -2445,7 +2582,7 @@ class _AdminDetailsView extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 32),
-                    
+
                     // Informations
                     _buildInfoCard(
                       context,
@@ -2454,7 +2591,7 @@ class _AdminDetailsView extends StatelessWidget {
                       value: email,
                     ),
                     const SizedBox(height: 16),
-                    
+
                     _buildInfoCard(
                       context,
                       icon: Icons.qr_code,
@@ -2462,7 +2599,7 @@ class _AdminDetailsView extends StatelessWidget {
                       value: uniqueCode,
                     ),
                     const SizedBox(height: 16),
-                    
+
                     _buildInfoCard(
                       context,
                       icon: Icons.fitness_center,
@@ -2470,17 +2607,17 @@ class _AdminDetailsView extends StatelessWidget {
                       value: gymId,
                     ),
                     const SizedBox(height: 16),
-                    
+
                     _buildInfoCard(
                       context,
                       icon: Icons.calendar_today,
                       title: 'Créé le',
-                      value: createdAt.isNotEmpty 
+                      value: createdAt.isNotEmpty
                           ? DateTime.parse(createdAt).toString().split(' ')[0]
                           : 'N/A',
                     ),
                     const SizedBox(height: 32),
-                    
+
                     // Bouton supprimer
                     SizedBox(
                       width: double.infinity,
@@ -2534,11 +2671,7 @@ class _AdminDetailsView extends StatelessWidget {
               color: AppColors.primary.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(
-              icon,
-              color: AppColors.primary,
-              size: 24,
-            ),
+            child: Icon(icon, color: AppColors.primary, size: 24),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -2581,7 +2714,7 @@ class _AdminDetailsView extends StatelessWidget {
           style: TextStyle(color: Colors.white),
         ),
         content: Text(
-          'Êtes-vous sûr de vouloir supprimer $name ?',
+          'Êtes-vous sûr de vouloir supprimer $name ?\n\nCette action est irréversible.',
           style: const TextStyle(color: Colors.white70),
         ),
         actions: [
@@ -2590,25 +2723,54 @@ class _AdminDetailsView extends StatelessWidget {
             child: const Text('Annuler'),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Suppression en développement')),
-              );
+              await _deleteAdmin();
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.error,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
             child: const Text('Supprimer'),
           ),
         ],
       ),
     );
   }
+
+  Future<void> _deleteAdmin() async {
+    try {
+      final token = await _authService.loadToken();
+      if (token == null) throw Exception('Token non disponible');
+
+      final userId =
+          widget.admin['Admin']?['userId'] as int? ?? widget.admin['id'] as int;
+
+      final success = await _apiService.deleteUser(userId, token);
+
+      if (success && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Administrateur supprimé avec succès'),
+            backgroundColor: AppColors.success,
+          ),
+        );
+        widget.onBack();
+      } else {
+        throw Exception('Échec de la suppression');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
 }
 
 // Vue détails d'une salle
-class _GymDetailsView extends StatelessWidget {
+class _GymDetailsView extends StatefulWidget {
   final Map<String, dynamic> gym;
   final VoidCallback onBack;
   final VoidCallback onEdit;
@@ -2622,23 +2784,28 @@ class _GymDetailsView extends StatelessWidget {
   });
 
   @override
+  State<_GymDetailsView> createState() => _GymDetailsViewState();
+}
+
+class _GymDetailsViewState extends State<_GymDetailsView> {
+  final ApiService _apiService = ApiService.fromEnv();
+  final AuthService _authService = AuthService(ApiService.fromEnv());
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final name = gym['name'] as String? ?? 'Sans nom';
-    final address = gym['address'] as String? ?? '';
-    final phone = gym['phone'] as String? ?? 'N/A';
-    final memberCount = gym['_count']?['users'] ?? 0;
-    final createdAt = gym['createdAt'] as String? ?? '';
+    final name = widget.gym['name'] as String? ?? 'Sans nom';
+    final address = widget.gym['address'] as String? ?? '';
+    final phone = widget.gym['phone'] as String? ?? 'N/A';
+    final memberCount = widget.gym['_count']?['users'] ?? 0;
+    final createdAt = widget.gym['createdAt'] as String? ?? '';
 
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            theme.scaffoldBackgroundColor,
-            theme.cardTheme.color!,
-          ],
+          colors: [theme.scaffoldBackgroundColor, theme.cardTheme.color!],
         ),
       ),
       child: SafeArea(
@@ -2651,7 +2818,7 @@ class _GymDetailsView extends StatelessWidget {
                 children: [
                   IconButton(
                     icon: const Icon(Icons.arrow_back, color: Colors.white),
-                    onPressed: onBack,
+                    onPressed: widget.onBack,
                   ),
                   const Text(
                     'Détails Salle',
@@ -2664,12 +2831,12 @@ class _GymDetailsView extends StatelessWidget {
                   const Spacer(),
                   IconButton(
                     icon: const Icon(Icons.edit, color: AppColors.primary),
-                    onPressed: onEdit,
+                    onPressed: widget.onEdit,
                   ),
                 ],
               ),
             ),
-            
+
             // Contenu
             Expanded(
               child: SingleChildScrollView(
@@ -2683,10 +2850,7 @@ class _GymDetailsView extends StatelessWidget {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: AppColors.primary.withValues(alpha: 0.2),
-                        border: Border.all(
-                          color: AppColors.primary,
-                          width: 3,
-                        ),
+                        border: Border.all(color: AppColors.primary, width: 3),
                       ),
                       child: const Center(
                         child: Icon(
@@ -2697,7 +2861,7 @@ class _GymDetailsView extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    
+
                     // Nom
                     Text(
                       name,
@@ -2709,10 +2873,13 @@ class _GymDetailsView extends StatelessWidget {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 8),
-                    
+
                     // Badge membres
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.primary.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(20),
@@ -2727,7 +2894,7 @@ class _GymDetailsView extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 32),
-                    
+
                     // Informations
                     _buildInfoCard(
                       context,
@@ -2736,7 +2903,7 @@ class _GymDetailsView extends StatelessWidget {
                       value: address,
                     ),
                     const SizedBox(height: 16),
-                    
+
                     _buildInfoCard(
                       context,
                       icon: Icons.phone,
@@ -2744,7 +2911,7 @@ class _GymDetailsView extends StatelessWidget {
                       value: phone,
                     ),
                     const SizedBox(height: 16),
-                    
+
                     _buildInfoCard(
                       context,
                       icon: Icons.people,
@@ -2752,23 +2919,23 @@ class _GymDetailsView extends StatelessWidget {
                       value: memberCount.toString(),
                     ),
                     const SizedBox(height: 16),
-                    
+
                     _buildInfoCard(
                       context,
                       icon: Icons.calendar_today,
                       title: 'Créée le',
-                      value: createdAt.isNotEmpty 
+                      value: createdAt.isNotEmpty
                           ? DateTime.parse(createdAt).toString().split(' ')[0]
                           : 'N/A',
                     ),
                     const SizedBox(height: 32),
-                    
+
                     // Boutons d'action
                     Row(
                       children: [
                         Expanded(
                           child: ElevatedButton.icon(
-                            onPressed: onManageHours,
+                            onPressed: widget.onManageHours,
                             icon: const Icon(Icons.schedule),
                             label: const Text('Horaires'),
                             style: ElevatedButton.styleFrom(
@@ -2785,7 +2952,11 @@ class _GymDetailsView extends StatelessWidget {
                           child: ElevatedButton.icon(
                             onPressed: () {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Liste membres en développement')),
+                                const SnackBar(
+                                  content: Text(
+                                    'Liste membres en développement',
+                                  ),
+                                ),
                               );
                             },
                             icon: const Icon(Icons.group),
@@ -2802,7 +2973,7 @@ class _GymDetailsView extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    
+
                     // Bouton supprimer
                     SizedBox(
                       width: double.infinity,
@@ -2831,7 +3002,8 @@ class _GymDetailsView extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoCard(BuildContext context, {
+  Widget _buildInfoCard(
+    BuildContext context, {
     required IconData icon,
     required String title,
     required String value,
@@ -2854,11 +3026,7 @@ class _GymDetailsView extends StatelessWidget {
               color: AppColors.primary.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(
-              icon,
-              color: AppColors.primary,
-              size: 24,
-            ),
+            child: Icon(icon, color: AppColors.primary, size: 24),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -2900,7 +3068,7 @@ class _GymDetailsView extends StatelessWidget {
           style: TextStyle(color: Colors.white),
         ),
         content: Text(
-          'Êtes-vous sûr de vouloir supprimer la salle "$name" ?\n\nCette action supprimera également tous les membres associés.',
+          'Êtes-vous sûr de vouloir supprimer la salle "$name" ?\n\nCette action supprimera également tous les membres et administrateurs associés.\n\nCette action est irréversible.',
           style: const TextStyle(color: Colors.white70),
         ),
         actions: [
@@ -2909,20 +3077,49 @@ class _GymDetailsView extends StatelessWidget {
             child: const Text('Annuler'),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Suppression en développement')),
-              );
+              await _deleteGym();
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.error,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
             child: const Text('Supprimer'),
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _deleteGym() async {
+    try {
+      final token = await _authService.loadToken();
+      if (token == null) throw Exception('Token non disponible');
+
+      final success = await _apiService.deleteGym(
+        widget.gym['id'] as int,
+        token,
+      );
+
+      if (success && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Salle supprimée avec succès'),
+            backgroundColor: AppColors.success,
+          ),
+        );
+        widget.onBack();
+      } else {
+        throw Exception('Échec de la suppression');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
   }
 }
 
@@ -2946,10 +3143,11 @@ class _AdminEditViewState extends State<_AdminEditView> {
   final _formKey = GlobalKey<FormState>();
   final ApiService _apiService = ApiService.fromEnv();
   final AuthService _authService = AuthService(ApiService.fromEnv());
-  
+
   late TextEditingController _emailController;
-  late TextEditingController _fullNameController;
-  
+  late TextEditingController _firstNameController;
+  late TextEditingController _lastNameController;
+
   List<Map<String, dynamic>> _gyms = [];
   int? _selectedGymId;
   bool _isLoading = false;
@@ -2957,8 +3155,15 @@ class _AdminEditViewState extends State<_AdminEditView> {
   @override
   void initState() {
     super.initState();
-    _emailController = TextEditingController(text: widget.admin['email'] as String?);
-    _fullNameController = TextEditingController(text: widget.admin['fullName'] as String?);
+    _emailController = TextEditingController(
+      text: widget.admin['email'] as String?,
+    );
+    _firstNameController = TextEditingController(
+      text: widget.admin['firstName'] as String?,
+    );
+    _lastNameController = TextEditingController(
+      text: widget.admin['lastName'] as String?,
+    );
     _selectedGymId = widget.admin['gymId'] as int?;
     _loadGyms();
   }
@@ -2966,7 +3171,8 @@ class _AdminEditViewState extends State<_AdminEditView> {
   @override
   void dispose() {
     _emailController.dispose();
-    _fullNameController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     super.dispose();
   }
 
@@ -2983,9 +3189,9 @@ class _AdminEditViewState extends State<_AdminEditView> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur chargement salles: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Erreur chargement salles: $e')));
       }
     }
   }
@@ -3001,7 +3207,8 @@ class _AdminEditViewState extends State<_AdminEditView> {
 
       final updateData = {
         'email': _emailController.text.trim(),
-        'fullName': _fullNameController.text.trim(),
+        'firstName': _firstNameController.text.trim(),
+        'lastName': _lastNameController.text.trim(),
         'gymId': _selectedGymId,
       };
 
@@ -3044,7 +3251,8 @@ class _AdminEditViewState extends State<_AdminEditView> {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Theme.of(context).scaffoldBackgroundColor, Theme.of(context).cardTheme.color!,
+            Theme.of(context).scaffoldBackgroundColor,
+            Theme.of(context).cardTheme.color!,
           ],
         ),
       ),
@@ -3071,7 +3279,7 @@ class _AdminEditViewState extends State<_AdminEditView> {
                 ],
               ),
             ),
-            
+
             // Contenu
             Expanded(
               child: SingleChildScrollView(
@@ -3099,14 +3307,17 @@ class _AdminEditViewState extends State<_AdminEditView> {
                       ),
                       const SizedBox(height: 32),
 
-                      // Nom complet
+                      // Prénom
                       TextFormField(
-                        controller: _fullNameController,
+                        controller: _firstNameController,
                         style: const TextStyle(color: Colors.white),
                         decoration: InputDecoration(
-                          labelText: 'Nom complet',
+                          labelText: 'Prénom',
                           labelStyle: const TextStyle(color: Colors.white60),
-                          prefixIcon: const Icon(Icons.person, color: AppColors.primary),
+                          prefixIcon: const Icon(
+                            Icons.person,
+                            color: AppColors.primary,
+                          ),
                           filled: true,
                           fillColor: Theme.of(context).cardTheme.color,
                           border: OutlineInputBorder(
@@ -3116,7 +3327,34 @@ class _AdminEditViewState extends State<_AdminEditView> {
                         ),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
-                            return 'Le nom complet est requis';
+                            return 'Le prénom est requis';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Nom
+                      TextFormField(
+                        controller: _lastNameController,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: InputDecoration(
+                          labelText: 'Nom',
+                          labelStyle: const TextStyle(color: Colors.white60),
+                          prefixIcon: const Icon(
+                            Icons.person_outline,
+                            color: AppColors.primary,
+                          ),
+                          filled: true,
+                          fillColor: Theme.of(context).cardTheme.color,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Le nom est requis';
                           }
                           return null;
                         },
@@ -3131,7 +3369,10 @@ class _AdminEditViewState extends State<_AdminEditView> {
                         decoration: InputDecoration(
                           labelText: 'Email',
                           labelStyle: const TextStyle(color: Colors.white60),
-                          prefixIcon: const Icon(Icons.email, color: AppColors.primary),
+                          prefixIcon: const Icon(
+                            Icons.email,
+                            color: AppColors.primary,
+                          ),
                           filled: true,
                           fillColor: Theme.of(context).cardTheme.color,
                           border: OutlineInputBorder(
@@ -3159,7 +3400,10 @@ class _AdminEditViewState extends State<_AdminEditView> {
                         decoration: InputDecoration(
                           labelText: 'Salle de sport',
                           labelStyle: const TextStyle(color: Colors.white60),
-                          prefixIcon: const Icon(Icons.fitness_center, color: AppColors.primary),
+                          prefixIcon: const Icon(
+                            Icons.fitness_center,
+                            color: AppColors.primary,
+                          ),
                           filled: true,
                           fillColor: Theme.of(context).cardTheme.color,
                           border: OutlineInputBorder(
@@ -3201,7 +3445,9 @@ class _AdminEditViewState extends State<_AdminEditView> {
                                 width: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
                                 ),
                               )
                             : const Text(
@@ -3245,19 +3491,25 @@ class _GymEditViewState extends State<_GymEditView> {
   final _formKey = GlobalKey<FormState>();
   final ApiService _apiService = ApiService.fromEnv();
   final AuthService _authService = AuthService(ApiService.fromEnv());
-  
+
   late TextEditingController _nameController;
   late TextEditingController _addressController;
   late TextEditingController _phoneController;
-  
+
   bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.gym['name'] as String?);
-    _addressController = TextEditingController(text: widget.gym['address'] as String?);
-    _phoneController = TextEditingController(text: widget.gym['phone'] as String? ?? '');
+    _nameController = TextEditingController(
+      text: widget.gym['name'] as String?,
+    );
+    _addressController = TextEditingController(
+      text: widget.gym['address'] as String?,
+    );
+    _phoneController = TextEditingController(
+      text: widget.gym['phone'] as String? ?? '',
+    );
   }
 
   @override
@@ -3282,8 +3534,8 @@ class _GymEditViewState extends State<_GymEditView> {
         token,
         name: _nameController.text.trim(),
         address: _addressController.text.trim(),
-        phone: _phoneController.text.trim().isNotEmpty 
-            ? _phoneController.text.trim() 
+        phone: _phoneController.text.trim().isNotEmpty
+            ? _phoneController.text.trim()
             : null,
       );
 
@@ -3320,7 +3572,8 @@ class _GymEditViewState extends State<_GymEditView> {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Theme.of(context).scaffoldBackgroundColor, Theme.of(context).cardTheme.color!,
+            Theme.of(context).scaffoldBackgroundColor,
+            Theme.of(context).cardTheme.color!,
           ],
         ),
       ),
@@ -3347,7 +3600,7 @@ class _GymEditViewState extends State<_GymEditView> {
                 ],
               ),
             ),
-            
+
             // Contenu
             Expanded(
               child: SingleChildScrollView(
@@ -3380,7 +3633,10 @@ class _GymEditViewState extends State<_GymEditView> {
                         decoration: InputDecoration(
                           labelText: 'Nom de la salle',
                           labelStyle: const TextStyle(color: Colors.white60),
-                          prefixIcon: const Icon(Icons.business, color: AppColors.primary),
+                          prefixIcon: const Icon(
+                            Icons.business,
+                            color: AppColors.primary,
+                          ),
                           filled: true,
                           fillColor: Theme.of(context).cardTheme.color,
                           border: OutlineInputBorder(
@@ -3403,7 +3659,10 @@ class _GymEditViewState extends State<_GymEditView> {
                         decoration: InputDecoration(
                           labelText: 'Adresse',
                           labelStyle: const TextStyle(color: Colors.white60),
-                          prefixIcon: const Icon(Icons.location_on, color: AppColors.primary),
+                          prefixIcon: const Icon(
+                            Icons.location_on,
+                            color: AppColors.primary,
+                          ),
                           filled: true,
                           fillColor: Theme.of(context).cardTheme.color,
                           border: OutlineInputBorder(
@@ -3426,7 +3685,10 @@ class _GymEditViewState extends State<_GymEditView> {
                         decoration: InputDecoration(
                           labelText: 'Téléphone (optionnel)',
                           labelStyle: const TextStyle(color: Colors.white60),
-                          prefixIcon: const Icon(Icons.phone, color: AppColors.primary),
+                          prefixIcon: const Icon(
+                            Icons.phone,
+                            color: AppColors.primary,
+                          ),
                           filled: true,
                           fillColor: Theme.of(context).cardTheme.color,
                           border: OutlineInputBorder(
@@ -3451,7 +3713,9 @@ class _GymEditViewState extends State<_GymEditView> {
                                 width: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
                                 ),
                               )
                             : const Text(
@@ -3480,10 +3744,7 @@ class _GymOpeningHoursView extends StatefulWidget {
   final Map<String, dynamic> gym;
   final VoidCallback onBack;
 
-  const _GymOpeningHoursView({
-    required this.gym,
-    required this.onBack,
-  });
+  const _GymOpeningHoursView({required this.gym, required this.onBack});
 
   @override
   State<_GymOpeningHoursView> createState() => _GymOpeningHoursViewState();
@@ -3601,7 +3862,10 @@ class _GymOpeningHoursViewState extends State<_GymOpeningHoursView> {
     }
   }
 
-  Future<TimeOfDay?> _selectTime(BuildContext context, String initialTime) async {
+  Future<TimeOfDay?> _selectTime(
+    BuildContext context,
+    String initialTime,
+  ) async {
     final parts = initialTime.split(':');
     final initial = TimeOfDay(
       hour: int.tryParse(parts[0]) ?? 9,
@@ -3648,19 +3912,14 @@ class _GymOpeningHoursViewState extends State<_GymOpeningHoursView> {
         decoration: BoxDecoration(
           color: Theme.of(context).scaffoldBackgroundColor,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: AppColors.primary.withValues(alpha: 0.3),
-          ),
+          border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               label,
-              style: const TextStyle(
-                color: Colors.white60,
-                fontSize: 12,
-              ),
+              style: const TextStyle(color: Colors.white60, fontSize: 12),
             ),
             const SizedBox(height: 4),
             Row(
@@ -3697,7 +3956,8 @@ class _GymOpeningHoursViewState extends State<_GymOpeningHoursView> {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Theme.of(context).scaffoldBackgroundColor, Theme.of(context).cardTheme.color!,
+            Theme.of(context).scaffoldBackgroundColor,
+            Theme.of(context).cardTheme.color!,
           ],
         ),
       ),
@@ -3806,7 +4066,8 @@ class _GymOpeningHoursViewState extends State<_GymOpeningHoursView> {
                                           dayData['openTime'] as String,
                                           (time) {
                                             setState(() {
-                                              _hoursData[index]['openTime'] = time;
+                                              _hoursData[index]['openTime'] =
+                                                  time;
                                             });
                                           },
                                         ),
@@ -3819,7 +4080,8 @@ class _GymOpeningHoursViewState extends State<_GymOpeningHoursView> {
                                           dayData['closeTime'] as String,
                                           (time) {
                                             setState(() {
-                                              _hoursData[index]['closeTime'] = time;
+                                              _hoursData[index]['closeTime'] =
+                                                  time;
                                             });
                                           },
                                         ),
@@ -3881,10 +4143,7 @@ class _AdminCreateView extends StatefulWidget {
   final VoidCallback onBack;
   final VoidCallback onSuccess;
 
-  const _AdminCreateView({
-    required this.onBack,
-    required this.onSuccess,
-  });
+  const _AdminCreateView({required this.onBack, required this.onSuccess});
 
   @override
   State<_AdminCreateView> createState() => _AdminCreateViewState();
@@ -3894,12 +4153,12 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
   final _formKey = GlobalKey<FormState>();
   final ApiService _apiService = ApiService.fromEnv();
   final AuthService _authService = AuthService(ApiService.fromEnv());
-  
+
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  
+
   List<Map<String, dynamic>> _gyms = [];
   int? _selectedGymId;
   bool _sendSetupEmail = true;
@@ -3933,9 +4192,9 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur chargement salles: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Erreur chargement salles: $e')));
       }
     }
   }
@@ -3991,7 +4250,8 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Theme.of(context).scaffoldBackgroundColor, Theme.of(context).cardTheme.color!,
+            Theme.of(context).scaffoldBackgroundColor,
+            Theme.of(context).cardTheme.color!,
           ],
         ),
       ),
@@ -4018,7 +4278,7 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
                 ],
               ),
             ),
-            
+
             // Contenu
             Expanded(
               child: SingleChildScrollView(
@@ -4051,8 +4311,12 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
                         controller: _firstNameController,
                         style: const TextStyle(color: Colors.white),
                         decoration: InputDecoration(
-                          labelText: 'Prénom', labelStyle: const TextStyle(color: Colors.white60),
-                          prefixIcon: const Icon(Icons.person, color: AppColors.primary),
+                          labelText: 'Prénom',
+                          labelStyle: const TextStyle(color: Colors.white60),
+                          prefixIcon: const Icon(
+                            Icons.person,
+                            color: AppColors.primary,
+                          ),
                           filled: true,
                           fillColor: Theme.of(context).cardTheme.color,
                           border: OutlineInputBorder(
@@ -4076,7 +4340,10 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
                         decoration: InputDecoration(
                           labelText: 'Nom de famille',
                           labelStyle: const TextStyle(color: Colors.white60),
-                          prefixIcon: const Icon(Icons.person_outline, color: AppColors.primary),
+                          prefixIcon: const Icon(
+                            Icons.person_outline,
+                            color: AppColors.primary,
+                          ),
                           filled: true,
                           fillColor: Theme.of(context).cardTheme.color,
                           border: OutlineInputBorder(
@@ -4101,7 +4368,10 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
                         decoration: InputDecoration(
                           labelText: 'Email',
                           labelStyle: const TextStyle(color: Colors.white60),
-                          prefixIcon: const Icon(Icons.email, color: AppColors.primary),
+                          prefixIcon: const Icon(
+                            Icons.email,
+                            color: AppColors.primary,
+                          ),
                           filled: true,
                           fillColor: Theme.of(context).cardTheme.color,
                           border: OutlineInputBorder(
@@ -4129,7 +4399,10 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
                         decoration: InputDecoration(
                           labelText: 'Salle de sport',
                           labelStyle: const TextStyle(color: Colors.white60),
-                          prefixIcon: const Icon(Icons.fitness_center, color: AppColors.primary),
+                          prefixIcon: const Icon(
+                            Icons.fitness_center,
+                            color: AppColors.primary,
+                          ),
                           filled: true,
                           fillColor: Theme.of(context).cardTheme.color,
                           border: OutlineInputBorder(
@@ -4169,7 +4442,9 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
                           children: [
                             Checkbox(
                               value: _sendSetupEmail,
-                              fillColor: WidgetStateProperty.all(AppColors.primary),
+                              fillColor: WidgetStateProperty.all(
+                                AppColors.primary,
+                              ),
                               onChanged: (value) {
                                 setState(() {
                                   _sendSetupEmail = value ?? true;
@@ -4200,7 +4475,10 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
                           decoration: InputDecoration(
                             labelText: 'Mot de passe',
                             labelStyle: const TextStyle(color: Colors.white60),
-                            prefixIcon: const Icon(Icons.lock, color: AppColors.primary),
+                            prefixIcon: const Icon(
+                              Icons.lock,
+                              color: AppColors.primary,
+                            ),
                             filled: true,
                             fillColor: Theme.of(context).cardTheme.color,
                             border: OutlineInputBorder(
@@ -4209,7 +4487,8 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
                             ),
                           ),
                           validator: (value) {
-                            if (!_sendSetupEmail && (value == null || value.trim().isEmpty)) {
+                            if (!_sendSetupEmail &&
+                                (value == null || value.trim().isEmpty)) {
                               return 'Le mot de passe est requis';
                             }
                             if (!_sendSetupEmail && value!.length < 6) {
@@ -4239,7 +4518,9 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
                                 width: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
                                 ),
                               )
                             : const Text(
@@ -4268,10 +4549,7 @@ class _GymCreateView extends StatefulWidget {
   final VoidCallback onBack;
   final VoidCallback onSuccess;
 
-  const _GymCreateView({
-    required this.onBack,
-    required this.onSuccess,
-  });
+  const _GymCreateView({required this.onBack, required this.onSuccess});
 
   @override
   State<_GymCreateView> createState() => _GymCreateViewState();
@@ -4281,11 +4559,11 @@ class _GymCreateViewState extends State<_GymCreateView> {
   final _formKey = GlobalKey<FormState>();
   final ApiService _apiService = ApiService.fromEnv();
   final AuthService _authService = AuthService(ApiService.fromEnv());
-  
+
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
-  
+
   bool _isLoading = false;
 
   @override
@@ -4309,8 +4587,8 @@ class _GymCreateViewState extends State<_GymCreateView> {
         _nameController.text.trim(),
         _addressController.text.trim(),
         token,
-        phone: _phoneController.text.trim().isNotEmpty 
-            ? _phoneController.text.trim() 
+        phone: _phoneController.text.trim().isNotEmpty
+            ? _phoneController.text.trim()
             : null,
       );
 
@@ -4347,7 +4625,8 @@ class _GymCreateViewState extends State<_GymCreateView> {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Theme.of(context).scaffoldBackgroundColor, Theme.of(context).cardTheme.color!,
+            Theme.of(context).scaffoldBackgroundColor,
+            Theme.of(context).cardTheme.color!,
           ],
         ),
       ),
@@ -4374,7 +4653,7 @@ class _GymCreateViewState extends State<_GymCreateView> {
                 ],
               ),
             ),
-            
+
             // Contenu
             Expanded(
               child: SingleChildScrollView(
@@ -4409,7 +4688,10 @@ class _GymCreateViewState extends State<_GymCreateView> {
                         decoration: InputDecoration(
                           labelText: 'Nom de la salle',
                           labelStyle: const TextStyle(color: Colors.white60),
-                          prefixIcon: const Icon(Icons.business, color: AppColors.primary),
+                          prefixIcon: const Icon(
+                            Icons.business,
+                            color: AppColors.primary,
+                          ),
                           filled: true,
                           fillColor: Theme.of(context).cardTheme.color,
                           border: OutlineInputBorder(
@@ -4434,7 +4716,10 @@ class _GymCreateViewState extends State<_GymCreateView> {
                         decoration: InputDecoration(
                           labelText: 'Adresse',
                           labelStyle: const TextStyle(color: Colors.white60),
-                          prefixIcon: const Icon(Icons.location_on, color: AppColors.primary),
+                          prefixIcon: const Icon(
+                            Icons.location_on,
+                            color: AppColors.primary,
+                          ),
                           filled: true,
                           fillColor: Theme.of(context).cardTheme.color,
                           border: OutlineInputBorder(
@@ -4459,7 +4744,10 @@ class _GymCreateViewState extends State<_GymCreateView> {
                         decoration: InputDecoration(
                           labelText: 'Téléphone (optionnel)',
                           labelStyle: const TextStyle(color: Colors.white60),
-                          prefixIcon: const Icon(Icons.phone, color: AppColors.primary),
+                          prefixIcon: const Icon(
+                            Icons.phone,
+                            color: AppColors.primary,
+                          ),
                           filled: true,
                           fillColor: Theme.of(context).cardTheme.color,
                           border: OutlineInputBorder(
@@ -4486,7 +4774,9 @@ class _GymCreateViewState extends State<_GymCreateView> {
                                 width: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
                                 ),
                               )
                             : const Text(
@@ -4509,5 +4799,3 @@ class _GymCreateViewState extends State<_GymCreateView> {
     );
   }
 }
-
-

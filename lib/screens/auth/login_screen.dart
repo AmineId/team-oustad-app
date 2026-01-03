@@ -4,6 +4,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/theme/theme.dart';
 import '../../core/l10n/app_localizations.dart';
+import '../../core/utils/user_utils.dart';
 import '../../widgets/common/common_widgets.dart';
 import '../admin/admin_home_screen.dart';
 import '../member/member_home_screen.dart';
@@ -504,7 +505,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
               // User info
               if (profileData != null) ...[
                 Text(
-                  profileData['fullName'] ?? 'Utilisateur',
+                  getUserFullName(profileData),
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,

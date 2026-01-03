@@ -41,8 +41,8 @@ void main() async {
   }
   
   // Initialize API and error reporter early so we can catch global errors
-  final api = ApiService.fromEnv();
-  final reporter = ErrorReporter(api, supportEmail: const String.fromEnvironment('SUPPORT_EMAIL', defaultValue: 'support@example.com'));
+  ApiService.fromEnv();
+  final reporter = ErrorReporter(supportEmail: const String.fromEnvironment('SUPPORT_EMAIL', defaultValue: 'support@example.com'));
   
   // Initialize notification service
   try {

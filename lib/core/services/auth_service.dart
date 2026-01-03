@@ -198,16 +198,11 @@ class AuthService {
     final token = await loadToken();
     if (token != null) {
       try {
-        final valid = await _apiService.verifyToken(token);
+        final valid = _apiService.verifyToken(token);
         if (valid) return AuthStatus.success;
         // token invalid -> fallthrough to credential-based flow
-      } catch (e, st) {
-        try {
-          await _apiService.reportError(
-            'Token verify failed during biometric auth: $e',
-            st.toString(),
-          );
-        } catch (_) {}
+      } catch (e) {
+        debugPrint('❌ [Biometric] Token verify error: $e');
         // fallback
       }
     }
@@ -219,14 +214,8 @@ class AuthService {
     try {
       final healthy = await _apiService.healthCheck();
       if (!healthy) return AuthStatus.serverUnavailable;
-    } catch (e, st) {
-      // report to backend for developer review
-      try {
-        await _apiService.reportError(
-          'Health check failed during biometric auth: $e',
-          st.toString(),
-        );
-      } catch (_) {}
+    } catch (e) {
+      debugPrint('❌ [Biometric] Health check error: $e');
       return AuthStatus.serverUnavailable;
     }
 
@@ -283,13 +272,8 @@ class AuthService {
         return AuthStatus.success;
       }
       return AuthStatus.serverAuthFailed;
-    } catch (e, st) {
-      try {
-        await _apiService.reportError(
-          'Login failed during biometric auth: $e',
-          st.toString(),
-        );
-      } catch (_) {}
+    } catch (e) {
+      debugPrint('❌ [Biometric] Login error: $e');
       return AuthStatus.error;
     }
   }
@@ -314,7 +298,7 @@ class AuthService {
     final token = await loadToken();
     if (token != null) {
       try {
-        final valid = await _apiService.verifyToken(token);
+        final valid = _apiService.verifyToken(token);
         if (valid) {
           // Token valid, fetch and cache profile
           debugPrint(
@@ -361,14 +345,8 @@ class AuthService {
           };
         }
         // token invalid -> fallthrough to credential-based flow
-      } catch (e, st) {
+      } catch (e) {
         debugPrint('❌ [Biometric] Error during token validation: $e');
-        try {
-          await _apiService.reportError(
-            'Token verify failed during biometric auth: $e',
-            st.toString(),
-          );
-        } catch (_) {}
         // fallback
       }
     }
@@ -384,13 +362,8 @@ class AuthService {
       if (!healthy) {
         return {'status': AuthStatus.serverUnavailable};
       }
-    } catch (e, st) {
-      try {
-        await _apiService.reportError(
-          'Health check failed during biometric auth: $e',
-          st.toString(),
-        );
-      } catch (_) {}
+    } catch (e) {
+      debugPrint('❌ [Biometric] Health check error: $e');
       return {'status': AuthStatus.serverUnavailable};
     }
 
@@ -481,13 +454,8 @@ class AuthService {
         };
       }
       return {'status': AuthStatus.serverAuthFailed};
-    } catch (e, st) {
-      try {
-        await _apiService.reportError(
-          'Login failed during biometric auth: $e',
-          st.toString(),
-        );
-      } catch (_) {}
+    } catch (e) {
+      debugPrint('❌ [Biometric] Login error: $e');
       return {'status': AuthStatus.error};
     }
   }

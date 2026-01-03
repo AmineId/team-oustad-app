@@ -15,7 +15,7 @@ class _AdminAdminsListScreenState extends State<AdminAdminsListScreen> {
   final ApiService _apiService = ApiService.fromEnv();
   final AuthService _authService = AuthService(ApiService.fromEnv());
   final TextEditingController _searchController = TextEditingController();
-  
+
   List<Map<String, dynamic>> _admins = [];
   List<Map<String, dynamic>> _filteredAdmins = [];
   bool _isLoading = true;
@@ -51,12 +51,14 @@ class _AdminAdminsListScreenState extends State<AdminAdminsListScreen> {
       }
 
       final users = await _apiService.getUsers(token);
-      
+
       if (users != null) {
         setState(() {
           // Ne lister QUE les admins, PAS les owners
           _admins = users
-              .where((user) => user['role'] == 'admin' && user['role'] != 'owner')
+              .where(
+                (user) => user['role'] == 'admin' && user['role'] != 'owner',
+              )
               .map((user) => user as Map<String, dynamic>)
               .toList();
           _filteredAdmins = _admins;
@@ -83,12 +85,12 @@ class _AdminAdminsListScreenState extends State<AdminAdminsListScreen> {
         _filteredAdmins = _admins;
       } else {
         _filteredAdmins = _admins.where((admin) {
-          final fullName = (admin['fullName'] as String? ?? '').toLowerCase();
+          final fullName = getUserFullName(admin).toLowerCase();
           final email = (admin['email'] as String? ?? '').toLowerCase();
           final role = (admin['role'] as String? ?? '').toLowerCase();
-          return fullName.contains(query) || 
-                 email.contains(query) || 
-                 role.contains(query);
+          return fullName.contains(query) ||
+              email.contains(query) ||
+              role.contains(query);
         }).toList();
       }
     });
@@ -123,7 +125,8 @@ class _AdminAdminsListScreenState extends State<AdminAdminsListScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Theme.of(context).scaffoldBackgroundColor, Theme.of(context).cardTheme.color!,
+              Theme.of(context).scaffoldBackgroundColor,
+              Theme.of(context).cardTheme.color!,
             ],
           ),
         ),
@@ -139,10 +142,16 @@ class _AdminAdminsListScreenState extends State<AdminAdminsListScreen> {
                   decoration: InputDecoration(
                     hintText: 'Rechercher un administrateur...',
                     hintStyle: const TextStyle(color: Colors.white60),
-                    prefixIcon: const Icon(Icons.search, color: AppColors.primary),
+                    prefixIcon: const Icon(
+                      Icons.search,
+                      color: AppColors.primary,
+                    ),
                     suffixIcon: _searchController.text.isNotEmpty
                         ? IconButton(
-                            icon: const Icon(Icons.clear, color: Colors.white60),
+                            icon: const Icon(
+                              Icons.clear,
+                              color: Colors.white60,
+                            ),
                             onPressed: () {
                               _searchController.clear();
                             },
@@ -157,7 +166,7 @@ class _AdminAdminsListScreenState extends State<AdminAdminsListScreen> {
                   ),
                 ),
               ),
-              
+
               // Liste des administrateurs
               Expanded(
                 child: _isLoading
@@ -167,80 +176,85 @@ class _AdminAdminsListScreenState extends State<AdminAdminsListScreen> {
                         ),
                       )
                     : _errorMessage.isNotEmpty
-                        ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(
-                                  Icons.error_outline,
-                                  color: AppColors.error,
-                                  size: 48,
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  _errorMessage,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                                const SizedBox(height: 16),
-                                ElevatedButton(
-                                  onPressed: _loadAdmins,
-                                  style: ElevatedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                                  ),
-                                  child: const Text('Réessayer'),
-                                ),
-                              ],
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.error_outline,
+                              color: AppColors.error,
+                              size: 48,
                             ),
-                          )
-                        : _filteredAdmins.isEmpty
-                            ? Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    const Icon(
-                                      Icons.admin_panel_settings_outlined,
-                                      color: Colors.white60,
-                                      size: 48,
-                                    ),
-                                    const SizedBox(height: 16),
-                                    Text(
-                                      _searchController.text.isNotEmpty
-                                          ? 'Aucun administrateur trouvé'
-                                          : 'Aucun administrateur',
-                                      style: const TextStyle(
-                                        color: Colors.white60,
-                                        fontSize: 16,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              )
-                            : RefreshIndicator(
-                                onRefresh: _loadAdmins,
-                                color: AppColors.primary,
-                                child: ListView.builder(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                                  itemCount: _filteredAdmins.length,
-                                  itemBuilder: (context, index) {
-                                    final admin = _filteredAdmins[index];
-                                    return _AdminCard(
-                                      admin: admin,
-                                      onTap: () {
-                                        // TODO: Naviguer vers les détails de l'admin
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(
-                                            content: Text('Détails de ${admin['fullName']}'),
-                                          ),
-                                        );
-                                      },
-                                    );
-                                  },
+                            const SizedBox(height: 16),
+                            Text(
+                              _errorMessage,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 16),
+                            ElevatedButton(
+                              onPressed: _loadAdmins,
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                  vertical: 12,
                                 ),
                               ),
+                              child: const Text('Réessayer'),
+                            ),
+                          ],
+                        ),
+                      )
+                    : _filteredAdmins.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.admin_panel_settings_outlined,
+                              color: Colors.white60,
+                              size: 48,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              _searchController.text.isNotEmpty
+                                  ? 'Aucun administrateur trouvé'
+                                  : 'Aucun administrateur',
+                              style: const TextStyle(
+                                color: Colors.white60,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : RefreshIndicator(
+                        onRefresh: _loadAdmins,
+                        color: AppColors.primary,
+                        child: ListView.builder(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          itemCount: _filteredAdmins.length,
+                          itemBuilder: (context, index) {
+                            final admin = _filteredAdmins[index];
+                            return _AdminCard(
+                              admin: admin,
+                              onTap: () {
+                                // TODO: Naviguer vers les détails de l'admin
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Détails de ${getUserFullName(admin)}',
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      ),
               ),
             ],
           ),
@@ -254,17 +268,14 @@ class _AdminCard extends StatelessWidget {
   final Map<String, dynamic> admin;
   final VoidCallback onTap;
 
-  const _AdminCard({
-    required this.admin,
-    required this.onTap,
-  });
+  const _AdminCard({required this.admin, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     final fullName = getUserFullName(admin);
     final email = admin['email'] as String? ?? '';
     final role = admin['role'] as String? ?? 'N/A';
-    
+
     // Obtenir les initiales pour l'avatar
     final initials = fullName
         .split(' ')
@@ -274,21 +285,17 @@ class _AdminCard extends StatelessWidget {
         .join();
 
     // Badge de rôle avec couleur
-    final roleBadge = role == 'owner' 
-        ? 'Propriétaire' 
-        : role == 'admin' 
-            ? 'Administrateur' 
-            : role;
-    final roleColor = role == 'owner' 
-        ? Colors.purple 
-        : AppColors.primary;
+    final roleBadge = role == 'owner'
+        ? 'Propriétaire'
+        : role == 'admin'
+        ? 'Administrateur'
+        : role;
+    final roleColor = role == 'owner' ? Colors.purple : AppColors.primary;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       color: Theme.of(context).cardTheme.color,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
@@ -303,10 +310,7 @@ class _AdminCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: roleColor.withValues(alpha: 0.2),
-                  border: Border.all(
-                    color: roleColor,
-                    width: 2,
-                  ),
+                  border: Border.all(color: roleColor, width: 2),
                 ),
                 child: Center(
                   child: Text(
@@ -320,7 +324,7 @@ class _AdminCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 16),
-              
+
               // Infos
               Expanded(
                 child: Column(
@@ -364,7 +368,7 @@ class _AdminCard extends StatelessWidget {
                   ],
                 ),
               ),
-              
+
               // Icône flèche
               const Icon(
                 Icons.arrow_forward_ios,
@@ -378,4 +382,3 @@ class _AdminCard extends StatelessWidget {
     );
   }
 }
-

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/services/api_service.dart';
 import '../../core/theme/theme.dart';
+import '../../core/utils/user_utils.dart';
 import 'forgot_password_screen.dart';
 
 class SetupPasswordScreen extends StatefulWidget {
@@ -14,16 +15,19 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _tokenController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
   final ApiService _apiService = ApiService.fromEnv();
-  
+
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   bool _isCheckingPhone = false;
   bool? _phoneExists;
-  
-  bool get _isPhoneNumber => !_emailController.text.contains('@') && _emailController.text.trim().isNotEmpty;
+
+  bool get _isPhoneNumber =>
+      !_emailController.text.contains('@') &&
+      _emailController.text.trim().isNotEmpty;
   bool get _isEmail => _emailController.text.contains('@');
 
   @override
@@ -37,63 +41,63 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
 
   Future<void> _checkPhoneNumber() async {
     final phoneNumber = _emailController.text.trim();
-    
+
     if (phoneNumber.isEmpty) {
       _showError('Veuillez entrer un numéro de téléphone');
       return;
     }
-    
+
     setState(() => _isCheckingPhone = true);
-    
+
     try {
       final result = await _apiService.checkPhone(phoneNumber);
-      
+
       if (!mounted) return;
-      
+
       setState(() => _isCheckingPhone = false);
-      
+
       if (result['success'] != true) {
         _showError('Une erreur est survenue. Veuillez réessayer.');
         return;
       }
-      
+
       final exists = result['exists'] as bool? ?? false;
       final hasPassword = result['hasPassword'] as bool? ?? false;
-      
+
       if (exists && hasPassword) {
         // Cas 1: Le numéro existe et a déjà un mot de passe
         // Rediriger vers l'écran de changement de mot de passe (forgot password)
         setState(() => _phoneExists = true);
-        
+
         if (!mounted) return;
-        
+
         // Afficher un message d'information
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Ce numéro a déjà un mot de passe. Redirection vers la réinitialisation...'),
+            content: const Text(
+              'Ce numéro a déjà un mot de passe. Redirection vers la réinitialisation...',
+            ),
             backgroundColor: AppColors.primary,
             duration: const Duration(seconds: 2),
           ),
         );
-        
+
         // Attendre un peu puis rediriger
         await Future.delayed(const Duration(seconds: 2));
-        
+
         if (!mounted) return;
-        
+
         // Rediriger vers l'écran de mot de passe oublié
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => const ForgotPasswordScreen(),
-          ),
+          MaterialPageRoute(builder: (context) => const ForgotPasswordScreen()),
         );
       } else if (!exists && !hasPassword) {
         // Cas 2: Le numéro n'existe pas
         // Afficher un message pour passer à la salle
         setState(() => _phoneExists = false);
-        
+
         if (!mounted) return;
-        
+
         showDialog(
           context: context,
           builder: (BuildContext context) {
@@ -170,10 +174,7 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
                   onPressed: () => Navigator.of(context).pop(),
                   child: const Text(
                     'Compris',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
               ],
@@ -184,15 +185,17 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
         // Cas 3: Le numéro existe mais n'a pas encore de mot de passe
         // Permettre de continuer avec la configuration
         setState(() => _phoneExists = true);
-        
+
         final user = result['user'] as Map<String, dynamic>?;
-        final userName = user?['fullName'] ?? 'Utilisateur';
-        
+        final userName = user != null ? getUserFullName(user) : 'Utilisateur';
+
         if (!mounted) return;
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('✓ Compte trouvé: $userName. Vous pouvez configurer votre mot de passe.'),
+            content: Text(
+              '✓ Compte trouvé: $userName. Vous pouvez configurer votre mot de passe.',
+            ),
             backgroundColor: AppColors.success,
             duration: const Duration(seconds: 3),
           ),
@@ -208,14 +211,20 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
   Future<void> _setupPassword() async {
     // Validation
     if (_emailController.text.trim().isEmpty) {
-      _showError(_isPhoneNumber ? 'Veuillez entrer votre numéro de téléphone' : 'Veuillez entrer votre email');
+      _showError(
+        _isPhoneNumber
+            ? 'Veuillez entrer votre numéro de téléphone'
+            : 'Veuillez entrer votre email',
+      );
       return;
     }
-    
+
     // Si c'est un numéro de téléphone, vérifier qu'il existe et qu'il n'a pas déjà de mot de passe
     if (_isPhoneNumber) {
       if (_phoneExists != true) {
-        _showError('Veuillez d\'abord vérifier le numéro en cliquant sur l\'icône de recherche');
+        _showError(
+          'Veuillez d\'abord vérifier le numéro en cliquant sur l\'icône de recherche',
+        );
         return;
       }
       // Note: Si hasPassword était true, l'utilisateur aurait été redirigé lors de la vérification
@@ -272,7 +281,7 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
       }
     } catch (e) {
       if (!mounted) return;
-      
+
       String errorMessage = 'Une erreur est survenue';
       if (e.toString().contains('Token invalide')) {
         errorMessage = 'Code invalide ou expiré';
@@ -281,7 +290,7 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
       } else if (e.toString().contains('Le mot de passe doit')) {
         errorMessage = 'Le mot de passe doit contenir au moins 6 caractères';
       }
-      
+
       _showError(errorMessage);
     } finally {
       if (mounted) {
@@ -309,16 +318,23 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: Theme.of(context).brightness == Brightness.dark
-                ? [Theme.of(context).scaffoldBackgroundColor, Theme.of(context).cardTheme.color!]
-                : [Theme.of(context).scaffoldBackgroundColor, Theme.of(context).cardTheme.color!],
+                ? [
+                    Theme.of(context).scaffoldBackgroundColor,
+                    Theme.of(context).cardTheme.color!,
+                  ]
+                : [
+                    Theme.of(context).scaffoldBackgroundColor,
+                    Theme.of(context).cardTheme.color!,
+                  ],
           ),
         ),
         child: SafeArea(
           child: LayoutBuilder(
             builder: (context, constraints) {
               final isDesktop = constraints.maxWidth > 900;
-              final isTablet = constraints.maxWidth > 600 && constraints.maxWidth <= 900;
-              
+              final isTablet =
+                  constraints.maxWidth > 600 && constraints.maxWidth <= 900;
+
               Widget content = SingleChildScrollView(
                 padding: const EdgeInsets.all(24.0),
                 child: Column(
@@ -328,12 +344,18 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
                     Align(
                       alignment: Alignment.centerLeft,
                       child: IconButton(
-                        icon: Icon(Icons.arrow_back, color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary)),
+                        icon: Icon(
+                          Icons.arrow_back,
+                          color:
+                              (Theme.of(context).brightness == Brightness.dark
+                              ? AppColors.darkTextPrimary
+                              : AppColors.lightTextPrimary),
+                        ),
                         onPressed: () => Navigator.of(context).pop(),
                       ),
                     ),
                     const SizedBox(height: 24),
-                    
+
                     // Logo
                     if (!isDesktop) ...[
                       Center(
@@ -346,36 +368,45 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
                       ),
                       const SizedBox(height: 32),
                     ],
-                    
+
                     // Titre
                     Text(
                       'Première connexion',
                       style: TextStyle(
                         fontSize: isDesktop ? 32 : 24,
                         fontWeight: FontWeight.bold,
-                        color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
+                        color: (Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.darkTextPrimary
+                            : AppColors.lightTextPrimary),
                       ),
                       textAlign: isDesktop ? TextAlign.left : TextAlign.center,
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      _isEmail 
-                        ? 'Créez votre mot de passe avec le code reçu par email'
-                        : 'Créez votre mot de passe avec votre numéro de téléphone',
+                      _isEmail
+                          ? 'Créez votre mot de passe avec le code reçu par email'
+                          : 'Créez votre mot de passe avec votre numéro de téléphone',
                       style: TextStyle(
                         fontSize: isDesktop ? 16 : 14,
-                        color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
+                        color: (Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.darkTextSecondary
+                            : AppColors.lightTextSecondary),
                       ),
                       textAlign: isDesktop ? TextAlign.left : TextAlign.center,
                     ),
                     const SizedBox(height: 32),
-                    
+
                     // Champ Email/Téléphone
                     TextField(
                       controller: _emailController,
                       keyboardType: TextInputType.text,
                       textInputAction: TextInputAction.next,
-                      style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary), fontSize: 16),
+                      style: TextStyle(
+                        color: (Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.darkTextPrimary
+                            : AppColors.lightTextPrimary),
+                        fontSize: 16,
+                      ),
                       onChanged: (_) {
                         setState(() {
                           _phoneExists = null;
@@ -383,7 +414,9 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
                       },
                       decoration: InputDecoration(
                         labelText: 'Email ou Numéro de téléphone',
-                        hintText: _isEmail ? 'votre.email@example.com' : '+33612345678',
+                        hintText: _isEmail
+                            ? 'votre.email@example.com'
+                            : '+33612345678',
                         prefixIcon: Icon(
                           _isEmail ? Icons.email : Icons.phone,
                           color: AppColors.primary,
@@ -391,9 +424,17 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
                         suffixIcon: _isPhoneNumber
                             ? IconButton(
                                 icon: _phoneExists == true
-                                    ? const Icon(Icons.check_circle, color: AppColors.success)
-                                    : const Icon(Icons.search, color: AppColors.primary),
-                                onPressed: _isCheckingPhone ? null : _checkPhoneNumber,
+                                    ? const Icon(
+                                        Icons.check_circle,
+                                        color: AppColors.success,
+                                      )
+                                    : const Icon(
+                                        Icons.search,
+                                        color: AppColors.primary,
+                                      ),
+                                onPressed: _isCheckingPhone
+                                    ? null
+                                    : _checkPhoneNumber,
                               )
                             : null,
                       ),
@@ -408,14 +449,20 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
                             child: CircularProgressIndicator(strokeWidth: 2),
                           ),
                           SizedBox(width: 8),
-                          Text('Vérification...', style: TextStyle(fontSize: 12)),
+                          Text(
+                            'Vérification...',
+                            style: TextStyle(fontSize: 12),
+                          ),
                         ],
                       ),
                     ],
                     if (_isPhoneNumber && _phoneExists == true) ...[
                       const SizedBox(height: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.success.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
@@ -425,18 +472,25 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
                         ),
                         child: const Row(
                           children: [
-                            Icon(Icons.check_circle, color: AppColors.success, size: 20),
+                            Icon(
+                              Icons.check_circle,
+                              color: AppColors.success,
+                              size: 20,
+                            ),
                             SizedBox(width: 8),
                             Text(
                               'Numéro vérifié',
-                              style: TextStyle(color: AppColors.success, fontSize: 12),
+                              style: TextStyle(
+                                color: AppColors.success,
+                                fontSize: 12,
+                              ),
                             ),
                           ],
                         ),
                       ),
                     ],
                     const SizedBox(height: 16),
-                    
+
                     // Champ Code (uniquement pour email)
                     if (_isEmail) ...[
                       TextField(
@@ -444,61 +498,101 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
                         keyboardType: TextInputType.number,
                         textInputAction: TextInputAction.next,
                         maxLength: 6,
-                        style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary), fontSize: 16),
+                        style: TextStyle(
+                          color:
+                              (Theme.of(context).brightness == Brightness.dark
+                              ? AppColors.darkTextPrimary
+                              : AppColors.lightTextPrimary),
+                          fontSize: 16,
+                        ),
                         decoration: const InputDecoration(
                           labelText: 'Code reçu par email',
                           hintText: '123456',
-                          prefixIcon: Icon(Icons.password, color: AppColors.primary),
+                          prefixIcon: Icon(
+                            Icons.password,
+                            color: AppColors.primary,
+                          ),
                           counterText: '',
                         ),
                       ),
                       const SizedBox(height: 16),
-                    ],                    // Champ Mot de passe
+                    ], // Champ Mot de passe
                     TextField(
                       controller: _passwordController,
                       obscureText: _obscurePassword,
                       textInputAction: TextInputAction.next,
-                      style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary), fontSize: 16),
+                      style: TextStyle(
+                        color: (Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.darkTextPrimary
+                            : AppColors.lightTextPrimary),
+                        fontSize: 16,
+                      ),
                       decoration: InputDecoration(
                         labelText: 'Nouveau mot de passe',
                         hintText: 'Minimum 6 caractères',
-                        prefixIcon: const Icon(Icons.lock, color: AppColors.primary),
+                        prefixIcon: const Icon(
+                          Icons.lock,
+                          color: AppColors.primary,
+                        ),
                         suffixIcon: IconButton(
                           icon: Icon(
-                            _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                            color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
+                            _obscurePassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                            color:
+                                (Theme.of(context).brightness == Brightness.dark
+                                ? AppColors.darkTextSecondary
+                                : AppColors.lightTextSecondary),
                           ),
                           onPressed: () {
-                            setState(() => _obscurePassword = !_obscurePassword);
+                            setState(
+                              () => _obscurePassword = !_obscurePassword,
+                            );
                           },
                         ),
                       ),
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // Champ Confirmation
                     TextField(
                       controller: _confirmPasswordController,
                       obscureText: _obscureConfirmPassword,
                       textInputAction: TextInputAction.done,
-                      style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary), fontSize: 16),
+                      style: TextStyle(
+                        color: (Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.darkTextPrimary
+                            : AppColors.lightTextPrimary),
+                        fontSize: 16,
+                      ),
                       decoration: InputDecoration(
                         labelText: 'Confirmer le mot de passe',
-                        prefixIcon: const Icon(Icons.lock_outline, color: AppColors.primary),
+                        prefixIcon: const Icon(
+                          Icons.lock_outline,
+                          color: AppColors.primary,
+                        ),
                         suffixIcon: IconButton(
                           icon: Icon(
-                            _obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
-                            color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
+                            _obscureConfirmPassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                            color:
+                                (Theme.of(context).brightness == Brightness.dark
+                                ? AppColors.darkTextSecondary
+                                : AppColors.lightTextSecondary),
                           ),
                           onPressed: () {
-                            setState(() => _obscureConfirmPassword = !_obscureConfirmPassword);
+                            setState(
+                              () => _obscureConfirmPassword =
+                                  !_obscureConfirmPassword,
+                            );
                           },
                         ),
                       ),
                       onSubmitted: (_) => _setupPassword(),
                     ),
                     const SizedBox(height: 32),
-                    
+
                     // Bouton valider
                     SizedBox(
                       width: double.infinity,
@@ -512,7 +606,9 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
                             ? const SizedBox(
                                 height: 24,
                                 width: 24,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
                               )
                             : const Text(
                                 'Créer mon mot de passe',
@@ -524,7 +620,7 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // Info
                     Container(
                       padding: const EdgeInsets.all(16),
@@ -546,10 +642,14 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
                           Expanded(
                             child: Text(
                               _isEmail
-                                ? 'Vous avez reçu un code à 6 chiffres par email. Ce code est valide pendant 1 heure.'
-                                : 'Entrez votre numéro de téléphone et cliquez sur "Vérifier" pour confirmer qu\'il existe dans la base de données.',
+                                  ? 'Vous avez reçu un code à 6 chiffres par email. Ce code est valide pendant 1 heure.'
+                                  : 'Entrez votre numéro de téléphone et cliquez sur "Vérifier" pour confirmer qu\'il existe dans la base de données.',
                               style: TextStyle(
-                                color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
+                                color:
+                                    (Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? AppColors.darkTextPrimary
+                                    : AppColors.lightTextPrimary),
                                 fontSize: 13,
                               ),
                             ),
@@ -560,7 +660,7 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
                   ],
                 ),
               );
-              
+
               if (isDesktop || isTablet) {
                 content = Center(
                   child: ConstrainedBox(
@@ -571,7 +671,7 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
                   ),
                 );
               }
-              
+
               return content;
             },
           ),
@@ -580,8 +680,3 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
     );
   }
 }
-
-
-
-
-

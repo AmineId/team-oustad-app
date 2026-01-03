@@ -20,9 +20,19 @@ import '../config/app_config.dart';
 class ApiService {
   final Uri baseUri;
 
+  // Singleton instance
+  static ApiService? _instance;
+  static bool _initialized = false;
+
   ApiService(this.baseUri);
 
+  /// Returns the singleton instance of ApiService.
+  /// Creates it once on first call, then reuses the same instance.
   factory ApiService.fromEnv() {
+    if (_instance != null) {
+      return _instance!;
+    }
+
     String apiUrl;
 
     // Priority 1: Check for custom API_BASE_URL (optional override)
@@ -30,19 +40,31 @@ class ApiService {
 
     if (customUrl.isNotEmpty) {
       apiUrl = customUrl;
-      // ignore: avoid_print
-      debugPrint('🌐 ApiService: Using custom API_BASE_URL → $apiUrl');
+      if (!_initialized) {
+        // ignore: avoid_print
+        debugPrint('🌐 ApiService: Using custom API_BASE_URL → $apiUrl');
+      }
     } else {
       // Priority 2: Use ENVIRONMENT variable with AppConfig
       final config = AppConfig.fromEnvironment();
       apiUrl = config.apiBaseUrl;
-      // ignore: avoid_print
-      debugPrint(
-        '🌐 ApiService: Using ${config.environment} environment → $apiUrl',
-      );
+      if (!_initialized) {
+        // ignore: avoid_print
+        debugPrint(
+          '🌐 ApiService: Using ${config.environment} environment → $apiUrl',
+        );
+      }
     }
 
-    return ApiService(Uri.parse(apiUrl));
+    _instance = ApiService(Uri.parse(apiUrl));
+    _initialized = true;
+    return _instance!;
+  }
+
+  /// Reset the singleton (useful for testing or environment changes)
+  static void reset() {
+    _instance = null;
+    _initialized = false;
   }
 
   /// Health check - returns true when backend is reachable and returns 200.
@@ -192,12 +214,22 @@ class ApiService {
               );
             }
 
+            // Construire fullName depuis firstName/lastName ou utiliser fullName si présent
+            final String fullName;
+            if (user['fullName'] != null) {
+              fullName = user['fullName'] as String;
+            } else {
+              final firstName = (user['firstName'] as String?) ?? '';
+              final lastName = (user['lastName'] as String?) ?? '';
+              fullName = '$firstName $lastName'.trim();
+            }
+
             return {
               'token': body['token'] as String,
               'userType': userType,
               'userId': user['id'].toString(),
               'email': user['email'] as String,
-              'fullName': user['fullName'] as String,
+              'fullName': fullName,
               'gymId': user['gymId']?.toString(),
               'onboarding': onboarding,
             };
@@ -216,42 +248,25 @@ class ApiService {
     }
   }
 
-  /// Verify a JWT by calling the backend. Returns true when token is valid.
-  Future<bool> verifyToken(
-    String token, {
-    Duration timeout = const Duration(seconds: 8),
-  }) async {
-    final uri = baseUri.resolve('/auth/verify');
+  /// Verify a JWT locally by decoding and checking expiration.
+  /// Returns true when token is valid and not expired.
+  bool verifyToken(String token) {
     try {
-      final resp = await http
-          .get(uri, headers: {'Authorization': 'Bearer $token'})
-          .timeout(timeout);
-      return resp.statusCode == 200;
-    } catch (_) {
-      return false;
-    }
-  }
+      final parts = token.split('.');
+      if (parts.length != 3) return false;
 
-  /// Report an exception to the backend for operator review. The backend
-  /// can forward this to an email or store it.
-  Future<bool> reportError(
-    String message,
-    String? stack, {
-    Map<String, dynamic>? extra,
-  }) async {
-    final uri = baseUri.resolve('/errors');
-    try {
-      final body = {'message': message, 'stack': stack, 'extra': extra ?? {}};
-      final resp = await http
-          .post(
-            uri,
-            headers: {'Content-Type': 'application/json'},
-            body: jsonEncode(body),
-          )
-          .timeout(const Duration(seconds: 8));
-      return resp.statusCode == 200 || resp.statusCode == 201;
-    } catch (e) {
-      // ignore network/reporting errors here
+      final payload = parts[1];
+      final normalized = base64Url.normalize(payload);
+      final payloadString = utf8.decode(base64Url.decode(normalized));
+      final payloadMap = jsonDecode(payloadString) as Map<String, dynamic>;
+
+      // Check expiration
+      final exp = payloadMap['exp'] as int?;
+      if (exp == null) return false;
+
+      final expDate = DateTime.fromMillisecondsSinceEpoch(exp * 1000);
+      return DateTime.now().isBefore(expDate);
+    } catch (_) {
       return false;
     }
   }
@@ -623,7 +638,8 @@ class ApiService {
     try {
       final body = {
         'email': email,
-        'fullName': '$firstName $lastName',
+        'firstName': firstName,
+        'lastName': lastName,
         'gymId': gymId,
         if (password != null) 'password': password,
       };
@@ -1374,7 +1390,7 @@ class ApiService {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer $token',
             },
-            body: jsonEncode({'fcmToken': fcmToken}),
+            body: jsonEncode({'id': userId, 'fcmToken': fcmToken}),
           )
           .timeout(timeout);
 
@@ -1395,123 +1411,6 @@ class ApiService {
       // ignore: avoid_print
       debugPrint('❌ Error updating FCM token: $e');
       return null;
-    }
-  }
-
-  /// Send push notification to specific user
-  /// POST /notifications/send
-  Future<bool> sendPushNotification(
-    int userId,
-    String title,
-    String body,
-    String token, {
-    Map<String, dynamic>? data,
-    Duration timeout = const Duration(seconds: 8),
-  }) async {
-    final uri = baseUri.resolve('/notifications/send');
-
-    try {
-      final requestBody = {
-        'userId': userId,
-        'title': title,
-        'body': body,
-        if (data != null) 'data': data,
-      };
-
-      final resp = await http
-          .post(
-            uri,
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer $token',
-            },
-            body: jsonEncode(requestBody),
-          )
-          .timeout(timeout);
-
-      return resp.statusCode == 200;
-    } catch (e) {
-      // ignore: avoid_print
-      debugPrint('Error sending push notification: $e');
-      return false;
-    }
-  }
-
-  /// Send push notification to multiple users
-  /// POST /notifications/send-bulk
-  Future<bool> sendBulkPushNotification(
-    List<int> userIds,
-    String title,
-    String body,
-    String token, {
-    Map<String, dynamic>? data,
-    Duration timeout = const Duration(seconds: 8),
-  }) async {
-    final uri = baseUri.resolve('/notifications/send-bulk');
-
-    try {
-      final requestBody = {
-        'userIds': userIds,
-        'title': title,
-        'body': body,
-        if (data != null) 'data': data,
-      };
-
-      final resp = await http
-          .post(
-            uri,
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer $token',
-            },
-            body: jsonEncode(requestBody),
-          )
-          .timeout(timeout);
-
-      return resp.statusCode == 200;
-    } catch (e) {
-      // ignore: avoid_print
-      debugPrint('Error sending bulk push notifications: $e');
-      return false;
-    }
-  }
-
-  /// Send push notification to all users in a gym
-  /// POST /notifications/send-to-gym
-  Future<bool> sendGymPushNotification(
-    int gymId,
-    String title,
-    String body,
-    String token, {
-    Map<String, dynamic>? data,
-    Duration timeout = const Duration(seconds: 8),
-  }) async {
-    final uri = baseUri.resolve('/notifications/send-to-gym');
-
-    try {
-      final requestBody = {
-        'gymId': gymId,
-        'title': title,
-        'body': body,
-        if (data != null) 'data': data,
-      };
-
-      final resp = await http
-          .post(
-            uri,
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer $token',
-            },
-            body: jsonEncode(requestBody),
-          )
-          .timeout(timeout);
-
-      return resp.statusCode == 200;
-    } catch (e) {
-      // ignore: avoid_print
-      debugPrint('Error sending gym push notification: $e');
-      return false;
     }
   }
 
@@ -1615,20 +1514,55 @@ class ApiService {
   }) async {
     final uri = baseUri.resolve('/users');
     try {
+      debugPrint('ApiService.getUsers -> $uri');
       final resp = await http
           .get(uri, headers: {'Authorization': 'Bearer $token'})
           .timeout(timeout);
 
+      debugPrint('ApiService.getUsers status: ${resp.statusCode}');
+
+      // Parse and display body without heavy qrCode data
+      try {
+        final body = jsonDecode(resp.body);
+        if (body is List) {
+          debugPrint('ApiService.getUsers body: ${body.length} users');
+          for (var i = 0; i < body.length && i < 5; i++) {
+            final user = body[i] as Map<String, dynamic>;
+            final userCopy = Map<String, dynamic>.from(user);
+            if (userCopy.containsKey('qrCode')) {
+              userCopy['qrCode'] =
+                  '(${userCopy['qrCode'].toString().length} bytes)';
+            }
+            debugPrint('  User $i: $userCopy');
+          }
+        } else {
+          debugPrint('ApiService.getUsers body: $body');
+        }
+      } catch (e) {
+        debugPrint(
+          'ApiService.getUsers body (raw): ${resp.body.substring(0, resp.body.length > 500 ? 500 : resp.body.length)}...',
+        );
+      }
+
       if (resp.statusCode == 200) {
         try {
           final body = jsonDecode(resp.body);
-          return body['users'] as List<dynamic>;
-        } catch (_) {
+          // Support both formats: {users: [...]} or [...]
+          if (body is List) {
+            return body;
+          } else if (body is Map && body['users'] is List) {
+            return body['users'] as List<dynamic>;
+          }
+          return null;
+        } catch (e) {
+          debugPrint('ApiService.getUsers parse error: $e');
           return null;
         }
       }
+      debugPrint('ApiService.getUsers failed with status: ${resp.statusCode}');
       return null;
-    } catch (_) {
+    } catch (e) {
+      debugPrint('ApiService.getUsers exception: $e');
       return null;
     }
   }
@@ -1727,7 +1661,7 @@ class ApiService {
       if (resp.statusCode == 201) {
         try {
           final responseBody = jsonDecode(resp.body);
-          
+
           // If shouldSendSetupEmail flag is true and email is provided, send setup email
           if (shouldSendSetupEmail && email.isNotEmpty && password == null) {
             try {
@@ -1740,7 +1674,7 @@ class ApiService {
               debugPrint('Failed to send setup email: $emailError');
             }
           }
-          
+
           return responseBody as Map<String, dynamic>;
         } catch (e) {
           // ignore: avoid_print
@@ -2709,9 +2643,9 @@ class ApiService {
     if (category != null) queryParams['category'] = category;
     if (available != null) queryParams['available'] = available.toString();
 
-    final uri = baseUri.resolve('/store/products').replace(
-          queryParameters: queryParams.isNotEmpty ? queryParams : null,
-        );
+    final uri = baseUri
+        .resolve('/store/products')
+        .replace(queryParameters: queryParams.isNotEmpty ? queryParams : null);
     try {
       debugPrint('ApiService.getStoreProducts -> $uri');
 
@@ -2726,23 +2660,31 @@ class ApiService {
         try {
           final body = jsonDecode(resp.body);
           final products = body['products'] as List<dynamic>;
-          
+
           // Log pour debug des images
           if (products.isNotEmpty) {
             debugPrint('📦 Store products count: ${products.length}');
             final firstProduct = products.first as Map<String, dynamic>;
             debugPrint('📦 First product keys: ${firstProduct.keys.toList()}');
-            debugPrint('📦 Has imagesBase64: ${firstProduct.containsKey('imagesBase64')}');
+            debugPrint(
+              '📦 Has imagesBase64: ${firstProduct.containsKey('imagesBase64')}',
+            );
             debugPrint('📦 Has images: ${firstProduct.containsKey('images')}');
-            debugPrint('📦 Has imageUrl: ${firstProduct.containsKey('imageUrl')}');
+            debugPrint(
+              '📦 Has imageUrl: ${firstProduct.containsKey('imageUrl')}',
+            );
             if (firstProduct.containsKey('imagesBase64')) {
-              debugPrint('📦 imagesBase64 type: ${firstProduct['imagesBase64'].runtimeType}');
+              debugPrint(
+                '📦 imagesBase64 type: ${firstProduct['imagesBase64'].runtimeType}',
+              );
               if (firstProduct['imagesBase64'] is List) {
-                debugPrint('📦 imagesBase64 length: ${(firstProduct['imagesBase64'] as List).length}');
+                debugPrint(
+                  '📦 imagesBase64 length: ${(firstProduct['imagesBase64'] as List).length}',
+                );
               }
             }
           }
-          
+
           return products;
         } catch (_) {
           return null;
@@ -2816,11 +2758,13 @@ class ApiService {
           final imageName = (imageNames != null && i < imageNames.length)
               ? imageNames[i]
               : 'product_image_$i.jpg';
-          request.files.add(http.MultipartFile.fromBytes(
-            'images', // Field name for multiple images
-            imagesBytes[i],
-            filename: imageName,
-          ));
+          request.files.add(
+            http.MultipartFile.fromBytes(
+              'images', // Field name for multiple images
+              imagesBytes[i],
+              filename: imageName,
+            ),
+          );
         }
       }
 
@@ -2831,7 +2775,9 @@ class ApiService {
         final body = jsonDecode(resp.body);
         return body['product'] as Map<String, dynamic>;
       }
-      throw Exception('Failed to create product: ${resp.statusCode} - ${resp.body}');
+      throw Exception(
+        'Failed to create product: ${resp.statusCode} - ${resp.body}',
+      );
     } catch (e) {
       debugPrint('Error creating store product: $e');
       rethrow;
@@ -2874,11 +2820,13 @@ class ApiService {
           final imageName = (imageNames != null && i < imageNames.length)
               ? imageNames[i]
               : 'product_image_$i.jpg';
-          request.files.add(http.MultipartFile.fromBytes(
-            'images', // Field name for multiple images
-            imagesBytes[i],
-            filename: imageName,
-          ));
+          request.files.add(
+            http.MultipartFile.fromBytes(
+              'images', // Field name for multiple images
+              imagesBytes[i],
+              filename: imageName,
+            ),
+          );
         }
       }
 
@@ -2889,7 +2837,9 @@ class ApiService {
         final body = jsonDecode(resp.body);
         return body['product'] as Map<String, dynamic>;
       }
-      throw Exception('Failed to update product: ${resp.statusCode} - ${resp.body}');
+      throw Exception(
+        'Failed to update product: ${resp.statusCode} - ${resp.body}',
+      );
     } catch (e) {
       debugPrint('Error updating store product $displayId: $e');
       rethrow;
@@ -2910,7 +2860,9 @@ class ApiService {
           .timeout(timeout);
       if (resp.statusCode != 200) {
         final body = jsonDecode(resp.body);
-        throw Exception(body['message'] ?? 'Failed to delete product: ${resp.statusCode}');
+        throw Exception(
+          body['message'] ?? 'Failed to delete product: ${resp.statusCode}',
+        );
       }
     } catch (e) {
       debugPrint('Error deleting store product $displayId: $e');
@@ -2943,7 +2895,9 @@ class ApiService {
           )
           .timeout(timeout);
 
-      debugPrint('ApiService.checkoutMember response status: ${resp.statusCode}');
+      debugPrint(
+        'ApiService.checkoutMember response status: ${resp.statusCode}',
+      );
 
       if (resp.statusCode == 200) {
         try {
@@ -2979,7 +2933,9 @@ class ApiService {
   }) async {
     final uri = baseUri.resolve('/members/$memberId/onboarding');
     try {
-      debugPrint('ApiService.updateOnboardingStatus -> $uri (onboarding: $onboarding)');
+      debugPrint(
+        'ApiService.updateOnboardingStatus -> $uri (onboarding: $onboarding)',
+      );
 
       final resp = await http
           .put(
@@ -2992,7 +2948,9 @@ class ApiService {
           )
           .timeout(timeout);
 
-      debugPrint('ApiService.updateOnboardingStatus response status: ${resp.statusCode}');
+      debugPrint(
+        'ApiService.updateOnboardingStatus response status: ${resp.statusCode}',
+      );
 
       if (resp.statusCode == 200) {
         try {
@@ -3041,7 +2999,9 @@ class ApiService {
           )
           .timeout(timeout);
 
-      debugPrint('ApiService.uploadProfilePicture response status: ${resp.statusCode}');
+      debugPrint(
+        'ApiService.uploadProfilePicture response status: ${resp.statusCode}',
+      );
 
       if (resp.statusCode == 200) {
         try {
@@ -3079,15 +3039,12 @@ class ApiService {
       debugPrint('ApiService.getProfilePicture -> $uri');
 
       final resp = await http
-          .get(
-            uri,
-            headers: {
-              'Authorization': 'Bearer $token',
-            },
-          )
+          .get(uri, headers: {'Authorization': 'Bearer $token'})
           .timeout(timeout);
 
-      debugPrint('ApiService.getProfilePicture response status: ${resp.statusCode}');
+      debugPrint(
+        'ApiService.getProfilePicture response status: ${resp.statusCode}',
+      );
 
       if (resp.statusCode == 200) {
         try {
@@ -3124,15 +3081,12 @@ class ApiService {
       debugPrint('ApiService.deleteProfilePicture -> $uri');
 
       final resp = await http
-          .delete(
-            uri,
-            headers: {
-              'Authorization': 'Bearer $token',
-            },
-          )
+          .delete(uri, headers: {'Authorization': 'Bearer $token'})
           .timeout(timeout);
 
-      debugPrint('ApiService.deleteProfilePicture response status: ${resp.statusCode}');
+      debugPrint(
+        'ApiService.deleteProfilePicture response status: ${resp.statusCode}',
+      );
 
       if (resp.statusCode == 200) {
         try {
@@ -3169,7 +3123,9 @@ class ApiService {
   }) async {
     final uri = baseUri.resolve('/members/$memberId/preferred-training-days');
     try {
-      debugPrint('ApiService.updatePreferredTrainingDays -> $uri (days: $days)');
+      debugPrint(
+        'ApiService.updatePreferredTrainingDays -> $uri (days: $days)',
+      );
 
       final resp = await http
           .put(
@@ -3182,7 +3138,9 @@ class ApiService {
           )
           .timeout(timeout);
 
-      debugPrint('ApiService.updatePreferredTrainingDays response status: ${resp.statusCode}');
+      debugPrint(
+        'ApiService.updatePreferredTrainingDays response status: ${resp.statusCode}',
+      );
 
       if (resp.statusCode == 200) {
         try {

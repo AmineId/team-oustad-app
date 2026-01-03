@@ -47,7 +47,7 @@ class _SplashScreenState extends State<SplashScreen> {
       final auth = AuthService(_apiService);
       final token = await auth.loadToken();
       if (token != null) {
-        final valid = await _apiService.verifyToken(token);
+        final valid = _apiService.verifyToken(token);
         if (valid) {
           if (!mounted) return;
 

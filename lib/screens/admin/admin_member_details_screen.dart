@@ -18,13 +18,14 @@ class AdminMemberDetailsScreen extends StatefulWidget {
   });
 
   @override
-  State<AdminMemberDetailsScreen> createState() => _AdminMemberDetailsScreenState();
+  State<AdminMemberDetailsScreen> createState() =>
+      _AdminMemberDetailsScreenState();
 }
 
 class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
   final ApiService _apiService = ApiService.fromEnv();
   final AuthService _authService = AuthService(ApiService.fromEnv());
-  
+
   Map<String, dynamic>? _member;
   List<Map<String, dynamic>> _subscriptions = [];
   List<Map<String, dynamic>> _plannings = [];
@@ -70,7 +71,9 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
 
       // Si le membre n'existe pas, on arrête ici
       if (member == null) {
-        debugPrint('Membre null retourné par l\'API pour ID: ${widget.memberId}');
+        debugPrint(
+          'Membre null retourné par l\'API pour ID: ${widget.memberId}',
+        );
         setState(() {
           _errorMessage = 'Membre introuvable (ID: ${widget.memberId})';
           _isLoading = false;
@@ -82,50 +85,67 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
       List<Map<String, dynamic>> subscriptions = [];
       List<Map<String, dynamic>> allPayments = [];
       try {
-        final subsData = await _apiService.getMemberSubscriptions(widget.memberId, token);
+        final subsData = await _apiService.getMemberSubscriptions(
+          widget.memberId,
+          token,
+        );
         debugPrint('📋 Member subscriptions raw data: $subsData');
         if (subsData != null) {
-          subscriptions = subsData.map((s) => s as Map<String, dynamic>).toList();
+          subscriptions = subsData
+              .map((s) => s as Map<String, dynamic>)
+              .toList();
           debugPrint('📋 Subscriptions count: ${subscriptions.length}');
-          
+
           // Charger le nom du type d'abonnement pour chaque subscription
           for (var subscription in subscriptions) {
-            final subscriptionTypeId = subscription['subscriptionTypeId'] as int?;
+            final subscriptionTypeId =
+                subscription['subscriptionTypeId'] as int?;
             if (subscriptionTypeId != null) {
               try {
-                final subscriptionTypeData = await _apiService.getSubscriptionTypeById(subscriptionTypeId);
+                final subscriptionTypeData = await _apiService
+                    .getSubscriptionTypeById(subscriptionTypeId);
                 if (subscriptionTypeData != null) {
                   subscription['subscriptionType'] = subscriptionTypeData;
-                  debugPrint('📋 Loaded subscription type: ${subscriptionTypeData['name']}');
+                  debugPrint(
+                    '📋 Loaded subscription type: ${subscriptionTypeData['name']}',
+                  );
                 }
               } catch (e) {
-                debugPrint('Erreur chargement type abonnement $subscriptionTypeId: $e');
+                debugPrint(
+                  'Erreur chargement type abonnement $subscriptionTypeId: $e',
+                );
               }
             }
           }
-          
+
           // Récupérer tous les paiements de tous les abonnements
           for (var subscription in subscriptions) {
             try {
               final subDetails = await _apiService.getSubscriptionById(
-                subscription['id'] as int, 
-                token
+                subscription['id'] as int,
+                token,
               );
               if (subDetails != null && subDetails['payments'] != null) {
                 final payments = (subDetails['payments'] as List)
-                    .map((p) => {
-                      ...p as Map<String, dynamic>,
-                      'subscriptionName': subscription['subscriptionType']?['name'] ?? 'Abonnement',
-                      'subscriptionId': subscription['id'],
-                    })
+                    .map(
+                      (p) => {
+                        ...p as Map<String, dynamic>,
+                        'subscriptionName':
+                            subscription['subscriptionType']?['name'] ??
+                            'Abonnement',
+                        'subscriptionId': subscription['id'],
+                      },
+                    )
                     .toList();
                 allPayments.addAll(payments);
               }
             } catch (e) {
-              debugPrint('Erreur lors du chargement des paiements de l\'abonnement ${subscription['id']}: $e');
+              debugPrint(
+                'Erreur lors du chargement des paiements de l\'abonnement ${subscription['id']}: $e',
+              );
             }
           }
-          
+
           // Trier les paiements par date d'échéance (plus récents en premier)
           allPayments.sort((a, b) {
             final dateA = DateTime.tryParse(a['dueDate'] ?? '');
@@ -140,11 +160,14 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
         debugPrint('Erreur lors du chargement des abonnements: $e');
         // On continue même si les abonnements ne chargent pas
       }
-      
+
       // Charger les plannings du membre (indépendant)
       List<Map<String, dynamic>> plannings = [];
       try {
-        final planningsData = await _apiService.getMemberPlannings(widget.memberId, token);
+        final planningsData = await _apiService.getMemberPlannings(
+          widget.memberId,
+          token,
+        );
         if (planningsData['plannings'] != null) {
           plannings = (planningsData['plannings'] as List)
               .map((p) => p as Map<String, dynamic>)
@@ -155,7 +178,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
         debugPrint('Erreur lors du chargement des plannings: $e');
         // On continue même si les plannings ne chargent pas
       }
-      
+
       // Mettre à jour l'état avec toutes les données disponibles
       setState(() {
         _member = member;
@@ -246,195 +269,202 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
         ),
         child: _isLoading
             ? const Center(
-                child: CircularProgressIndicator(
-                  color: AppColors.primary,
-                ),
+                child: CircularProgressIndicator(color: AppColors.primary),
               )
             : _errorMessage.isNotEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(
-                          Icons.error_outline,
-                          color: AppColors.error,
-                          size: 48,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          _errorMessage,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 16),
-                        ElevatedButton(
-                          onPressed: _loadMemberDetails,
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                          ),
-                          child: const Text('Réessayer'),
-                        ),
-                      ],
+            ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.error_outline,
+                      color: AppColors.error,
+                      size: 48,
                     ),
-                  )
-                : RefreshIndicator(
-                    onRefresh: _loadMemberDetails,
-                    color: AppColors.primary,
-                    child: SingleChildScrollView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                    const SizedBox(height: 16),
+                    Text(
+                      _errorMessage,
+                      style: const TextStyle(color: Colors.white, fontSize: 16),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: _loadMemberDetails,
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
+                      ),
+                      child: const Text('Réessayer'),
+                    ),
+                  ],
+                ),
+              )
+            : RefreshIndicator(
+                onRefresh: _loadMemberDetails,
+                color: AppColors.primary,
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Carte d'info membre
+                      _buildMemberInfoCard(),
+
+                      const SizedBox(height: 24),
+
+                      // Section Abonnements
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          // Carte d'info membre
-                          _buildMemberInfoCard(),
-                          
-                          const SizedBox(height: 24),
-                          
-                          // Section Abonnements
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'Abonnements',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: Theme.of(context).textTheme.bodyLarge!.color,
-                                ),
-                              ),
-                              IconButton(
-                                onPressed: () async {
-                                  await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => AdminCreateSubscriptionScreen(
+                          Text(
+                            'Abonnements',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(
+                                context,
+                              ).textTheme.bodyLarge!.color,
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () async {
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      AdminCreateSubscriptionScreen(
                                         memberId: widget.memberId,
                                       ),
-                                    ),
-                                  );
-                                  // Recharger après création
-                                  _loadMemberDetails();
-                                },
-                                icon: const Icon(Icons.add_circle),
-                                color: AppColors.primary,
-                                iconSize: 32,
-                                tooltip: 'Ajouter un abonnement',
-                              ),
-                            ],
+                                ),
+                              );
+                              // Recharger après création
+                              _loadMemberDetails();
+                            },
+                            icon: const Icon(Icons.add_circle),
+                            color: AppColors.primary,
+                            iconSize: 32,
+                            tooltip: 'Ajouter un abonnement',
                           ),
-                          
-                          const SizedBox(height: 16),
-                          
-                          // Liste des abonnements
-                          if (_subscriptions.isEmpty)
-                            Center(
-                              child: Padding(
-                                padding: const EdgeInsets.all(32.0),
-                                child: Column(
-                                  children: [
-                                    const Icon(
-                                      Icons.subscriptions_outlined,
-                                      color: Colors.white60,
-                                      size: 48,
-                                    ),
-                                    const SizedBox(height: 16),
-                                    const Text(
-                                      'Aucun abonnement',
-                                      style: TextStyle(
-                                        color: Colors.white60,
-                                        fontSize: 16,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            )
-                          else
-                            ..._subscriptions.map((subscription) => _buildSubscriptionCard(subscription)),
-                          
-                          const SizedBox(height: 32),
-                          
-                          // Section Plannings
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                'Plannings',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              IconButton(
-                                onPressed: () async {
-                                  await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => AdminCreatePlanningScreen(
-                                        preselectedMemberId: widget.memberId,
-                                      ),
-                                    ),
-                                  );
-                                  // Recharger après création
-                                  _loadMemberDetails();
-                                },
-                                icon: const Icon(Icons.add_circle),
-                                color: AppColors.primary,
-                                iconSize: 32,
-                                tooltip: 'Ajouter un planning',
-                              ),
-                            ],
-                          ),
-                          
-                          const SizedBox(height: 16),
-                          
-                          // Liste des plannings
-                          if (_plannings.isEmpty)
-                            Center(
-                              child: Padding(
-                                padding: const EdgeInsets.all(32.0),
-                                child: Column(
-                                  children: [
-                                    const Icon(
-                                      Icons.calendar_today_outlined,
-                                      color: Colors.white60,
-                                      size: 48,
-                                    ),
-                                    const SizedBox(height: 16),
-                                    const Text(
-                                      'Aucun planning',
-                                      style: TextStyle(
-                                        color: Colors.white60,
-                                        fontSize: 16,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            )
-                          else
-                            ..._plannings.map((planning) => _buildPlanningCard(planning)),
                         ],
                       ),
-                    ),
+
+                      const SizedBox(height: 16),
+
+                      // Liste des abonnements
+                      if (_subscriptions.isEmpty)
+                        Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(32.0),
+                            child: Column(
+                              children: [
+                                const Icon(
+                                  Icons.subscriptions_outlined,
+                                  color: Colors.white60,
+                                  size: 48,
+                                ),
+                                const SizedBox(height: 16),
+                                const Text(
+                                  'Aucun abonnement',
+                                  style: TextStyle(
+                                    color: Colors.white60,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      else
+                        ..._subscriptions.map(
+                          (subscription) =>
+                              _buildSubscriptionCard(subscription),
+                        ),
+
+                      const SizedBox(height: 32),
+
+                      // Section Plannings
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Plannings',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () async {
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      AdminCreatePlanningScreen(
+                                        preselectedMemberId: widget.memberId,
+                                      ),
+                                ),
+                              );
+                              // Recharger après création
+                              _loadMemberDetails();
+                            },
+                            icon: const Icon(Icons.add_circle),
+                            color: AppColors.primary,
+                            iconSize: 32,
+                            tooltip: 'Ajouter un planning',
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // Liste des plannings
+                      if (_plannings.isEmpty)
+                        Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(32.0),
+                            child: Column(
+                              children: [
+                                const Icon(
+                                  Icons.calendar_today_outlined,
+                                  color: Colors.white60,
+                                  size: 48,
+                                ),
+                                const SizedBox(height: 16),
+                                const Text(
+                                  'Aucun planning',
+                                  style: TextStyle(
+                                    color: Colors.white60,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      else
+                        ..._plannings.map(
+                          (planning) => _buildPlanningCard(planning),
+                        ),
+                    ],
                   ),
+                ),
+              ),
       ),
     );
   }
 
   Widget _buildMemberInfoCard() {
     if (_member == null) return const SizedBox();
-    
+
     final fullName = getUserFullName(_member);
     final email = _member!['email'] as String? ?? '';
     final uniqueCode = _member!['uniqueCode'] as String? ?? '';
     final phone = _member!['phone'] as String?;
-    
+
     // Obtenir les initiales pour l'avatar
     final initials = fullName
         .split(' ')
@@ -458,10 +488,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: AppColors.primary.withValues(alpha: 0.2),
-              border: Border.all(
-                color: AppColors.primary,
-                width: 3,
-              ),
+              border: Border.all(color: AppColors.primary, width: 3),
             ),
             child: Center(
               child: Text(
@@ -474,9 +501,9 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
               ),
             ),
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Nom
           Text(
             fullName,
@@ -487,15 +514,12 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
             ),
             textAlign: TextAlign.center,
           ),
-          
+
           const SizedBox(height: 8),
-          
+
           // Code unique
           Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 6,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
               color: AppColors.primary.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
@@ -509,14 +533,14 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
               ),
             ),
           ),
-          
+
           const SizedBox(height: 16),
           const Divider(color: Colors.white24),
           const SizedBox(height: 16),
-          
+
           // Email
           _buildInfoRow(Icons.email, email),
-          
+
           if (phone != null) ...[
             const SizedBox(height: 12),
             _buildInfoRow(Icons.phone, phone),
@@ -545,23 +569,22 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
   }
 
   Widget _buildSubscriptionCard(Map<String, dynamic> subscription) {
-    final subscriptionType = subscription['subscriptionType'] as Map<String, dynamic>?;
+    final subscriptionType =
+        subscription['subscriptionType'] as Map<String, dynamic>?;
     final status = subscription['status'] as String? ?? 'unknown';
     final startDate = subscription['startDate'] as String?;
     final endDate = subscription['endDate'] as String?;
-    
+
     // Le type est dans subscriptionType['type']
     final typeData = subscriptionType?['type'] as Map<String, dynamic>?;
     final typeName = typeData?['name'] as String? ?? 'Abonnement';
     final typeDescription = typeData?['description'] as String?;
     final monthlyPrice = typeData?['monthlyPrice'];
-    
+
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       color: Theme.of(context).cardTheme.color,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
         onTap: () async {
           await Navigator.push(
@@ -619,7 +642,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                   ),
                 ],
               ),
-              
+
               if (typeDescription != null) ...[
                 const SizedBox(height: 8),
                 Text(
@@ -630,9 +653,9 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                   ),
                 ),
               ],
-              
+
               const SizedBox(height: 12),
-              
+
               // Prix
               if (monthlyPrice != null)
                 Text(
@@ -643,13 +666,17 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-              
+
               const SizedBox(height: 12),
-              
+
               // Dates
               Row(
                 children: [
-                  const Icon(Icons.calendar_today, color: Colors.white60, size: 16),
+                  const Icon(
+                    Icons.calendar_today,
+                    color: Colors.white60,
+                    size: 16,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -675,14 +702,17 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
   }
 
   Widget _buildPlanningCard(Map<String, dynamic> planning) {
-    final title = planning['title'] as String? ?? planning['name'] as String? ?? 'Planning';
+    final title =
+        planning['title'] as String? ??
+        planning['name'] as String? ??
+        'Planning';
     final description = planning['description'] as String?;
     final startDate = planning['startDate'] as String?;
     final endDate = planning['endDate'] as String?;
     final status = planning['status'] as String? ?? 'unknown';
     final coach = planning['coach'] as Map<String, dynamic>?;
     final days = planning['days'] as List<dynamic>? ?? [];
-    
+
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       color: Theme.of(context).cardTheme.color,
@@ -739,7 +769,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                   ),
                 ],
               ),
-              
+
               if (description != null && description.isNotEmpty) ...[
                 const SizedBox(height: 8),
                 Text(
@@ -752,20 +782,24 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
-              
+
               const SizedBox(height: 12),
               const Divider(color: Colors.white24),
               const SizedBox(height: 12),
-              
+
               // Coach
               if (coach != null)
                 Row(
                   children: [
-                    const Icon(Icons.fitness_center, color: AppColors.primary, size: 16),
+                    const Icon(
+                      Icons.fitness_center,
+                      color: AppColors.primary,
+                      size: 16,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Coach: ${coach['fullName'] ?? 'N/A'}',
+                        'Coach: ${getUserFullName(coach)}',
                         style: TextStyle(
                           color: Colors.white.withValues(alpha: 0.9),
                           fontSize: 13,
@@ -774,13 +808,17 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                     ),
                   ],
                 ),
-              
+
               const SizedBox(height: 8),
-              
+
               // Dates
               Row(
                 children: [
-                  const Icon(Icons.calendar_today, color: Colors.white60, size: 16),
+                  const Icon(
+                    Icons.calendar_today,
+                    color: Colors.white60,
+                    size: 16,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -793,13 +831,17 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                   ),
                 ],
               ),
-              
+
               const SizedBox(height: 8),
-              
+
               // Jours d'entraînement
               Row(
                 children: [
-                  const Icon(Icons.fitness_center, color: Colors.white60, size: 16),
+                  const Icon(
+                    Icons.fitness_center,
+                    color: Colors.white60,
+                    size: 16,
+                  ),
                   const SizedBox(width: 8),
                   Text(
                     '${days.length} jour${days.length > 1 ? 's' : ''} d\'entraînement',
@@ -824,7 +866,10 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
   }
 
   void _showPlanningDetails(Map<String, dynamic> planning) {
-    final title = planning['title'] as String? ?? planning['name'] as String? ?? 'Planning';
+    final title =
+        planning['title'] as String? ??
+        planning['name'] as String? ??
+        'Planning';
     final description = planning['description'] as String? ?? '';
     final startDate = planning['startDate'] as String?;
     final endDate = planning['endDate'] as String?;
@@ -853,7 +898,9 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: Theme.of(context).cardTheme.color,
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(20),
+                  ),
                   border: Border(
                     bottom: BorderSide(
                       color: _getStatusColor(status).withValues(alpha: 0.3),
@@ -882,7 +929,9 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: _getStatusColor(status).withValues(alpha: 0.2),
+                              color: _getStatusColor(
+                                status,
+                              ).withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
                                 color: _getStatusColor(status),
@@ -908,7 +957,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                   ],
                 ),
               ),
-              
+
               // Content
               Expanded(
                 child: ListView(
@@ -923,43 +972,43 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                       ),
                       const SizedBox(height: 16),
                     ],
-                    
+
                     if (member != null)
                       _buildDetailRow(
                         Icons.person,
                         'Membre',
-                        member['fullName'] ?? 'N/A',
+                        getUserFullName(member),
                       ),
-                    
+
                     const SizedBox(height: 16),
-                    
+
                     if (coach != null)
                       _buildDetailRow(
                         Icons.fitness_center,
                         'Coach',
-                        coach['fullName'] ?? 'N/A',
+                        getUserFullName(coach),
                       ),
-                    
+
                     const SizedBox(height: 16),
-                    
+
                     _buildDetailRow(
                       Icons.calendar_today,
                       'Date de début',
                       _formatDate(startDate),
                     ),
-                    
+
                     const SizedBox(height: 16),
-                    
+
                     _buildDetailRow(
                       Icons.event,
                       'Date de fin',
                       _formatDate(endDate),
                     ),
-                    
+
                     const SizedBox(height: 24),
                     const Divider(color: Colors.white24),
                     const SizedBox(height: 16),
-                    
+
                     // Jours d'entraînement
                     const Text(
                       'Jours d\'entraînement',
@@ -970,7 +1019,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    
+
                     if (days.isEmpty)
                       Container(
                         padding: const EdgeInsets.all(16),
@@ -989,8 +1038,9 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                     else
                       ...days.map((day) {
                         final dayOfWeek = day['dayOfWeek'] as int?;
-                        final exercises = day['exercises'] as List<dynamic>? ?? [];
-                        
+                        final exercises =
+                            day['exercises'] as List<dynamic>? ?? [];
+
                         return Container(
                           margin: const EdgeInsets.only(bottom: 12),
                           padding: const EdgeInsets.all(12),
@@ -1007,7 +1057,9 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                               Container(
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
-                                  color: AppColors.primary.withValues(alpha: 0.2),
+                                  color: AppColors.primary.withValues(
+                                    alpha: 0.2,
+                                  ),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: const Icon(
@@ -1033,7 +1085,9 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                                     Text(
                                       '${exercises.length} exercice${exercises.length > 1 ? 's' : ''}',
                                       style: TextStyle(
-                                        color: Colors.white.withValues(alpha: 0.6),
+                                        color: Colors.white.withValues(
+                                          alpha: 0.6,
+                                        ),
                                         fontSize: 12,
                                       ),
                                     ),
@@ -1044,9 +1098,9 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                           ),
                         );
                       }),
-                    
+
                     const SizedBox(height: 24),
-                    
+
                     // Bouton supprimer
                     SizedBox(
                       width: double.infinity,
@@ -1063,15 +1117,21 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.red.withValues(alpha: 0.2),
                           foregroundColor: AppColors.error,
-                          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 16,
+                            horizontal: 24,
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
-                            side: const BorderSide(color: AppColors.error, width: 1),
+                            side: const BorderSide(
+                              color: AppColors.error,
+                              width: 1,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                    
+
                     const SizedBox(height: 16),
                   ],
                 ),
@@ -1215,9 +1275,9 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
 
       // Appeler l'API pour supprimer le planning
       final success = await _apiService.deletePlanning(id, token);
-      
+
       if (!mounted) return;
-      
+
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -1225,7 +1285,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
             backgroundColor: AppColors.success,
           ),
         );
-        
+
         // Recharger les détails du membre
         _loadMemberDetails();
       } else {
@@ -1256,8 +1316,4 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
       return dateString;
     }
   }
-
 }
-
-
-

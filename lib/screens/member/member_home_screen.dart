@@ -8,6 +8,7 @@ import '../../core/services/auth_service.dart';
 import '../../core/services/api_service.dart';
 import '../../core/theme/theme.dart';
 import '../../core/l10n/app_localizations.dart';
+import '../../core/utils/user_utils.dart';
 import '../../widgets/common/common_widgets.dart';
 import '../../widgets/responsive/responsive_layout.dart';
 import '../auth/login_screen.dart';
@@ -620,9 +621,9 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                 builder: (context, snapshot) {
                   final theme = Theme.of(context);
                   final profileData = snapshot.data;
-                  final fullName =
-                      profileData?['fullName'] ??
-                      AppLocalizations.of(context).member;
+                  final fullName = profileData != null
+                      ? getUserFullName(profileData)
+                      : AppLocalizations.of(context).member;
 
                   // Get subscription info
                   Map<String, dynamic>? subscription;
@@ -2564,7 +2565,9 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
                             ),
                             SizedBox(height: 24),
                             Text(
-                              _profileData?['fullName'] ?? 'Utilisateur',
+                              _profileData != null
+                                  ? getUserFullName(_profileData!)
+                                  : 'Utilisateur',
                               style: TextStyle(
                                 color:
                                     (Theme.of(context).brightness ==
@@ -3862,7 +3865,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                   ),
                   SizedBox(width: 8),
                   Text(
-                    '${AppLocalizations.of(context).coach}: ${coach['fullName'] ?? 'N/A'}',
+                    '${AppLocalizations.of(context).coach}: ${getUserFullName(coach)}',
                     style: TextStyle(
                       fontSize: 13,
                       color: (Theme.of(context).brightness == Brightness.dark
@@ -4838,7 +4841,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
         return;
       }
 
-      final memberName = profileData['fullName'] as String? ?? 'Un membre';
+      final memberName = getUserFullName(profileData);
 
       // Show confirmation dialog
       if (!mounted) return;
@@ -5136,7 +5139,9 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
     }
 
     // Extract data from cache
-    final fullName = _profileData?['fullName'] ?? 'Utilisateur';
+    final fullName = _profileData != null
+        ? getUserFullName(_profileData!)
+        : 'Utilisateur';
     final email = _profileData?['email'] ?? 'email@exemple.com';
     final phoneNumber = _profileData?['phoneNumber'] ?? '';
     final joinedAt = _profileData?['joinedAt'] ?? 'N/A';

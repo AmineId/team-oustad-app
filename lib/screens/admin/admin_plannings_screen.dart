@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/theme/theme.dart';
+import '../../core/utils/user_utils.dart';
 import 'admin_create_planning_screen.dart';
 
 class AdminPlanningsScreen extends StatefulWidget {
@@ -14,11 +15,12 @@ class AdminPlanningsScreen extends StatefulWidget {
   State<AdminPlanningsScreen> createState() => _AdminPlanningsScreenState();
 }
 
-class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with SingleTickerProviderStateMixin {
+class _AdminPlanningsScreenState extends State<AdminPlanningsScreen>
+    with SingleTickerProviderStateMixin {
   final ApiService _apiService = ApiService.fromEnv();
   final AuthService _authService = AuthService(ApiService.fromEnv());
   late TabController _tabController;
-  
+
   List<Map<String, dynamic>> _activePlannings = [];
   List<Map<String, dynamic>> _completedPlannings = [];
   List<Map<String, dynamic>> _cancelledPlannings = [];
@@ -56,7 +58,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
 
       // Charger tous les plannings sans filtre de statut d'abord
       final allPlannings = await _apiService.getPlannings(token);
-      
+
       if (allPlannings == null) {
         setState(() {
           _errorMessage = 'Impossible de charger les plannings';
@@ -66,17 +68,27 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
       }
 
       // Séparer les plannings par statut
-      final planningsMap = allPlannings.map((p) => p as Map<String, dynamic>).toList();
-      
+      final planningsMap = allPlannings
+          .map((p) => p as Map<String, dynamic>)
+          .toList();
+
       setState(() {
         _activePlannings = planningsMap
-            .where((p) => (p['status'] as String? ?? '').toLowerCase() == 'active')
+            .where(
+              (p) => (p['status'] as String? ?? '').toLowerCase() == 'active',
+            )
             .toList();
         _completedPlannings = planningsMap
-            .where((p) => (p['status'] as String? ?? '').toLowerCase() == 'completed')
+            .where(
+              (p) =>
+                  (p['status'] as String? ?? '').toLowerCase() == 'completed',
+            )
             .toList();
         _cancelledPlannings = planningsMap
-            .where((p) => (p['status'] as String? ?? '').toLowerCase() == 'cancelled')
+            .where(
+              (p) =>
+                  (p['status'] as String? ?? '').toLowerCase() == 'cancelled',
+            )
             .toList();
         _isLoading = false;
       });
@@ -248,48 +260,46 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
         ),
         child: _isLoading
             ? const Center(
-                child: CircularProgressIndicator(
-                  color: AppColors.primary,
-                ),
+                child: CircularProgressIndicator(color: AppColors.primary),
               )
             : _errorMessage.isNotEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(
-                          Icons.error_outline,
-                          color: AppColors.error,
-                          size: 48,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          _errorMessage,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 16),
-                        ElevatedButton(
-                          onPressed: _loadPlannings,
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                          ),
-                          child: const Text('Réessayer'),
-                        ),
-                      ],
+            ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.error_outline,
+                      color: AppColors.error,
+                      size: 48,
                     ),
-                  )
-                : TabBarView(
-                    controller: _tabController,
-                    children: [
-                      _buildPlanningsList(_activePlannings),
-                      _buildPlanningsList(_completedPlannings),
-                      _buildPlanningsList(_cancelledPlannings),
-                    ],
-                  ),
+                    const SizedBox(height: 16),
+                    Text(
+                      _errorMessage,
+                      style: const TextStyle(color: Colors.white, fontSize: 16),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: _loadPlannings,
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
+                      ),
+                      child: const Text('Réessayer'),
+                    ),
+                  ],
+                ),
+              )
+            : TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildPlanningsList(_activePlannings),
+                  _buildPlanningsList(_completedPlannings),
+                  _buildPlanningsList(_cancelledPlannings),
+                ],
+              ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
@@ -326,10 +336,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
             const SizedBox(height: 16),
             const Text(
               'Aucun planning',
-              style: TextStyle(
-                color: Colors.white60,
-                fontSize: 16,
-              ),
+              style: TextStyle(color: Colors.white60, fontSize: 16),
             ),
           ],
         ),
@@ -358,7 +365,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
     final endDate = planning['endDate'] as String?;
     final member = planning['member'] as Map<String, dynamic>?;
     final coach = planning['coach'] as Map<String, dynamic>?;
-    
+
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       color: Theme.of(context).cardTheme.color,
@@ -415,7 +422,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
                   ),
                 ],
               ),
-              
+
               if (description.isNotEmpty) ...[
                 const SizedBox(height: 8),
                 Text(
@@ -428,20 +435,24 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
-              
+
               const SizedBox(height: 12),
               const Divider(color: Colors.white24),
               const SizedBox(height: 12),
-              
+
               // Membre
               if (member != null)
                 Row(
                   children: [
-                    const Icon(Icons.person, color: AppColors.primary, size: 16),
+                    const Icon(
+                      Icons.person,
+                      color: AppColors.primary,
+                      size: 16,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Membre: ${member['fullName'] ?? 'N/A'}',
+                        'Membre: ${getUserFullName(member)}',
                         style: TextStyle(
                           color: Colors.white.withValues(alpha: 0.9),
                           fontSize: 13,
@@ -450,18 +461,22 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
                     ),
                   ],
                 ),
-              
+
               const SizedBox(height: 8),
-              
+
               // Coach
               if (coach != null)
                 Row(
                   children: [
-                    const Icon(Icons.fitness_center, color: AppColors.primary, size: 16),
+                    const Icon(
+                      Icons.fitness_center,
+                      color: AppColors.primary,
+                      size: 16,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Coach: ${coach['fullName'] ?? 'N/A'}',
+                        'Coach: ${getUserFullName(coach)}',
                         style: TextStyle(
                           color: Colors.white.withValues(alpha: 0.9),
                           fontSize: 13,
@@ -470,13 +485,17 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
                     ),
                   ],
                 ),
-              
+
               const SizedBox(height: 8),
-              
+
               // Dates
               Row(
                 children: [
-                  const Icon(Icons.calendar_today, color: Colors.white60, size: 16),
+                  const Icon(
+                    Icons.calendar_today,
+                    color: Colors.white60,
+                    size: 16,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -529,14 +548,18 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
                       color: Theme.of(context).scaffoldBackgroundColor,
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(20),
+                      ),
                     ),
                     child: Row(
                       children: [
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: _getStatusColor(status).withValues(alpha: 0.2),
+                            color: _getStatusColor(
+                              status,
+                            ).withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Icon(
@@ -560,9 +583,14 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
                               ),
                               const SizedBox(height: 4),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
                                 decoration: BoxDecoration(
-                                  color: _getStatusColor(status).withValues(alpha: 0.2),
+                                  color: _getStatusColor(
+                                    status,
+                                  ).withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(6),
                                   border: Border.all(
                                     color: _getStatusColor(status),
@@ -611,7 +639,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
                           _buildDetailRow(
                             Icons.person,
                             'Membre',
-                            member['fullName'] ?? 'N/A',
+                            getUserFullName(member),
                           ),
                         const SizedBox(height: 12),
                         // Coach
@@ -619,7 +647,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
                           _buildDetailRow(
                             Icons.fitness_center,
                             'Coach',
-                            coach['fullName'] ?? 'N/A',
+                            getUserFullName(coach),
                           ),
                         const SizedBox(height: 12),
                         // Dates
@@ -643,7 +671,8 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
                         const SizedBox(height: 12),
                         ...days.map((day) {
                           final dayData = day as Map<String, dynamic>;
-                          final exercises = dayData['exercises'] as List<dynamic>? ?? [];
+                          final exercises =
+                              dayData['exercises'] as List<dynamic>? ?? [];
                           final dayOfWeek = dayData['dayOfWeek'] as int?;
                           return Card(
                             color: Theme.of(context).scaffoldBackgroundColor,
@@ -665,7 +694,9 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
                                   Text(
                                     '${exercises.length} exercice${exercises.length > 1 ? 's' : ''}',
                                     style: TextStyle(
-                                      color: Colors.white.withValues(alpha: 0.7),
+                                      color: Colors.white.withValues(
+                                        alpha: 0.7,
+                                      ),
                                       fontSize: 13,
                                     ),
                                   ),
@@ -682,7 +713,9 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
                       color: Theme.of(context).scaffoldBackgroundColor,
-                      borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
+                      borderRadius: BorderRadius.vertical(
+                        bottom: Radius.circular(20),
+                      ),
                     ),
                     child: SizedBox(
                       width: double.infinity,
@@ -696,7 +729,10 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.error,
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 14,
+                            horizontal: 24,
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
@@ -747,7 +783,15 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
   }
 
   String _getDayName(int dayOfWeek) {
-    const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+    const days = [
+      'Dimanche',
+      'Lundi',
+      'Mardi',
+      'Mercredi',
+      'Jeudi',
+      'Vendredi',
+      'Samedi',
+    ];
     return days[dayOfWeek % 7];
   }
 
@@ -771,7 +815,10 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
             TextButton(
               onPressed: () => Navigator.pop(context, false),
               style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
               ),
               child: const Text('Annuler'),
             ),
@@ -779,7 +826,10 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
               onPressed: () => Navigator.pop(context, true),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.error,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
               ),
               child: const Text('Supprimer'),
             ),
@@ -809,9 +859,9 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
 
       // Appeler l'API pour supprimer le planning
       final success = await _apiService.deletePlanning(planningId, token);
-      
+
       if (!mounted) return;
-      
+
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -819,7 +869,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
             backgroundColor: AppColors.success,
           ),
         );
-        
+
         // Recharger la liste
         _loadPlannings();
       } else {
@@ -851,7 +901,3 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen> with Single
     }
   }
 }
-
-
-
-

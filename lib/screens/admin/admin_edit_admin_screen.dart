@@ -5,7 +5,7 @@ import '../../core/theme/theme.dart';
 
 class AdminEditAdminScreen extends StatefulWidget {
   final Map<String, dynamic> admin;
-  
+
   const AdminEditAdminScreen({super.key, required this.admin});
 
   @override
@@ -16,10 +16,11 @@ class _AdminEditAdminScreenState extends State<AdminEditAdminScreen> {
   final _formKey = GlobalKey<FormState>();
   final ApiService _apiService = ApiService.fromEnv();
   final AuthService _authService = AuthService(ApiService.fromEnv());
-  
+
   late TextEditingController _emailController;
-  late TextEditingController _fullNameController;
-  
+  late TextEditingController _firstNameController;
+  late TextEditingController _lastNameController;
+
   List<Map<String, dynamic>> _gyms = [];
   int? _selectedGymId;
   bool _isLoading = false;
@@ -27,8 +28,15 @@ class _AdminEditAdminScreenState extends State<AdminEditAdminScreen> {
   @override
   void initState() {
     super.initState();
-    _emailController = TextEditingController(text: widget.admin['email'] as String?);
-    _fullNameController = TextEditingController(text: widget.admin['fullName'] as String?);
+    _emailController = TextEditingController(
+      text: widget.admin['email'] as String?,
+    );
+    _firstNameController = TextEditingController(
+      text: widget.admin['firstName'] as String?,
+    );
+    _lastNameController = TextEditingController(
+      text: widget.admin['lastName'] as String?,
+    );
     _selectedGymId = widget.admin['gymId'] as int?;
     _loadGyms();
   }
@@ -36,7 +44,8 @@ class _AdminEditAdminScreenState extends State<AdminEditAdminScreen> {
   @override
   void dispose() {
     _emailController.dispose();
-    _fullNameController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     super.dispose();
   }
 
@@ -53,9 +62,9 @@ class _AdminEditAdminScreenState extends State<AdminEditAdminScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur chargement salles: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Erreur chargement salles: $e')));
       }
     }
   }
@@ -71,7 +80,8 @@ class _AdminEditAdminScreenState extends State<AdminEditAdminScreen> {
 
       final updateData = {
         'email': _emailController.text.trim(),
-        'fullName': _fullNameController.text.trim(),
+        'firstName': _firstNameController.text.trim(),
+        'lastName': _lastNameController.text.trim(),
         'gymId': _selectedGymId,
       };
 
@@ -109,7 +119,7 @@ class _AdminEditAdminScreenState extends State<AdminEditAdminScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -122,10 +132,7 @@ class _AdminEditAdminScreenState extends State<AdminEditAdminScreen> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              theme.scaffoldBackgroundColor,
-              theme.cardTheme.color!,
-            ],
+            colors: [theme.scaffoldBackgroundColor, theme.cardTheme.color!],
           ),
         ),
         child: SafeArea(
@@ -152,14 +159,17 @@ class _AdminEditAdminScreenState extends State<AdminEditAdminScreen> {
                   ),
                   const SizedBox(height: 32),
 
-                  // Nom complet
+                  // Prénom
                   TextFormField(
-                    controller: _fullNameController,
+                    controller: _firstNameController,
                     style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
-                      labelText: 'Nom complet',
+                      labelText: 'Prénom',
                       labelStyle: const TextStyle(color: Colors.white60),
-                      prefixIcon: const Icon(Icons.person, color: AppColors.primary),
+                      prefixIcon: const Icon(
+                        Icons.person,
+                        color: AppColors.primary,
+                      ),
                       filled: true,
                       fillColor: theme.cardTheme.color,
                       border: OutlineInputBorder(
@@ -169,7 +179,34 @@ class _AdminEditAdminScreenState extends State<AdminEditAdminScreen> {
                     ),
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
-                        return 'Le nom complet est requis';
+                        return 'Le prénom est requis';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Nom
+                  TextFormField(
+                    controller: _lastNameController,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      labelText: 'Nom',
+                      labelStyle: const TextStyle(color: Colors.white60),
+                      prefixIcon: const Icon(
+                        Icons.person_outline,
+                        color: AppColors.primary,
+                      ),
+                      filled: true,
+                      fillColor: theme.cardTheme.color,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Le nom est requis';
                       }
                       return null;
                     },
@@ -184,7 +221,10 @@ class _AdminEditAdminScreenState extends State<AdminEditAdminScreen> {
                     decoration: InputDecoration(
                       labelText: 'Email',
                       labelStyle: const TextStyle(color: Colors.white60),
-                      prefixIcon: const Icon(Icons.email, color: AppColors.primary),
+                      prefixIcon: const Icon(
+                        Icons.email,
+                        color: AppColors.primary,
+                      ),
                       filled: true,
                       fillColor: theme.cardTheme.color,
                       border: OutlineInputBorder(
@@ -208,15 +248,22 @@ class _AdminEditAdminScreenState extends State<AdminEditAdminScreen> {
                   DropdownButtonFormField<int>(
                     initialValue: _selectedGymId,
                     dropdownColor: theme.cardTheme.color,
-                    style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark
-                        ? AppColors.darkTextPrimary
-                        : AppColors.lightTextPrimary)),
+                    style: TextStyle(
+                      color: (Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.darkTextPrimary
+                          : AppColors.lightTextPrimary),
+                    ),
                     decoration: InputDecoration(
                       labelText: 'Salle de sport',
-                      labelStyle: TextStyle(color: (Theme.of(context).brightness == Brightness.dark
-                          ? AppColors.darkTextSecondary
-                          : AppColors.lightTextSecondary)),
-                      prefixIcon: const Icon(Icons.fitness_center, color: AppColors.primary),
+                      labelStyle: TextStyle(
+                        color: (Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.darkTextSecondary
+                            : AppColors.lightTextSecondary),
+                      ),
+                      prefixIcon: const Icon(
+                        Icons.fitness_center,
+                        color: AppColors.primary,
+                      ),
                       filled: true,
                       fillColor: theme.cardTheme.color,
                       border: OutlineInputBorder(
@@ -258,7 +305,9 @@ class _AdminEditAdminScreenState extends State<AdminEditAdminScreen> {
                             width: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
                             ),
                           )
                         : const Text(

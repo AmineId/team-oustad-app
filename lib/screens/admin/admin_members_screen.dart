@@ -11,7 +11,12 @@ class AdminMembersScreen extends StatefulWidget {
   final Function(int memberId)? onMemberTap;
   final VoidCallback? onCreateMember;
 
-  const AdminMembersScreen({super.key, this.onBack, this.onMemberTap, this.onCreateMember});
+  const AdminMembersScreen({
+    super.key,
+    this.onBack,
+    this.onMemberTap,
+    this.onCreateMember,
+  });
 
   @override
   State<AdminMembersScreen> createState() => _AdminMembersScreenState();
@@ -21,7 +26,7 @@ class _AdminMembersScreenState extends State<AdminMembersScreen> {
   final ApiService _apiService = ApiService.fromEnv();
   final AuthService _authService = AuthService(ApiService.fromEnv());
   final TextEditingController _searchController = TextEditingController();
-  
+
   List<Map<String, dynamic>> _members = [];
   List<Map<String, dynamic>> _filteredMembers = [];
   bool _isLoading = true;
@@ -70,7 +75,7 @@ class _AdminMembersScreenState extends State<AdminMembersScreen> {
       debugPrint('Admin gymId: $adminGymId');
 
       final users = await _apiService.getUsers(token);
-      
+
       if (users != null) {
         setState(() {
           // Filtrer uniquement les membres de la même salle que l'admin
@@ -79,16 +84,18 @@ class _AdminMembersScreenState extends State<AdminMembersScreen> {
                 final isRoleMember = user['role'] == 'member';
                 final userGymId = user['gymId'] as int?;
                 final isSameGym = adminGymId == null || userGymId == adminGymId;
-                
-                debugPrint('User: ${user['fullName']}, gymId: $userGymId, isRoleMember: $isRoleMember, isSameGym: $isSameGym');
-                
+
+                debugPrint(
+                  'User: ${getUserFullName(user)}, gymId: $userGymId, isRoleMember: $isRoleMember, isSameGym: $isSameGym',
+                );
+
                 return isRoleMember && isSameGym;
               })
               .map((user) => user as Map<String, dynamic>)
               .toList();
           _filteredMembers = _members;
           _isLoading = false;
-          
+
           debugPrint('Membres filtrés: ${_members.length}');
         });
       } else {
@@ -112,12 +119,13 @@ class _AdminMembersScreenState extends State<AdminMembersScreen> {
         _filteredMembers = _members;
       } else {
         _filteredMembers = _members.where((member) {
-          final fullName = (member['fullName'] as String? ?? '').toLowerCase();
+          final fullName = getUserFullName(member).toLowerCase();
           final email = (member['email'] as String? ?? '').toLowerCase();
-          final uniqueCode = (member['uniqueCode'] as String? ?? '').toLowerCase();
-          return fullName.contains(query) || 
-                 email.contains(query) || 
-                 uniqueCode.contains(query);
+          final uniqueCode = (member['uniqueCode'] as String? ?? '')
+              .toLowerCase();
+          return fullName.contains(query) ||
+              email.contains(query) ||
+              uniqueCode.contains(query);
         }).toList();
       }
     });
@@ -187,10 +195,16 @@ class _AdminMembersScreenState extends State<AdminMembersScreen> {
                   decoration: InputDecoration(
                     hintText: 'Rechercher un membre...',
                     hintStyle: const TextStyle(color: Colors.white60),
-                    prefixIcon: const Icon(Icons.search, color: AppColors.primary),
+                    prefixIcon: const Icon(
+                      Icons.search,
+                      color: AppColors.primary,
+                    ),
                     suffixIcon: _searchController.text.isNotEmpty
                         ? IconButton(
-                            icon: const Icon(Icons.clear, color: Colors.white60),
+                            icon: const Icon(
+                              Icons.clear,
+                              color: Colors.white60,
+                            ),
                             onPressed: () {
                               _searchController.clear();
                             },
@@ -205,7 +219,7 @@ class _AdminMembersScreenState extends State<AdminMembersScreen> {
                   ),
                 ),
               ),
-              
+
               // Liste des membres
               Expanded(
                 child: _isLoading
@@ -215,91 +229,95 @@ class _AdminMembersScreenState extends State<AdminMembersScreen> {
                         ),
                       )
                     : _errorMessage.isNotEmpty
-                        ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(
-                                  Icons.error_outline,
-                                  color: AppColors.error,
-                                  size: 48,
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  _errorMessage,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                                const SizedBox(height: 16),
-                                ElevatedButton(
-                                  onPressed: _loadMembers,
-                                  style: ElevatedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                                  ),
-                                  child: const Text('Réessayer'),
-                                ),
-                              ],
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.error_outline,
+                              color: AppColors.error,
+                              size: 48,
                             ),
-                          )
-                        : _filteredMembers.isEmpty
-                            ? Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    const Icon(
-                                      Icons.person_off_outlined,
-                                      color: Colors.white60,
-                                      size: 48,
-                                    ),
-                                    const SizedBox(height: 16),
-                                    Text(
-                                      _searchController.text.isNotEmpty
-                                          ? 'Aucun membre trouvé'
-                                          : 'Aucun membre',
-                                      style: const TextStyle(
-                                        color: Colors.white60,
-                                        fontSize: 16,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              )
-                            : RefreshIndicator(
-                                onRefresh: _loadMembers,
-                                color: AppColors.primary,
-                                child: ListView.builder(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                                  itemCount: _filteredMembers.length,
-                                  itemBuilder: (context, index) {
-                                    final member = _filteredMembers[index];
-                                    return _MemberCard(
-                                      member: member,
-                                      onTap: () async {
-                                        final memberId = member['id'] as int;
-                                        if (widget.onMemberTap != null) {
-                                          // Utiliser le callback si fourni (navigation interne)
-                                          widget.onMemberTap!(memberId);
-                                        } else {
-                                          // Naviguer vers les détails du membre (navigation classique)
-                                          await Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => AdminMemberDetailsScreen(
-                                                memberId: memberId,
-                                              ),
-                                            ),
-                                          );
-                                          // Recharger la liste après retour
-                                          _loadMembers();
-                                        }
-                                      },
-                                    );
-                                  },
+                            const SizedBox(height: 16),
+                            Text(
+                              _errorMessage,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 16),
+                            ElevatedButton(
+                              onPressed: _loadMembers,
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                  vertical: 12,
                                 ),
                               ),
+                              child: const Text('Réessayer'),
+                            ),
+                          ],
+                        ),
+                      )
+                    : _filteredMembers.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.person_off_outlined,
+                              color: Colors.white60,
+                              size: 48,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              _searchController.text.isNotEmpty
+                                  ? 'Aucun membre trouvé'
+                                  : 'Aucun membre',
+                              style: const TextStyle(
+                                color: Colors.white60,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : RefreshIndicator(
+                        onRefresh: _loadMembers,
+                        color: AppColors.primary,
+                        child: ListView.builder(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          itemCount: _filteredMembers.length,
+                          itemBuilder: (context, index) {
+                            final member = _filteredMembers[index];
+                            return _MemberCard(
+                              member: member,
+                              onTap: () async {
+                                final memberId = member['id'] as int;
+                                if (widget.onMemberTap != null) {
+                                  // Utiliser le callback si fourni (navigation interne)
+                                  widget.onMemberTap!(memberId);
+                                } else {
+                                  // Naviguer vers les détails du membre (navigation classique)
+                                  await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          AdminMemberDetailsScreen(
+                                            memberId: memberId,
+                                          ),
+                                    ),
+                                  );
+                                  // Recharger la liste après retour
+                                  _loadMembers();
+                                }
+                              },
+                            );
+                          },
+                        ),
+                      ),
               ),
             ],
           ),
@@ -313,17 +331,14 @@ class _MemberCard extends StatelessWidget {
   final Map<String, dynamic> member;
   final VoidCallback onTap;
 
-  const _MemberCard({
-    required this.member,
-    required this.onTap,
-  });
+  const _MemberCard({required this.member, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     final fullName = getUserFullName(member);
     final email = member['email'] as String? ?? '';
     final uniqueCode = member['uniqueCode'] as String? ?? '';
-    
+
     // Obtenir les initiales pour l'avatar
     final initials = fullName
         .split(' ')
@@ -335,9 +350,7 @@ class _MemberCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       color: Theme.of(context).cardTheme.color,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
@@ -352,10 +365,7 @@ class _MemberCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: AppColors.primary.withValues(alpha: 0.2),
-                  border: Border.all(
-                    color: AppColors.primary,
-                    width: 2,
-                  ),
+                  border: Border.all(color: AppColors.primary, width: 2),
                 ),
                 child: Center(
                   child: Text(
@@ -369,7 +379,7 @@ class _MemberCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 16),
-              
+
               // Infos
               Expanded(
                 child: Column(
@@ -420,7 +430,7 @@ class _MemberCard extends StatelessWidget {
                   ],
                 ),
               ),
-              
+
               // Icône flèche
               const Icon(
                 Icons.arrow_forward_ios,
@@ -434,4 +444,3 @@ class _MemberCard extends StatelessWidget {
     );
   }
 }
-

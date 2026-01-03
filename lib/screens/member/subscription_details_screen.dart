@@ -332,11 +332,10 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
                                   'Séances',
                                   'Illimité ∞',
                                 )
-                              else if (sessionQuota != null)
-                                _buildDetailRow(
-                                  'Séances',
-                                  '$sessionsRemaining restantes sur $sessionQuota',
-                                ),
+                              else _buildDetailRow(
+                                'Séances',
+                                '$sessionsRemaining restantes sur $sessionQuota',
+                              ),
                               if (!_isLoadingQuota && (!isUnlimited || sessionQuota != null))
                                 Divider(color: Theme.of(context).dividerColor, height: 24),
                               _buildDetailRow(

@@ -129,7 +129,7 @@ class _AdminQrScannerScreenState extends State<AdminQrScannerScreen> {
       await _authService.fetchAndCacheUserProfile(token);
       final profileData = await _authService.getCachedUserProfile();
       
-      if (token == null || profileData == null) {
+      if (profileData == null) {
         setState(() {
           _errorMessage = 'Session expirée';
           _isProcessing = false;
