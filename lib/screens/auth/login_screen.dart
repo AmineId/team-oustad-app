@@ -139,39 +139,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
     if (!hasConsent) {
       // Si pas de consentement, ne rien faire ou afficher un message
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.info_outline, color: AppColors.info, size: 24),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    'Veuillez d\'abord vous connecter avec votre mot de passe pour activer la biométrie',
-                    style: TextStyle(
-                      color: (Theme.of(context).brightness == Brightness.dark
-                          ? AppColors.darkTextPrimary
-                          : AppColors.lightTextPrimary),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            backgroundColor: Theme.of(context).cardTheme.color,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: const BorderSide(color: AppColors.info, width: 1),
-            ),
-            margin: EdgeInsets.only(
-              bottom: MediaQuery.of(context).size.height - 200,
-              left: 20,
-              right: 20,
-            ),
-          ),
-        );
+        AppSnackBar.info(context, 'Veuillez d\'abord vous connecter avec votre mot de passe pour activer la biométrie');
       }
       return;
     }
@@ -226,39 +194,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
         default:
           break;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const Icon(Icons.error_outline, color: AppColors.error, size: 24),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  message,
-                  style: TextStyle(
-                    color: (Theme.of(context).brightness == Brightness.dark
-                        ? AppColors.darkTextPrimary
-                        : AppColors.lightTextPrimary),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          backgroundColor: Theme.of(context).cardTheme.color,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: const BorderSide(color: AppColors.error, width: 1),
-          ),
-          margin: EdgeInsets.only(
-            bottom: MediaQuery.of(context).size.height - 200,
-            left: 20,
-            right: 20,
-          ),
-        ),
-      );
+      AppSnackBar.error(context, message);
     }
   }
 
@@ -395,38 +331,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
     }
 
     if (qrCodeBytes == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const Icon(
-                Icons.error_outline,
-                color: AppColors.warning,
-                size: 24,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  'Aucun QR code en cache. Connectez-vous en ligne pour le télécharger.',
-                  style: TextStyle(
-                    color: (Theme.of(context).brightness == Brightness.dark
-                        ? AppColors.darkTextPrimary
-                        : AppColors.lightTextPrimary),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          backgroundColor: Theme.of(context).cardTheme.color,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: const BorderSide(color: AppColors.warning, width: 1),
-          ),
-        ),
-      );
+      AppSnackBar.warning(context, 'Aucun QR code en cache. Connectez-vous en ligne pour le télécharger.');
       return;
     }
 
@@ -603,39 +508,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
     final hasConsent = await _authService.hasBiometricConsent();
     if (!hasConsent) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.info_outline, color: AppColors.info, size: 24),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    'Veuillez d\'abord vous connecter avec votre mot de passe pour activer la biométrie',
-                    style: TextStyle(
-                      color: (Theme.of(context).brightness == Brightness.dark
-                          ? AppColors.darkTextPrimary
-                          : AppColors.lightTextPrimary),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            backgroundColor: Theme.of(context).cardTheme.color,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: const BorderSide(color: AppColors.info, width: 1),
-            ),
-            margin: EdgeInsets.only(
-              bottom: MediaQuery.of(context).size.height - 200,
-              left: 20,
-              right: 20,
-            ),
-          ),
-        );
+        AppSnackBar.info(context, 'Veuillez d\'abord vous connecter avec votre mot de passe pour activer la biométrie');
       }
       return;
     }
@@ -672,43 +545,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
             message = 'Impossible de se connecter en mode hors ligne';
             break;
         }
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(
-                  Icons.error_outline,
-                  color: AppColors.error,
-                  size: 24,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    message,
-                    style: TextStyle(
-                      color: (Theme.of(context).brightness == Brightness.dark
-                          ? AppColors.darkTextPrimary
-                          : AppColors.lightTextPrimary),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            backgroundColor: Theme.of(context).cardTheme.color,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: const BorderSide(color: AppColors.error, width: 1),
-            ),
-            margin: EdgeInsets.only(
-              bottom: MediaQuery.of(context).size.height - 200,
-              left: 20,
-              right: 20,
-            ),
-          ),
-        );
+        AppSnackBar.error(context, message);
       }
       return;
     }
@@ -762,39 +599,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
         default:
           break;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const Icon(Icons.error_outline, color: AppColors.error, size: 24),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  message,
-                  style: TextStyle(
-                    color: (Theme.of(context).brightness == Brightness.dark
-                        ? AppColors.darkTextPrimary
-                        : AppColors.lightTextPrimary),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          backgroundColor: Theme.of(context).cardTheme.color,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: const BorderSide(color: AppColors.error, width: 1),
-          ),
-          margin: EdgeInsets.only(
-            bottom: MediaQuery.of(context).size.height - 200,
-            left: 20,
-            right: 20,
-          ),
-        ),
-      );
+      AppSnackBar.error(context, message);
     }
   }
 
@@ -810,39 +615,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
     );
 
     if (email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const Icon(Icons.error_outline, color: AppColors.error, size: 24),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  AppLocalizations.of(context).fillEmailPassword,
-                  style: TextStyle(
-                    color: (Theme.of(context).brightness == Brightness.dark
-                        ? AppColors.darkTextPrimary
-                        : AppColors.lightTextPrimary),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          backgroundColor: Theme.of(context).cardTheme.color,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: BorderSide(color: AppColors.error, width: 1),
-          ),
-          margin: EdgeInsets.only(
-            bottom: MediaQuery.of(context).size.height - 200,
-            left: 20,
-            right: 20,
-          ),
-        ),
-      );
+      AppSnackBar.error(context, AppLocalizations.of(context).fillEmailPassword);
       return;
     }
 
@@ -950,85 +723,11 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
           _goToHome();
         }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(
-                  Icons.error_outline,
-                  color: AppColors.error,
-                  size: 24,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Builder(
-                    builder: (context) => Text(
-                      AppLocalizations.of(context).invalidCredentials,
-                      style: TextStyle(
-                        color: (Theme.of(context).brightness == Brightness.dark
-                            ? AppColors.darkTextPrimary
-                            : AppColors.lightTextPrimary),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            backgroundColor: Theme.of(context).cardTheme.color,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: BorderSide(color: AppColors.error, width: 1),
-            ),
-            margin: EdgeInsets.only(
-              bottom: MediaQuery.of(context).size.height - 200,
-              left: 20,
-              right: 20,
-            ),
-          ),
-        );
+        AppSnackBar.error(context, AppLocalizations.of(context).invalidCredentials);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(
-                  Icons.error_outline,
-                  color: AppColors.error,
-                  size: 24,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    'Erreur: $e',
-                    style: TextStyle(
-                      color: (Theme.of(context).brightness == Brightness.dark
-                          ? AppColors.darkTextPrimary
-                          : AppColors.lightTextPrimary),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            backgroundColor: Theme.of(context).cardTheme.color,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: const BorderSide(color: AppColors.error, width: 1),
-            ),
-            margin: EdgeInsets.only(
-              bottom: MediaQuery.of(context).size.height - 200,
-              left: 20,
-              right: 20,
-            ),
-          ),
-        );
+        AppSnackBar.error(context, 'Erreur: $e');
       }
     } finally {
       if (mounted) {
@@ -1171,15 +870,12 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: isDark
-                    ? [
-                        Theme.of(context).scaffoldBackgroundColor,
-                        Theme.of(context).cardTheme.color!,
-                      ]
-                    : [
-                        Theme.of(context).scaffoldBackgroundColor,
-                        Theme.of(context).cardTheme.color!,
-                      ],
+                colors: [
+                  Theme.of(context).scaffoldBackgroundColor,
+                  isDark
+                      ? Theme.of(context).cardTheme.color!
+                      : AppColors.lightBackground.withValues(alpha: 0.6),
+                ],
               ),
             ),
             child: SafeArea(

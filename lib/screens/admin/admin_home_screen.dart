@@ -110,7 +110,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       barrierDismissible: true,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: theme.cardTheme.color,
-        title: const Text('Mon QR Code', style: TextStyle(color: Colors.white)),
+        title: Text('Mon QR Code', style: TextStyle(color: theme.colorScheme.onSurface)),
         content: SizedBox(
           width: 250,
           child: Column(
@@ -126,7 +126,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
               Text(
                 'Chargement du QR code...',
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.7),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                   fontSize: 14,
                 ),
               ),
@@ -168,10 +168,10 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         context: context,
         builder: (dialogContext) => AlertDialog(
           backgroundColor: theme.cardTheme.color,
-          title: const Text(
+          title: Text(
             'Mon QR Code',
             style: TextStyle(
-              color: Colors.white,
+              color: theme.colorScheme.onSurface,
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
@@ -195,8 +195,8 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
               const SizedBox(height: 20),
               Text(
                 getUserFullName(profileData, defaultValue: 'Utilisateur'),
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: theme.colorScheme.onSurface,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
@@ -230,7 +230,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
               Text(
                 'Présentez ce code à l\'entrée',
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.6),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                   fontSize: 13,
                 ),
                 textAlign: TextAlign.center,
@@ -458,25 +458,25 @@ class AccueilPage extends StatelessWidget {
       _StatCard(
         icon: Icons.people,
         title: 'Membres',
-        value: '156',
+        value: '—',
         color: theme.colorScheme.primary,
       ),
       _StatCard(
         icon: Icons.fitness_center,
         title: 'Actifs',
-        value: '89',
+        value: '—',
         color: AppColors.success,
       ),
       _StatCard(
         icon: Icons.calendar_today,
         title: 'Aujourd\'hui',
-        value: '23',
+        value: '—',
         color: AppColors.info,
       ),
       _StatCard(
         icon: Icons.trending_up,
         title: 'Revenus',
-        value: '12.5K',
+        value: '—',
         color: Colors.purple,
       ),
     ];
@@ -551,12 +551,7 @@ class AccueilPage extends StatelessWidget {
             icon: Icons.payment,
             title: 'Enregistrer un paiement',
             onTap: () {
-              // TODO: Navigate to payment screen
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Fonctionnalité en développement'),
-                ),
-              );
+              AppSnackBar.info(context, 'Fonctionnalité en développement');
             },
           ),
           _QuickActionButton(
@@ -826,11 +821,24 @@ class _GestionPageState extends State<GestionPage> {
       'menu'; // 'menu', 'members', 'plannings', 'member_details', 'member_create', 'planning_create'
   int? _selectedMemberId;
 
-  @override
-  Widget build(BuildContext context) {
-    // Afficher la vue appropriée
+  void _navigateBack() {
+    setState(() {
+      switch (_currentView) {
+        case 'member_details':
+        case 'member_create':
+          _currentView = 'members';
+        case 'planning_create':
+          _currentView = 'plannings';
+        default:
+          _currentView = 'menu';
+      }
+    });
+  }
+
+  Widget _buildCurrentView(BuildContext context) {
     if (_currentView == 'members') {
       return AdminMembersScreen(
+        key: const ValueKey('members'),
         onBack: () => setState(() => _currentView = 'menu'),
         onMemberTap: (memberId) => setState(() {
           _selectedMemberId = memberId;
@@ -840,22 +848,26 @@ class _GestionPageState extends State<GestionPage> {
       );
     } else if (_currentView == 'plannings') {
       return AdminPlanningsScreen(
+        key: const ValueKey('plannings'),
         onBack: () => setState(() => _currentView = 'menu'),
         onCreatePlanning: () =>
             setState(() => _currentView = 'planning_create'),
       );
     } else if (_currentView == 'member_details' && _selectedMemberId != null) {
       return AdminMemberDetailsScreen(
+        key: ValueKey('member_details_$_selectedMemberId'),
         memberId: _selectedMemberId!,
         onBack: () => setState(() => _currentView = 'members'),
       );
     } else if (_currentView == 'member_create') {
       return AdminCreateMemberScreen(
+        key: const ValueKey('member_create'),
         onBack: () => setState(() => _currentView = 'members'),
         onSuccess: () => setState(() => _currentView = 'members'),
       );
     } else if (_currentView == 'planning_create') {
       return AdminCreatePlanningScreen(
+        key: const ValueKey('planning_create'),
         onBack: () => setState(() => _currentView = 'plannings'),
         onSuccess: () => setState(() => _currentView = 'plannings'),
       );
@@ -865,6 +877,7 @@ class _GestionPageState extends State<GestionPage> {
     final theme = Theme.of(context);
 
     return Container(
+      key: const ValueKey('menu'),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
@@ -902,111 +915,17 @@ class _GestionPageState extends State<GestionPage> {
       ),
     );
   }
-}
-
-// Page Ajout Membre
-class AjoutMembrePage extends StatelessWidget {
-  const AjoutMembrePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Theme.of(context).scaffoldBackgroundColor,
-            Theme.of(context).cardTheme.color!,
-          ],
-        ),
-      ),
-      child: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Ajouter un nouveau membre',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: (Theme.of(context).brightness == Brightness.dark
-                      ? AppColors.darkTextPrimary
-                      : AppColors.lightTextPrimary),
-                ),
-              ),
-              const SizedBox(height: 32),
-
-              TextField(
-                style: TextStyle(
-                  color: (Theme.of(context).brightness == Brightness.dark
-                      ? AppColors.darkTextPrimary
-                      : AppColors.lightTextPrimary),
-                ),
-                decoration: InputDecoration(
-                  labelText: 'Nom complet',
-                  prefixIcon: Icon(
-                    Icons.person,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                style: TextStyle(
-                  color: (Theme.of(context).brightness == Brightness.dark
-                      ? AppColors.darkTextPrimary
-                      : AppColors.lightTextPrimary),
-                ),
-                decoration: InputDecoration(
-                  labelText: 'Email',
-                  prefixIcon: Icon(
-                    Icons.email,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                style: TextStyle(
-                  color: (Theme.of(context).brightness == Brightness.dark
-                      ? AppColors.darkTextPrimary
-                      : AppColors.lightTextPrimary),
-                ),
-                decoration: InputDecoration(
-                  labelText: 'Téléphone',
-                  prefixIcon: Icon(
-                    Icons.phone,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 32),
-
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Fonctionnalité à implémenter'),
-                      ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(double.infinity, 56),
-                  ),
-                  child: const Text(
-                    'Enregistrer',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+    return PopScope(
+      canPop: _currentView == 'menu',
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _navigateBack();
+      },
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 200),
+        child: _buildCurrentView(context),
       ),
     );
   }
@@ -1346,7 +1265,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ),
               const SizedBox(height: 12),
-              _buildSettingsItem(context, l10n.parameters, Icons.settings, () {
+              _buildSettingsItem(context, l10n.security, Icons.security, () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -2215,15 +2134,15 @@ class _GymsListViewState extends State<_GymsListView> {
                 child: Row(
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Colors.white),
+                      icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
                       onPressed: widget.onBack,
                     ),
-                    const Text(
+                    Text(
                       'Salles de sport',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: theme.colorScheme.onSurface,
                       ),
                     ),
                   ],
@@ -2235,19 +2154,19 @@ class _GymsListViewState extends State<_GymsListView> {
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: TextField(
                   controller: _searchController,
-                  style: const TextStyle(color: Colors.white),
+                  style: TextStyle(color: theme.colorScheme.onSurface),
                   decoration: InputDecoration(
                     hintText: 'Rechercher une salle...',
-                    hintStyle: const TextStyle(color: Colors.white60),
+                    hintStyle: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
                     prefixIcon: const Icon(
                       Icons.search,
                       color: AppColors.primary,
                     ),
                     suffixIcon: _searchController.text.isNotEmpty
                         ? IconButton(
-                            icon: const Icon(
+                            icon: Icon(
                               Icons.clear,
-                              color: Colors.white60,
+                              color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                             ),
                             onPressed: () {
                               _searchController.clear();
@@ -2286,8 +2205,8 @@ class _GymsListViewState extends State<_GymsListView> {
                             const SizedBox(height: 16),
                             Text(
                               _errorMessage,
-                              style: const TextStyle(
-                                color: Colors.white,
+                              style: TextStyle(
+                                color: theme.colorScheme.onSurface,
                                 fontSize: 16,
                               ),
                               textAlign: TextAlign.center,
@@ -2311,9 +2230,9 @@ class _GymsListViewState extends State<_GymsListView> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.fitness_center_outlined,
-                              color: Colors.white60,
+                              color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                               size: 48,
                             ),
                             const SizedBox(height: 16),
@@ -2321,8 +2240,8 @@ class _GymsListViewState extends State<_GymsListView> {
                               _searchController.text.isNotEmpty
                                   ? 'Aucune salle trouvée'
                                   : 'Aucune salle',
-                              style: const TextStyle(
-                                color: Colors.white60,
+                              style: TextStyle(
+                                color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                                 fontSize: 16,
                               ),
                             ),
@@ -2397,8 +2316,8 @@ class _GymsListViewState extends State<_GymsListView> {
                   children: [
                     Text(
                       name,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: theme.colorScheme.onSurface,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
@@ -2407,7 +2326,7 @@ class _GymsListViewState extends State<_GymsListView> {
                     Text(
                       address,
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.7),
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                         fontSize: 14,
                       ),
                       maxLines: 2,
@@ -2435,10 +2354,12 @@ class _GymsListViewState extends State<_GymsListView> {
                   ],
                 ),
               ),
-              const Icon(
-                Icons.arrow_forward_ios,
-                color: Colors.white60,
-                size: 16,
+              ExcludeSemantics(
+                child: Icon(
+                  Icons.arrow_forward_ios,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                  size: 16,
+                ),
               ),
             ],
           ),
@@ -2502,15 +2423,15 @@ class _AdminDetailsViewState extends State<_AdminDetailsView> {
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
                     onPressed: widget.onBack,
                   ),
-                  const Text(
+                  Text(
                     'Détails Administrateur',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: theme.colorScheme.onSurface,
                     ),
                   ),
                   const Spacer(),
@@ -2553,8 +2474,8 @@ class _AdminDetailsViewState extends State<_AdminDetailsView> {
                     // Nom
                     Text(
                       fullName,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: theme.colorScheme.onSurface,
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
                       ),
@@ -2681,7 +2602,7 @@ class _AdminDetailsViewState extends State<_AdminDetailsView> {
                 Text(
                   title,
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.6),
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),
@@ -2689,8 +2610,8 @@ class _AdminDetailsViewState extends State<_AdminDetailsView> {
                 const SizedBox(height: 4),
                 Text(
                   value,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: theme.colorScheme.onSurface,
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),
@@ -2709,13 +2630,13 @@ class _AdminDetailsViewState extends State<_AdminDetailsView> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: theme.cardTheme.color,
-        title: const Text(
+        title: Text(
           'Confirmer la suppression',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: theme.colorScheme.onSurface),
         ),
         content: Text(
           'Êtes-vous sûr de vouloir supprimer $name ?\n\nCette action est irréversible.',
-          style: const TextStyle(color: Colors.white70),
+          style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.7)),
         ),
         actions: [
           TextButton(
@@ -2817,15 +2738,15 @@ class _GymDetailsViewState extends State<_GymDetailsView> {
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onSurface),
                     onPressed: widget.onBack,
                   ),
-                  const Text(
+                  Text(
                     'Détails Salle',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   const Spacer(),
@@ -2865,8 +2786,8 @@ class _GymDetailsViewState extends State<_GymDetailsView> {
                     // Nom
                     Text(
                       name,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
                       ),
@@ -3036,7 +2957,7 @@ class _GymDetailsViewState extends State<_GymDetailsView> {
                 Text(
                   title,
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.6),
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),
@@ -3044,8 +2965,8 @@ class _GymDetailsViewState extends State<_GymDetailsView> {
                 const SizedBox(height: 4),
                 Text(
                   value,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: theme.colorScheme.onSurface,
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),
@@ -3063,13 +2984,13 @@ class _GymDetailsViewState extends State<_GymDetailsView> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Theme.of(context).cardTheme.color,
-        title: const Text(
+        title: Text(
           'Confirmer la suppression',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
         ),
         content: Text(
           'Êtes-vous sûr de vouloir supprimer la salle "$name" ?\n\nCette action supprimera également tous les membres et administrateurs associés.\n\nCette action est irréversible.',
-          style: const TextStyle(color: Colors.white70),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
         ),
         actions: [
           TextButton(
@@ -3265,15 +3186,15 @@ class _AdminEditViewState extends State<_AdminEditView> {
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onSurface),
                     onPressed: widget.onBack,
                   ),
-                  const Text(
+                  Text(
                     'Modifier administrateur',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                 ],
@@ -3310,10 +3231,10 @@ class _AdminEditViewState extends State<_AdminEditView> {
                       // Prénom
                       TextFormField(
                         controller: _firstNameController,
-                        style: const TextStyle(color: Colors.white),
+                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                         decoration: InputDecoration(
                           labelText: 'Prénom',
-                          labelStyle: const TextStyle(color: Colors.white60),
+                          labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
                           prefixIcon: const Icon(
                             Icons.person,
                             color: AppColors.primary,
@@ -3337,10 +3258,10 @@ class _AdminEditViewState extends State<_AdminEditView> {
                       // Nom
                       TextFormField(
                         controller: _lastNameController,
-                        style: const TextStyle(color: Colors.white),
+                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                         decoration: InputDecoration(
                           labelText: 'Nom',
-                          labelStyle: const TextStyle(color: Colors.white60),
+                          labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
                           prefixIcon: const Icon(
                             Icons.person_outline,
                             color: AppColors.primary,
@@ -3365,10 +3286,10 @@ class _AdminEditViewState extends State<_AdminEditView> {
                       TextFormField(
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
-                        style: const TextStyle(color: Colors.white),
+                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                         decoration: InputDecoration(
                           labelText: 'Email',
-                          labelStyle: const TextStyle(color: Colors.white60),
+                          labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
                           prefixIcon: const Icon(
                             Icons.email,
                             color: AppColors.primary,
@@ -3396,10 +3317,10 @@ class _AdminEditViewState extends State<_AdminEditView> {
                       DropdownButtonFormField<int>(
                         initialValue: _selectedGymId,
                         dropdownColor: Theme.of(context).cardTheme.color,
-                        style: const TextStyle(color: Colors.white),
+                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                         decoration: InputDecoration(
                           labelText: 'Salle de sport',
-                          labelStyle: const TextStyle(color: Colors.white60),
+                          labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
                           prefixIcon: const Icon(
                             Icons.fitness_center,
                             color: AppColors.primary,
@@ -3586,15 +3507,15 @@ class _GymEditViewState extends State<_GymEditView> {
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onSurface),
                     onPressed: widget.onBack,
                   ),
-                  const Text(
+                  Text(
                     'Modifier salle',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                 ],
@@ -3629,10 +3550,10 @@ class _GymEditViewState extends State<_GymEditView> {
                       const SizedBox(height: 32),
                       TextFormField(
                         controller: _nameController,
-                        style: const TextStyle(color: Colors.white),
+                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                         decoration: InputDecoration(
                           labelText: 'Nom de la salle',
-                          labelStyle: const TextStyle(color: Colors.white60),
+                          labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
                           prefixIcon: const Icon(
                             Icons.business,
                             color: AppColors.primary,
@@ -3655,10 +3576,10 @@ class _GymEditViewState extends State<_GymEditView> {
                       TextFormField(
                         controller: _addressController,
                         maxLines: 2,
-                        style: const TextStyle(color: Colors.white),
+                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                         decoration: InputDecoration(
                           labelText: 'Adresse',
-                          labelStyle: const TextStyle(color: Colors.white60),
+                          labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
                           prefixIcon: const Icon(
                             Icons.location_on,
                             color: AppColors.primary,
@@ -3681,10 +3602,10 @@ class _GymEditViewState extends State<_GymEditView> {
                       TextFormField(
                         controller: _phoneController,
                         keyboardType: TextInputType.phone,
-                        style: const TextStyle(color: Colors.white),
+                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                         decoration: InputDecoration(
                           labelText: 'Téléphone (optionnel)',
-                          labelStyle: const TextStyle(color: Colors.white60),
+                          labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
                           prefixIcon: const Icon(
                             Icons.phone,
                             color: AppColors.primary,
@@ -3919,7 +3840,7 @@ class _GymOpeningHoursViewState extends State<_GymOpeningHoursView> {
           children: [
             Text(
               label,
-              style: const TextStyle(color: Colors.white60, fontSize: 12),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 12),
             ),
             const SizedBox(height: 4),
             Row(
@@ -3932,8 +3853,8 @@ class _GymOpeningHoursViewState extends State<_GymOpeningHoursView> {
                 const SizedBox(width: 8),
                 Text(
                   time,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
@@ -3970,26 +3891,26 @@ class _GymOpeningHoursViewState extends State<_GymOpeningHoursView> {
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onSurface),
                     onPressed: widget.onBack,
                   ),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'Horaires d\'ouverture',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
                         Text(
                           gymName,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 14,
-                            color: Colors.white60,
+                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
                         ),
                       ],
@@ -4036,10 +3957,10 @@ class _GymOpeningHoursViewState extends State<_GymOpeningHoursView> {
                                       ),
                                     ),
                                     const Spacer(),
-                                    const Text(
+                                    Text(
                                       'Fermé',
                                       style: TextStyle(
-                                        color: Colors.white60,
+                                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                                         fontSize: 14,
                                       ),
                                     ),
@@ -4267,15 +4188,15 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onSurface),
                     onPressed: widget.onBack,
                   ),
-                  const Text(
+                  Text(
                     'Créer un administrateur',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                 ],
@@ -4312,10 +4233,10 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
                       // Prénom
                       TextFormField(
                         controller: _firstNameController,
-                        style: const TextStyle(color: Colors.white),
+                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                         decoration: InputDecoration(
                           labelText: 'Prénom',
-                          labelStyle: const TextStyle(color: Colors.white60),
+                          labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
                           prefixIcon: const Icon(
                             Icons.person,
                             color: AppColors.primary,
@@ -4339,10 +4260,10 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
                       // Nom de famille
                       TextFormField(
                         controller: _lastNameController,
-                        style: const TextStyle(color: Colors.white),
+                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                         decoration: InputDecoration(
                           labelText: 'Nom de famille',
-                          labelStyle: const TextStyle(color: Colors.white60),
+                          labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
                           prefixIcon: const Icon(
                             Icons.person_outline,
                             color: AppColors.primary,
@@ -4367,10 +4288,10 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
                       TextFormField(
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
-                        style: const TextStyle(color: Colors.white),
+                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                         decoration: InputDecoration(
                           labelText: 'Email',
-                          labelStyle: const TextStyle(color: Colors.white60),
+                          labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
                           prefixIcon: const Icon(
                             Icons.email,
                             color: AppColors.primary,
@@ -4397,10 +4318,10 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
                       // Adresse
                       TextFormField(
                         controller: _addressController,
-                        style: const TextStyle(color: Colors.white),
+                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                         decoration: InputDecoration(
                           labelText: 'Adresse',
-                          labelStyle: const TextStyle(color: Colors.white60),
+                          labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
                           prefixIcon: const Icon(
                             Icons.home,
                             color: AppColors.primary,
@@ -4425,10 +4346,10 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
                       DropdownButtonFormField<int>(
                         initialValue: _selectedGymId,
                         dropdownColor: Theme.of(context).cardTheme.color,
-                        style: const TextStyle(color: Colors.white),
+                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                         decoration: InputDecoration(
                           labelText: 'Salle de sport',
-                          labelStyle: const TextStyle(color: Colors.white60),
+                          labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
                           prefixIcon: const Icon(
                             Icons.fitness_center,
                             color: AppColors.primary,
@@ -4501,10 +4422,10 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
                         TextFormField(
                           controller: _passwordController,
                           obscureText: true,
-                          style: const TextStyle(color: Colors.white),
+                          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                           decoration: InputDecoration(
                             labelText: 'Mot de passe',
-                            labelStyle: const TextStyle(color: Colors.white60),
+                            labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
                             prefixIcon: const Icon(
                               Icons.lock,
                               color: AppColors.primary,
@@ -4669,15 +4590,15 @@ class _GymCreateViewState extends State<_GymCreateView> {
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onSurface),
                     onPressed: widget.onBack,
                   ),
-                  const Text(
+                  Text(
                     'Créer une salle',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                 ],
@@ -4714,10 +4635,10 @@ class _GymCreateViewState extends State<_GymCreateView> {
                       // Nom de la salle
                       TextFormField(
                         controller: _nameController,
-                        style: const TextStyle(color: Colors.white),
+                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                         decoration: InputDecoration(
                           labelText: 'Nom de la salle',
-                          labelStyle: const TextStyle(color: Colors.white60),
+                          labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
                           prefixIcon: const Icon(
                             Icons.business,
                             color: AppColors.primary,
@@ -4742,10 +4663,10 @@ class _GymCreateViewState extends State<_GymCreateView> {
                       TextFormField(
                         controller: _addressController,
                         maxLines: 2,
-                        style: const TextStyle(color: Colors.white),
+                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                         decoration: InputDecoration(
                           labelText: 'Adresse',
-                          labelStyle: const TextStyle(color: Colors.white60),
+                          labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
                           prefixIcon: const Icon(
                             Icons.location_on,
                             color: AppColors.primary,
@@ -4770,10 +4691,10 @@ class _GymCreateViewState extends State<_GymCreateView> {
                       TextFormField(
                         controller: _phoneController,
                         keyboardType: TextInputType.phone,
-                        style: const TextStyle(color: Colors.white),
+                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                         decoration: InputDecoration(
                           labelText: 'Téléphone (optionnel)',
-                          labelStyle: const TextStyle(color: Colors.white60),
+                          labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
                           prefixIcon: const Icon(
                             Icons.phone,
                             color: AppColors.primary,

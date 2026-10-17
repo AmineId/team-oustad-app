@@ -82,6 +82,9 @@ dependencies:
   # QR code scanner for admin check-in
   mobile_scanner: ^7.1.4
 
+  # Google Fonts for Barlow Condensed (headings) and Barlow (body)
+  google_fonts: ^6.2.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

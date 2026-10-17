@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../core/theme/theme.dart';
 
 /// Bouton primaire moderne avec style cohérent
@@ -20,6 +21,14 @@ class ModernButton extends StatelessWidget {
     this.variant = ModernButtonVariant.primary,
   });
 
+  VoidCallback? get _onPressed {
+    if (onPressed == null || isLoading) return null;
+    return () {
+      HapticFeedback.mediumImpact();
+      onPressed!();
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     final buttonChild = Row(
@@ -27,12 +36,18 @@ class ModernButton extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         if (isLoading)
-          const SizedBox(
+          SizedBox(
             width: 20,
             height: 20,
             child: CircularProgressIndicator(
               strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              valueColor: AlwaysStoppedAnimation<Color>(
+                (variant == ModernButtonVariant.primary ||
+                        variant == ModernButtonVariant.danger ||
+                        variant == ModernButtonVariant.success)
+                    ? Colors.white
+                    : Theme.of(context).colorScheme.primary,
+              ),
             ),
           )
         else if (icon != null)
@@ -46,25 +61,25 @@ class ModernButton extends StatelessWidget {
     switch (variant) {
       case ModernButtonVariant.primary:
         button = ElevatedButton(
-          onPressed: isLoading ? null : onPressed,
+          onPressed: _onPressed,
           child: buttonChild,
         );
         break;
       case ModernButtonVariant.secondary:
         button = OutlinedButton(
-          onPressed: isLoading ? null : onPressed,
+          onPressed: _onPressed,
           child: buttonChild,
         );
         break;
       case ModernButtonVariant.text:
         button = TextButton(
-          onPressed: isLoading ? null : onPressed,
+          onPressed: _onPressed,
           child: buttonChild,
         );
         break;
       case ModernButtonVariant.danger:
         button = ElevatedButton(
-          onPressed: isLoading ? null : onPressed,
+          onPressed: _onPressed,
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.error,
             foregroundColor: Colors.white,
@@ -74,7 +89,7 @@ class ModernButton extends StatelessWidget {
         break;
       case ModernButtonVariant.success:
         button = ElevatedButton(
-          onPressed: isLoading ? null : onPressed,
+          onPressed: _onPressed,
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.success,
             foregroundColor: Colors.white,

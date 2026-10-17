@@ -1444,6 +1444,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                         ),
                       ),
                       IconButton(
+                        tooltip: 'Fermer',
                         onPressed: () => Navigator.pop(context),
                         icon: Icon(
                           Icons.close,
@@ -3313,6 +3314,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                         ),
                       ),
                       IconButton(
+                        tooltip: 'Fermer',
                         onPressed: () => Navigator.pop(context),
                         icon: Icon(
                           Icons.close,
@@ -4513,6 +4515,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                       ),
                       Spacer(),
                       IconButton(
+                        tooltip: 'Fermer',
                         onPressed: () => Navigator.pop(context),
                         icon: Icon(
                           Icons.close_rounded,

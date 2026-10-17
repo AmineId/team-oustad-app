@@ -15,6 +15,9 @@ class ModernTextField extends StatelessWidget {
   final int? maxLines;
   final bool enabled;
   final FocusNode? focusNode;
+  final TextInputAction? textInputAction;
+  final void Function(String)? onFieldSubmitted;
+  final Iterable<String>? autofillHints;
 
   const ModernTextField({
     super.key,
@@ -31,6 +34,9 @@ class ModernTextField extends StatelessWidget {
     this.maxLines = 1,
     this.enabled = true,
     this.focusNode,
+    this.textInputAction,
+    this.onFieldSubmitted,
+    this.autofillHints,
   });
 
   @override
@@ -40,6 +46,9 @@ class ModernTextField extends StatelessWidget {
       focusNode: focusNode,
       obscureText: obscureText,
       keyboardType: keyboardType,
+      textInputAction: textInputAction,
+      onFieldSubmitted: onFieldSubmitted,
+      autofillHints: autofillHints,
       validator: validator,
       onChanged: onChanged,
       maxLines: maxLines,

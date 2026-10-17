@@ -1,82 +1,80 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AppTextStyles {
-  // Headers
-  static const TextStyle h1 = TextStyle(
+  // Headers — Barlow Condensed, sport/gym feel
+  static TextStyle get h1 => GoogleFonts.barlowCondensed(
     fontSize: 32,
     fontWeight: FontWeight.bold,
     letterSpacing: -0.5,
     height: 1.2,
   );
-  
-  static const TextStyle h2 = TextStyle(
+
+  static TextStyle get h2 => GoogleFonts.barlowCondensed(
     fontSize: 28,
     fontWeight: FontWeight.bold,
     letterSpacing: -0.5,
     height: 1.2,
   );
-  
-  static const TextStyle h3 = TextStyle(
+
+  static TextStyle get h3 => GoogleFonts.barlowCondensed(
     fontSize: 24,
     fontWeight: FontWeight.bold,
     letterSpacing: -0.3,
     height: 1.3,
   );
-  
-  static const TextStyle h4 = TextStyle(
+
+  static TextStyle get h4 => GoogleFonts.barlowCondensed(
     fontSize: 20,
     fontWeight: FontWeight.w600,
     letterSpacing: -0.2,
     height: 1.3,
   );
-  
-  static const TextStyle h5 = TextStyle(
+
+  static TextStyle get h5 => GoogleFonts.barlowCondensed(
     fontSize: 18,
     fontWeight: FontWeight.w600,
     letterSpacing: -0.1,
     height: 1.4,
   );
-  
-  static const TextStyle h6 = TextStyle(
+
+  static TextStyle get h6 => GoogleFonts.barlowCondensed(
     fontSize: 16,
     fontWeight: FontWeight.w600,
     height: 1.4,
   );
-  
-  // Body text
-  static const TextStyle body1 = TextStyle(
+
+  // Body text — Barlow, readable and modern
+  static TextStyle get body1 => GoogleFonts.barlow(
     fontSize: 16,
     fontWeight: FontWeight.normal,
     height: 1.5,
   );
-  
-  static const TextStyle body2 = TextStyle(
+
+  static TextStyle get body2 => GoogleFonts.barlow(
     fontSize: 14,
     fontWeight: FontWeight.normal,
     height: 1.5,
   );
-  
-  static const TextStyle caption = TextStyle(
+
+  static TextStyle get caption => GoogleFonts.barlow(
     fontSize: 12,
     fontWeight: FontWeight.normal,
     height: 1.4,
   );
-  
+
   // Button
-  static const TextStyle button = TextStyle(
+  static TextStyle get button => GoogleFonts.barlow(
     fontSize: 16,
     fontWeight: FontWeight.w600,
     letterSpacing: 0.5,
   );
-  
-  // Overline (pour les labels)
-  static const TextStyle overline = TextStyle(
+
+  // Overline (labels)
+  static TextStyle get overline => GoogleFonts.barlow(
     fontSize: 12,
     fontWeight: FontWeight.w600,
     letterSpacing: 1.0,
     height: 1.3,
   );
 }
-
-
-
