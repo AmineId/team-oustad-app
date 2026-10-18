@@ -43,11 +43,11 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
       final subscription = widget.subscriptionData?['subscription'] as Map<String, dynamic>?;
       final subscriptionId = subscription?['id'];
       
-      print('🔍 [QUOTA] Chargement quota pour subscriptionId: $subscriptionId');
-      print('🔍 [QUOTA] subscription: $subscription');
+      debugPrint('🔍 [QUOTA] Chargement quota pour subscriptionId: $subscriptionId');
+      debugPrint('🔍 [QUOTA] subscription: $subscription');
       
       if (token == null || subscriptionId == null) {
-        print('❌ [QUOTA] Token ou subscriptionId absent');
+        debugPrint('❌ [QUOTA] Token ou subscriptionId absent');
         setState(() {
           _isLoadingQuota = false;
         });
@@ -56,7 +56,7 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
       
       // Appel API pour récupérer le quota
       final uri = _apiService.baseUri.resolve('/check-in/subscription/$subscriptionId/quota');
-      print('🌐 [QUOTA] Requête GET: $uri');
+      debugPrint('🌐 [QUOTA] Requête GET: $uri');
       
       final resp = await http.get(
         uri,
@@ -66,8 +66,8 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
         },
       );
 
-      print('📡 [QUOTA] Status: ${resp.statusCode}');
-      print('📦 [QUOTA] Body: ${resp.body}');
+      debugPrint('📡 [QUOTA] Status: ${resp.statusCode}');
+      debugPrint('📦 [QUOTA] Body: ${resp.body}');
 
       if (resp.statusCode == 200) {
         final data = jsonDecode(resp.body);
@@ -75,15 +75,15 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
           _quotaData = data as Map<String, dynamic>;
           _isLoadingQuota = false;
         });
-        print('✅ [QUOTA] Quota chargé: $_quotaData');
+        debugPrint('✅ [QUOTA] Quota chargé: $_quotaData');
       } else {
-        print('⚠️ [QUOTA] Erreur: ${resp.statusCode}');
+        debugPrint('⚠️ [QUOTA] Erreur: ${resp.statusCode}');
         setState(() {
           _isLoadingQuota = false;
         });
       }
     } catch (e) {
-      print('❌ [QUOTA] Exception: $e');
+      debugPrint('❌ [QUOTA] Exception: $e');
       debugPrint('Error loading quota data: $e');
       setState(() {
         _isLoadingQuota = false;
@@ -101,16 +101,16 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
       final subscription = widget.subscriptionData?['subscription'] as Map<String, dynamic>?;
       final subscriptionId = subscription?['id'];
       
-      print('💰 [PAYMENTS] subscriptionId: $subscriptionId');
+      debugPrint('💰 [PAYMENTS] subscriptionId: $subscriptionId');
       
       if (token == null || subscriptionId == null) {
-        print('❌ [PAYMENTS] Token ou subscriptionId manquant');
+        debugPrint('❌ [PAYMENTS] Token ou subscriptionId manquant');
         throw Exception('Token ou subscriptionId manquant');
       }
       
       // Appel API pour récupérer l'historique des paiements depuis /subscriptions/{id}
       final uri = _apiService.baseUri.resolve('/subscriptions/$subscriptionId');
-      print('🌐 [PAYMENTS] Requête: $uri');
+      debugPrint('🌐 [PAYMENTS] Requête: $uri');
       
       final resp = await http.get(
         uri,
@@ -120,27 +120,27 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
         },
       );
 
-      print('📡 [PAYMENTS] Status: ${resp.statusCode}');
+      debugPrint('📡 [PAYMENTS] Status: ${resp.statusCode}');
 
       if (resp.statusCode == 200) {
         final data = jsonDecode(resp.body);
-        print('📦 [PAYMENTS] Response: $data');
-        print('📦 [PAYMENTS] Payments array: ${data['payments']}');
+        debugPrint('📦 [PAYMENTS] Response: $data');
+        debugPrint('📦 [PAYMENTS] Payments array: ${data['payments']}');
         
         setState(() {
           _payments = List<Map<String, dynamic>>.from(data['payments'] ?? []);
           _isLoadingPayments = false;
         });
         
-        print('✅ [PAYMENTS] ${_payments.length} paiements chargés');
+        debugPrint('✅ [PAYMENTS] ${_payments.length} paiements chargés');
       } else {
-        print('⚠️ [PAYMENTS] Erreur ${resp.statusCode}: ${resp.body}');
+        debugPrint('⚠️ [PAYMENTS] Erreur ${resp.statusCode}: ${resp.body}');
         setState(() {
           _isLoadingPayments = false;
         });
       }
     } catch (e) {
-      print('❌ [PAYMENTS] Exception: $e');
+      debugPrint('❌ [PAYMENTS] Exception: $e');
       debugPrint('Error loading payment history: $e');
       setState(() {
         _isLoadingPayments = false;
@@ -265,10 +265,10 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
     final durationMonths = subscriptionTypeData?['durationMonths'] ?? 1;
     
     // Logs pour debug
-    print('🔍 [SUBSCRIPTION DETAILS] subscription: $subscription');
-    print('🔍 [SUBSCRIPTION DETAILS] subscriptionTypeData: $subscriptionTypeData');
-    print('🔍 [SUBSCRIPTION DETAILS] subscriptionName: $subscriptionName');
-    print('🔍 [SUBSCRIPTION DETAILS] monthlyPrice: $monthlyPrice');
+    debugPrint('🔍 [SUBSCRIPTION DETAILS] subscription: $subscription');
+    debugPrint('🔍 [SUBSCRIPTION DETAILS] subscriptionTypeData: $subscriptionTypeData');
+    debugPrint('🔍 [SUBSCRIPTION DETAILS] subscriptionName: $subscriptionName');
+    debugPrint('🔍 [SUBSCRIPTION DETAILS] monthlyPrice: $monthlyPrice');
     
     final subscriptionStatus = subscription?['status'] ?? 'unknown';
     final startDate = subscription?['startDate'] ?? 'N/A';

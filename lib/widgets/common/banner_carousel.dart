@@ -346,7 +346,7 @@ class BannerCard extends StatelessWidget {
         return Image.memory(
           bytes,
           fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => _buildFallback(fallbackColor),
+          errorBuilder: (_, _, _) => _buildFallback(fallbackColor),
         );
       } catch (e) {
         return _buildFallback(fallbackColor);
@@ -358,7 +358,7 @@ class BannerCard extends StatelessWidget {
       return Image.network(
         banner.imageUrl!,
         fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => _buildFallback(fallbackColor),
+        errorBuilder: (_, _, _) => _buildFallback(fallbackColor),
         loadingBuilder: (context, child, loadingProgress) {
           if (loadingProgress == null) return child;
           return Container(

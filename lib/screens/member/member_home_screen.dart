@@ -52,7 +52,6 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
   Map<String, dynamic>? _quotaData;
   bool _isLoadingQuota = true;
   Map<String, dynamic>? _subscriptionData;
-  bool _isLoadingSubscription = true;
 
   final List<Widget> _pages = [
     MemberDashboardPage(),
@@ -91,12 +90,9 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
       final profile = await authService.getCachedUserProfile();
       final memberId = profile?['id'];
 
-      print('🔍 [SUBSCRIPTION] memberId: $memberId');
+      debugPrint('🔍 [SUBSCRIPTION] memberId: $memberId');
 
       if (token == null || memberId == null) {
-        setState(() {
-          _isLoadingSubscription = false;
-        });
         return;
       }
 
@@ -105,7 +101,7 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
         memberId,
         token,
       );
-      print('📦 [SUBSCRIPTION] subscriptions: $subscriptions');
+      debugPrint('📦 [SUBSCRIPTION] subscriptions: $subscriptions');
 
       if (subscriptions != null && subscriptions.isNotEmpty) {
         // Prendre le premier abonnement actif
@@ -119,7 +115,7 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
         if (activeSubscription != null) {
           // Charger les détails complets de l'abonnement pour avoir le subscriptionType
           final subscriptionId = activeSubscription['id'];
-          print(
+          debugPrint(
             '🔍 [SUBSCRIPTION] Chargement détails pour subscriptionId: $subscriptionId',
           );
 
@@ -127,39 +123,23 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
             subscriptionId,
             token,
           );
-          print('📋 [SUBSCRIPTION] fullSubscription: $fullSubscription');
+          debugPrint('📋 [SUBSCRIPTION] fullSubscription: $fullSubscription');
 
           if (mounted) {
             setState(() {
               _subscriptionData = fullSubscription ?? activeSubscription;
-              _isLoadingSubscription = false;
             });
           }
-          print(
+          debugPrint(
             '✅ [SUBSCRIPTION] Abonnement chargé: ${fullSubscription ?? activeSubscription}',
           );
         } else {
-          if (mounted) {
-            setState(() {
-              _isLoadingSubscription = false;
-            });
-          }
         }
       } else {
-        if (mounted) {
-          setState(() {
-            _isLoadingSubscription = false;
-          });
-        }
-        print('⚠️ [SUBSCRIPTION] Aucun abonnement trouvé');
+        debugPrint('⚠️ [SUBSCRIPTION] Aucun abonnement trouvé');
       }
     } catch (e) {
-      print('❌ [SUBSCRIPTION] Exception: $e');
-      if (mounted) {
-        setState(() {
-          _isLoadingSubscription = false;
-        });
-      }
+      debugPrint('❌ [SUBSCRIPTION] Exception: $e');
     }
   }
 
@@ -173,8 +153,8 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
           _subscriptionData?['subscription'] as Map<String, dynamic>?;
       final subscriptionId = subscription?['id'];
 
-      print('🔍 [HOME QUOTA] subscription: $subscription');
-      print('🔍 [HOME QUOTA] subscriptionId: $subscriptionId');
+      debugPrint('🔍 [HOME QUOTA] subscription: $subscription');
+      debugPrint('🔍 [HOME QUOTA] subscriptionId: $subscriptionId');
 
       if (token == null || subscriptionId == null) {
         setState(() {
@@ -186,7 +166,7 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
       final uri = apiService.baseUri.resolve(
         '/check-in/subscription/$subscriptionId/quota',
       );
-      print('🌐 [HOME QUOTA] Requête: $uri');
+      debugPrint('🌐 [HOME QUOTA] Requête: $uri');
 
       final response = await http.get(
         uri,
@@ -196,8 +176,8 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
         },
       );
 
-      print('📡 [HOME QUOTA] Status: ${response.statusCode}');
-      print('📦 [HOME QUOTA] Body: ${response.body}');
+      debugPrint('📡 [HOME QUOTA] Status: ${response.statusCode}');
+      debugPrint('📦 [HOME QUOTA] Body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -207,7 +187,7 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
             _isLoadingQuota = false;
           });
         }
-        print('✅ [HOME QUOTA] Quota chargé: $data');
+        debugPrint('✅ [HOME QUOTA] Quota chargé: $data');
       } else {
         if (mounted) {
           setState(() {
@@ -216,7 +196,7 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
         }
       }
     } catch (e) {
-      print('❌ [HOME QUOTA] Exception: $e');
+      debugPrint('❌ [HOME QUOTA] Exception: $e');
       debugPrint('Error loading quota: $e');
       if (mounted) {
         setState(() {
@@ -227,7 +207,7 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
   }
 
   Widget? _buildQuotaWidget() {
-    print(
+    debugPrint(
       '🎯 [QUOTA WIDGET] _isLoadingQuota: $_isLoadingQuota, _quotaData: $_quotaData',
     );
 
@@ -288,7 +268,7 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
     final isUnlimited =
         sessionType == 'unlimited' || sessionQuota == null || sessionQuota == 0;
 
-    print(
+    debugPrint(
       '🎯 [QUOTA WIDGET] sessionQuota: $sessionQuota, sessionsUsed: $sessionsUsed, remaining: $sessionsRemaining, unlimited: $isUnlimited',
     );
 
@@ -2222,9 +2202,7 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
     var profileData = await _authService.refreshUserProfile();
 
     // If refresh fails, fallback to cache
-    if (profileData == null) {
-      profileData = await _authService.getCachedUserProfile();
-    }
+    profileData ??= await _authService.getCachedUserProfile();
 
     // Debug logs
     if (profileData != null) {
@@ -2422,8 +2400,6 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     final topInset = MediaQuery.of(context).padding.top;
     final botInset = MediaQuery.of(context).padding.bottom;
     return Center(
@@ -2729,8 +2705,6 @@ class MemberSubscriptionPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     final topInset = MediaQuery.of(context).padding.top;
     final botInset = MediaQuery.of(context).padding.bottom;
     return SingleChildScrollView(
@@ -5154,21 +5128,6 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
     final formattedFitnessLevel =
         fitnessLevelLabels[fitnessLevel] ?? fitnessLevel;
 
-    // Handle both 'subscription' (singular) and 'subscriptions' (plural array)
-    Map<String, dynamic>? subscription;
-    final subscriptions = _profileData?['subscriptions'] as List<dynamic>?;
-    if (subscriptions != null && subscriptions.isNotEmpty) {
-      // Get the first active subscription or just the first one
-      subscription =
-          subscriptions.firstWhere(
-                (sub) => (sub as Map<String, dynamic>)['status'] == 'active',
-                orElse: () => subscriptions.first,
-              )
-              as Map<String, dynamic>;
-    } else {
-      subscription = _profileData?['subscription'] as Map<String, dynamic>?;
-    }
-
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
@@ -5430,13 +5389,13 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                 Builder(
                   builder: (context) {
                     final data = _subscriptionData!;
-                    print('📋 [SUBSCRIPTION CARD] data: $data');
+                    debugPrint('📋 [SUBSCRIPTION CARD] data: $data');
 
                     final sub = data['subscription'] as Map<String, dynamic>?;
                     final subscriptionTypeData =
                         sub?['SubscriptionType'] as Map<String, dynamic>?;
-                    print('📋 [SUBSCRIPTION CARD] sub: $sub');
-                    print(
+                    debugPrint('📋 [SUBSCRIPTION CARD] sub: $sub');
+                    debugPrint(
                       '📋 [SUBSCRIPTION CARD] subscriptionTypeData: $subscriptionTypeData',
                     );
 
@@ -5451,10 +5410,10 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                     final expiresAt =
                         sub?['endDate'] ?? sub?['expiresAt'] ?? 'N/A';
 
-                    print(
+                    debugPrint(
                       '📋 [SUBSCRIPTION CARD] name: $subscriptionTypeName, price: $monthlyPrice, duration: $durationMonths',
                     );
-                    print(
+                    debugPrint(
                       '📋 [SUBSCRIPTION CARD] status: $subscriptionStatus, start: $startDate, expires: $expiresAt',
                     );
 
@@ -5902,7 +5861,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                 decoration: BoxDecoration(
                   color: (Theme.of(context).brightness == Brightness.dark
                       ? AppColors.darkSurface
-                      : AppColors.lightSurface.withOpacity(0.5)),
+                      : AppColors.lightSurface.withValues(alpha: 0.5)),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(

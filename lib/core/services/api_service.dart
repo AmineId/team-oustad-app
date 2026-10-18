@@ -523,7 +523,7 @@ class ApiService {
             body: jsonEncode({
               'qrCode': qrCode,
               'gymId': gymId,
-              if (notes != null) 'notes': notes,
+              'notes': ?notes,
             }),
           )
           .timeout(timeout);
@@ -596,7 +596,7 @@ class ApiService {
         'address': address,
         'role': 'admin',
         'gymId': gymId,
-        if (password != null) 'password': password,
+        'password': ?password,
       };
 
       final resp = await http
@@ -643,7 +643,7 @@ class ApiService {
         'firstName': firstName,
         'lastName': lastName,
         'gymId': gymId,
-        if (password != null) 'password': password,
+        'password': ?password,
       };
 
       final resp = await http
@@ -979,9 +979,9 @@ class ApiService {
       final body = {
         'name': name,
         'address': address,
-        if (phone != null) 'phone': phone,
-        if (latitude != null) 'latitude': latitude,
-        if (longitude != null) 'longitude': longitude,
+        'phone': ?phone,
+        'latitude': ?latitude,
+        'longitude': ?longitude,
       };
 
       final resp = await http
@@ -1636,8 +1636,8 @@ class ApiService {
         'role': 'member',
         'gymId': gymId,
         'sendSetupEmail': shouldSendSetupEmail,
-        if (password != null) 'password': password,
-        if (phone != null) 'phoneNumber': phone,
+        'password': ?password,
+        'phoneNumber': ?phone,
       };
 
       // ignore: avoid_print
@@ -1867,8 +1867,8 @@ class ApiService {
         'name': name,
         'monthlyPrice': monthlyPrice,
         'isActive': isActive,
-        if (description != null) 'description': description,
-        if (features != null) 'features': features,
+        'description': ?description,
+        'features': ?features,
       };
 
       final resp = await http
@@ -2093,7 +2093,7 @@ class ApiService {
     try {
       final body = {
         'paymentMethod': paymentMethod,
-        if (transactionId != null) 'transactionId': transactionId,
+        'transactionId': ?transactionId,
       };
 
       final resp = await http
@@ -2136,7 +2136,7 @@ class ApiService {
     try {
       final body = {
         'paymentMethod': paymentMethod,
-        if (transactionId != null) 'transactionId': transactionId,
+        'transactionId': ?transactionId,
       };
 
       final resp = await http
@@ -2287,7 +2287,7 @@ class ApiService {
         'title': title,
         'startDate': startDate,
         'endDate': endDate,
-        if (description != null) 'description': description,
+        'description': ?description,
       };
 
       final resp = await http
@@ -2337,13 +2337,13 @@ class ApiService {
     try {
       final body = {
         'exerciseId': exerciseId,
-        if (sets != null) 'sets': sets,
-        if (reps != null) 'reps': reps,
-        if (duration != null) 'duration': duration,
-        if (weight != null) 'weight': weight,
-        if (restTime != null) 'restTime': restTime,
-        if (notes != null) 'notes': notes,
-        if (order != null) 'order': order,
+        'sets': ?sets,
+        'reps': ?reps,
+        'duration': ?duration,
+        'weight': ?weight,
+        'restTime': ?restTime,
+        'notes': ?notes,
+        'order': ?order,
       };
 
       final resp = await http

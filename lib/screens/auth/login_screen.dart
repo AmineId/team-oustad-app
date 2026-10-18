@@ -701,7 +701,6 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
 
           if (fcmToken != null && fcmToken.isNotEmpty) {
             debugPrint('📤 Envoi du token FCM au serveur (userId: $userId)...');
-            debugPrint('🔑 JWT utilisé: ${token.substring(0, 20)}...');
             final result = await _apiService.updateUserFCMToken(
               int.parse(userId),
               fcmToken,
@@ -746,7 +745,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
 
         if (needsOnboarding && userType.toLowerCase() == 'member') {
           debugPrint('🎯 Onboarding nécessaire - redirection vers onboarding');
-          if (!context.mounted) return;
+          if (!mounted) return;
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (context) => const OnboardingScreen()),
           );
@@ -829,7 +828,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
             TextButton(
               onPressed: () async {
                 await _authService.setBiometricConsent(false);
-                if (mounted) Navigator.of(context).pop();
+                if (context.mounted) Navigator.of(context).pop();
               },
               child: Text(
                 'Non merci',
@@ -843,7 +842,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
             ElevatedButton(
               onPressed: () async {
                 await _authService.setBiometricConsent(true);
-                if (mounted) Navigator.of(context).pop();
+                if (context.mounted) Navigator.of(context).pop();
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,

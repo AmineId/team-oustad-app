@@ -775,24 +775,26 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         color: Theme.of(context).cardTheme.color,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Column(
-                        children: _professionOptions.map((option) {
-                          return RadioListTile<String>(
-                            title: Text(
-                              option,
-                              style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary)),
-                            ),
-                            value: option,
-                            groupValue: _profession,
-                            fillColor: WidgetStateProperty.all(AppColors.primary),
-                            onChanged: (value) {
-                              setState(() {
-                                _profession = value!;
-                              });
-                              _saveData();
-                            },
-                          );
-                        }).toList(),
+                      child: RadioGroup<String>(
+                        groupValue: _profession,
+                        onChanged: (value) {
+                          setState(() {
+                            _profession = value!;
+                          });
+                          _saveData();
+                        },
+                        child: Column(
+                          children: _professionOptions.map((option) {
+                            return RadioListTile<String>(
+                              title: Text(
+                                option,
+                                style: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary)),
+                              ),
+                              value: option,
+                              fillColor: WidgetStateProperty.all(AppColors.primary),
+                            );
+                          }).toList(),
+                        ),
                       ),
                     ),
                     

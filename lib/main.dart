@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'dart:ui';
 import 'dart:io';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -160,11 +159,11 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    print('MyApp: build called');
+    debugPrint('MyApp: build called');
     return ListenableBuilder(
       listenable: Listenable.merge([_themeProvider, widget.localeService]),
       builder: (context, child) {
-        print('MyApp: ListenableBuilder rebuild. Locale: ${widget.localeService.currentLocale}');
+        debugPrint('MyApp: ListenableBuilder rebuild. Locale: ${widget.localeService.currentLocale}');
         return ThemeProviderScope(
           themeProvider: _themeProvider,
           child: LocaleServiceScope(

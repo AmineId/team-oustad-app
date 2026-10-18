@@ -727,7 +727,7 @@ class _AppLocalizationsDelegate
 
   @override
   Future<AppLocalizations> load(Locale locale) async {
-    print('AppLocalizationsDelegate: load called for $locale');
+    debugPrint('AppLocalizationsDelegate: load called for $locale');
     return AppLocalizations(locale);
   }
 
