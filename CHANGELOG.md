@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.55](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.54...v1.0.0-beta.55) (2026-10-18)
+
+
+### ✨ New Features
+
+* **dashboard,ios:** live admin stats with cache, iOS swipe-back and Liquid Glass ([46b3527](https://github.com/TeamFitness/mobile-app/commit/46b352731bff8a5d16a8ab42b4e7f9d1e8cb5f08))
+
 ## [1.0.0-beta.54](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.53...v1.0.0-beta.54) (2026-10-18)
 
 
