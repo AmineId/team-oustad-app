@@ -148,13 +148,13 @@ class ResponsiveScaffold extends StatelessWidget {
     );
 
     // On iOS the body extends behind the glass AppBar and bottom nav.
-    // Augment MediaQuery.padding.top so scroll views automatically push
-    // their first item below the AppBar without per-screen boilerplate.
+    // Augment MediaQuery padding so scroll views push content clear of both.
     final effectiveBody = isIOS
         ? MediaQuery(
             data: MediaQuery.of(context).copyWith(
               padding: MediaQuery.of(context).padding.copyWith(
                 top: MediaQuery.of(context).padding.top + kToolbarHeight,
+                bottom: MediaQuery.of(context).padding.bottom + kBottomNavigationBarHeight,
               ),
             ),
             child: body,
@@ -163,6 +163,7 @@ class ResponsiveScaffold extends StatelessWidget {
 
     return Scaffold(
       extendBodyBehindAppBar: isIOS,
+      extendBody: isIOS,
       appBar: appBar,
       body: effectiveBody,
       bottomNavigationBar: isIOS

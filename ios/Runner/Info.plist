@@ -45,6 +45,12 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Team Fitness utilise l'appareil photo pour scanner les QR codes d'entrée et prendre une photo de profil.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Team Fitness accède à votre galerie pour choisir une photo de profil.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Team Fitness peut enregistrer des photos dans votre galerie.</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Team Fitness utilise Face ID pour vous connecter rapidement et en toute sécurité.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>

@@ -376,8 +376,8 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
     }
 
     return Container(
-      width: 32,
-      height: 32,
+      width: 36,
+      height: 36,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(
@@ -400,7 +400,7 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
                     child: Icon(
                       Icons.person,
                       color: isActive ? AppColors.primary : Colors.grey,
-                      size: 20,
+                      size: 24,
                     ),
                   );
                 },
@@ -410,7 +410,7 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
                 child: Icon(
                   Icons.person,
                   color: isActive ? AppColors.primary : Colors.grey,
-                  size: 20,
+                  size: 24,
                 ),
               ),
       ),
