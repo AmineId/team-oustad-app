@@ -45,6 +45,8 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Team Fitness utilise Face ID pour vous connecter rapidement et en toute sécurité.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Cette app utilise votre localisation pour afficher votre position sur la carte.</string>
 	<key>NSLocationAlwaysUsageDescription</key>

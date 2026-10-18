@@ -90,29 +90,36 @@ import UIKit
   
   private func hideScreenContent() {
     guard let window = self.window else { return }
-    
+
     if securityView == nil {
       let view = UIView(frame: window.bounds)
       view.backgroundColor = UIColor(red: 0x1a/255.0, green: 0x1f/255.0, blue: 0x2e/255.0, alpha: 1.0)
       view.tag = 9999
-      
-      // Ajouter un logo ou texte centré
-      let label = UILabel()
-      label.text = "Team Fitness"
-      label.textColor = .white
-      label.font = UIFont.boldSystemFont(ofSize: 24)
-      label.textAlignment = .center
-      label.translatesAutoresizingMaskIntoConstraints = false
-      view.addSubview(label)
-      
+
+      // Logo de l'app (asset Flutter)
+      let assetKey = FlutterDartProject.lookupKey(forAsset: "assets/images/logo.png")
+      let logoImage: UIImage?
+      if let path = Bundle.main.path(forResource: assetKey, ofType: nil) {
+        logoImage = UIImage(contentsOfFile: path)
+      } else {
+        logoImage = UIImage(named: "AppIcon")
+      }
+
+      let imageView = UIImageView(image: logoImage)
+      imageView.contentMode = .scaleAspectFit
+      imageView.translatesAutoresizingMaskIntoConstraints = false
+      view.addSubview(imageView)
+
       NSLayoutConstraint.activate([
-        label.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-        label.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+        imageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+        imageView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+        imageView.widthAnchor.constraint(equalToConstant: 120),
+        imageView.heightAnchor.constraint(equalToConstant: 120),
       ])
-      
+
       securityView = view
     }
-    
+
     if let securityView = securityView {
       window.addSubview(securityView)
       window.bringSubviewToFront(securityView)
