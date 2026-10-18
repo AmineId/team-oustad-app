@@ -8,3 +8,4 @@ export 'modern_button.dart';
 export 'modern_card.dart';
 export 'modern_text_field.dart';
 export 'status_badge.dart';
+export 'glass.dart';

@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:team_fitness_app/core/utils/platform_utils.dart';
 import '../../core/theme/theme.dart';
+import '../common/glass.dart';
 
 /// A widget that builds different layouts based on device type
 class ResponsiveLayout extends StatelessWidget {
@@ -71,7 +72,6 @@ class ResponsiveScaffold extends StatelessWidget {
 
   Widget _buildMobileLayout(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final isIOS = Platform.isIOS;
 
     final appBar = AppBar(
@@ -100,28 +100,7 @@ class ResponsiveScaffold extends StatelessWidget {
         ],
       ),
       actions: actions,
-      flexibleSpace: isIOS
-          ? ClipRect(
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? Colors.black.withValues(alpha: 0.55)
-                        : Colors.white.withValues(alpha: 0.72),
-                    border: Border(
-                      bottom: BorderSide(
-                        color: isDark
-                            ? Colors.white.withValues(alpha: 0.08)
-                            : Colors.black.withValues(alpha: 0.08),
-                        width: 0.5,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            )
-          : null,
+      flexibleSpace: isIOS ? const GlassBar() : null,
     );
 
     final bottomNav = BottomNavigationBar(
@@ -167,27 +146,7 @@ class ResponsiveScaffold extends StatelessWidget {
       appBar: appBar,
       body: effectiveBody,
       bottomNavigationBar: isIOS
-          ? ClipRect(
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? Colors.black.withValues(alpha: 0.55)
-                        : Colors.white.withValues(alpha: 0.72),
-                    border: Border(
-                      top: BorderSide(
-                        color: isDark
-                            ? Colors.white.withValues(alpha: 0.08)
-                            : Colors.black.withValues(alpha: 0.08),
-                        width: 0.5,
-                      ),
-                    ),
-                  ),
-                  child: bottomNav,
-                ),
-              ),
-            )
+          ? GlassBar(top: false, child: bottomNav)
           : bottomNav,
     );
   }

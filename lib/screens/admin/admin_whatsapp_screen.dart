@@ -1,12 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'dart:typed_data';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/theme/theme.dart';
+import '../../widgets/common/glass.dart';
 
 class AdminWhatsAppScreen extends StatefulWidget {
   final VoidCallback? onBack;
@@ -302,28 +301,20 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final isIOS = Platform.isIOS;
-
     return Scaffold(
-      extendBodyBehindAppBar: isIOS,
-      appBar: AppBar(
-        automaticallyImplyLeading: widget.onBack == null,
-        centerTitle: true,
-        backgroundColor: isIOS ? Colors.transparent : null,
-        elevation: isIOS ? 0 : null,
-        scrolledUnderElevation: isIOS ? 0 : null,
-        forceMaterialTransparency: isIOS,
+      extendBodyBehindAppBar: glassExtendsBody,
+      appBar: glassAppBar(
+        context,
+        title: const Text(
+          'WhatsApp',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
         leading: widget.onBack != null
             ? IconButton(
                 icon: const Icon(Icons.arrow_back),
                 onPressed: widget.onBack,
               )
             : null,
-        title: const Text(
-          'WhatsApp',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
-        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -331,50 +322,10 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
             tooltip: 'Rafraîchir',
           ),
         ],
-        flexibleSpace: isIOS
-            ? ClipRect(
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? Colors.black.withValues(alpha: 0.55)
-                          : Colors.white.withValues(alpha: 0.72),
-                      border: Border(
-                        bottom: BorderSide(
-                          color: isDark
-                              ? Colors.white.withValues(alpha: 0.08)
-                              : Colors.black.withValues(alpha: 0.08),
-                          width: 0.5,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              )
-            : null,
       ),
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [theme.scaffoldBackgroundColor, theme.cardTheme.color!],
-          ),
-        ),
-        child: SafeArea(
-          top: !isIOS,
-          child: isIOS
-              ? MediaQuery(
-                  data: MediaQuery.of(context).copyWith(
-                    padding: MediaQuery.of(context).padding.copyWith(
-                      top: MediaQuery.of(context).padding.top + kToolbarHeight,
-                    ),
-                  ),
-                  child: _buildScrollBody(theme),
-                )
-              : _buildScrollBody(theme),
-        ),
+        decoration: appBackgroundDecoration(context),
+        child: glassBodyInsets(context, _buildScrollBody(theme)),
       ),
     );
   }
