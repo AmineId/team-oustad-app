@@ -28,6 +28,7 @@ class NativeGlassTabBar extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.only(bottom: safeBottom > 0 ? safeBottom - 10 : 8),
       child: Center(
+        heightFactor: 1,
         child: CNTabBar(
           items: [
             for (final item in items)
