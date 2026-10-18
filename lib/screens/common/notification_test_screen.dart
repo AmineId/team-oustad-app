@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/services/notification_service.dart';
+import '../../widgets/common/glass.dart';
 import '../../core/theme/theme.dart';
 
 /// Écran de test et démonstration des notifications
@@ -11,27 +12,16 @@ class NotificationTestScreen extends StatelessWidget {
     final notificationService = NotificationService();
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
+      extendBodyBehindAppBar: glassExtendsBody,
+      appBar: glassAppBar(
+        context,
+        title: const Text(
           'Test Notifications',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
-          ),
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
       ),
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Theme.of(context).scaffoldBackgroundColor,
-              Theme.of(context).cardTheme.color!,
-            ],
-          ),
-        ),
+        decoration: appBackgroundDecoration(context),
         child: LayoutBuilder(
           builder: (context, constraints) {
             final isDesktop = constraints.maxWidth > 600;
@@ -39,7 +29,7 @@ class NotificationTestScreen extends StatelessWidget {
             final padding = isWatch ? 8.0 : (isDesktop ? 24.0 : 16.0);
             
             Widget content = ListView(
-              padding: EdgeInsets.all(padding),
+              padding: EdgeInsets.fromLTRB(padding, MediaQuery.of(context).padding.top + (glassExtendsBody ? kToolbarHeight : 0) + padding, padding, padding),
           children: [
             // Notification immédiate
             _buildNotificationCard(

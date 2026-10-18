@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../../widgets/common/glass.dart';
 import '../../core/theme/theme.dart';
 import '../../core/models/models.dart';
 import '../../core/services/store_service.dart';
@@ -121,10 +122,8 @@ class _StoreScreenState extends State<StoreScreen>
     // Si on charge les produits, afficher un loading
     if (_isLoadingProducts) {
       return Scaffold(
-        appBar: AppBar(
-          title: const Text('Boutique'),
-          backgroundColor: isDark ? AppColors.darkCard : AppColors.lightCard,
-        ),
+        extendBodyBehindAppBar: glassExtendsBody,
+        appBar: glassAppBar(context, title: const Text('Boutique')),
         body: const Center(
           child: CircularProgressIndicator(),
         ),
@@ -134,14 +133,12 @@ class _StoreScreenState extends State<StoreScreen>
     // Si on a des produits, les afficher
     if (_products.isNotEmpty) {
       return Scaffold(
-        appBar: AppBar(
-          title: const Text('Boutique'),
-          backgroundColor: isDark ? AppColors.darkCard : AppColors.lightCard,
-        ),
+        extendBodyBehindAppBar: glassExtendsBody,
+        appBar: glassAppBar(context, title: const Text('Boutique')),
         body: RefreshIndicator(
           onRefresh: _loadProducts,
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.fromLTRB(16, MediaQuery.of(context).padding.top + (glassExtendsBody ? kToolbarHeight : 0) + 16, 16, 16),
             child: Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 500),

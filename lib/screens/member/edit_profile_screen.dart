@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
+import '../../widgets/common/glass.dart';
 import '../../core/theme/theme.dart';
 
 class EditProfileScreen extends StatefulWidget {
@@ -268,14 +269,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
+      extendBodyBehindAppBar: glassExtendsBody,
+      appBar: glassAppBar(
+        context,
+        title: const Text(
           'Modifier le Profil',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
-          ),
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -283,18 +282,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         ),
       ),
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Theme.of(context).scaffoldBackgroundColor,
-              Theme.of(context).cardTheme.color!,
-            ],
-          ),
-        ),
+        decoration: appBackgroundDecoration(context),
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
+          padding: EdgeInsets.fromLTRB(16, MediaQuery.of(context).padding.top + (glassExtendsBody ? kToolbarHeight : 0) + 16, 16, 16),
           child: Form(
             key: _formKey,
             child: Column(
