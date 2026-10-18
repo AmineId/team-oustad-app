@@ -314,6 +314,7 @@ jobs:
           echo "channel=${{ needs.version.outputs.environment }}" >> $GITHUB_OUTPUT
 
       - name: 📤 Deploy OTA
+        continue-on-error: true
         run: |
           APK_PATH="build/app/outputs/flutter-apk/app-release.apk"
           
@@ -325,7 +326,7 @@ jobs:
           echo "✅ APK located at $APK_PATH"
           echo "📦 Uploading APK to OTA server"
           
-          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+          RESPONSE=$(curl -s --connect-timeout 10 --max-time 120 -w "\n%{http_code}" -X POST \
             "https://app.team-oustad.com/android/upload" \
             -H "Authorization: Bearer ${{ secrets.OTA_BEARER_TOKEN }}" \
             -H "Accept: application/json" \
