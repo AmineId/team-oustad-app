@@ -511,6 +511,20 @@ class AuthService {
     };
   }
 
+  /// On Android, flutter_secure_storage survives uninstall but SharedPreferences
+  /// does not. Detect a fresh install by checking a sentinel in SharedPreferences;
+  /// if absent, wipe the stale token so the user lands on the login screen.
+  Future<void> clearStaleTokenOnFreshInstall() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final installed = prefs.getBool('_app_installed') ?? false;
+      if (!installed) {
+        await _secureStorage.delete(key: 'auth_token');
+        await prefs.setBool('_app_installed', true);
+      }
+    } catch (_) {}
+  }
+
   /// Clear all stored credentials and tokens (for logout)
   Future<void> clearAll() async {
     try {
