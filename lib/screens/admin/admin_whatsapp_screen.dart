@@ -15,7 +15,8 @@ class AdminWhatsAppScreen extends StatefulWidget {
   State<AdminWhatsAppScreen> createState() => _AdminWhatsAppScreenState();
 }
 
-class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen> {
+class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
+    with SingleTickerProviderStateMixin {
   final ApiService _apiService = ApiService.fromEnv();
   final AuthService _authService = AuthService(ApiService.fromEnv());
 
@@ -28,16 +29,38 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen> {
   String _statusMessage = '';
   Timer? _qrPollingTimer;
 
+  late TabController _tabController;
+  final TextEditingController _phoneController = TextEditingController();
+  String? _pairingCode;
+  bool _pairingLoading = false;
+  String? _pairingError;
+
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(_onTabChanged);
     _loadStatus();
   }
 
   @override
   void dispose() {
     _qrPollingTimer?.cancel();
+    _tabController.removeListener(_onTabChanged);
+    _tabController.dispose();
+    _phoneController.dispose();
     super.dispose();
+  }
+
+  void _onTabChanged() {
+    if (!_tabController.indexIsChanging) return;
+    setState(() {
+      _pairingCode = null;
+      _pairingError = null;
+    });
+    if (_tabController.index == 0 && _qrDataUrl == null && !_qrLoading) {
+      _fetchQr();
+    }
   }
 
   Future<void> _loadStatus() async {
@@ -86,12 +109,10 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen> {
       if (!mounted) return;
       final statusCode = result?['statusCode'] as int?;
       if (statusCode == 204) {
-        // Already connected — reload status
         _loadStatus();
         return;
       }
       if (statusCode == 503) {
-        // QR not ready yet — poll after 3s
         setState(() {
           _qrLoading = false;
           _statusMessage = 'Génération du QR en cours…';
@@ -107,7 +128,6 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen> {
         _statusMessage = '';
       });
       if (qr != null) {
-        // Poll status every 5s to detect when scanned
         _qrPollingTimer?.cancel();
         _qrPollingTimer = Timer.periodic(const Duration(seconds: 5), (_) async {
           final t = await _authService.loadToken();
@@ -125,6 +145,91 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen> {
       setState(() {
         _qrLoading = false;
         _statusMessage = 'Erreur chargement QR: $e';
+      });
+    }
+  }
+
+  Future<void> _requestPairingCode() async {
+    final phone = _phoneController.text.trim();
+    if (phone.isEmpty) {
+      setState(() => _pairingError = 'Numéro requis');
+      return;
+    }
+
+    setState(() {
+      _pairingLoading = true;
+      _pairingCode = null;
+      _pairingError = null;
+    });
+
+    try {
+      final token = await _authService.loadToken();
+      if (token == null) {
+        setState(() {
+          _pairingError = 'Session expirée';
+          _pairingLoading = false;
+        });
+        return;
+      }
+
+      final result = await _apiService.requestWhatsAppPairingCode(phone, token);
+      if (!mounted) return;
+
+      final statusCode = result?['statusCode'] as int?;
+      if (statusCode == 409) {
+        setState(() {
+          _pairingError = 'WhatsApp déjà connecté';
+          _pairingLoading = false;
+        });
+        _loadStatus();
+        return;
+      }
+      if (statusCode == 503) {
+        setState(() {
+          _pairingError = 'Client pas encore prêt, réessayez dans quelques secondes';
+          _pairingLoading = false;
+        });
+        return;
+      }
+      if (statusCode == 400) {
+        setState(() {
+          _pairingError = 'Numéro de téléphone invalide';
+          _pairingLoading = false;
+        });
+        return;
+      }
+
+      final code = result?['pairingCode'] as String?;
+      if (code == null) {
+        setState(() {
+          _pairingError = 'Réponse inattendue du serveur';
+          _pairingLoading = false;
+        });
+        return;
+      }
+
+      setState(() {
+        _pairingCode = code;
+        _pairingLoading = false;
+      });
+
+      // Poll status to detect when user scans the code
+      _qrPollingTimer?.cancel();
+      _qrPollingTimer = Timer.periodic(const Duration(seconds: 5), (_) async {
+        final t = await _authService.loadToken();
+        if (t == null) return;
+        final s = await _apiService.getWhatsAppStatus(t);
+        if (!mounted) return;
+        if (s?['connected'] == true) {
+          _qrPollingTimer?.cancel();
+          _loadStatus();
+        }
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _pairingError = 'Erreur: $e';
+        _pairingLoading = false;
       });
     }
   }
@@ -245,7 +350,7 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen> {
                         ),
                       ],
                       const SizedBox(height: 24),
-                      if (!_connected) _buildQrSection(theme),
+                      if (!_connected) _buildConnectionSection(theme),
                       if (_connected) _buildDisconnectSection(),
                     ],
                   ),
@@ -307,7 +412,7 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen> {
                 ] else if (!_connected) ...[
                   const SizedBox(height: 4),
                   Text(
-                    'Scannez le QR ci-dessous',
+                    'Choisissez une méthode de connexion',
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.6),
                       fontSize: 13,
@@ -322,7 +427,70 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen> {
     );
   }
 
-  Widget _buildQrSection(ThemeData theme) {
+  Widget _buildConnectionSection(ThemeData theme) {
+    return Column(
+      children: [
+        // Tab toggle
+        Container(
+          decoration: BoxDecoration(
+            color: theme.cardTheme.color,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: TabBar(
+            controller: _tabController,
+            indicatorSize: TabBarIndicatorSize.tab,
+            indicator: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: AppColors.primary, width: 1.5),
+            ),
+            labelColor: AppColors.primary,
+            unselectedLabelColor: Colors.white54,
+            labelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+            unselectedLabelStyle: const TextStyle(fontSize: 14),
+            dividerColor: Colors.transparent,
+            tabs: const [
+              Tab(
+                height: 48,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.qr_code, size: 18),
+                    SizedBox(width: 8),
+                    Text('QR Code'),
+                  ],
+                ),
+              ),
+              Tab(
+                height: 48,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.phone_android, size: 18),
+                    SizedBox(width: 8),
+                    Text('Numéro'),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        SizedBox(
+          height: 380,
+          child: TabBarView(
+            controller: _tabController,
+            children: [
+              _buildQrTab(theme),
+              _buildPhoneTab(theme),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildQrTab(ThemeData theme) {
     return Column(
       children: [
         Container(
@@ -386,9 +554,147 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen> {
     );
   }
 
+  Widget _buildPhoneTab(ThemeData theme) {
+    return SingleChildScrollView(
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: theme.cardTheme.color,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text(
+              'Connecter via numéro',
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Ouvrez WhatsApp → Appareils connectés → Connecter avec numéro',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.6),
+                fontSize: 13,
+              ),
+            ),
+            const SizedBox(height: 24),
+            TextField(
+              controller: _phoneController,
+              keyboardType: TextInputType.phone,
+              style: const TextStyle(color: Colors.white, fontSize: 16),
+              decoration: InputDecoration(
+                labelText: 'Numéro de téléphone',
+                labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
+                helperText: 'Format international, ex : 212600123456',
+                helperStyle: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.45),
+                  fontSize: 12,
+                ),
+                prefixIcon: Icon(Icons.phone, color: Colors.white.withValues(alpha: 0.5)),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                errorText: _pairingError,
+                errorStyle: const TextStyle(color: AppColors.error),
+                errorBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(color: AppColors.error),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                focusedErrorBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(color: AppColors.error, width: 1.5),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                filled: true,
+                fillColor: Colors.white.withValues(alpha: 0.05),
+              ),
+              onSubmitted: (_) => _pairingLoading ? null : _requestPairingCode(),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              height: 50,
+              child: ElevatedButton.icon(
+                onPressed: _pairingLoading ? null : _requestPairingCode,
+                icon: _pairingLoading
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Icon(Icons.send, size: 18),
+                label: Text(_pairingLoading ? 'Demande en cours…' : 'Obtenir le code'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.4),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
+            if (_pairingCode != null) ...[
+              const SizedBox(height: 24),
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.4)),
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      'Code d\'appairage',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.65),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      _pairingCode!,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 6,
+                        fontFeatures: [FontFeature.tabularFigures()],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Entrez ce code dans WhatsApp',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.5),
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildQrImage() {
     try {
-      // _qrDataUrl is "data:image/png;base64,..."
       final comma = _qrDataUrl!.indexOf(',');
       if (comma == -1) return const SizedBox();
       final b64 = _qrDataUrl!.substring(comma + 1);

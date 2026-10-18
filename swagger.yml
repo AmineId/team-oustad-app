@@ -7758,3 +7758,65 @@ paths:
           description: Accès réservé aux propriétaires
         '500':
           description: Erreur lors de la déconnexion
+
+  /whatsapp/pairing-code:
+    post:
+      summary: Demander un code d'appairage WhatsApp
+      description: |
+        Alternative au QR code. Retourne un code d'appairage à 8 caractères que l'utilisateur
+        saisit dans WhatsApp (Appareils connectés → Connecter avec numéro de téléphone).
+        Disponible uniquement si le client n'est pas encore connecté. Réservé aux propriétaires.
+      tags: [WhatsApp]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - phoneNumber
+              properties:
+                phoneNumber:
+                  type: string
+                  description: "Numéro de téléphone sans le + (format international), ex: 212600123456"
+                  example: "212600123456"
+      responses:
+        '200':
+          description: Code d'appairage généré avec succès
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pairingCode:
+                    type: string
+                    description: Code à 8 caractères (format XXXX-XXXX)
+                    example: "ABCD-1234"
+        '400':
+          description: Numéro de téléphone invalide ou manquant
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: WhatsApp déjà connecté, code d'appairage non disponible
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Client WhatsApp pas encore prêt, réessayez dans quelques secondes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Accès réservé aux propriétaires
+        '500':
+          description: Erreur lors de la génération du code
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'

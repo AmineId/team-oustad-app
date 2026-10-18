@@ -133,6 +133,12 @@ class AppLocalizations {
           'Erreur lors du chargement de l\'abonnement',
       'error_loading_workout': 'Erreur lors du chargement de l\'entraînement',
       'hide_qr_code': 'Masquer le QR Code',
+      'whatsapp_scan_qr': 'Scanner QR',
+      'whatsapp_phone_number': 'Numéro de téléphone',
+      'whatsapp_get_code': 'Obtenir le code',
+      'whatsapp_pairing_code': 'Code d\'appairage',
+      'whatsapp_phone_helper': 'Format international, ex : 212600123456',
+      'whatsapp_enter_phone': 'Entrez votre numéro pour recevoir le code sur WhatsApp',
       'my_plannings': 'Mes Plannings',
       'starting_measurements': 'Mesures de départ',
       'member_since': 'Membre depuis: {date}',
@@ -296,6 +302,12 @@ class AppLocalizations {
       'error_loading_subscription': 'Error loading subscription',
       'error_loading_workout': 'Error loading workout',
       'hide_qr_code': 'Hide QR Code',
+      'whatsapp_scan_qr': 'Scan QR',
+      'whatsapp_phone_number': 'Phone number',
+      'whatsapp_get_code': 'Get code',
+      'whatsapp_pairing_code': 'Pairing code',
+      'whatsapp_phone_helper': 'International format, e.g. 212600123456',
+      'whatsapp_enter_phone': 'Enter your number to receive the code on WhatsApp',
       'my_plannings': 'My Schedules',
       'starting_measurements': 'Starting measurements',
       'member_since': 'Member since: {date}',
@@ -454,6 +466,12 @@ class AppLocalizations {
       'error_loading_subscription': 'خطأ في تحميل الاشتراك',
       'error_loading_workout': 'خطأ في تحميل التمرين',
       'hide_qr_code': 'إخفاء رمز الاستجابة السريعة',
+      'whatsapp_scan_qr': 'مسح QR',
+      'whatsapp_phone_number': 'رقم الهاتف',
+      'whatsapp_get_code': 'الحصول على الرمز',
+      'whatsapp_pairing_code': 'رمز الإقران',
+      'whatsapp_phone_helper': 'الصيغة الدولية، مثل 212600123456',
+      'whatsapp_enter_phone': 'أدخل رقمك لتلقي الرمز على واتساب',
       'my_plannings': 'جداولي',
       'starting_measurements': 'القياسات الأولية',
       'member_since': 'عضو منذ: {date}',
@@ -621,6 +639,12 @@ class AppLocalizations {
       translate('error_loading_subscription');
   String get errorLoadingWorkout => translate('error_loading_workout');
   String get hideQrCode => translate('hide_qr_code');
+  String get whatsappScanQr => translate('whatsapp_scan_qr');
+  String get whatsappPhoneNumber => translate('whatsapp_phone_number');
+  String get whatsappGetCode => translate('whatsapp_get_code');
+  String get whatsappPairingCode => translate('whatsapp_pairing_code');
+  String get whatsappPhoneHelper => translate('whatsapp_phone_helper');
+  String get whatsappEnterPhone => translate('whatsapp_enter_phone');
   String get myPlannings => translate('my_plannings');
   String get startingMeasurements => translate('starting_measurements');
   String memberSince(String date) =>

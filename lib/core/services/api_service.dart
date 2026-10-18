@@ -3292,6 +3292,41 @@ class ApiService {
     }
   }
 
+  /// Request a WhatsApp pairing code (alternative to QR scan).
+  /// POST /whatsapp/pairing-code
+  Future<Map<String, dynamic>?> requestWhatsAppPairingCode(
+    String phoneNumber,
+    String token, {
+    Duration timeout = const Duration(seconds: 15),
+  }) async {
+    final uri = baseUri.resolve('/whatsapp/pairing-code');
+    try {
+      debugPrint('ApiService.requestWhatsAppPairingCode -> $uri');
+      final resp = await http
+          .post(
+            uri,
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
+            body: jsonEncode({'phoneNumber': phoneNumber}),
+          )
+          .timeout(timeout);
+      debugPrint('requestWhatsAppPairingCode status: ${resp.statusCode}');
+      if (resp.statusCode == 200) {
+        try {
+          return jsonDecode(resp.body) as Map<String, dynamic>;
+        } catch (_) {
+          return null;
+        }
+      }
+      return {'statusCode': resp.statusCode};
+    } catch (e) {
+      debugPrint('Error requesting WhatsApp pairing code: $e');
+      return null;
+    }
+  }
+
   // ==================== ANDROID CONFIG ====================
 
   /// Get Android app configuration (API URL, min version, features).
