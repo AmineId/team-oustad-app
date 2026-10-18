@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.57](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.56...v1.0.0-beta.57) (2026-10-18)
+
+
+### 🐛 Bug Fixes
+
+* **icons:** replace white launcher icon background with brand dark color ([#1a1f2e](https://github.com/TeamFitness/mobile-app/issues/1a1f2e)) on all platforms ([017611a](https://github.com/TeamFitness/mobile-app/commit/017611af78465b7efb88454fc19e12280dd0a4d4)), closes [#1a1f2](https://github.com/TeamFitness/mobile-app/issues/1a1f2) [#1a1f2](https://github.com/TeamFitness/mobile-app/issues/1a1f2)
+* **ios:** force AppBar transparency for Liquid Glass effect ([6064635](https://github.com/TeamFitness/mobile-app/commit/6064635018885df12f04fd87ef3b63c5d203bbb9))
+
 ## [1.0.0-beta.56](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.55...v1.0.0-beta.56) (2026-10-18)
 
 
