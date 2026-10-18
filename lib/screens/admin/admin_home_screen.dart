@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/services/api_service.dart';
 import '../../core/theme/theme.dart';
@@ -396,57 +397,174 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
 }
 
 // Page Accueil
-class AccueilPage extends StatelessWidget {
+class AccueilPage extends StatefulWidget {
   const AccueilPage({super.key});
+
+  @override
+  State<AccueilPage> createState() => _AccueilPageState();
+}
+
+class _AccueilPageState extends State<AccueilPage> {
+  final ApiService _apiService = ApiService.fromEnv();
+  late final AuthService _authService;
+
+  String _totalMembers = '—';
+  String _activeMembers = '—';
+  String _todayCheckIns = '—';
+  String _totalRevenue = '—';
+  bool _isLoading = false;
+
+  static const _cacheKey = 'admin_dashboard_stats_cache';
+  static const _cacheTtlMinutes = 5;
+
+  @override
+  void initState() {
+    super.initState();
+    _authService = AuthService(_apiService);
+    _loadStats();
+  }
+
+  Future<void> _loadStats() async {
+    final cached = await _getCached();
+    if (cached != null) {
+      _applyStats(cached);
+      final cachedAt = DateTime.tryParse(cached['cachedAt'] as String? ?? '');
+      if (cachedAt != null &&
+          DateTime.now().difference(cachedAt).inMinutes < _cacheTtlMinutes) {
+        return;
+      }
+    }
+    await _fetchStats();
+  }
+
+  Future<Map<String, dynamic>?> _getCached() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_cacheKey);
+      if (raw == null) return null;
+      return jsonDecode(raw) as Map<String, dynamic>;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  void _applyStats(Map<String, dynamic> d) {
+    if (!mounted) return;
+    setState(() {
+      _totalMembers = _fmt(d['totalMembers']);
+      _activeMembers = _fmt(d['activeMembers']);
+      _todayCheckIns = _fmt(d['todayCheckIns']);
+      _totalRevenue =
+          d['totalRevenue'] != null ? _fmtRevenue(d['totalRevenue']) : '—';
+    });
+  }
+
+  String _fmt(dynamic v) {
+    if (v == null) return '—';
+    final n = (v as num).toInt();
+    return n >= 1000 ? '${(n / 1000).toStringAsFixed(1)}K' : '$n';
+  }
+
+  String _fmtRevenue(dynamic v) {
+    final n = (v as num).toDouble();
+    if (n >= 1000000) return '${(n / 1000000).toStringAsFixed(1)}M';
+    if (n >= 1000) return '${(n / 1000).toStringAsFixed(1)}K';
+    return n.toStringAsFixed(0);
+  }
+
+  Future<void> _fetchStats() async {
+    if (_isLoading) return;
+    if (mounted) setState(() => _isLoading = true);
+    try {
+      final token = await _authService.loadToken();
+      if (token == null) return;
+
+      final profile = await _authService.getCachedUserProfile();
+      final isOwner = await _authService.isOwner();
+      final gymIdRaw = profile?['gymId'];
+      final gymId = gymIdRaw is int ? gymIdRaw : null;
+
+      final data = <String, dynamic>{};
+
+      if (isOwner) {
+        final gs = await _apiService.getGlobalStats(token);
+        if (gs != null) {
+          data['totalMembers'] = gs['totalMembers'];
+          data['totalRevenue'] = gs['totalRevenue'];
+        }
+      }
+
+      if (gymId != null) {
+        final members = await _apiService.getGymMembers(gymId, token);
+        if (members != null) {
+          if (!isOwner) data['totalMembers'] = members.length;
+          data['activeMembers'] = members
+              .where((m) =>
+                  (m as Map<String, dynamic>)['activeSubscription'] != null)
+              .length;
+        }
+        final today = await _apiService.getTodayCheckIns(gymId, token);
+        if (today != null) data['todayCheckIns'] = today;
+      }
+
+      data['cachedAt'] = DateTime.now().toIso8601String();
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_cacheKey, jsonEncode(data));
+      _applyStats(data);
+    } catch (_) {
+      // keep existing values on error
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [theme.scaffoldBackgroundColor, theme.cardTheme.color!],
+    return RefreshIndicator(
+      onRefresh: _fetchStats,
+      color: AppColors.primary,
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [theme.scaffoldBackgroundColor, theme.cardTheme.color!],
+          ),
         ),
-      ),
-      child: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final isDesktop = constraints.maxWidth > 600;
-              final isWatch = constraints.maxWidth < 300;
+        child: SafeArea(
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(24.0),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final isDesktop = constraints.maxWidth > 600;
+                final isWatch = constraints.maxWidth < 300;
 
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Banner carousel - only shows when banners exist
-                  const BannerCarousel(height: 140),
-                  SizedBox(height: isWatch ? 16 : 24),
-
-                  // Statistiques - responsive grid
-                  _buildStatsGrid(context, isDesktop, isWatch),
-
-                  SizedBox(height: isWatch ? 16 : 32),
-
-                  // Actions rapides
-                  Text(
-                    AppLocalizations.of(context).quickActions,
-                    style: TextStyle(
-                      fontSize: isWatch ? 14 : (isDesktop ? 24 : 20),
-                      fontWeight: FontWeight.bold,
-                      color: (Theme.of(context).brightness == Brightness.dark
-                          ? AppColors.darkTextPrimary
-                          : AppColors.lightTextPrimary),
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const BannerCarousel(height: 140),
+                    SizedBox(height: isWatch ? 16 : 24),
+                    _buildStatsGrid(context, isDesktop, isWatch),
+                    SizedBox(height: isWatch ? 16 : 32),
+                    Text(
+                      AppLocalizations.of(context).quickActions,
+                      style: TextStyle(
+                        fontSize: isWatch ? 14 : (isDesktop ? 24 : 20),
+                        fontWeight: FontWeight.bold,
+                        color: (Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.darkTextPrimary
+                            : AppColors.lightTextPrimary),
+                      ),
                     ),
-                  ),
-                  SizedBox(height: isWatch ? 8 : 16),
-                  _buildQuickActions(isDesktop, isWatch),
-                ],
-              );
-            },
+                    SizedBox(height: isWatch ? 8 : 16),
+                    _buildQuickActions(isDesktop, isWatch),
+                  ],
+                );
+              },
+            ),
           ),
         ),
       ),
@@ -459,74 +577,59 @@ class AccueilPage extends StatelessWidget {
       _StatCard(
         icon: Icons.people,
         title: 'Membres',
-        value: '—',
+        value: _totalMembers,
         color: theme.colorScheme.primary,
       ),
       _StatCard(
         icon: Icons.fitness_center,
         title: 'Actifs',
-        value: '—',
+        value: _activeMembers,
         color: AppColors.success,
       ),
       _StatCard(
         icon: Icons.calendar_today,
-        title: 'Aujourd\'hui',
-        value: '—',
+        title: "Aujourd'hui",
+        value: _todayCheckIns,
         color: AppColors.info,
       ),
       _StatCard(
         icon: Icons.trending_up,
         title: 'Revenus',
-        value: '—',
+        value: _totalRevenue,
         color: Colors.purple,
       ),
     ];
 
     if (isWatch) {
-      // Watch: single column
       return Column(
         children: stats
-            .map(
-              (stat) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: stat,
-              ),
-            )
+            .map((s) =>
+                Padding(padding: const EdgeInsets.only(bottom: 8), child: s))
             .toList(),
       );
     } else if (isDesktop) {
-      // Desktop: 4 columns
       return Row(
         children: stats
-            .map(
-              (stat) => Expanded(
+            .map((s) => Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: stat,
-                ),
-              ),
-            )
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: s)))
             .toList(),
       );
     } else {
-      // Mobile: 2x2 grid
       return Column(
         children: [
-          Row(
-            children: [
-              Expanded(child: stats[0]),
-              const SizedBox(width: 16),
-              Expanded(child: stats[1]),
-            ],
-          ),
+          Row(children: [
+            Expanded(child: stats[0]),
+            const SizedBox(width: 16),
+            Expanded(child: stats[1]),
+          ]),
           const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(child: stats[2]),
-              const SizedBox(width: 16),
-              Expanded(child: stats[3]),
-            ],
-          ),
+          Row(children: [
+            Expanded(child: stats[2]),
+            const SizedBox(width: 16),
+            Expanded(child: stats[3]),
+          ]),
         ],
       );
     }
@@ -539,86 +642,61 @@ class AccueilPage extends StatelessWidget {
           _QuickActionButton(
             icon: Icons.person_add,
             title: 'Nouveau membre',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const AdminCreateMemberScreen(),
-                ),
-              );
-            },
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => const AdminCreateMemberScreen()),
+            ),
           ),
           _QuickActionButton(
             icon: Icons.payment,
             title: 'Enregistrer un paiement',
-            onTap: () {
-              AppSnackBar.info(context, 'Fonctionnalité en développement');
-            },
+            onTap: () =>
+                AppSnackBar.info(context, 'Fonctionnalité en développement'),
           ),
           _QuickActionButton(
             icon: Icons.campaign_rounded,
             title: 'Événements',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const AdminBannersScreen(),
-                ),
-              );
-            },
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const AdminBannersScreen()),
+            ),
           ),
           _QuickActionButton(
             icon: Icons.store_rounded,
             title: 'Produits Store',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const AdminProductsScreen(),
-                ),
-              );
-            },
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const AdminProductsScreen()),
+            ),
           ),
-          // Scanner only on mobile (not available on desktop)
           if (!isDesktop)
             _QuickActionButton(
               icon: Icons.qr_code_scanner,
               title: 'Scanner une carte',
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const AdminQrScannerScreen(),
-                  ),
-                );
-              },
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (_) => const AdminQrScannerScreen()),
+              ),
             ),
         ];
 
         if (isDesktop) {
-          // Desktop: 2 columns (without scanner)
           return Row(
             children: actions
-                .map(
-                  (action) => Expanded(
+                .map((a) => Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: action,
-                    ),
-                  ),
-                )
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: a)))
                 .toList(),
           );
         } else {
-          // Mobile & Watch: single column
           return Column(
             children: actions
-                .map(
-                  (action) => Padding(
+                .map((a) => Padding(
                     padding: EdgeInsets.only(bottom: isWatch ? 8 : 12),
-                    child: action,
-                  ),
-                )
+                    child: a))
                 .toList(),
           );
         }

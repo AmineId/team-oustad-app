@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:team_fitness_app/core/utils/platform_utils.dart';
 import '../../core/theme/theme.dart';
@@ -68,51 +70,108 @@ class ResponsiveScaffold extends StatelessWidget {
   }
 
   Widget _buildMobileLayout(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        centerTitle: false,
-        titleSpacing: 0,
-        title: Row(
-          children: [
-            if (leading != null) ...[
-              leading!,
-            ],
-            Expanded(
-              child: Center(
-                child: Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).appBarTheme.titleTextStyle?.color,
-                  ),
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final isIOS = Platform.isIOS;
+
+    final appBar = AppBar(
+      automaticallyImplyLeading: false,
+      centerTitle: false,
+      titleSpacing: 0,
+      backgroundColor: isIOS ? Colors.transparent : null,
+      elevation: isIOS ? 0 : null,
+      title: Row(
+        children: [
+          if (leading != null) leading!,
+          Expanded(
+            child: Center(
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: theme.appBarTheme.titleTextStyle?.color,
                 ),
               ),
             ),
-          ],
-        ),
-        actions: actions,
+          ),
+        ],
       ),
+      actions: actions,
+      flexibleSpace: isIOS
+          ? ClipRect(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? Colors.black.withValues(alpha: 0.55)
+                        : Colors.white.withValues(alpha: 0.72),
+                    border: Border(
+                      bottom: BorderSide(
+                        color: isDark
+                            ? Colors.white.withValues(alpha: 0.08)
+                            : Colors.black.withValues(alpha: 0.08),
+                        width: 0.5,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            )
+          : null,
+    );
+
+    final bottomNav = BottomNavigationBar(
+      currentIndex: currentIndex,
+      onTap: onNavigationChanged,
+      type: BottomNavigationBarType.fixed,
+      backgroundColor: isIOS
+          ? Colors.transparent
+          : theme.bottomNavigationBarTheme.backgroundColor,
+      selectedItemColor: theme.bottomNavigationBarTheme.selectedItemColor,
+      unselectedItemColor: theme.bottomNavigationBarTheme.unselectedItemColor,
+      selectedFontSize: 12,
+      unselectedFontSize: 12,
+      elevation: isIOS ? 0 : 8,
+      items: navigationItems
+          .map((item) => BottomNavigationBarItem(
+                icon: item.customWidget ?? Icon(item.icon),
+                activeIcon: item.activeCustomWidget ??
+                    item.customWidget ??
+                    Icon(item.activeIcon ?? item.icon),
+                label: item.label,
+              ))
+          .toList(),
+    );
+
+    return Scaffold(
+      extendBodyBehindAppBar: isIOS,
+      appBar: appBar,
       body: body,
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: currentIndex,
-        onTap: onNavigationChanged,
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Theme.of(context).bottomNavigationBarTheme.backgroundColor,
-        selectedItemColor: Theme.of(context).bottomNavigationBarTheme.selectedItemColor,
-        unselectedItemColor: Theme.of(context).bottomNavigationBarTheme.unselectedItemColor,
-        selectedFontSize: 12,
-        unselectedFontSize: 12,
-        elevation: 8,
-        items: navigationItems
-            .map((item) => BottomNavigationBarItem(
-                  icon: item.customWidget ?? Icon(item.icon),
-                  activeIcon: item.activeCustomWidget ?? item.customWidget ?? Icon(item.activeIcon ?? item.icon),
-                  label: item.label,
-                ))
-            .toList(),
-      ),
+      bottomNavigationBar: isIOS
+          ? ClipRect(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? Colors.black.withValues(alpha: 0.55)
+                        : Colors.white.withValues(alpha: 0.72),
+                    border: Border(
+                      top: BorderSide(
+                        color: isDark
+                            ? Colors.white.withValues(alpha: 0.08)
+                            : Colors.black.withValues(alpha: 0.08),
+                        width: 0.5,
+                      ),
+                    ),
+                  ),
+                  child: bottomNav,
+                ),
+              ),
+            )
+          : bottomNav,
     );
   }
 

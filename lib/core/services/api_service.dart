@@ -2863,6 +2863,28 @@ class ApiService {
   // NEW API ENDPOINTS - January 2, 2026
   // ============================================================================
 
+  /// Get today's check-in count for a gym.
+  /// GET /check-in/gym/{gymId}/today
+  Future<int?> getTodayCheckIns(
+    int gymId,
+    String token, {
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
+    final uri = baseUri.resolve('/check-in/gym/$gymId/today');
+    try {
+      final resp = await http
+          .get(uri, headers: {'Authorization': 'Bearer $token'})
+          .timeout(timeout);
+      if (resp.statusCode == 200) {
+        final body = jsonDecode(resp.body);
+        return body['count'] as int?;
+      }
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// Checkout from gym (record exit time).
   /// POST /check-in/{id}/checkout
   Future<Map<String, dynamic>?> checkoutMember(
