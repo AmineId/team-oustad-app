@@ -16,6 +16,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🐛 Bug Fixes
 
+* **auth,icons,ota:** biometric logout fix, dark launcher icon, OTA url_launcher ([9c96f9d](https://github.com/TeamFitness/mobile-app/commit/9c96f9d880e9aaa8f8885a5ba80941864d824ade)), closes [#1a1f2](https://github.com/TeamFitness/mobile-app/issues/1a1f2)
+* **auth:** preserve credentials on logout so biometric re-login works ([770bde8](https://github.com/TeamFitness/mobile-app/commit/770bde8b9fe08b3c107e3550f2560c5ce579ee80))
+* **ci:** add curl timeout and continue-on-error to server version update step ([c6c94a2](https://github.com/TeamFitness/mobile-app/commit/c6c94a22693a914a02608b935e414d4fbfbf0691))
+
+## [1.0.0-beta.53](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.52...v1.0.0-beta.53) (2026-10-18)
+
+
+### ✨ New Features
+
+* implement new swagger routes (gym image, exercise removal, subscription renew, WhatsApp) ([8a0a3f4](https://github.com/TeamFitness/mobile-app/commit/8a0a3f40f62695a877f1396b329c452fed589f06))
+
+
+### 🐛 Bug Fixes
+
 * **auth:** preserve credentials on logout so biometric re-login works ([770bde8](https://github.com/TeamFitness/mobile-app/commit/770bde8b9fe08b3c107e3550f2560c5ce579ee80))
 * **ci:** add curl timeout and continue-on-error to server version update step ([c6c94a2](https://github.com/TeamFitness/mobile-app/commit/c6c94a22693a914a02608b935e414d4fbfbf0691))
 
