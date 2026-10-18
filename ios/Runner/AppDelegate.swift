@@ -8,10 +8,34 @@ import UIKit
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
     GeneratedPluginRegistrant.register(with: self)
-    
+
     // Bloquer les screenshots et l'enregistrement d'écran
     disableScreenCapture()
-    
+
+    // Channel utilitaire iOS
+    if let controller = window?.rootViewController as? FlutterViewController {
+      let channel = FlutterMethodChannel(
+        name: "team.fitness.security",
+        binaryMessenger: controller.binaryMessenger
+      )
+      channel.setMethodCallHandler { call, result in
+        switch call.method {
+        case "checkFirebasePlistBundle":
+          // Vérifie que le bundle ID de GoogleService-Info.plist correspond
+          // au bundle ID actuel (peut différer après re-signature xtool)
+          if let path = Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist"),
+             let plist = NSDictionary(contentsOfFile: path),
+             let plistBundleId = plist["BUNDLE_ID"] as? String {
+            result(plistBundleId == Bundle.main.bundleIdentifier)
+          } else {
+            result(false)
+          }
+        default:
+          result(FlutterMethodNotImplemented)
+        }
+      }
+    }
+
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
   

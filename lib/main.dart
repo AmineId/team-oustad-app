@@ -26,15 +26,32 @@ void main() async {
     const environment = String.fromEnvironment('ENVIRONMENT', defaultValue: 'dev');
     // ignore: avoid_print
     debugPrint('🌍 Environment detected: $environment');
-    
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-    // ignore: avoid_print
-    debugPrint('✅ Firebase initialized for $environment environment');
-    
-    // Set up background message handler
-    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+
+    // Sur iOS, vérifier que le bundle ID du plist Firebase correspond à l'app
+    // (peut différer après re-signature xtool avec un Apple ID gratuit)
+    bool canInitFirebase = true;
+    if (!kIsWeb && Platform.isIOS) {
+      try {
+        const securityChannel = MethodChannel('team.fitness.security');
+        canInitFirebase = await securityChannel.invokeMethod<bool>('checkFirebasePlistBundle') ?? false;
+        if (!canInitFirebase) {
+          debugPrint('⚠️ Firebase: bundle ID mismatch (xtool signing), skipping init');
+        }
+      } catch (_) {
+        canInitFirebase = false;
+      }
+    }
+
+    if (canInitFirebase) {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+      // ignore: avoid_print
+      debugPrint('✅ Firebase initialized for $environment environment');
+
+      // Set up background message handler
+      FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+    }
   } catch (e) {
     // ignore: avoid_print
     debugPrint('⚠️ Firebase initialization failed: $e');
