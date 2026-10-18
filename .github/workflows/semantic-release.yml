@@ -354,3 +354,55 @@ jobs:
         if: always()
         run: |
           rm -f android/fastlane/service-account-key.json
+
+  # Étape 2b: Build iOS (en parallèle avec build-and-deploy)
+  build-ios:
+    name: 🍎 Build iOS
+    needs: version
+    if: needs.version.outputs.released == 'true'
+    runs-on: macos-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: 📥 Checkout updated code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🔄 Fetch and checkout release commit
+        run: |
+          git fetch origin ${{ github.ref_name }}
+          git reset --hard origin/${{ github.ref_name }}
+          echo "✅ iOS build on commit: $(git rev-parse HEAD)"
+
+      - name: 🐦 Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: 📦 Get dependencies
+        run: flutter pub get
+
+      - name: 🏗️ Build iOS (no codesign)
+        run: |
+          flutter build ios --release --no-codesign \
+            --dart-define=ENVIRONMENT=${{ needs.version.outputs.dart_env }}
+
+      - name: 📦 Package .ipa
+        run: |
+          mkdir -p build/ipa/Payload
+          cp -R build/ios/iphoneos/Runner.app build/ipa/Payload/
+          cd build/ipa
+          zip -qry "TeamFitness-${{ needs.version.outputs.dart_env }}-${{ needs.version.outputs.version }}.ipa" Payload
+          ls -lh *.ipa
+
+      - name: 📤 Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-ipa-${{ needs.version.outputs.dart_env }}-${{ needs.version.outputs.version }}
+          path: build/ipa/TeamFitness-${{ needs.version.outputs.dart_env }}-${{ needs.version.outputs.version }}.ipa
+          retention-days: 14
