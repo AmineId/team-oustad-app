@@ -26,17 +26,25 @@ class NativeGlassTabBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final safeBottom = MediaQuery.of(context).padding.bottom;
     return Padding(
-      padding: EdgeInsets.only(bottom: safeBottom > 0 ? safeBottom - 10 : 8),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        0,
+        20,
+        safeBottom > 0 ? safeBottom - 10 : 8,
+      ),
       child: Center(
         heightFactor: 1,
-        child: CNTabBar(
-          items: [
-            for (final item in items)
-              CNTabBarItem(label: item.label, icon: CNSymbol(item.symbol)),
-          ],
-          currentIndex: currentIndex,
-          onTap: onTap,
-          tint: Theme.of(context).colorScheme.primary,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(36),
+          child: CNTabBar(
+            items: [
+              for (final item in items)
+                CNTabBarItem(label: item.label, icon: CNSymbol(item.symbol)),
+            ],
+            currentIndex: currentIndex,
+            onTap: onTap,
+            tint: Theme.of(context).colorScheme.primary,
+          ),
         ),
       ),
     );

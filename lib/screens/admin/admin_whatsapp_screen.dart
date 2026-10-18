@@ -187,7 +187,8 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
       }
       if (statusCode == 503) {
         setState(() {
-          _pairingError = 'Client pas encore prêt, réessayez dans quelques secondes';
+          _pairingError =
+              'Client pas encore prêt, réessayez dans quelques secondes';
           _pairingLoading = false;
         });
         return;
@@ -333,7 +334,9 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
   Widget _buildScrollBody(ThemeData theme) {
     return SafeArea(
       child: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            )
           : SingleChildScrollView(
               padding: const EdgeInsets.all(24),
               child: Column(
@@ -367,8 +370,9 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
         color: theme.cardTheme.color,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: (_connected ? AppColors.success : AppColors.error)
-              .withValues(alpha: 0.4),
+          color: (_connected ? AppColors.success : AppColors.error).withValues(
+            alpha: 0.4,
+          ),
         ),
       ),
       child: Row(
@@ -446,7 +450,10 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
             ),
             labelColor: AppColors.primary,
             unselectedLabelColor: Colors.white54,
-            labelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+            labelStyle: const TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 14,
+            ),
             unselectedLabelStyle: const TextStyle(fontSize: 14),
             dividerColor: Colors.transparent,
             tabs: const [
@@ -476,15 +483,11 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
           ),
         ),
         const SizedBox(height: 16),
-        SizedBox(
-          height: 380,
-          child: TabBarView(
-            controller: _tabController,
-            children: [
-              _buildQrTab(theme),
-              _buildPhoneTab(theme),
-            ],
-          ),
+        ListenableBuilder(
+          listenable: _tabController,
+          builder: (context, _) => _tabController.index == 0
+              ? _buildQrTab(theme)
+              : _buildPhoneTab(theme),
         ),
       ],
     );
@@ -547,7 +550,9 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
             foregroundColor: AppColors.primary,
             side: const BorderSide(color: AppColors.primary),
             padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
         ),
       ],
@@ -555,141 +560,166 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
   }
 
   Widget _buildPhoneTab(ThemeData theme) {
-    return SingleChildScrollView(
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: theme.cardTheme.color,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Text(
-              'Connecter via numéro',
-              style: TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: theme.cardTheme.color,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text(
+                'Connecter via numéro',
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Ouvrez WhatsApp → Appareils connectés → Connecter avec numéro',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.6),
-                fontSize: 13,
+              const SizedBox(height: 8),
+              Text(
+                'Ouvrez WhatsApp → Appareils connectés → Connecter avec numéro',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.6),
+                  fontSize: 13,
+                ),
               ),
-            ),
-            const SizedBox(height: 24),
-            TextField(
-              controller: _phoneController,
-              keyboardType: TextInputType.phone,
-              style: const TextStyle(color: Colors.white, fontSize: 16),
-              decoration: InputDecoration(
-                labelText: 'Numéro de téléphone',
-                labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
-                helperText: 'Format international, ex : 212600123456',
-                helperStyle: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.45),
-                  fontSize: 12,
-                ),
-                prefixIcon: Icon(Icons.phone, color: Colors.white.withValues(alpha: 0.5)),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                errorText: _pairingError,
-                errorStyle: const TextStyle(color: AppColors.error),
-                errorBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: AppColors.error),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                focusedErrorBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: AppColors.error, width: 1.5),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                filled: true,
-                fillColor: Colors.white.withValues(alpha: 0.05),
-              ),
-              onSubmitted: (_) => _pairingLoading ? null : _requestPairingCode(),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              height: 50,
-              child: ElevatedButton.icon(
-                onPressed: _pairingLoading ? null : _requestPairingCode,
-                icon: _pairingLoading
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Icon(Icons.send, size: 18),
-                label: Text(_pairingLoading ? 'Demande en cours…' : 'Obtenir le code'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.4),
-                  shape: RoundedRectangleBorder(
+              const SizedBox(height: 24),
+              TextField(
+                controller: _phoneController,
+                keyboardType: TextInputType.phone,
+                style: const TextStyle(color: Colors.white, fontSize: 16),
+                decoration: InputDecoration(
+                  labelText: 'Numéro de téléphone',
+                  labelStyle: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.7),
+                  ),
+                  helperText: 'Format international, ex : 212600123456',
+                  helperStyle: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.45),
+                    fontSize: 12,
+                  ),
+                  prefixIcon: Icon(
+                    Icons.phone,
+                    color: Colors.white.withValues(alpha: 0.5),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Colors.white.withValues(alpha: 0.2),
+                    ),
                     borderRadius: BorderRadius.circular(12),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(
+                      color: AppColors.primary,
+                      width: 1.5,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  errorText: _pairingError,
+                  errorStyle: const TextStyle(color: AppColors.error),
+                  errorBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: AppColors.error),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  focusedErrorBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(
+                      color: AppColors.error,
+                      width: 1.5,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white.withValues(alpha: 0.05),
+                ),
+                onSubmitted: (_) =>
+                    _pairingLoading ? null : _requestPairingCode(),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                height: 50,
+                child: ElevatedButton.icon(
+                  onPressed: _pairingLoading ? null : _requestPairingCode,
+                  icon: _pairingLoading
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Icon(Icons.send, size: 18),
+                  label: Text(
+                    _pairingLoading ? 'Demande en cours…' : 'Obtenir le code',
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    disabledBackgroundColor: AppColors.primary.withValues(
+                      alpha: 0.4,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                 ),
               ),
-            ),
-            if (_pairingCode != null) ...[
-              const SizedBox(height: 24),
-              Container(
-                padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.4)),
+              if (_pairingCode != null) ...[
+                const SizedBox(height: 24),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 20,
+                    horizontal: 16,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.4),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        'Code d\'appairage',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.65),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        _pairingCode!,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 6,
+                          fontFeatures: [FontFeature.tabularFigures()],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Entrez ce code dans WhatsApp',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.5),
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                child: Column(
-                  children: [
-                    Text(
-                      'Code d\'appairage',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.65),
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      _pairingCode!,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 6,
-                        fontFeatures: [FontFeature.tabularFigures()],
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Entrez ce code dans WhatsApp',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.5),
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              ],
             ],
-          ],
+          ),
         ),
-      ),
+      ],
     );
   }
 
@@ -707,10 +737,7 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Image.memory(
-          Uint8List.fromList(bytes),
-          fit: BoxFit.contain,
-        ),
+        child: Image.memory(Uint8List.fromList(bytes), fit: BoxFit.contain),
       );
     } catch (_) {
       return const SizedBox(
@@ -731,7 +758,10 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
             ? const SizedBox(
                 width: 18,
                 height: 18,
-                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
               )
             : const Icon(Icons.logout, size: 20),
         label: const Text('Déconnecter WhatsApp'),
@@ -739,7 +769,9 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
           backgroundColor: AppColors.error,
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 14),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       ),
     );
