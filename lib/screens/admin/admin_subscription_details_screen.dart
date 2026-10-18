@@ -403,13 +403,7 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
       ),
       body: glassBodyInsets(context, Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Theme.of(context).scaffoldBackgroundColor, Theme.of(context).cardTheme.color!,
-            ],
-          ),
+          color: Theme.of(context).scaffoldBackgroundColor,
         ),
         child: SafeArea(child: _isLoading
             ? const Center(

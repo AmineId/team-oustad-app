@@ -978,11 +978,7 @@ class _GestionPageState extends State<GestionPage> {
     return Container(
       key: const ValueKey('menu'),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [theme.scaffoldBackgroundColor, theme.cardTheme.color!],
-        ),
+        color: Theme.of(context).scaffoldBackgroundColor,
       ),
       child: SafeArea(
         child: SingleChildScrollView(
@@ -1110,14 +1106,7 @@ class _ProfilePageState extends State<ProfilePage> {
     if (_isLoading) {
       return Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Theme.of(context).scaffoldBackgroundColor,
-              Theme.of(context).cardTheme.color!,
-            ],
-          ),
+          color: Theme.of(context).scaffoldBackgroundColor,
         ),
         child: Center(
           child: CircularProgressIndicator(
@@ -1138,14 +1127,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Theme.of(context).scaffoldBackgroundColor,
-            Theme.of(context).cardTheme.color!,
-          ],
-        ),
+        color: Theme.of(context).scaffoldBackgroundColor,
       ),
       child: SafeArea(
         child: RefreshIndicator(
@@ -1574,11 +1556,7 @@ class _GestionGlobalePageState extends State<GestionGlobalePage> {
 
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [theme.scaffoldBackgroundColor, theme.cardTheme.color!],
-        ),
+        color: Theme.of(context).scaffoldBackgroundColor,
       ),
       child: SafeArea(
         child: SingleChildScrollView(
@@ -1822,11 +1800,7 @@ class _AdminsListViewState extends State<_AdminsListView> {
       backgroundColor: Colors.transparent,
       body: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [theme.scaffoldBackgroundColor, theme.cardTheme.color!],
-          ),
+          color: Theme.of(context).scaffoldBackgroundColor,
         ),
         child: SafeArea(
           child: Column(
@@ -2240,11 +2214,7 @@ class _GymsListViewState extends State<_GymsListView> {
       backgroundColor: Colors.transparent,
       body: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [theme.scaffoldBackgroundColor, theme.cardTheme.color!],
-          ),
+          color: Theme.of(context).scaffoldBackgroundColor,
         ),
         child: SafeArea(
           child: Column(
@@ -2545,11 +2515,7 @@ class _AdminDetailsViewState extends State<_AdminDetailsView> {
 
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [theme.scaffoldBackgroundColor, theme.cardTheme.color!],
-        ),
+        color: Theme.of(context).scaffoldBackgroundColor,
       ),
       child: SafeArea(
         child: Column(
@@ -2865,11 +2831,7 @@ class _GymDetailsViewState extends State<_GymDetailsView> {
 
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [theme.scaffoldBackgroundColor, theme.cardTheme.color!],
-        ),
+        color: Theme.of(context).scaffoldBackgroundColor,
       ),
       child: SafeArea(
         child: Column(
@@ -3318,14 +3280,7 @@ class _AdminEditViewState extends State<_AdminEditView> {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Theme.of(context).scaffoldBackgroundColor,
-            Theme.of(context).cardTheme.color!,
-          ],
-        ),
+        color: Theme.of(context).scaffoldBackgroundColor,
       ),
       child: SafeArea(
         child: Column(
@@ -3666,14 +3621,7 @@ class _GymEditViewState extends State<_GymEditView> {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Theme.of(context).scaffoldBackgroundColor,
-            Theme.of(context).cardTheme.color!,
-          ],
-        ),
+        color: Theme.of(context).scaffoldBackgroundColor,
       ),
       child: SafeArea(
         child: Column(
@@ -4076,14 +4024,7 @@ class _GymOpeningHoursViewState extends State<_GymOpeningHoursView> {
 
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Theme.of(context).scaffoldBackgroundColor,
-            Theme.of(context).cardTheme.color!,
-          ],
-        ),
+        color: Theme.of(context).scaffoldBackgroundColor,
       ),
       child: SafeArea(
         child: Column(
@@ -4381,14 +4322,7 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Theme.of(context).scaffoldBackgroundColor,
-            Theme.of(context).cardTheme.color!,
-          ],
-        ),
+        color: Theme.of(context).scaffoldBackgroundColor,
       ),
       child: SafeArea(
         child: Column(
@@ -4822,14 +4756,7 @@ class _GymCreateViewState extends State<_GymCreateView> {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Theme.of(context).scaffoldBackgroundColor,
-            Theme.of(context).cardTheme.color!,
-          ],
-        ),
+        color: Theme.of(context).scaffoldBackgroundColor,
       ),
       child: SafeArea(
         child: Column(

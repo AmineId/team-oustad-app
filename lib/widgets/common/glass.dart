@@ -32,17 +32,9 @@ class GlassBar extends StatelessWidget {
   }
 }
 
-/// Fond dégradé commun à toutes les pages (même départ/arrivée partout).
-BoxDecoration appBackgroundDecoration(BuildContext context) {
-  final theme = Theme.of(context);
-  return BoxDecoration(
-    gradient: LinearGradient(
-      begin: Alignment.topCenter,
-      end: Alignment.bottomCenter,
-      colors: [theme.scaffoldBackgroundColor, theme.cardTheme.color!],
-    ),
-  );
-}
+/// Fond uni commun à toutes les pages, identique à la teinte des barres glass.
+BoxDecoration appBackgroundDecoration(BuildContext context) =>
+    BoxDecoration(color: Theme.of(context).scaffoldBackgroundColor);
 
 /// AppBar pour les écrans poussés avec Navigator.push : glass sur iOS,
 /// AppBar standard ailleurs. À utiliser avec `extendBodyBehindAppBar: glassExtendsBody`.

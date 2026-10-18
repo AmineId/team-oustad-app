@@ -5090,14 +5090,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
     if (_isLoading) {
       return Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Theme.of(context).scaffoldBackgroundColor,
-              Theme.of(context).cardTheme.color!,
-            ],
-          ),
+          color: Theme.of(context).scaffoldBackgroundColor,
         ),
         child: Center(
           child: CircularProgressIndicator(
@@ -5178,14 +5171,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
 
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Theme.of(context).scaffoldBackgroundColor,
-            Theme.of(context).cardTheme.color!,
-          ],
-        ),
+        color: Theme.of(context).scaffoldBackgroundColor,
       ),
       child: RefreshIndicator(
         onRefresh: _refreshProfileData,

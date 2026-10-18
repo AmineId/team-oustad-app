@@ -72,14 +72,7 @@ class AccueilPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Theme.of(context).scaffoldBackgroundColor,
-            Theme.of(context).cardTheme.color!,
-          ],
-        ),
+        color: Theme.of(context).scaffoldBackgroundColor,
       ),
       child: SafeArea(
         child: SingleChildScrollView(
@@ -294,14 +287,7 @@ class RecherchePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Theme.of(context).scaffoldBackgroundColor,
-            Theme.of(context).cardTheme.color!,
-          ],
-        ),
+        color: Theme.of(context).scaffoldBackgroundColor,
       ),
       child: SafeArea(
         child: Padding(
@@ -351,14 +337,7 @@ class AjoutMembrePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Theme.of(context).scaffoldBackgroundColor,
-            Theme.of(context).cardTheme.color!,
-          ],
-        ),
+        color: Theme.of(context).scaffoldBackgroundColor,
       ),
       child: SafeArea(
         child: SingleChildScrollView(
@@ -437,14 +416,7 @@ class ProfilePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Theme.of(context).scaffoldBackgroundColor,
-            Theme.of(context).cardTheme.color!,
-          ],
-        ),
+        color: Theme.of(context).scaffoldBackgroundColor,
       ),
       child: SafeArea(
         child: SingleChildScrollView(

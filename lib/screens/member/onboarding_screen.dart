@@ -526,14 +526,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         ),
         body: Container(
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Theme.of(context).scaffoldBackgroundColor,
-                Theme.of(context).cardTheme.color!,
-              ],
-            ),
+            color: Theme.of(context).scaffoldBackgroundColor,
           ),
           child: SafeArea(
             child: SingleChildScrollView(
