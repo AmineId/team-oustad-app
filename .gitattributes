@@ -1,0 +1,14 @@
+# Normalize line endings: LF in the repo and working tree, regardless of OS / git autocrlf.
+* text=auto eol=lf
+
+# Windows-only scripts keep CRLF in the working tree (still stored as LF).
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binaries
+*.png binary
+*.jpg binary
+*.jks binary
+*.keystore binary
+*.ico binary

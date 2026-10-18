@@ -2929,6 +2929,7 @@ class _GymDetailsViewState extends State<_GymDetailsView> {
     required String title,
     required String value,
   }) {
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(

@@ -158,9 +158,9 @@ The only visible change is in the GitHub Actions UI, where you'll see:
 ## Related Documentation
 
 For more details, see:
-- **Full Explanation:** [docs/ARTIFACT_REMOVAL_EXPLANATION.md](docs/ARTIFACT_REMOVAL_EXPLANATION.md)
-- **Workflow Status:** [docs/DEPLOY_PLAY_STORE_STATUS.md](docs/DEPLOY_PLAY_STORE_STATUS.md)
-- **Change Tracking:** [docs/FILES_CHANGED_PLAY_STORE.md](docs/FILES_CHANGED_PLAY_STORE.md)
+- **Full Explanation:** [docs/ARTIFACT_REMOVAL_EXPLANATION.md](ARTIFACT_REMOVAL_EXPLANATION.md)
+- **Workflow Status:** [docs/DEPLOY_PLAY_STORE_STATUS.md](../play-store/DEPLOY_PLAY_STORE_STATUS.md)
+- **Change Tracking:** [docs/FILES_CHANGED_PLAY_STORE.md](../play-store/FILES_CHANGED_PLAY_STORE.md)
 
 ## Conclusion
 

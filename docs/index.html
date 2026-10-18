@@ -1,0 +1,484 @@
+<title>Team Fitness Handbook</title>
+<meta name="description" content="Guide développeur de l'app Flutter Team Fitness">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Stencil+Display:wght@700;800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: sticky side index + one reading column; the command builder is the centrepiece, styled like a gym whiteboard. */
+:root {
+  --bg: #eceff3;
+  --surface: #ffffff;
+  --raised: #e2e8f0;
+  --ink: #1e293b;
+  --ink-2: #334155;
+  --ink-3: #5b6b80;
+  --line: #cbd3de;
+  --accent: #e89547;
+  --accent-ink: #a8540c;
+  --accent-wash: #fbeadb;
+  --term: #1a202c;
+  --term-ink: #f1f5f9;
+  --term-dim: #94a3b8;
+  --ok: #0e8f63;
+  --warn: #b7791f;
+  --danger: #c2410c;
+  --display: "Big Shoulders Stencil Display", "Impact", "Arial Narrow", sans-serif;
+  --body: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "Cascadia Code", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #1a202c; --surface: #232b3a; --raised: #2d3748;
+    --ink: #f8fafc; --ink-2: #d1d5db; --ink-3: #9ca3af; --line: #3b4659;
+    --accent-ink: #f4a261; --accent-wash: #3a2d22;
+    --term: #11151d; --ok: #34d399; --warn: #fbbf24; --danger: #fb923c;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #1a202c; --surface: #232b3a; --raised: #2d3748;
+  --ink: #f8fafc; --ink-2: #d1d5db; --ink-3: #9ca3af; --line: #3b4659;
+  --accent-ink: #f4a261; --accent-wash: #3a2d22;
+  --term: #11151d; --ok: #34d399; --warn: #fbbf24; --danger: #fb923c;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 16px/1.6 var(--body);
+  padding-inline: clamp(16px, 4vw, 48px);
+}
+a { color: var(--accent-ink); text-underline-offset: 3px; }
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+code, kbd { font-family: var(--mono); font-size: .88em; }
+:not(pre) > code { background: var(--raised); padding: .1em .4em; border-radius: 4px; color: var(--ink); }
+h1, h2, h3 { text-wrap: balance; line-height: 1.1; }
+h2 {
+  font-family: var(--display); font-weight: 800; text-transform: uppercase;
+  font-size: clamp(2rem, 4vw, 2.6rem); letter-spacing: .02em; margin: 0 0 .4em;
+}
+h3 { font-size: 1.05rem; margin: 1.4em 0 .4em; }
+p { max-width: 65ch; margin: 0 0 1em; color: var(--ink-2); }
+.eyebrow { font: 600 .72rem/1 var(--body); letter-spacing: .14em; text-transform: uppercase; color: var(--accent-ink); }
+
+.shell { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 56px; padding-block: 40px 80px; }
+nav.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 24px); align-self: start; display: grid; gap: 4px; }
+nav.toc a { color: var(--ink-3); text-decoration: none; padding: 6px 10px; border-left: 2px solid var(--line); font-size: .92rem; }
+nav.toc a:hover { color: var(--ink); border-color: var(--accent); }
+main { display: grid; gap: 72px; min-width: 0; }
+section { scroll-margin-top: 24px; }
+
+/* Hero */
+.hero { display: grid; grid-template-columns: auto 1fr; gap: 28px; align-items: center; }
+.hero img { width: 116px; height: 116px; object-fit: contain; }
+.hero h1 {
+  font-family: var(--display); font-weight: 800; text-transform: uppercase;
+  font-size: clamp(3rem, 8vw, 5.4rem); margin: 0; letter-spacing: .01em; line-height: .9;
+}
+.hero h1 span { color: var(--accent); }
+.hero p { margin: .6em 0 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.chip { font: 500 .8rem/1 var(--body); padding: 6px 10px; border: 1px solid var(--line); border-radius: 999px; color: var(--ink-2); background: var(--surface); }
+.chip.version { font-family: var(--mono); border-color: var(--accent); color: var(--accent-ink); background: var(--accent-wash); }
+
+/* Command builder */
+.builder { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.controls { display: grid; gap: 18px; padding: 22px; }
+.row { display: grid; grid-template-columns: 120px 1fr; gap: 12px; align-items: center; }
+.row > .label { font: 600 .75rem/1.2 var(--body); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
+.seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg label {
+  cursor: pointer; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--line);
+  font-weight: 500; font-size: .92rem; color: var(--ink-2); background: var(--bg);
+  transition: background .15s, border-color .15s, color .15s;
+}
+.seg label:hover { border-color: var(--accent); }
+.seg input:checked + label { background: var(--accent); border-color: var(--accent); color: #1a202c; }
+.seg input:focus-visible + label { outline: 2px solid var(--accent); outline-offset: 2px; }
+.seg input:disabled + label { opacity: .4; cursor: not-allowed; }
+.env-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
+.dot-dev { background: var(--ok); } .dot-pprod { background: var(--warn); } .dot-prod { background: var(--danger); }
+#url { width: 100%; max-width: 360px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); font: .9rem var(--mono); }
+#url:disabled { opacity: .45; }
+.hint { font-size: .85rem; color: var(--ink-3); margin: 0; }
+
+.terminal { background: var(--term); color: var(--term-ink); padding: 18px 22px 20px; display: grid; gap: 14px; }
+.cmd { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: start; }
+.cmd .tag { grid-column: 1 / -1; font: 600 .68rem/1 var(--body); letter-spacing: .14em; text-transform: uppercase; color: var(--term-dim); }
+.cmd pre { margin: 0; font: .92rem/1.55 var(--mono); white-space: pre-wrap; word-break: break-word; }
+.cmd pre .p { color: var(--accent); user-select: none; }
+.cmd pre .f { color: #fbd38d; }
+.copy {
+  font: 600 .78rem/1 var(--body); padding: 8px 12px; border-radius: 6px; cursor: pointer;
+  border: 1px solid #3b4659; background: transparent; color: var(--term-ink);
+}
+.copy:hover { border-color: var(--accent); color: var(--accent); }
+.copy.done { border-color: #34d399; color: #34d399; }
+.note { font-size: .85rem; color: var(--term-dim); border-top: 1px dashed #3b4659; padding-top: 12px; }
+.note b { color: var(--term-ink); }
+
+/* Tables */
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: .93rem; }
+th, td { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font: 600 .72rem/1.2 var(--body); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); background: var(--raised); }
+tr:last-child td { border-bottom: 0; }
+td code { white-space: nowrap; }
+
+/* Architecture tree */
+.tree { font: .9rem/1.9 var(--mono); background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px 22px; overflow-x: auto; margin: 0; color: var(--ink); }
+.tree .c { color: var(--ink-3); font-family: var(--body); font-size: .88rem; }
+.tree .d { color: var(--accent-ink); font-weight: 600; }
+
+/* Release flow */
+.flow { display: grid; grid-template-columns: 1fr auto 1fr; gap: 0 20px; align-items: center; }
+.lane { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; display: grid; gap: 6px; }
+.lane .branch { font: 600 1rem var(--mono); }
+.lane .out { font-size: .9rem; color: var(--ink-2); }
+.lane.beta { border-left: 4px solid var(--warn); } .lane.prod { border-left: 4px solid var(--danger); }
+.commit { grid-row: span 2; font: .9rem var(--mono); background: var(--accent-wash); border: 1px dashed var(--accent); border-radius: 12px; padding: 14px 16px; }
+.arrows { grid-row: span 2; display: grid; gap: 28px; color: var(--accent); font-size: 1.4rem; }
+.flow-wrap { display: grid; grid-template-columns: minmax(150px, 220px) 40px minmax(0, 1fr); gap: 14px; align-items: center; }
+.lanes { display: grid; gap: 14px; }
+
+/* Steps */
+ol.steps { list-style: none; counter-reset: s; padding: 0; margin: 0; display: grid; gap: 14px; }
+ol.steps li { counter-increment: s; display: grid; grid-template-columns: 40px 1fr; gap: 14px; }
+ol.steps li::before {
+  content: counter(s); font: 800 1.5rem/40px var(--display); text-align: center;
+  width: 40px; height: 40px; border-radius: 50%; background: var(--accent); color: #1a202c;
+}
+ol.steps pre { margin: 6px 0 0; background: var(--term); color: var(--term-ink); padding: 12px 14px; border-radius: 8px; font: .85rem/1.6 var(--mono); overflow-x: auto; }
+ol.steps strong { display: block; }
+.callout { border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 14px 18px; font-size: .92rem; color: var(--ink-2); margin-top: 18px; }
+.callout b { color: var(--ink); }
+
+/* Docs index */
+.docs { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+.docs .group { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
+.docs h3 { margin: 0 0 8px; font-family: var(--mono); font-size: .9rem; color: var(--accent-ink); }
+.docs ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.docs a { font-size: .9rem; text-decoration: none; color: var(--ink-2); }
+.docs a:hover { color: var(--accent-ink); text-decoration: underline; }
+
+footer { color: var(--ink-3); font-size: .85rem; padding-top: 24px; border-top: 1px solid var(--line); }
+
+@media (max-width: 860px) {
+  .shell { grid-template-columns: 1fr; gap: 32px; padding-block: 24px 56px; }
+  nav.toc { position: static; display: flex; flex-wrap: wrap; gap: 6px; }
+  nav.toc a { border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; font-size: .82rem; }
+  .row { grid-template-columns: 1fr; gap: 6px; }
+  .flow-wrap { grid-template-columns: 1fr; }
+  .flow-wrap .arrows { display: none; }
+}
+@media (max-width: 480px) {
+  .hero { grid-template-columns: 1fr; }
+  .hero img { width: 84px; height: 84px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="shell">
+  <nav class="toc" aria-label="Sommaire">
+    <a href="#commandes">Générateur de commandes</a>
+    <a href="#environnements">Environnements</a>
+    <a href="#architecture">Architecture</a>
+    <a href="#release">Release</a>
+    <a href="#iphone">Tester sur iPhone</a>
+    <a href="#docs">Toute la doc</a>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <img src="../assets/images/logo.png" alt="Logo Team Fitness : un haltérophile qui forme le T de TEAM">
+      <div>
+        <div class="eyebrow">Guide développeur</div>
+        <h1>Team <span>Fitness</span></h1>
+        <p>L'app Flutter de gestion de salle : membres, abonnements, plannings, check-in QR, boutique et bannières. Elle parle à une API Express + Prisma décrite dans <code>swagger.yml</code>.</p>
+        <div class="chips">
+          <span class="chip version">v1.0.0-beta.42</span>
+          <span class="chip">Android</span><span class="chip">iOS</span><span class="chip">Web</span>
+          <span class="chip">Windows</span><span class="chip">macOS</span><span class="chip">Linux</span><span class="chip">Montre</span>
+          <span class="chip">fr · en · ar</span>
+        </div>
+      </div>
+    </header>
+
+    <section id="commandes">
+      <div class="eyebrow">Ne plus chercher la bonne commande</div>
+      <h2>Générateur de commandes</h2>
+      <p>Choisis ce que tu veux faire : la commande Flutter exacte et son raccourci <code>scripts.ps1</code> s'affichent en dessous, prêts à copier.</p>
+
+      <div class="builder">
+        <div class="controls">
+          <div class="row">
+            <span class="label" id="l-action">Action</span>
+            <div class="seg" role="radiogroup" aria-labelledby="l-action">
+              <input type="radio" name="action" id="a-run" value="run" checked><label for="a-run">Lancer</label>
+              <input type="radio" name="action" id="a-build" value="build"><label for="a-build">Construire</label>
+            </div>
+          </div>
+          <div class="row">
+            <span class="label" id="l-target">Cible</span>
+            <div class="seg" role="radiogroup" aria-labelledby="l-target" id="targets"></div>
+          </div>
+          <div class="row">
+            <span class="label" id="l-env">Environnement</span>
+            <div class="seg" role="radiogroup" aria-labelledby="l-env">
+              <input type="radio" name="env" id="e-dev" value="dev" checked><label for="e-dev"><span class="env-dot dot-dev"></span>dev</label>
+              <input type="radio" name="env" id="e-pprod" value="pprod"><label for="e-pprod"><span class="env-dot dot-pprod"></span>pprod</label>
+              <input type="radio" name="env" id="e-prod" value="prod"><label for="e-prod"><span class="env-dot dot-prod"></span>prod</label>
+            </div>
+          </div>
+          <div class="row">
+            <label class="label" for="url">API perso</label>
+            <div>
+              <input id="url" type="text" placeholder="http://192.168.1.50:3000" autocomplete="off" spellcheck="false">
+              <p class="hint" id="url-hint">Optionnel, pour viser un backend sur ton réseau local. Remplace l'URL de l'environnement.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="terminal" aria-live="polite">
+          <div class="cmd">
+            <span class="tag">Flutter</span>
+            <pre id="out-flutter"></pre>
+            <button class="copy" type="button" data-target="out-flutter">Copier</button>
+          </div>
+          <div class="cmd" id="ps-block">
+            <span class="tag">Raccourci PowerShell</span>
+            <pre id="out-ps"></pre>
+            <button class="copy" type="button" data-target="out-ps">Copier</button>
+          </div>
+          <div class="note" id="note"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="environnements">
+      <div class="eyebrow">--dart-define=ENVIRONMENT</div>
+      <h2>Environnements</h2>
+      <p>Tout se choisit à la compilation. Le même flag sélectionne l'URL de l'API (<code>AppConfig</code>) et le projet Firebase (<code>firebase_options.dart</code>). <code>API_BASE_URL</code> passe avant tout le reste.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Env.</th><th>API</th><th>Construit par</th></tr></thead>
+          <tbody>
+            <tr><td><span class="env-dot dot-dev"></span><b>dev</b> <small>(défaut)</small></td><td><code>http://10.0.2.2:3000</code> sur émulateur Android<br><code>http://localhost:3000</code> ailleurs</td><td>Toi, en local</td></tr>
+            <tr><td><span class="env-dot dot-pprod"></span><b>pprod</b></td><td><code>https://api-pprod.team-oustad.com</code></td><td>CI, push sur <code>staging</code></td></tr>
+            <tr><td><span class="env-dot dot-prod"></span><b>prod</b></td><td><code>https://api.team-oustad.com</code></td><td>CI, push sur <code>main</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="architecture">
+      <div class="eyebrow">lib/</div>
+      <h2>Architecture</h2>
+      <p>Trois couches, avec un fichier « barrel » à chaque niveau : on importe <code>services/services.dart</code>, pas les fichiers un par un. Pas de Provider ni de Bloc : un <code>ChangeNotifier</code> plus un <code>InheritedWidget</code> pour le thème et la langue.</p>
+<pre class="tree"><span class="d">lib/</span>
+├─ main.dart            <span class="c">Firebase, notifications, FCM, anti-capture, thème et langue</span>
+├─ <span class="d">core/</span>                <span class="c">aucune UI</span>
+│  ├─ config/           <span class="c">AppConfig : l'URL selon l'environnement</span>
+│  ├─ services/         <span class="c">ApiService (presque tous les appels backend), AuthService (biométrie),</span>
+│  │                    <span class="c">FCM, notifications locales, mises à jour OTA, langue, boutique, bannières</span>
+│  ├─ models/  theme/  utils/
+│  └─ l10n/             <span class="c">traductions écrites à la main (fr / en / ar), pas d'ARB</span>
+├─ <span class="d">screens/</span>             <span class="c">auth · admin · member · common, SplashScreen route selon le rôle</span>
+└─ <span class="d">widgets/</span>             <span class="c">common (Modern*), responsive (grille, layout), platform (desktop, montre)</span></pre>
+      <h3>Ajouter une traduction</h3>
+      <p>Ajoute la clé dans les trois tables de <code>app_localizations.dart</code> (<code>fr</code>, <code>en</code>, <code>ar</code>), puis un getter. Une clé absente s'affiche telle quelle à l'écran.</p>
+    </section>
+
+    <section id="release">
+      <div class="eyebrow">semantic-release</div>
+      <h2>Release</h2>
+      <p>La version n'est jamais modifiée à la main : le type de commit décide. Le pipeline réécrit <code>pubspec.yaml</code> et <code>version-metadata.json</code>, signe l'APK et l'AAB, puis les publie sur le Play Store et le serveur OTA.</p>
+      <div class="flow-wrap">
+        <div class="commit">feat(store): panier<br><span style="color:var(--ink-3)">fix: crash check-in</span></div>
+        <div class="arrows" aria-hidden="true"><span>↗</span><span>↘</span></div>
+        <div class="lanes">
+          <div class="lane beta"><span class="branch">staging</span><span class="out">→ <code>1.x.y-beta.N</code>, construit en <b>pprod</b>, Play Store « beta »</span></div>
+          <div class="lane prod"><span class="branch">main</span><span class="out">→ <code>1.x.y</code>, construit en <b>prod</b>, release de production</span></div>
+        </div>
+      </div>
+      <div class="table-wrap" style="margin-top:20px">
+        <table>
+          <thead><tr><th>Préfixe du commit</th><th>Effet sur la version</th></tr></thead>
+          <tbody>
+            <tr><td><code>feat:</code></td><td>mineure : 1.2.0 → 1.3.0</td></tr>
+            <tr><td><code>fix:</code> <code>perf:</code> <code>refactor:</code> <code>revert:</code></td><td>correctif : 1.2.0 → 1.2.1</td></tr>
+            <tr><td><code>feat!:</code> ou <code>BREAKING CHANGE</code></td><td>majeure : 1.2.0 → 2.0.0</td></tr>
+            <tr><td><code>docs:</code> <code>chore:</code> <code>style:</code> <code>test:</code> <code>ci:</code> <code>build:</code></td><td>aucune release</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top:16px">Les PR vers <code>main</code> ou <code>staging</code> lancent <code>flutter analyze --fatal-infos</code> : un simple « info » de l'analyseur fait échouer la PR.</p>
+    </section>
+
+    <section id="iphone">
+      <div class="eyebrow">Sans Mac, avec xtool</div>
+      <h2>Tester sur iPhone</h2>
+      <p>Flutter ne compile pour iOS que sur macOS. GitHub compile donc un <code>.ipa</code> non signé, et <a href="https://github.com/xtool-org/xtool">xtool</a> le signe avec ton Apple ID puis l'installe en USB depuis WSL.</p>
+      <ol class="steps">
+        <li><div><strong>Brancher l'iPhone dans WSL</strong> (PowerShell admin, à chaque branchement)
+<pre>usbipd list
+usbipd attach --wsl --busid &lt;BUSID&gt;</pre></div></li>
+        <li><div><strong>Installer les outils une fois</strong>, puis se connecter
+<pre>sudo apt-get install usbmuxd libimobiledevice-utils
+curl -fL "https://github.com/xtool-org/xtool/releases/latest/download/xtool-$(uname -m).AppImage" -o xtool
+chmod +x xtool &amp;&amp; sudo mv xtool /usr/local/bin/
+xtool auth login</pre></div></li>
+        <li><div><strong>Compiler l'IPA sur GitHub</strong>
+<pre>gh workflow run ios-build.yml -f environment=pprod</pre></div></li>
+        <li><div><strong>Installer sur le téléphone</strong>
+<pre>scripts/ios-install.sh --download pprod</pre></div></li>
+      </ol>
+      <div class="callout"><b>Apple ID gratuit :</b> l'app expire au bout de 7 jours, et les notifications push ne fonctionnent pas. Pas de hot reload sur iPhone : itère sur Android ou Windows, et valide sur iPhone.</div>
+    </section>
+
+    <section id="docs">
+      <div class="eyebrow">docs/</div>
+      <h2>Toute la doc</h2>
+      <div class="docs" id="docs-list"></div>
+    </section>
+
+    <footer>Généré à partir du code et de la doc du dépôt <a href="https://github.com/TeamFitness/mobile-app">TeamFitness/mobile-app</a>. Les liens pointent vers la branche <code>staging</code>.</footer>
+  </main>
+</div>
+
+<script>
+(() => {
+  const TARGETS = {
+    run: [
+      { id: "auto", label: "Auto", device: null, ps: "run" },
+      { id: "android", label: "Android", device: "emulator-5554", ps: "run-android" },
+      { id: "windows", label: "Windows", device: "windows", ps: "run-windows" },
+      { id: "web", label: "Web", device: "chrome", ps: "run-web" },
+      { id: "ios", label: "iOS", device: "ios", ps: "run-ios" },
+    ],
+    build: [
+      { id: "apk", label: "APK", cmd: "apk --release", ps: "build-apk" },
+      { id: "aab", label: "App Bundle", cmd: "appbundle --release", ps: "build-appbundle" },
+      { id: "win", label: "Windows .exe", cmd: "windows --release", ps: "build-windows" },
+      { id: "ipa", label: "iPhone", cmd: null, ps: null },
+    ],
+  };
+  // scripts.ps1 commands that actually exist (others have no shortcut)
+  const PS_EXISTS = new Set([
+    "run", "run-android", "run-windows", "run-web", "run-ios",
+    "run-pprod", "run-android-pprod", "run-windows-pprod", "run-web-pprod", "run-ios-pprod",
+    "run-prod", "run-android-prod", "run-windows-prod", "run-web-prod", "run-ios-prod",
+    "build-apk", "build-apk-pprod", "build-apk-prod",
+    "build-appbundle-pprod", "build-appbundle-prod", "build-windows-pprod",
+  ]);
+  const URLS = { pprod: "https://api-pprod.team-oustad.com", prod: "https://api.team-oustad.com" };
+
+  const $ = (s) => document.querySelector(s);
+  const targetsEl = $("#targets");
+  const urlEl = $("#url");
+  const val = (n) => document.querySelector(`input[name="${n}"]:checked`)?.value;
+  const esc = (s) => s.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+  const hl = (cmd) => esc(cmd).replace(/(--[\w-]+(?:=\S+)?|-d \S+|-Url \S+)/g, '<span class="f">$1</span>');
+
+  function renderTargets() {
+    const action = val("action");
+    const prev = val("target");
+    const list = TARGETS[action];
+    targetsEl.innerHTML = list.map((t) =>
+      `<input type="radio" name="target" id="t-${t.id}" value="${t.id}"><label for="t-${t.id}">${t.label}</label>`
+    ).join("");
+    const keep = list.find((t) => t.id === prev) ? prev : list[0].id;
+    document.getElementById(`t-${keep}`).checked = true;
+  }
+
+  function render() {
+    const action = val("action"), env = val("env");
+    const t = TARGETS[action].find((x) => x.id === val("target"));
+    const url = urlEl.value.trim();
+    const notes = [];
+    let flutter, ps = null;
+
+    if (t.id === "ipa") {
+      flutter = `gh workflow run ios-build.yml -f environment=${env}\nscripts/ios-install.sh --download ${env}`;
+      notes.push("<b>iOS :</b> compilé sur un Mac de GitHub Actions, puis signé et installé avec xtool depuis WSL. Voir « Tester sur iPhone ».");
+      urlEl.disabled = true;
+    } else {
+      urlEl.disabled = false;
+      const defines = [];
+      if (env !== "dev") defines.push(`--dart-define=ENVIRONMENT=${env}`);
+      if (url) defines.push(`--dart-define=API_BASE_URL=${url}`);
+      flutter = action === "run"
+        ? ["flutter run", t.device ? `-d ${t.device}` : "", ...defines].filter(Boolean).join(" ")
+        : ["flutter build", t.cmd, ...defines].join(" ");
+
+      const name = env === "dev" ? t.ps : `${t.ps}-${env}`;
+      if (PS_EXISTS.has(name) && !(url && env !== "dev")) {
+        ps = `.\\scripts.ps1 ${name}` + (url ? ` -Url ${url}` : "");
+      }
+      if (url && env !== "dev") notes.push("<b>API perso :</b> scripts.ps1 n'accepte <code>-Url</code> qu'en dev, d'où l'absence de raccourci ici.");
+      if (t.id === "ios") notes.push("<b>iOS :</b> nécessite un Mac. Depuis Windows, utilise plutôt la cible « iPhone » de Construire.");
+      if (t.id === "android") notes.push("Lance d'abord l'émulateur : <code>.\\scripts.ps1 launch</code>.");
+      if (action === "build" && env === "dev" && t.id !== "apk") notes.push("Les builds de release visent normalement pprod ou prod.");
+      if (env === "prod") notes.push("<b>prod :</b> ces commandes utilisent l'API de production et de vraies données.");
+    }
+    if (!url || urlEl.disabled) {
+      $("#url-hint").textContent = env === "dev"
+        ? "Optionnel. En dev, l'URL s'adapte toute seule : 10.0.2.2 sur émulateur Android, localhost ailleurs."
+        : `Optionnel. Sinon : ${URLS[env]}`;
+    }
+
+    $("#out-flutter").innerHTML = flutter.split("\n").map((l) => `<span class="p">$ </span>${hl(l)}`).join("\n");
+    $("#out-flutter").dataset.raw = flutter;
+    $("#ps-block").hidden = !ps;
+    if (ps) { $("#out-ps").innerHTML = `<span class="p">PS&gt; </span>${hl(ps)}`; $("#out-ps").dataset.raw = ps; }
+    $("#note").innerHTML = notes.join("<br>");
+    $("#note").hidden = notes.length === 0;
+  }
+
+  document.addEventListener("change", (e) => {
+    if (e.target.name === "action") renderTargets();
+    render();
+  });
+  urlEl.addEventListener("input", render);
+
+  document.querySelectorAll(".copy").forEach((btn) => btn.addEventListener("click", async () => {
+    const pre = document.getElementById(btn.dataset.target);
+    const text = pre.dataset.raw || pre.textContent;
+    let ok = false;
+    try { await navigator.clipboard.writeText(text); ok = true; } catch (_) {}
+    if (!ok) {
+      const r = document.createRange(); r.selectNodeContents(pre);
+      const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r);
+    }
+    btn.textContent = ok ? "Copié" : "Sélectionné";
+    btn.classList.add("done");
+    setTimeout(() => { btn.textContent = "Copier"; btn.classList.remove("done"); }, 1600);
+  }));
+
+  // Documentation index
+  const GH = "https://github.com/TeamFitness/mobile-app/blob/staging/";
+  const DOCS = {
+    "Pour commencer": [["README", "README.md"], ["Contribuer", "CONTRIBUTING.md"], ["Changelog", "CHANGELOG.md"], ["API (OpenAPI)", "swagger.yml"]],
+    "architecture/": ["ARCHITECTURE", "PROJECT_STRUCTURE", "ENVIRONMENTS", "QUICK_API_SETUP", "IMPLEMENTATION_SUMMARY", "CONTEXT", "PROJECT_CONTEXT"],
+    "design/": ["THEME_SYSTEM_GUIDE", "DESIGN_SYSTEM_UPDATE", "DESIGN_QUICK_REFERENCE", "DESIGN_SUMMARY", "DESIGN_VISUAL_GUIDE", "RESPONSIVE_DESIGN", "VISUAL_GUIDE"],
+    "features/": ["BANNER_SIMPLIFIED", "LANGUAGE_SWITCHER_GUIDE", "SCREENSHOT_PROTECTION"],
+    "notifications/": ["NOTIFICATIONS_GUIDE", "PUSH_NOTIFICATIONS_SETUP", "FIREBASE_SETUP_GUIDE", "QUICK_START_FIREBASE", "BACKEND_FCM_IMPLEMENTATION", "SERVER_PUSH_NOTIFICATIONS_GUIDE"],
+    "play-store/": ["START_HERE_PLAY_STORE", "QUICKSTART_PLAY_STORE", "GUIDE_RAPIDE_PLAY_STORE", "GOOGLE_PLAY_SETUP", "PLAY_STORE_API_SETUP", "NEXT_STEPS_PLAY_STORE", "DEPLOY_PLAY_STORE_STATUS", "FILES_CHANGED_PLAY_STORE", "BACKUP_ANDROID_SIGNING_CONFIG"],
+    "release/": ["PR_SUMMARY", "ARTIFACT_REMOVAL_EXPLANATION", ["Déploiement (CI)", ".github/DEPLOYMENT.md"], ["Semantic release", ".github/SEMANTIC_RELEASE.md"]],
+    "ios/": ["IOS_XTOOL"],
+  };
+  const pretty = (n) => n.replace(/_/g, " ").toLowerCase().replace(/^./, (c) => c.toUpperCase());
+  $("#docs-list").innerHTML = Object.entries(DOCS).map(([group, items]) => {
+    const links = items.map((it) => {
+      const [label, path] = Array.isArray(it) ? it : [pretty(it), `docs/${group}${it}.md`];
+      return `<li><a href="${GH}${path}">${label}</a></li>`;
+    }).join("");
+    return `<div class="group"><h3>${group}</h3><ul>${links}</ul></div>`;
+  }).join("");
+
+  renderTargets();
+  render();
+})();
+</script>

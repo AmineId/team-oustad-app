@@ -1,8 +1,8 @@
 # Script de déploiement OTA automatique
 # Usage: 
-#   .\deploy-ota.ps1                                    # Utilise version-metadata.json
-#   .\deploy-ota.ps1 -Environment prod                  # Déploie en production
-#   .\deploy-ota.ps1 -Version "1.0.1" -BuildNumber 2    # Override manuel
+#   .\scripts\deploy-ota.ps1                                    # Utilise version-metadata.json
+#   .\scripts\deploy-ota.ps1 -Environment prod                  # Déploie en production
+#   .\scripts\deploy-ota.ps1 -Version "1.0.1" -BuildNumber 2    # Override manuel
 
 param(
     [Parameter()]

@@ -96,7 +96,7 @@ flutter build apk --release --dart-define=ENVIRONMENT=pprod
 flutter build web --release --dart-define=ENVIRONMENT=pprod
 
 # Déploiement automatisé
-.\deploy-web.ps1
+.\scripts\deploy-web.ps1
 
 # Serveur: Nginx avec reverse proxy
 # Path: /var/www/team-fitness-app/
@@ -301,16 +301,16 @@ local_auth: ^2.1.0
 ### PowerShell
 ```powershell
 # Déploiement web
-.\deploy-web.ps1
+.\scripts\deploy-web.ps1
 
 # Bump version
-.\bump-version.ps1
+.\scripts\bump-version.ps1
 
 # Setup Play Store
-.\setup-play-store-secrets.ps1
+.\scripts\setup-play-store-secrets.ps1
 
 # Test design system
-.\test-design-system.ps1
+.\scripts\test-design-system.ps1
 ```
 
 ### Makefile

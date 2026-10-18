@@ -93,4 +93,4 @@ Le workflow GitHub Actions utilise automatiquement Fastlane :
 
 - [Fastlane](https://docs.fastlane.tools/)
 - [Fastlane Supply (Play Store)](https://docs.fastlane.tools/actions/supply/)
-- [Guide complet](../GOOGLE_PLAY_SETUP.md)
+- [Guide complet](../../docs/play-store/GOOGLE_PLAY_SETUP.md)

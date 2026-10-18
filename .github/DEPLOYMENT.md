@@ -187,7 +187,7 @@ git push origin v1.0.1
 
 ```bash
 # 1. Bump version locally
-./bump-version.ps1 -Type patch -Changelog "Test release"
+./scripts/bump-version.ps1 -Type patch -Changelog "Test release"
 
 # 2. Build locally to verify
 flutter build apk --release --dart-define=ENVIRONMENT=pprod
@@ -204,7 +204,7 @@ cat version-metadata.json
 ```bash
 # Push to staging
 git checkout staging
-./bump-version.ps1 -Type patch -Changelog "Beta test"
+./scripts/bump-version.ps1 -Type patch -Changelog "Beta test"
 git add .
 git commit -m "Bump version for beta"
 git push origin staging
@@ -300,7 +300,7 @@ tail -f /var/log/nginx/access.log
 
 3. **Write clear changelogs**
    ```bash
-   ./bump-version.ps1 -Type patch -Changelog "
+   ./scripts/bump-version.ps1 -Type patch -Changelog "
    - Fixed login issue
    - Improved performance
    - Updated dependencies

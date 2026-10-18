@@ -1,5 +1,5 @@
 # Script pour incrémenter automatiquement la version
-# Usage: .\bump-version.ps1 [-Type major|minor|patch] [-Changelog "Description"]
+# Usage: .\scripts\bump-version.ps1 [-Type major|minor|patch] [-Changelog "Description"]
 
 param(
     [Parameter()]
@@ -110,5 +110,5 @@ Write-Host ""
 Write-Host "🚀 Prochaines étapes:" -ForegroundColor Cyan
 Write-Host "   1. Vérifiez les changements dans $MetadataFile" -ForegroundColor White
 Write-Host "   2. Commitez les changements: git add . && git commit -m 'Bump version to $newVersion'" -ForegroundColor White
-Write-Host "   3. Déployez: .\deploy-ota.ps1" -ForegroundColor White
+Write-Host "   3. Déployez: .\scripts\deploy-ota.ps1" -ForegroundColor White
 Write-Host ""

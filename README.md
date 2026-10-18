@@ -10,7 +10,7 @@ L'application dispose maintenant d'un **design system moderne et minimaliste** a
 - 📱 **Composants Modernes** : ModernButton, ModernCard, ModernTextField, StatusBadge
 - 💾 **Préférences Persistantes** : Le choix du thème est sauvegardé
 
-👉 Voir [DESIGN_SYSTEM_UPDATE.md](DESIGN_SYSTEM_UPDATE.md) et [THEME_SYSTEM_GUIDE.md](THEME_SYSTEM_GUIDE.md) pour plus d'informations.
+👉 Voir [DESIGN_SYSTEM_UPDATE.md](docs/design/DESIGN_SYSTEM_UPDATE.md) et [THEME_SYSTEM_GUIDE.md](docs/design/THEME_SYSTEM_GUIDE.md) pour plus d'informations.
 
 ## Features
 
@@ -216,9 +216,9 @@ Une fois configuré, à chaque push :
 
 ### Guides Complets
 
-- 📖 **[GUIDE_RAPIDE_PLAY_STORE.md](./GUIDE_RAPIDE_PLAY_STORE.md)** - Guide rapide en français
-- 📖 **[GOOGLE_PLAY_SETUP.md](./GOOGLE_PLAY_SETUP.md)** - Documentation détaillée
-- 📖 **[BACKUP_ANDROID_SIGNING_CONFIG.md](./BACKUP_ANDROID_SIGNING_CONFIG.md)** - Configuration de signature
+- 📖 **[GUIDE_RAPIDE_PLAY_STORE.md](docs/play-store/GUIDE_RAPIDE_PLAY_STORE.md)** - Guide rapide en français
+- 📖 **[GOOGLE_PLAY_SETUP.md](docs/play-store/GOOGLE_PLAY_SETUP.md)** - Documentation détaillée
+- 📖 **[BACKUP_ANDROID_SIGNING_CONFIG.md](docs/play-store/BACKUP_ANDROID_SIGNING_CONFIG.md)** - Configuration de signature
 
 ### Scripts Android Utiles
 
@@ -242,7 +242,7 @@ The app automatically adapts to different screen sizes:
 - **Mobile (300-600px)**: Bottom navigation, 2-column layouts
 - **Smartwatch (<300px)**: Compact single-column layouts
 
-See [RESPONSIVE_DESIGN.md](./RESPONSIVE_DESIGN.md) for detailed documentation.
+See [RESPONSIVE_DESIGN.md](docs/design/RESPONSIVE_DESIGN.md) for detailed documentation.
 
 ## Project Structure
 
@@ -367,9 +367,9 @@ Press `F5` or click "Run > Start Debugging" to run the app.
 ## Documentation 📚
 
 ### Design & UI
-- **[RESPONSIVE_DESIGN.md](./RESPONSIVE_DESIGN.md)** - Comprehensive guide to responsive design system
-- **[IMPLEMENTATION_SUMMARY.md](./IMPLEMENTATION_SUMMARY.md)** - Technical implementation details
-- **[VISUAL_GUIDE.md](./VISUAL_GUIDE.md)** - Visual examples of layouts across platforms
+- **[RESPONSIVE_DESIGN.md](docs/design/RESPONSIVE_DESIGN.md)** - Comprehensive guide to responsive design system
+- **[IMPLEMENTATION_SUMMARY.md](docs/architecture/IMPLEMENTATION_SUMMARY.md)** - Technical implementation details
+- **[VISUAL_GUIDE.md](docs/design/VISUAL_GUIDE.md)** - Visual examples of layouts across platforms
 
 ### API & Configuration
 - **[API_CONFIGURATION.md](./API_CONFIGURATION.md)** - Complete API URL configuration guide
