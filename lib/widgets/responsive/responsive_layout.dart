@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:team_fitness_app/core/utils/platform_utils.dart';
 import '../../core/theme/theme.dart';
@@ -84,7 +83,7 @@ class ResponsiveScaffold extends StatelessWidget {
       forceMaterialTransparency: isIOS,
       title: Row(
         children: [
-          if (leading != null) leading!,
+          ?leading,
           Expanded(
             child: Center(
               child: Text(
@@ -133,7 +132,7 @@ class ResponsiveScaffold extends StatelessWidget {
             data: MediaQuery.of(context).copyWith(
               padding: MediaQuery.of(context).padding.copyWith(
                 top: MediaQuery.of(context).padding.top + kToolbarHeight,
-                bottom: MediaQuery.of(context).padding.bottom + kBottomNavigationBarHeight,
+                bottom: MediaQuery.of(context).padding.bottom + glassTabBarReserved,
               ),
             ),
             child: body,
@@ -146,7 +145,19 @@ class ResponsiveScaffold extends StatelessWidget {
       appBar: appBar,
       body: effectiveBody,
       bottomNavigationBar: isIOS
-          ? GlassBar(top: false, child: bottomNav)
+          ? GlassTabBar(
+              currentIndex: currentIndex,
+              onTap: onNavigationChanged,
+              items: navigationItems
+                  .map((item) => GlassTabItem(
+                        icon: item.customWidget ?? Icon(item.icon),
+                        activeIcon: item.activeCustomWidget ??
+                            item.customWidget ??
+                            Icon(item.activeIcon ?? item.icon),
+                        label: item.label,
+                      ))
+                  .toList(),
+            )
           : bottomNav,
     );
   }
@@ -258,7 +269,7 @@ class ResponsiveScaffold extends StatelessWidget {
                           ),
                         ),
                         const Spacer(),
-                        if (actions != null) ...actions!,
+                        ...?actions,
                       ],
                     ),
                   ),
