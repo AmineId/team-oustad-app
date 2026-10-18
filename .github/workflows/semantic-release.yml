@@ -360,7 +360,7 @@ jobs:
     name: 🍎 Build iOS
     needs: version
     if: needs.version.outputs.released == 'true'
-    runs-on: macos-latest
+    runs-on: macos-26
     timeout-minutes: 45
 
     steps:
