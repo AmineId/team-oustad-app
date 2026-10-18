@@ -23,7 +23,8 @@ env:
 
 jobs:
   build-ios:
-    runs-on: macos-latest
+    # macos-26 : Xcode 26 / SDK iOS 26 requis pour le rendu Liquid Glass natif
+    runs-on: macos-26
     timeout-minutes: 45
 
     steps:
@@ -36,6 +37,9 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
+
+      - name: 🔎 Xcode version
+        run: xcodebuild -version
 
       - name: 📦 Get dependencies
         run: flutter pub get
