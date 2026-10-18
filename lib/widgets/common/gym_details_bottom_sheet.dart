@@ -46,7 +46,7 @@ class _GymDetailsBottomSheetState extends State<GymDetailsBottomSheet> {
 
   Future<void> _openNavigation(String address, {bool useWaze = false}) async {
     final encodedAddress = Uri.encodeComponent(address);
-    
+
     if (useWaze) {
       // Try to open Waze
       final wazeUrl = 'waze://?q=$encodedAddress';
@@ -61,7 +61,9 @@ class _GymDetailsBottomSheetState extends State<GymDetailsBottomSheet> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Waze n\'est pas installé. Ouverture de Google Maps...'),
+              content: Text(
+                'Waze n\'est pas installé. Ouverture de Google Maps...',
+              ),
               backgroundColor: Colors.orange,
               duration: Duration(seconds: 2),
             ),
@@ -69,15 +71,15 @@ class _GymDetailsBottomSheetState extends State<GymDetailsBottomSheet> {
         }
       }
     }
-    
+
     // Try Google Maps
     final urls = [
       'geo:0,0?q=$encodedAddress', // Google Maps on Android
       'https://www.google.com/maps/search/?api=1&query=$encodedAddress', // Web fallback
     ];
-    
+
     bool launched = false;
-    
+
     for (final url in urls) {
       try {
         final uri = Uri.parse(url);
@@ -90,7 +92,7 @@ class _GymDetailsBottomSheetState extends State<GymDetailsBottomSheet> {
         continue;
       }
     }
-    
+
     if (!launched && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -136,10 +138,10 @@ class _GymDetailsBottomSheetState extends State<GymDetailsBottomSheet> {
                   children: [
                     Text(
                       widget.gym['name'] ?? 'Ma Salle',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -147,7 +149,7 @@ class _GymDetailsBottomSheetState extends State<GymDetailsBottomSheet> {
                       widget.gym['address'] ?? '',
                       style: TextStyle(
                         fontSize: 14,
-                        color: Colors.white.withValues(alpha: 0.7),
+                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                       ),
                     ),
                   ],
@@ -160,10 +162,10 @@ class _GymDetailsBottomSheetState extends State<GymDetailsBottomSheet> {
           // Opening hours
           Text(
             'Horaires d\'ouverture',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 12),
@@ -172,44 +174,42 @@ class _GymDetailsBottomSheetState extends State<GymDetailsBottomSheet> {
                   child: CircularProgressIndicator(color: AppColors.primary),
                 )
               : _openingHours == null || _openingHours!.isEmpty
-                  ? Text(
-                      'Horaires non disponibles',
-                      style: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
-                    )
-                  : Column(
-                      children: _openingHours!.map((hour) {
-                        final dayOfWeek = hour['dayOfWeek'] as int;
-                        final isClosed = hour['isClosed'] as bool;
-                        final openTime = hour['openTime'] as String?;
-                        final closeTime = hour['closeTime'] as String?;
+              ? Text(
+                  'Horaires non disponibles',
+                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
+                )
+              : Column(
+                  children: _openingHours!.map((hour) {
+                    final dayOfWeek = hour['dayOfWeek'] as int;
+                    final isClosed = hour['isClosed'] as bool;
+                    final openTime = hour['openTime'] as String?;
+                    final closeTime = hour['closeTime'] as String?;
 
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                _getDayName(dayOfWeek),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              Text(
-                                isClosed
-                                    ? 'Fermé'
-                                    : '$openTime - $closeTime',
-                                style: TextStyle(
-                                  color: isClosed
-                                      ? Colors.red.shade300
-                                      : Colors.white.withValues(alpha: 0.7),
-                                ),
-                              ),
-                            ],
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            _getDayName(dayOfWeek),
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onSurface,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
-                        );
-                      }).toList(),
-                    ),
+                          Text(
+                            isClosed ? 'Fermé' : '$openTime - $closeTime',
+                            style: TextStyle(
+                              color: isClosed
+                                  ? Colors.red.shade300
+                                  : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ),
           const SizedBox(height: 24),
 
           // Navigation buttons
@@ -226,7 +226,10 @@ class _GymDetailsBottomSheetState extends State<GymDetailsBottomSheet> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 12,
+                      horizontal: 20,
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -245,7 +248,10 @@ class _GymDetailsBottomSheetState extends State<GymDetailsBottomSheet> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.info,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 12,
+                      horizontal: 20,
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),

@@ -156,16 +156,16 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Theme.of(context).cardTheme.color,
-        title: const Row(
+        title: Row(
           children: [
             Icon(Icons.autorenew, color: AppColors.primary),
             SizedBox(width: 8),
-            Text('Renouveler', style: TextStyle(color: Colors.white)),
+            Text('Renouveler', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
           ],
         ),
-        content: const Text(
+        content: Text(
           'Un nouvel abonnement du même type sera créé à partir d\'aujourd\'hui.',
-          style: TextStyle(color: Colors.white70),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
         ),
         actions: [
           TextButton(

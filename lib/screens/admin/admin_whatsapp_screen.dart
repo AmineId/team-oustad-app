@@ -241,16 +241,16 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Theme.of(context).cardTheme.color,
-        title: const Row(
+        title: Row(
           children: [
             Icon(Icons.warning_amber_rounded, color: AppColors.warning),
             SizedBox(width: 8),
-            Text('Déconnecter WhatsApp', style: TextStyle(color: Colors.white)),
+            Text('Déconnecter WhatsApp', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
           ],
         ),
-        content: const Text(
+        content: Text(
           'La session WhatsApp sera supprimée. Un nouveau scan QR sera nécessaire pour reconnecter.',
-          style: TextStyle(color: Colors.white70),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
         ),
         actions: [
           TextButton(
@@ -349,7 +349,7 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
                       _statusMessage,
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.6),
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                         fontSize: 13,
                       ),
                     ),
@@ -409,7 +409,7 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
                   Text(
                     '+$_phone',
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.7),
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                       fontSize: 14,
                     ),
                   ),
@@ -418,7 +418,7 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
                   Text(
                     'Choisissez une méthode de connexion',
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.6),
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       fontSize: 13,
                     ),
                   ),
@@ -449,7 +449,7 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
               border: Border.all(color: AppColors.primary, width: 1.5),
             ),
             labelColor: AppColors.primary,
-            unselectedLabelColor: Colors.white54,
+            unselectedLabelColor: theme.colorScheme.onSurface.withValues(alpha: 0.55),
             labelStyle: const TextStyle(
               fontWeight: FontWeight.w600,
               fontSize: 14,
@@ -504,12 +504,12 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
           ),
           child: Column(
             children: [
-              const Text(
+              Text(
                 'Scanner avec WhatsApp',
                 style: TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: theme.colorScheme.onSurface,
                 ),
               ),
               const SizedBox(height: 8),
@@ -517,7 +517,7 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
                 'Ouvrez WhatsApp → Appareils connectés → Connecter un appareil',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.6),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                   fontSize: 13,
                 ),
               ),
@@ -532,10 +532,10 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
               else if (_qrDataUrl != null)
                 _buildQrImage()
               else
-                const SizedBox(
+                SizedBox(
                   height: 220,
                   child: Center(
-                    child: Icon(Icons.qr_code, size: 80, color: Colors.white30),
+                    child: Icon(Icons.qr_code, size: 80, color: theme.colorScheme.onSurface.withValues(alpha: 0.3)),
                   ),
                 ),
             ],
@@ -571,12 +571,12 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text(
+              Text(
                 'Connecter via numéro',
                 style: TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: theme.colorScheme.onSurface,
                 ),
               ),
               const SizedBox(height: 8),
@@ -584,7 +584,7 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
                 'Ouvrez WhatsApp → Appareils connectés → Connecter avec numéro',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.6),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                   fontSize: 13,
                 ),
               ),
@@ -592,24 +592,24 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
               TextField(
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
-                style: const TextStyle(color: Colors.white, fontSize: 16),
+                style: TextStyle(color: theme.colorScheme.onSurface, fontSize: 16),
                 decoration: InputDecoration(
                   labelText: 'Numéro de téléphone',
                   labelStyle: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.7),
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                   ),
                   helperText: 'Format international, ex : 212600123456',
                   helperStyle: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.45),
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.45),
                     fontSize: 12,
                   ),
                   prefixIcon: Icon(
                     Icons.phone,
-                    color: Colors.white.withValues(alpha: 0.5),
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderSide: BorderSide(
-                      color: Colors.white.withValues(alpha: 0.2),
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
                     ),
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -634,7 +634,7 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
                     borderRadius: BorderRadius.circular(12),
                   ),
                   filled: true,
-                  fillColor: Colors.white.withValues(alpha: 0.05),
+                  fillColor: theme.colorScheme.onSurface.withValues(alpha: 0.05),
                 ),
                 onSubmitted: (_) =>
                     _pairingLoading ? null : _requestPairingCode(),
@@ -688,7 +688,7 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
                       Text(
                         'Code d\'appairage',
                         style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.65),
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
                         ),
@@ -696,8 +696,8 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
                       const SizedBox(height: 12),
                       Text(
                         _pairingCode!,
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: theme.colorScheme.onSurface,
                           fontSize: 32,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 6,
@@ -708,7 +708,7 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
                       Text(
                         'Entrez ce code dans WhatsApp',
                         style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.5),
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                           fontSize: 12,
                         ),
                       ),
@@ -740,10 +740,10 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
         child: Image.memory(Uint8List.fromList(bytes), fit: BoxFit.contain),
       );
     } catch (_) {
-      return const SizedBox(
+      return SizedBox(
         height: 220,
         child: Center(
-          child: Icon(Icons.broken_image, size: 60, color: Colors.white30),
+          child: Icon(Icons.broken_image, size: 60, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3)),
         ),
       );
     }

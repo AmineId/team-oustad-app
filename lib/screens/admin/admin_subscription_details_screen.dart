@@ -95,16 +95,16 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Theme.of(context).cardTheme.color,
-        title: const Row(
+        title: Row(
           children: [
             Icon(Icons.autorenew, color: AppColors.primary),
             SizedBox(width: 8),
-            Text('Renouveler l\'abonnement', style: TextStyle(color: Colors.white)),
+            Text('Renouveler l\'abonnement', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
           ],
         ),
-        content: const Text(
+        content: Text(
           'Un nouvel abonnement du même type sera créé à partir d\'aujourd\'hui.',
-          style: TextStyle(color: Colors.white70),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
         ),
         actions: [
           TextButton(
@@ -160,9 +160,9 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Theme.of(context).cardTheme.color,
-        title: const Text(
+        title: Text(
           'Mode de paiement',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -198,9 +198,9 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             ),
-            child: const Text(
+            child: Text(
               'Annuler',
-              style: TextStyle(color: Colors.white60),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
             ),
           ),
         ],
@@ -257,19 +257,19 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Theme.of(context).cardTheme.color,
-        title: const Row(
+        title: Row(
           children: [
             Icon(Icons.check_circle, color: AppColors.success),
             SizedBox(width: 8),
             Text(
               'Succès',
-              style: TextStyle(color: Colors.white),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
             ),
           ],
         ),
         content: Text(
           message,
-          style: const TextStyle(color: Colors.white),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
         ),
         actions: [
           TextButton(
@@ -292,19 +292,19 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Theme.of(context).cardTheme.color,
-        title: const Row(
+        title: Row(
           children: [
             Icon(Icons.error, color: AppColors.error),
             SizedBox(width: 8),
             Text(
               'Erreur',
-              style: TextStyle(color: Colors.white),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
             ),
           ],
         ),
         content: Text(
           message,
-          style: const TextStyle(color: Colors.white),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
         ),
         actions: [
           TextButton(
@@ -424,8 +424,8 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
                         const SizedBox(height: 16),
                         Text(
                           _errorMessage,
-                          style: const TextStyle(
-                            color: Colors.white,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontSize: 16,
                           ),
                           textAlign: TextAlign.center,
@@ -456,12 +456,12 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
                           const SizedBox(height: 24),
                           
                           // Section Paiements
-                          const Text(
+                          Text(
                             'Paiements',
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: Theme.of(context).colorScheme.onSurface,
                             ),
                           ),
                           
@@ -509,8 +509,8 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
               Expanded(
                 child: Text(
                   typeName,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
@@ -546,14 +546,14 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
             Text(
               typeDescription,
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.7),
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                 fontSize: 14,
               ),
             ),
           ],
           
           const SizedBox(height: 16),
-          const Divider(color: Colors.white24),
+          Divider(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.24)),
           const SizedBox(height: 16),
           
           // Prix
@@ -583,7 +583,7 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
 
           if (status == 'expired' || status == 'cancelled') ...[
             const SizedBox(height: 20),
-            const Divider(color: Colors.white24),
+            Divider(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.24)),
             const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
@@ -614,15 +614,15 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
           child: Text(
             label,
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.7),
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
               fontSize: 14,
             ),
           ),
         ),
         Text(
           value,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
@@ -646,16 +646,16 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
           padding: const EdgeInsets.all(32.0),
           child: Column(
             children: [
-              const Icon(
+              Icon(
                 Icons.payment_outlined,
-                color: Colors.white60,
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                 size: 48,
               ),
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 'Aucun paiement',
                 style: TextStyle(
-                  color: Colors.white60,
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                   fontSize: 16,
                 ),
               ),
@@ -744,7 +744,7 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
               Text(
                 description,
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.7),
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                   fontSize: 13,
                 ),
               ),
@@ -755,12 +755,12 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
             // Date d'échéance
             Row(
               children: [
-                const Icon(Icons.schedule, color: Colors.white60, size: 16),
+                Icon(Icons.schedule, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6), size: 16),
                 const SizedBox(width: 8),
                 Text(
                   'Échéance: ${_formatDate(dueDate)}',
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.7),
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                     fontSize: 13,
                   ),
                 ),
@@ -847,8 +847,8 @@ class _PaymentMethodOption extends StatelessWidget {
             const SizedBox(width: 16),
             Text(
               label,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface,
                 fontSize: 16,
               ),
             ),
