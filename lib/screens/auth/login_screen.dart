@@ -18,7 +18,11 @@ class LoginScreen extends StatefulWidget {
   final bool? initialDbHealthy;
   final bool fromLogout;
 
-  const LoginScreen({super.key, this.initialDbHealthy, this.fromLogout = false});
+  const LoginScreen({
+    super.key,
+    this.initialDbHealthy,
+    this.fromLogout = false,
+  });
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -57,7 +61,10 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
 
     // Tenter l'authentification biométrique automatiquement SEULEMENT si l'utilisateur a donné son consentement
     // et que ce n'est pas une déconnexion volontaire
-    if (_canCheckBiometrics && _dbHealthy && _hasBiometricConsent && !widget.fromLogout) {
+    if (_canCheckBiometrics &&
+        _dbHealthy &&
+        _hasBiometricConsent &&
+        !widget.fromLogout) {
       // Petit délai pour laisser l'UI se charger
       await Future.delayed(const Duration(milliseconds: 500));
       if (mounted) {
@@ -139,7 +146,10 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
     final hasConsent = await _authService.hasBiometricConsent();
     if (!hasConsent) {
       if (mounted) {
-        AppSnackBar.info(context, 'Connectez-vous d\'abord avec votre mot de passe pour activer la biométrie');
+        AppSnackBar.info(
+          context,
+          'Connectez-vous d\'abord avec votre mot de passe pour activer la biométrie',
+        );
       }
       return;
     }
@@ -331,7 +341,10 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
     }
 
     if (qrCodeBytes == null) {
-      AppSnackBar.warning(context, 'Aucun QR code en cache. Connectez-vous en ligne pour le télécharger.');
+      AppSnackBar.warning(
+        context,
+        'Aucun QR code en cache. Connectez-vous en ligne pour le télécharger.',
+      );
       return;
     }
 
@@ -507,7 +520,10 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
     final hasConsent = await _authService.hasBiometricConsent();
     if (!hasConsent) {
       if (mounted) {
-        AppSnackBar.info(context, 'Connectez-vous d\'abord avec votre mot de passe pour activer la biométrie');
+        AppSnackBar.info(
+          context,
+          'Connectez-vous d\'abord avec votre mot de passe pour activer la biométrie',
+        );
       }
       return;
     }
@@ -614,7 +630,10 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
     );
 
     if (email.isEmpty || password.isEmpty) {
-      AppSnackBar.error(context, AppLocalizations.of(context).fillEmailPassword);
+      AppSnackBar.error(
+        context,
+        AppLocalizations.of(context).fillEmailPassword,
+      );
       return;
     }
 
@@ -711,7 +730,8 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
           // Si consentement accordé, déclencher Face ID immédiatement pour confirmer
           if (mounted && consentGiven) {
             await _authService.promptBiometric(
-              localizedReason: 'Confirmez votre identité pour activer la connexion biométrique',
+              localizedReason:
+                  'Confirmez votre identité pour activer la connexion biométrique',
             );
           }
         }
@@ -735,7 +755,10 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
           _goToHome();
         }
       } else {
-        AppSnackBar.error(context, AppLocalizations.of(context).invalidCredentials);
+        AppSnackBar.error(
+          context,
+          AppLocalizations.of(context).invalidCredentials,
+        );
       }
     } catch (e) {
       if (mounted) {
@@ -1242,11 +1265,35 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               if (!isDesktop) ...[
-                Image.asset(
-                  'assets/images/logo.png',
-                  width: 240,
-                  height: 240,
-                  fit: BoxFit.contain,
+                Row(
+                  children: [
+                    Image.asset(
+                      'assets/images/logo.png',
+                      width: 72,
+                      height: 72,
+                      fit: BoxFit.contain,
+                    ),
+                    const SizedBox(width: 16),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'TEAM',
+                          style: AppTextStyles.h1.copyWith(
+                            color: Theme.of(context).colorScheme.onSurface,
+                            height: 1.0,
+                          ),
+                        ),
+                        Text(
+                          'FITNESS',
+                          style: AppTextStyles.h1.copyWith(
+                            color: Theme.of(context).colorScheme.primary,
+                            height: 1.0,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 32),
               ],

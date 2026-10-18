@@ -18,6 +18,27 @@ import '../common/security_settings_screen.dart';
 import '../common/about_screen.dart';
 import '../common/store_screen.dart';
 
+Widget _memberSectionTitle(BuildContext context, String title) {
+  final theme = Theme.of(context);
+  return Row(
+    children: [
+      Container(
+        width: 4,
+        height: 22,
+        decoration: BoxDecoration(
+          color: theme.colorScheme.primary,
+          borderRadius: BorderRadius.circular(2),
+        ),
+      ),
+      const SizedBox(width: 10),
+      Text(
+        title,
+        style: AppTextStyles.h5.copyWith(color: theme.colorScheme.onSurface),
+      ),
+    ],
+  );
+}
+
 class MemberHomeScreen extends StatefulWidget {
   const MemberHomeScreen({super.key});
 
@@ -336,7 +357,7 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
   Widget _buildProfileAvatar(bool isActive) {
     // Try to get photo from root level first (from /me endpoint)
     String? profileImageBase64;
-    
+
     // Safe extraction without casting
     final rootImage = _profileData?['profileImage'];
     if (rootImage is String && rootImage.isNotEmpty) {
@@ -604,334 +625,303 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
     }
   }
 
+  Widget _buildSectionTitle(String title) =>
+      _memberSectionTitle(context, title);
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
-    return Container(
-      color: Theme.of(context).scaffoldBackgroundColor,
-      child: RefreshIndicator(
-        onRefresh: _refreshDashboard,
-        color: Theme.of(context).colorScheme.primary,
-        notificationPredicate: (notification) => !_isRefreshing,
-        child: SingleChildScrollView(
-          physics: _isRefreshing
-              ? NeverScrollableScrollPhysics()
-              : AlwaysScrollableScrollPhysics(),
-          padding: EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Banner carousel - only shows when banners exist
-              const BannerCarousel(height: 140),
-              const SizedBox(height: 16),
+    final topInset = MediaQuery.of(context).padding.top;
+    final botInset = MediaQuery.of(context).padding.bottom;
+    return RefreshIndicator(
+      onRefresh: _refreshDashboard,
+      color: Theme.of(context).colorScheme.primary,
+      notificationPredicate: (notification) => !_isRefreshing,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsets.fromLTRB(16, topInset + 16, 16, botInset + 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Banner carousel - only shows when banners exist
+            const BannerCarousel(height: 140),
+            const SizedBox(height: 16),
 
-              // Welcome card
-              FutureBuilder<Map<String, dynamic>?>(
-                future: _authService.getCachedUserProfile(),
-                builder: (context, snapshot) {
-                  final theme = Theme.of(context);
-                  final profileData = snapshot.data;
-                  final fullName = profileData != null
-                      ? getUserFullName(profileData)
-                      : AppLocalizations.of(context).member;
+            // Welcome card
+            FutureBuilder<Map<String, dynamic>?>(
+              future: _authService.getCachedUserProfile(),
+              builder: (context, snapshot) {
+                final theme = Theme.of(context);
+                final profileData = snapshot.data;
+                final fullName = profileData != null
+                    ? getUserFullName(profileData)
+                    : AppLocalizations.of(context).member;
 
-                  // Get subscription info
-                  Map<String, dynamic>? subscription;
-                  final subscriptions =
-                      profileData?['subscriptions'] as List<dynamic>?;
-                  if (subscriptions != null && subscriptions.isNotEmpty) {
-                    subscription =
-                        subscriptions.firstWhere(
-                              (sub) =>
-                                  (sub as Map<String, dynamic>)['status'] ==
-                                  'active',
-                              orElse: () => null,
-                            )
-                            as Map<String, dynamic>?;
-                  } else {
-                    subscription =
-                        profileData?['subscription'] as Map<String, dynamic>?;
-                  }
+                // Get subscription info
+                Map<String, dynamic>? subscription;
+                final subscriptions =
+                    profileData?['subscriptions'] as List<dynamic>?;
+                if (subscriptions != null && subscriptions.isNotEmpty) {
+                  subscription =
+                      subscriptions.firstWhere(
+                            (sub) =>
+                                (sub as Map<String, dynamic>)['status'] ==
+                                'active',
+                            orElse: () => null,
+                          )
+                          as Map<String, dynamic>?;
+                } else {
+                  subscription =
+                      profileData?['subscription'] as Map<String, dynamic>?;
+                }
 
-                  final status = subscription?['status'] ?? 'unknown';
-                  final expiresAt =
-                      subscription?['expiresAt'] ?? subscription?['endDate'];
+                final status = subscription?['status'] ?? 'unknown';
+                final expiresAt =
+                    subscription?['expiresAt'] ?? subscription?['endDate'];
 
+                final l10n = AppLocalizations.of(context);
+                String statusText = l10n.statusUnknown;
+                Color statusColor = Colors.grey;
+                IconData statusIcon = Icons.info;
+
+                if (status == 'active') {
+                  statusText = l10n.subscriptionActive;
+                  statusColor = theme.colorScheme.onPrimary;
+                  statusIcon = Icons.check_circle;
+                } else if (status == 'expired') {
+                  statusText = l10n.subscriptionExpired;
+                  statusColor = AppColors.error;
+                  statusIcon = Icons.cancel;
+                } else if (status == 'cancelled') {
+                  statusText = l10n.subscriptionCancelled;
+                  statusColor = Colors.orange.shade200;
+                  statusIcon = Icons.warning;
+                } else {
+                  // No active subscription - new member
                   final l10n = AppLocalizations.of(context);
-                  String statusText = l10n.statusUnknown;
-                  Color statusColor = Colors.grey;
-                  IconData statusIcon = Icons.info;
+                  statusText = l10n.welcomeCommunity;
+                  statusColor = theme.colorScheme.onPrimary;
+                  statusIcon = Icons.waving_hand;
+                }
 
-                  if (status == 'active') {
-                    statusText = l10n.subscriptionActive;
-                    statusColor = theme.colorScheme.onPrimary;
-                    statusIcon = Icons.check_circle;
-                  } else if (status == 'expired') {
-                    statusText = l10n.subscriptionExpired;
-                    statusColor = AppColors.error;
-                    statusIcon = Icons.cancel;
-                  } else if (status == 'cancelled') {
-                    statusText = l10n.subscriptionCancelled;
-                    statusColor = Colors.orange.shade200;
-                    statusIcon = Icons.warning;
-                  } else {
-                    // No active subscription - new member
-                    final l10n = AppLocalizations.of(context);
-                    statusText = l10n.welcomeCommunity;
-                    statusColor = theme.colorScheme.onPrimary;
-                    statusIcon = Icons.waving_hand;
-                  }
+                return ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: double.infinity),
+                  child: Card(
+                    color: theme.colorScheme.primary,
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.all(20.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  AppLocalizations.of(
+                                    context,
+                                  ).welcomeName(fullName),
+                                  style: TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: theme.colorScheme.onPrimary,
+                                  ),
+                                ),
+                              ),
+                              if (status != 'active' && status != 'unknown')
+                                Icon(statusIcon, color: statusColor, size: 28),
+                            ],
+                          ),
+                          SizedBox(height: 8),
+                          Row(
+                            children: [
+                              if (status == 'unknown')
+                                Icon(statusIcon, color: statusColor, size: 20)
+                              else if (status == 'active')
+                                Icon(
+                                  Icons.check_circle,
+                                  color: statusColor,
+                                  size: 20,
+                                ),
+                              if (status == 'unknown' || status == 'active')
+                                SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  statusText,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: statusColor,
+                                    fontWeight: status == 'unknown'
+                                        ? FontWeight.w500
+                                        : FontWeight.normal,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (status == 'active' && expiresAt != null) ...[
+                            SizedBox(height: 12),
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.calendar_today,
+                                  color: theme.colorScheme.onPrimary,
+                                  size: 18,
+                                ),
+                                SizedBox(width: 8),
+                                Text(
+                                  '${AppLocalizations.of(context).expiresOn} ${_formatDate(expiresAt)}',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: theme.colorScheme.onPrimary,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                          if (status == 'unknown') ...[
+                            SizedBox(height: 12),
+                            Text(
+                              AppLocalizations.of(context).visitReception,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: theme.colorScheme.onPrimary.withValues(
+                                  alpha: 0.9,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+            SizedBox(height: 24),
 
+            // Gym information
+            _buildSectionTitle(l10n.myGym),
+            SizedBox(height: 16),
+            _buildGymCard(context),
+            SizedBox(height: 24),
+
+            // Next workout section
+            _buildSectionTitle(l10n.myNextWorkout),
+            SizedBox(height: 16),
+            _buildNextWorkoutCard(),
+            SizedBox(height: 24),
+
+            // Stats cards
+            _buildSectionTitle(l10n.myStats),
+            SizedBox(height: 16),
+            FutureBuilder<Map<String, dynamic>?>(
+              future: _authService.getCachedUserProfile(),
+              builder: (context, snapshot) {
+                final profileData = snapshot.data;
+                Map<String, dynamic>? subscription;
+                final subscriptions =
+                    profileData?['subscriptions'] as List<dynamic>?;
+                if (subscriptions != null && subscriptions.isNotEmpty) {
+                  subscription =
+                      subscriptions.firstWhere(
+                            (sub) =>
+                                (sub as Map<String, dynamic>)['status'] ==
+                                'active',
+                            orElse: () => null,
+                          )
+                          as Map<String, dynamic>?;
+                } else {
+                  subscription =
+                      profileData?['subscription'] as Map<String, dynamic>?;
+                }
+
+                final hasActiveSubscription =
+                    subscription?['status'] == 'active';
+
+                if (!hasActiveSubscription) {
+                  // Show motivational message for new members
                   return ConstrainedBox(
                     constraints: BoxConstraints(maxWidth: double.infinity),
                     child: Card(
-                      color: theme.colorScheme.primary,
+                      color: Theme.of(context).cardTheme.color,
                       elevation: 4,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Padding(
-                        padding: EdgeInsets.all(20.0),
+                        padding: EdgeInsets.all(24.0),
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    AppLocalizations.of(
-                                      context,
-                                    ).welcomeName(fullName),
-                                    style: TextStyle(
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.bold,
-                                      color: theme.colorScheme.onPrimary,
-                                    ),
-                                  ),
-                                ),
-                                if (status != 'active' && status != 'unknown')
-                                  Icon(
-                                    statusIcon,
-                                    color: statusColor,
-                                    size: 28,
-                                  ),
-                              ],
+                            Icon(
+                              Icons.emoji_events,
+                              size: 48,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                            SizedBox(height: 16),
+                            Text(
+                              l10n.yourJourneyStarts,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color:
+                                    (Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? AppColors.darkTextPrimary
+                                    : AppColors.lightTextPrimary),
+                              ),
                             ),
                             SizedBox(height: 8),
-                            Row(
-                              children: [
-                                if (status == 'unknown')
-                                  Icon(statusIcon, color: statusColor, size: 20)
-                                else if (status == 'active')
-                                  Icon(
-                                    Icons.check_circle,
-                                    color: statusColor,
-                                    size: 20,
-                                  ),
-                                if (status == 'unknown' || status == 'active')
-                                  SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    statusText,
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      color: statusColor,
-                                      fontWeight: status == 'unknown'
-                                          ? FontWeight.w500
-                                          : FontWeight.normal,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                            Text(
+                              l10n.statsAppearWhenTraining,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color:
+                                    (Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? AppColors.darkTextSecondary
+                                    : AppColors.lightTextSecondary),
+                              ),
                             ),
-                            if (status == 'active' && expiresAt != null) ...[
-                              SizedBox(height: 12),
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.calendar_today,
-                                    color: theme.colorScheme.onPrimary,
-                                    size: 18,
-                                  ),
-                                  SizedBox(width: 8),
-                                  Text(
-                                    '${AppLocalizations.of(context).expiresOn} ${_formatDate(expiresAt)}',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: theme.colorScheme.onPrimary,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                            if (status == 'unknown') ...[
-                              SizedBox(height: 12),
-                              Text(
-                                AppLocalizations.of(context).visitReception,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: theme.colorScheme.onPrimary.withValues(
-                                    alpha: 0.9,
-                                  ),
-                                ),
-                              ),
-                            ],
                           ],
                         ),
                       ),
                     ),
                   );
-                },
-              ),
-              SizedBox(height: 24),
+                }
 
-              // Gym information
-              Text(
-                l10n.myGym,
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: (Theme.of(context).brightness == Brightness.dark
-                      ? AppColors.darkTextPrimary
-                      : AppColors.lightTextPrimary),
-                ),
-              ),
-              SizedBox(height: 16),
-              _buildGymCard(context),
-              SizedBox(height: 24),
-
-              // Next workout section
-              Text(
-                l10n.myNextWorkout,
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: (Theme.of(context).brightness == Brightness.dark
-                      ? AppColors.darkTextPrimary
-                      : AppColors.lightTextPrimary),
-                ),
-              ),
-              SizedBox(height: 16),
-              _buildNextWorkoutCard(),
-              SizedBox(height: 24),
-
-              // Stats cards
-              Text(
-                l10n.myStats,
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: (Theme.of(context).brightness == Brightness.dark
-                      ? AppColors.darkTextPrimary
-                      : AppColors.lightTextPrimary),
-                ),
-              ),
-              SizedBox(height: 16),
-              FutureBuilder<Map<String, dynamic>?>(
-                future: _authService.getCachedUserProfile(),
-                builder: (context, snapshot) {
-                  final profileData = snapshot.data;
-                  Map<String, dynamic>? subscription;
-                  final subscriptions =
-                      profileData?['subscriptions'] as List<dynamic>?;
-                  if (subscriptions != null && subscriptions.isNotEmpty) {
-                    subscription =
-                        subscriptions.firstWhere(
-                              (sub) =>
-                                  (sub as Map<String, dynamic>)['status'] ==
-                                  'active',
-                              orElse: () => null,
-                            )
-                            as Map<String, dynamic>?;
-                  } else {
-                    subscription =
-                        profileData?['subscription'] as Map<String, dynamic>?;
-                  }
-
-                  final hasActiveSubscription =
-                      subscription?['status'] == 'active';
-
-                  if (!hasActiveSubscription) {
-                    // Show motivational message for new members
-                    return ConstrainedBox(
-                      constraints: BoxConstraints(maxWidth: double.infinity),
-                      child: Card(
-                        color: Theme.of(context).cardTheme.color,
-                        elevation: 4,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Padding(
-                          padding: EdgeInsets.all(24.0),
-                          child: Column(
-                            children: [
-                              Icon(
-                                Icons.emoji_events,
-                                size: 48,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                              SizedBox(height: 16),
-                              Text(
-                                l10n.yourJourneyStarts,
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color:
-                                      (Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? AppColors.darkTextPrimary
-                                      : AppColors.lightTextPrimary),
-                                ),
-                              ),
-                              SizedBox(height: 8),
-                              Text(
-                                l10n.statsAppearWhenTraining,
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color:
-                                      (Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? AppColors.darkTextSecondary
-                                      : AppColors.lightTextSecondary),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                // Show stats for members with active subscription
+                return Row(
+                  children: [
+                    Expanded(
+                      child: _buildStatCard(
+                        l10n.visitsThisMonth,
+                        '12',
+                        Icons.calendar_today,
+                        AppColors.info,
                       ),
-                    );
-                  }
-
-                  // Show stats for members with active subscription
-                  return Row(
-                    children: [
-                      Expanded(
-                        child: _buildStatCard(
-                          l10n.visitsThisMonth,
-                          '12',
-                          Icons.calendar_today,
-                          AppColors.info,
-                        ),
+                    ),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: _buildStatCard(
+                        l10n.totalVisits,
+                        '148',
+                        Icons.fitness_center,
+                        AppColors.success,
                       ),
-                      SizedBox(width: 12),
-                      Expanded(
-                        child: _buildStatCard(
-                          l10n.totalVisits,
-                          '148',
-                          Icons.fitness_center,
-                          AppColors.success,
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              ),
-            ],
-          ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ],
         ),
       ),
     );
@@ -1837,39 +1827,47 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
     IconData icon,
     Color color,
   ) {
-    return Card(
-      color: Theme.of(context).cardTheme.color,
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 32),
-            SizedBox(height: 8),
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: (Theme.of(context).brightness == Brightness.dark
-                    ? AppColors.darkTextPrimary
-                    : AppColors.lightTextPrimary),
-              ),
-            ),
-            SizedBox(height: 4),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 12,
-                color: (Theme.of(context).brightness == Brightness.dark
-                    ? AppColors.darkTextSecondary
-                    : AppColors.lightTextSecondary),
-              ),
-            ),
-          ],
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.cardTheme.color,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(4),
+          bottomLeft: Radius.circular(4),
+          topRight: Radius.circular(14),
+          bottomRight: Radius.circular(14),
         ),
+        border: Border(left: BorderSide(color: color, width: 4)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(9),
+            ),
+            child: Icon(icon, color: color, size: 18),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            value,
+            style: AppTextStyles.h3.copyWith(
+              color: theme.colorScheme.onSurface,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: TextStyle(
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              fontSize: 11,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -2222,12 +2220,12 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
   Future<void> _loadProfileData() async {
     // Try to refresh profile from API first (to get displayId)
     var profileData = await _authService.refreshUserProfile();
-    
+
     // If refresh fails, fallback to cache
     if (profileData == null) {
       profileData = await _authService.getCachedUserProfile();
     }
-    
+
     // Debug logs
     if (profileData != null) {
       debugPrint('🔍 Profile data loaded:');
@@ -2236,7 +2234,7 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
       debugPrint('   - id: ${profileData['id']}');
       debugPrint('   - All keys: ${profileData.keys.toList()}');
     }
-    
+
     if (mounted) {
       setState(() {
         _profileData = profileData;
@@ -2426,302 +2424,299 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Container(
-      color: theme.scaffoldBackgroundColor,
-      child: Center(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                AppLocalizations.of(context).myMemberCard,
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: (Theme.of(context).brightness == Brightness.dark
-                      ? AppColors.darkTextPrimary
-                      : AppColors.lightTextPrimary),
+    final topInset = MediaQuery.of(context).padding.top;
+    final botInset = MediaQuery.of(context).padding.bottom;
+    return Center(
+      child: SingleChildScrollView(
+        padding: EdgeInsets.fromLTRB(24, topInset + 24, 24, botInset + 24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              AppLocalizations.of(context).myMemberCard,
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: (Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.darkTextPrimary
+                    : AppColors.lightTextPrimary),
+              ),
+            ),
+            SizedBox(height: 16),
+            Text(
+              AppLocalizations.of(context).scanAtEntrance,
+              style: TextStyle(
+                fontSize: 16,
+                color: (Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.darkTextSecondary
+                    : AppColors.lightTextSecondary),
+              ),
+            ),
+
+            // Connectivity status indicator
+            if (!_isCheckingConnectivity) ...[
+              SizedBox(height: 16),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color:
+                      (_hasConnectivity ? AppColors.success : AppColors.warning)
+                          .withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: _hasConnectivity
+                        ? AppColors.success
+                        : AppColors.warning,
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      _hasConnectivity ? Icons.wifi : Icons.wifi_off,
+                      color: _hasConnectivity
+                          ? AppColors.success
+                          : AppColors.warning,
+                      size: 16,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      _hasConnectivity ? 'En ligne' : 'Hors ligne',
+                      style: TextStyle(
+                        color: _hasConnectivity
+                            ? AppColors.success
+                            : AppColors.warning,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              SizedBox(height: 16),
+            ],
+
+            SizedBox(height: 40),
+
+            // Show QR Code or Button
+            if (_isLoading)
+              Container(
+                padding: EdgeInsets.all(40),
+                child: Column(
+                  children: [
+                    CircularProgressIndicator(
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    SizedBox(height: 20),
+                    Text(
+                      AppLocalizations.of(context).loadingQrCode,
+                      style: TextStyle(
+                        color: (Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.darkTextSecondary
+                            : AppColors.lightTextSecondary),
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else if (_showQrCode && _qrImageBytes != null)
+              Column(
+                children: [
+                  // Offline indicator on QR card if applicable
+                  if (!_hasConnectivity)
+                    Container(
+                      margin: EdgeInsets.only(bottom: 12),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.info.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.info, width: 1),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.info_outline,
+                            color: AppColors.info,
+                            size: 18,
+                          ),
+                          SizedBox(width: 8),
+                          Flexible(
+                            child: Text(
+                              'QR code chargé depuis le cache',
+                              style: TextStyle(
+                                color: AppColors.info,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  Card(
+                    color: Theme.of(context).cardTheme.color,
+                    elevation: 8,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.all(24.0),
+                      child: Column(
+                        children: [
+                          Container(
+                            padding: EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color:
+                                  (Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? AppColors.darkTextPrimary
+                                  : AppColors.lightTextPrimary),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Image.memory(
+                              Uint8List.fromList(_qrImageBytes!),
+                              width: 250,
+                              height: 250,
+                              fit: BoxFit.contain,
+                            ),
+                          ),
+                          SizedBox(height: 24),
+                          Text(
+                            _profileData != null
+                                ? getUserFullName(_profileData!)
+                                : 'Utilisateur',
+                            style: TextStyle(
+                              color:
+                                  (Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? AppColors.darkTextPrimary
+                                  : AppColors.lightTextPrimary),
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          SizedBox(height: 12),
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 10,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.primary.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.primary.withValues(alpha: 0.5),
+                                width: 1.5,
+                              ),
+                            ),
+                            child: Text(
+                              (_profileData?['displayId']?.toString() ??
+                                  _profileData?['uniqueCode']?.toString() ??
+                                  ''),
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.primary,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 3,
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            AppLocalizations.of(context).presentThisCode,
+                            style: TextStyle(
+                              color:
+                                  (Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? AppColors.darkTextSecondary
+                                          : AppColors.lightTextSecondary)
+                                      .withValues(alpha: 0.8),
+                              fontSize: 14,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 24),
+                  OutlinedButton.icon(
+                    onPressed: _toggleQrCode,
+                    icon: Icon(Icons.visibility_off, size: 24),
+                    label: Text(
+                      AppLocalizations.of(context).hideQrCode,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Theme.of(context).colorScheme.primary,
+                      side: BorderSide(
+                        color: Theme.of(context).colorScheme.primary,
+                        width: 2,
+                      ),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 32,
+                        vertical: 16,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                  ),
+                ],
+              )
+            else
+              ElevatedButton.icon(
+                onPressed: _toggleQrCode,
+                icon: Icon(Icons.qr_code_2, size: 32),
+                label: Text(
+                  AppLocalizations.of(context).showMyQrCode,
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  foregroundColor:
+                      (Theme.of(context).brightness == Brightness.dark
+                      ? AppColors.darkTextPrimary
+                      : AppColors.lightTextPrimary),
+                  padding: EdgeInsets.symmetric(horizontal: 32, vertical: 20),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  elevation: 8,
+                  shadowColor: Theme.of(
+                    context,
+                  ).colorScheme.primary.withValues(alpha: 0.5),
+                ),
+              ),
+
+            if (!_showQrCode && !_isLoading) ...[
+              SizedBox(height: 40),
               Text(
-                AppLocalizations.of(context).scanAtEntrance,
+                AppLocalizations.of(context).presentQrToStaff,
+                textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 14,
                   color: (Theme.of(context).brightness == Brightness.dark
                       ? AppColors.darkTextSecondary
                       : AppColors.lightTextSecondary),
                 ),
               ),
-
-              // Connectivity status indicator
-              if (!_isCheckingConnectivity) ...[
-                SizedBox(height: 16),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color:
-                        (_hasConnectivity
-                                ? AppColors.success
-                                : AppColors.warning)
-                            .withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: _hasConnectivity
-                          ? AppColors.success
-                          : AppColors.warning,
-                      width: 1,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        _hasConnectivity ? Icons.wifi : Icons.wifi_off,
-                        color: _hasConnectivity
-                            ? AppColors.success
-                            : AppColors.warning,
-                        size: 16,
-                      ),
-                      SizedBox(width: 8),
-                      Text(
-                        _hasConnectivity ? 'En ligne' : 'Hors ligne',
-                        style: TextStyle(
-                          color: _hasConnectivity
-                              ? AppColors.success
-                              : AppColors.warning,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-
-              SizedBox(height: 40),
-
-              // Show QR Code or Button
-              if (_isLoading)
-                Container(
-                  padding: EdgeInsets.all(40),
-                  child: Column(
-                    children: [
-                      CircularProgressIndicator(
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                      SizedBox(height: 20),
-                      Text(
-                        AppLocalizations.of(context).loadingQrCode,
-                        style: TextStyle(
-                          color:
-                              (Theme.of(context).brightness == Brightness.dark
-                              ? AppColors.darkTextSecondary
-                              : AppColors.lightTextSecondary),
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              else if (_showQrCode && _qrImageBytes != null)
-                Column(
-                  children: [
-                    // Offline indicator on QR card if applicable
-                    if (!_hasConnectivity)
-                      Container(
-                        margin: EdgeInsets.only(bottom: 12),
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 10,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.info.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.info, width: 1),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.info_outline,
-                              color: AppColors.info,
-                              size: 18,
-                            ),
-                            SizedBox(width: 8),
-                            Flexible(
-                              child: Text(
-                                'QR code chargé depuis le cache',
-                                style: TextStyle(
-                                  color: AppColors.info,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    Card(
-                      color: Theme.of(context).cardTheme.color,
-                      elevation: 8,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Padding(
-                        padding: EdgeInsets.all(24.0),
-                        child: Column(
-                          children: [
-                            Container(
-                              padding: EdgeInsets.all(20),
-                              decoration: BoxDecoration(
-                                color:
-                                    (Theme.of(context).brightness ==
-                                        Brightness.dark
-                                    ? AppColors.darkTextPrimary
-                                    : AppColors.lightTextPrimary),
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Image.memory(
-                                Uint8List.fromList(_qrImageBytes!),
-                                width: 250,
-                                height: 250,
-                                fit: BoxFit.contain,
-                              ),
-                            ),
-                            SizedBox(height: 24),
-                            Text(
-                              _profileData != null
-                                  ? getUserFullName(_profileData!)
-                                  : 'Utilisateur',
-                              style: TextStyle(
-                                color:
-                                    (Theme.of(context).brightness ==
-                                        Brightness.dark
-                                    ? AppColors.darkTextPrimary
-                                    : AppColors.lightTextPrimary),
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                            SizedBox(height: 12),
-                            Container(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 20,
-                                vertical: 10,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.primary.withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.primary.withValues(alpha: 0.5),
-                                  width: 1.5,
-                                ),
-                              ),
-                              child: Text(
-                                (_profileData?['displayId']?.toString() ?? 
-                                 _profileData?['uniqueCode']?.toString() ?? ''),
-                                style: TextStyle(
-                                  color: Theme.of(context).colorScheme.primary,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
-                                  letterSpacing: 3,
-                                ),
-                              ),
-                            ),
-                            SizedBox(height: 16),
-                            Text(
-                              AppLocalizations.of(context).presentThisCode,
-                              style: TextStyle(
-                                color:
-                                    (Theme.of(context).brightness ==
-                                                Brightness.dark
-                                            ? AppColors.darkTextSecondary
-                                            : AppColors.lightTextSecondary)
-                                        .withValues(alpha: 0.8),
-                                fontSize: 14,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 24),
-                    OutlinedButton.icon(
-                      onPressed: _toggleQrCode,
-                      icon: Icon(Icons.visibility_off, size: 24),
-                      label: Text(
-                        AppLocalizations.of(context).hideQrCode,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Theme.of(context).colorScheme.primary,
-                        side: BorderSide(
-                          color: Theme.of(context).colorScheme.primary,
-                          width: 2,
-                        ),
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 32,
-                          vertical: 16,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                      ),
-                    ),
-                  ],
-                )
-              else
-                ElevatedButton.icon(
-                  onPressed: _toggleQrCode,
-                  icon: Icon(Icons.qr_code_2, size: 32),
-                  label: Text(
-                    AppLocalizations.of(context).showMyQrCode,
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    foregroundColor:
-                        (Theme.of(context).brightness == Brightness.dark
-                        ? AppColors.darkTextPrimary
-                        : AppColors.lightTextPrimary),
-                    padding: EdgeInsets.symmetric(horizontal: 32, vertical: 20),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    elevation: 8,
-                    shadowColor: Theme.of(
-                      context,
-                    ).colorScheme.primary.withValues(alpha: 0.5),
-                  ),
-                ),
-
-              if (!_showQrCode && !_isLoading) ...[
-                SizedBox(height: 40),
-                Text(
-                  AppLocalizations.of(context).presentQrToStaff,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: (Theme.of(context).brightness == Brightness.dark
-                        ? AppColors.darkTextSecondary
-                        : AppColors.lightTextSecondary),
-                  ),
-                ),
-              ],
             ],
-          ),
+          ],
         ),
       ),
     );
@@ -2736,32 +2731,52 @@ class MemberSubscriptionPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Container(
-      color: theme.scaffoldBackgroundColor,
-      child: SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Current subscription card
-            Card(
-              color: Theme.of(context).colorScheme.primary,
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Padding(
-                padding: EdgeInsets.all(20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          AppLocalizations.of(context).premiumSubscription,
+    final topInset = MediaQuery.of(context).padding.top;
+    final botInset = MediaQuery.of(context).padding.bottom;
+    return SingleChildScrollView(
+      padding: EdgeInsets.fromLTRB(16, topInset + 16, 16, botInset + 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Current subscription card
+          Card(
+            color: Theme.of(context).colorScheme.primary,
+            elevation: 4,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Padding(
+              padding: EdgeInsets.all(20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        AppLocalizations.of(context).premiumSubscription,
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color:
+                              (Theme.of(context).brightness == Brightness.dark
+                              ? AppColors.darkTextPrimary
+                              : AppColors.lightTextPrimary),
+                        ),
+                      ),
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.success,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          AppLocalizations.of(context).activeStatus,
                           style: TextStyle(
-                            fontSize: 22,
+                            fontSize: 12,
                             fontWeight: FontWeight.bold,
                             color:
                                 (Theme.of(context).brightness == Brightness.dark
@@ -2769,84 +2784,38 @@ class MemberSubscriptionPage extends StatelessWidget {
                                 : AppColors.lightTextPrimary),
                           ),
                         ),
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.success,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            AppLocalizations.of(context).activeStatus,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color:
-                                  (Theme.of(context).brightness ==
-                                      Brightness.dark
-                                  ? AppColors.darkTextPrimary
-                                  : AppColors.lightTextPrimary),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 16),
-                    _buildSubscriptionDetail(context, 'Type', 'Mensuel'),
-                    _buildSubscriptionDetail(context, 'Prix', '50 MAD / mois'),
-                    _buildSubscriptionDetail(
-                      context,
-                      AppLocalizations.of(context).startDate,
-                      '1 Nov 2025',
-                    ),
-                    _buildSubscriptionDetail(
-                      context,
-                      AppLocalizations.of(context).expirationDate,
-                      '31 Déc 2025',
-                    ),
-                  ],
-                ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 16),
+                  _buildSubscriptionDetail(context, 'Type', 'Mensuel'),
+                  _buildSubscriptionDetail(context, 'Prix', '50 MAD / mois'),
+                  _buildSubscriptionDetail(
+                    context,
+                    AppLocalizations.of(context).startDate,
+                    '1 Nov 2025',
+                  ),
+                  _buildSubscriptionDetail(
+                    context,
+                    AppLocalizations.of(context).expirationDate,
+                    '31 Déc 2025',
+                  ),
+                ],
               ),
             ),
-            SizedBox(height: 24),
+          ),
+          SizedBox(height: 24),
 
-            // Payment history
-            Text(
-              AppLocalizations.of(context).paymentHistory,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: (Theme.of(context).brightness == Brightness.dark
-                    ? AppColors.darkTextPrimary
-                    : AppColors.lightTextPrimary),
-              ),
-            ),
-            SizedBox(height: 16),
-            _buildPaymentItem(
-              context,
-              'Nov 2025',
-              '50 MAD',
-              '1 Nov 2025',
-              true,
-            ),
-            _buildPaymentItem(
-              context,
-              'Oct 2025',
-              '50 MAD',
-              '1 Oct 2025',
-              true,
-            ),
-            _buildPaymentItem(
-              context,
-              'Sep 2025',
-              '50 MAD',
-              '1 Sep 2025',
-              true,
-            ),
-          ],
-        ),
+          // Payment history
+          _memberSectionTitle(
+            context,
+            AppLocalizations.of(context).paymentHistory,
+          ),
+          SizedBox(height: 16),
+          _buildPaymentItem(context, 'Nov 2025', '50 MAD', '1 Nov 2025', true),
+          _buildPaymentItem(context, 'Oct 2025', '50 MAD', '1 Oct 2025', true),
+          _buildPaymentItem(context, 'Sep 2025', '50 MAD', '1 Sep 2025', true),
+        ],
       ),
     );
   }
@@ -3568,190 +3537,161 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Theme.of(context).scaffoldBackgroundColor,
-      child: RefreshIndicator(
-        onRefresh: _loadPlannings,
-        color: Theme.of(context).colorScheme.primary,
-        notificationPredicate: (notification) => !_isRefreshing,
-        child: _isLoading
-            ? Center(
-                child: CircularProgressIndicator(
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              )
-            : _errorMessage != null
-            ? Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.error_outline,
-                      size: 60,
-                      color: Colors.red.shade300,
-                    ),
-                    SizedBox(height: 16),
-                    Text(
-                      _errorMessage!,
-                      style: TextStyle(
-                        color: (Theme.of(context).brightness == Brightness.dark
-                            ? AppColors.darkTextPrimary
-                            : AppColors.lightTextPrimary),
-                        fontSize: 16,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: _loadPlannings,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.primary,
-                      ),
-                      child: Text(AppLocalizations.of(context).retry),
-                    ),
-                  ],
-                ),
-              )
-            : ListView(
-                padding: EdgeInsets.all(16.0),
+    return RefreshIndicator(
+      onRefresh: _loadPlannings,
+      color: Theme.of(context).colorScheme.primary,
+      notificationPredicate: (notification) => !_isRefreshing,
+      child: _isLoading
+          ? Center(
+              child: CircularProgressIndicator(
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            )
+          : _errorMessage != null
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Goals carousel section
-                  if (_goals != null && _goals!.isNotEmpty) ...[
-                    Text(
-                      AppLocalizations.of(context).myGoals,
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: (Theme.of(context).brightness == Brightness.dark
-                            ? AppColors.darkTextPrimary
-                            : AppColors.lightTextPrimary),
-                      ),
-                    ),
-                    SizedBox(height: 12),
-                    SizedBox(
-                      height: 160,
-                      child: Center(
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          // padding: EdgeInsets.symmetric(horizontal: 8),
-                          shrinkWrap: true,
-                          itemCount: _goals!.length,
-                          itemBuilder: (context, index) {
-                            final goal = _goals![index] as Map<String, dynamic>;
-                            return Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 0),
-                              child: _buildGoalCard(goal, index),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 24),
-                  ],
-                  // Today's workout section
-                  FutureBuilder<Map<String, dynamic>?>(
-                    future: _loadTodayWorkout(),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return SizedBox.shrink();
-                      }
-
-                      if (snapshot.data != null) {
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '🔥 Entraînement du jour',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color:
-                                    (Theme.of(context).brightness ==
-                                        Brightness.dark
-                                    ? AppColors.darkTextPrimary
-                                    : AppColors.lightTextPrimary),
-                              ),
-                            ),
-                            SizedBox(height: 12),
-                            _buildTodayWorkoutCard(snapshot.data!),
-                            SizedBox(height: 24),
-                            Text(
-                              AppLocalizations.of(context).myPlannings,
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color:
-                                    (Theme.of(context).brightness ==
-                                        Brightness.dark
-                                    ? AppColors.darkTextPrimary
-                                    : AppColors.lightTextPrimary),
-                              ),
-                            ),
-                            SizedBox(height: 12),
-                          ],
-                        );
-                      }
-
-                      return SizedBox.shrink();
-                    },
+                  Icon(
+                    Icons.error_outline,
+                    size: 60,
+                    color: Colors.red.shade300,
                   ),
-                  // All plannings or empty state
-                  if (_plannings != null && _plannings!.isNotEmpty)
-                    ..._plannings!.map((planning) {
-                      final planningData = planning as Map<String, dynamic>;
-                      return _buildPlanningCard(planningData);
-                    })
-                  else
-                    // Empty state when no plannings
-                    Center(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(vertical: 40),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.fitness_center,
-                              size: 80,
-                              color:
-                                  (Theme.of(context).brightness ==
-                                              Brightness.dark
-                                          ? AppColors.darkTextSecondary
-                                          : AppColors.lightTextSecondary)
-                                      .withValues(alpha: 0.5),
-                            ),
-                            SizedBox(height: 16),
-                            Text(
-                              'Aucun planning disponible',
-                              style: TextStyle(
-                                color:
-                                    (Theme.of(context).brightness ==
-                                        Brightness.dark
-                                    ? AppColors.darkTextSecondary
-                                    : AppColors.lightTextSecondary),
-                                fontSize: 18,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            SizedBox(height: 8),
-                            Text(
-                              'Votre coach vous assignera bientôt\nun programme d\'entraînement',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color:
-                                    (Theme.of(context).brightness ==
-                                        Brightness.dark
-                                    ? AppColors.darkTextSecondary
-                                    : AppColors.lightTextSecondary),
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                  SizedBox(height: 16),
+                  Text(
+                    _errorMessage!,
+                    style: TextStyle(
+                      color: (Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.darkTextPrimary
+                          : AppColors.lightTextPrimary),
+                      fontSize: 16,
                     ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: _loadPlannings,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                    ),
+                    child: Text(AppLocalizations.of(context).retry),
+                  ),
                 ],
               ),
-      ),
+            )
+          : ListView(
+              padding: EdgeInsets.all(16.0),
+              children: [
+                // Goals carousel section
+                if (_goals != null && _goals!.isNotEmpty) ...[
+                  _memberSectionTitle(
+                    context,
+                    AppLocalizations.of(context).myGoals,
+                  ),
+                  SizedBox(height: 12),
+                  SizedBox(
+                    height: 160,
+                    child: Center(
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        // padding: EdgeInsets.symmetric(horizontal: 8),
+                        shrinkWrap: true,
+                        itemCount: _goals!.length,
+                        itemBuilder: (context, index) {
+                          final goal = _goals![index] as Map<String, dynamic>;
+                          return Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 0),
+                            child: _buildGoalCard(goal, index),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 24),
+                ],
+                // Today's workout section
+                FutureBuilder<Map<String, dynamic>?>(
+                  future: _loadTodayWorkout(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return SizedBox.shrink();
+                    }
+
+                    if (snapshot.data != null) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _memberSectionTitle(context, 'Entraînement du jour'),
+                          SizedBox(height: 12),
+                          _buildTodayWorkoutCard(snapshot.data!),
+                          SizedBox(height: 24),
+                          _memberSectionTitle(
+                            context,
+                            AppLocalizations.of(context).myPlannings,
+                          ),
+                          SizedBox(height: 12),
+                        ],
+                      );
+                    }
+
+                    return SizedBox.shrink();
+                  },
+                ),
+                // All plannings or empty state
+                if (_plannings != null && _plannings!.isNotEmpty)
+                  ..._plannings!.map((planning) {
+                    final planningData = planning as Map<String, dynamic>;
+                    return _buildPlanningCard(planningData);
+                  })
+                else
+                  // Empty state when no plannings
+                  Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 40),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.fitness_center,
+                            size: 80,
+                            color:
+                                (Theme.of(context).brightness == Brightness.dark
+                                        ? AppColors.darkTextSecondary
+                                        : AppColors.lightTextSecondary)
+                                    .withValues(alpha: 0.5),
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            'Aucun planning disponible',
+                            style: TextStyle(
+                              color:
+                                  (Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? AppColors.darkTextSecondary
+                                  : AppColors.lightTextSecondary),
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            'Votre coach vous assignera bientôt\nun programme d\'entraînement',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color:
+                                  (Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? AppColors.darkTextSecondary
+                                  : AppColors.lightTextSecondary),
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
+            ),
     );
   }
 
@@ -4659,14 +4599,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                             startWaist != null ||
                             targetWeight != null ||
                             targetWaist != null) ...[
-                          Text(
-                            'Mesures',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w800,
-                              color: Colors.white,
-                            ),
-                          ),
+                          _memberSectionTitle(context, 'Mesures'),
                           SizedBox(height: 12),
                         ],
                         // Start measurements
@@ -5185,7 +5118,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
     final birthDate = memberData?['birthDate']?.toString();
     final profession = memberData?['profession']?.toString() ?? '';
     final fitnessLevel = memberData?['fitnessLevel']?.toString() ?? '';
-    
+
     // Safe profile image extraction
     String? profileImageBase64;
     final rootImage = _profileData?['profileImage'];
@@ -5902,7 +5835,10 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                     await _authService.clearAll();
                     if (context.mounted) {
                       Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute(builder: (context) => const LoginScreen(fromLogout: true)),
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              const LoginScreen(fromLogout: true),
+                        ),
                         (route) => false,
                       );
                     }

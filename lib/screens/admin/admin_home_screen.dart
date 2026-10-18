@@ -112,7 +112,10 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       barrierDismissible: true,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: theme.cardTheme.color,
-        title: Text('Mon QR Code', style: TextStyle(color: theme.colorScheme.onSurface)),
+        title: Text(
+          'Mon QR Code',
+          style: TextStyle(color: theme.colorScheme.onSurface),
+        ),
         content: SizedBox(
           width: 250,
           child: Column(
@@ -454,8 +457,9 @@ class _AccueilPageState extends State<AccueilPage> {
       _totalMembers = _fmt(d['totalMembers']);
       _activeMembers = _fmt(d['activeMembers']);
       _todayCheckIns = _fmt(d['todayCheckIns']);
-      _totalRevenue =
-          d['totalRevenue'] != null ? _fmtRevenue(d['totalRevenue']) : '—';
+      _totalRevenue = d['totalRevenue'] != null
+          ? _fmtRevenue(d['totalRevenue'])
+          : '—';
     });
   }
 
@@ -499,8 +503,10 @@ class _AccueilPageState extends State<AccueilPage> {
         if (members != null) {
           if (!isOwner) data['totalMembers'] = members.length;
           data['activeMembers'] = members
-              .where((m) =>
-                  (m as Map<String, dynamic>)['activeSubscription'] != null)
+              .where(
+                (m) =>
+                    (m as Map<String, dynamic>)['activeSubscription'] != null,
+              )
               .length;
         }
         final today = await _apiService.getTodayCheckIns(gymId, token);
@@ -525,46 +531,48 @@ class _AccueilPageState extends State<AccueilPage> {
     return RefreshIndicator(
       onRefresh: _fetchStats,
       color: AppColors.primary,
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [theme.scaffoldBackgroundColor, theme.cardTheme.color!],
-          ),
-        ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(24.0),
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final isDesktop = constraints.maxWidth > 600;
-                final isWatch = constraints.maxWidth < 300;
+      child: SafeArea(
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(24.0),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final isDesktop = constraints.maxWidth > 600;
+              final isWatch = constraints.maxWidth < 300;
 
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const BannerCarousel(height: 140),
-                    SizedBox(height: isWatch ? 16 : 24),
-                    _buildStatsGrid(context, isDesktop, isWatch),
-                    SizedBox(height: isWatch ? 16 : 32),
-                    Text(
-                      AppLocalizations.of(context).quickActions,
-                      style: TextStyle(
-                        fontSize: isWatch ? 14 : (isDesktop ? 24 : 20),
-                        fontWeight: FontWeight.bold,
-                        color: (Theme.of(context).brightness == Brightness.dark
-                            ? AppColors.darkTextPrimary
-                            : AppColors.lightTextPrimary),
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const BannerCarousel(height: 140),
+                  SizedBox(height: isWatch ? 16 : 24),
+                  _buildStatsGrid(context, isDesktop, isWatch),
+                  SizedBox(height: isWatch ? 16 : 32),
+                  Row(
+                    children: [
+                      Container(
+                        width: 4,
+                        height: isWatch ? 16 : 22,
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primary,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
                       ),
-                    ),
-                    SizedBox(height: isWatch ? 8 : 16),
-                    _buildQuickActions(isDesktop, isWatch),
-                  ],
-                );
-              },
-            ),
+                      SizedBox(width: isWatch ? 6 : 10),
+                      Text(
+                        AppLocalizations.of(context).quickActions,
+                        style: TextStyle(
+                          fontSize: isWatch ? 14 : (isDesktop ? 24 : 20),
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: isWatch ? 8 : 16),
+                  _buildQuickActions(isDesktop, isWatch),
+                ],
+              );
+            },
           ),
         ),
       ),
@@ -603,33 +611,43 @@ class _AccueilPageState extends State<AccueilPage> {
     if (isWatch) {
       return Column(
         children: stats
-            .map((s) =>
-                Padding(padding: const EdgeInsets.only(bottom: 8), child: s))
+            .map(
+              (s) =>
+                  Padding(padding: const EdgeInsets.only(bottom: 8), child: s),
+            )
             .toList(),
       );
     } else if (isDesktop) {
       return Row(
         children: stats
-            .map((s) => Expanded(
+            .map(
+              (s) => Expanded(
                 child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: s)))
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: s,
+                ),
+              ),
+            )
             .toList(),
       );
     } else {
       return Column(
         children: [
-          Row(children: [
-            Expanded(child: stats[0]),
-            const SizedBox(width: 16),
-            Expanded(child: stats[1]),
-          ]),
+          Row(
+            children: [
+              Expanded(child: stats[0]),
+              const SizedBox(width: 16),
+              Expanded(child: stats[1]),
+            ],
+          ),
           const SizedBox(height: 16),
-          Row(children: [
-            Expanded(child: stats[2]),
-            const SizedBox(width: 16),
-            Expanded(child: stats[3]),
-          ]),
+          Row(
+            children: [
+              Expanded(child: stats[2]),
+              const SizedBox(width: 16),
+              Expanded(child: stats[3]),
+            ],
+          ),
         ],
       );
     }
@@ -645,7 +663,8 @@ class _AccueilPageState extends State<AccueilPage> {
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (_) => const AdminCreateMemberScreen()),
+                builder: (_) => const AdminCreateMemberScreen(),
+              ),
             ),
           ),
           _QuickActionButton(
@@ -676,8 +695,7 @@ class _AccueilPageState extends State<AccueilPage> {
               title: 'Scanner une carte',
               onTap: () => Navigator.push(
                 context,
-                MaterialPageRoute(
-                    builder: (_) => const AdminQrScannerScreen()),
+                MaterialPageRoute(builder: (_) => const AdminQrScannerScreen()),
               ),
             ),
         ];
@@ -685,18 +703,25 @@ class _AccueilPageState extends State<AccueilPage> {
         if (isDesktop) {
           return Row(
             children: actions
-                .map((a) => Expanded(
+                .map(
+                  (a) => Expanded(
                     child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: a)))
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: a,
+                    ),
+                  ),
+                )
                 .toList(),
           );
         } else {
           return Column(
             children: actions
-                .map((a) => Padding(
+                .map(
+                  (a) => Padding(
                     padding: EdgeInsets.only(bottom: isWatch ? 8 : 12),
-                    child: a))
+                    child: a,
+                  ),
+                )
                 .toList(),
           );
         }
@@ -720,6 +745,7 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return LayoutBuilder(
       builder: (context, constraints) {
         final isWatch = constraints.maxWidth < 150;
@@ -727,14 +753,21 @@ class _StatCard extends StatelessWidget {
         return Container(
           padding: EdgeInsets.all(isWatch ? 8 : 16),
           decoration: BoxDecoration(
-            color: Theme.of(context).cardTheme.color,
-            borderRadius: BorderRadius.circular(isWatch ? 8 : 16),
-            border: Border.all(color: color.withValues(alpha: 0.3)),
+            color: theme.cardTheme.color,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(isWatch ? 3 : 4),
+              bottomLeft: Radius.circular(isWatch ? 3 : 4),
+              topRight: Radius.circular(isWatch ? 8 : 16),
+              bottomRight: Radius.circular(isWatch ? 8 : 16),
+            ),
+            border: Border(
+              left: BorderSide(color: color, width: isWatch ? 3 : 4),
+            ),
           ),
           child: isWatch
               ? Row(
                   children: [
-                    Icon(icon, color: color, size: 20),
+                    Icon(icon, color: color, size: 18),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Column(
@@ -743,25 +776,17 @@ class _StatCard extends StatelessWidget {
                           Text(
                             title,
                             style: TextStyle(
-                              color:
-                                  (Theme.of(context).brightness ==
-                                              Brightness.dark
-                                          ? AppColors.darkTextSecondary
-                                          : AppColors.lightTextSecondary)
-                                      .withValues(alpha: 0.7),
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: 0.6,
+                              ),
                               fontSize: 9,
                             ),
                           ),
                           Text(
                             value,
-                            style: TextStyle(
-                              color:
-                                  (Theme.of(context).brightness ==
-                                      Brightness.dark
-                                  ? AppColors.darkTextPrimary
-                                  : AppColors.lightTextPrimary),
+                            style: AppTextStyles.h6.copyWith(
+                              color: theme.colorScheme.onSurface,
                               fontSize: 14,
-                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ],
@@ -772,28 +797,31 @@ class _StatCard extends StatelessWidget {
               : Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(icon, color: color, size: 32),
+                    Container(
+                      width: 38,
+                      height: 38,
+                      decoration: BoxDecoration(
+                        color: color.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(icon, color: color, size: 20),
+                    ),
                     const SizedBox(height: 12),
+                    Text(
+                      value,
+                      style: AppTextStyles.h3.copyWith(
+                        color: theme.colorScheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
                     Text(
                       title,
                       style: TextStyle(
-                        color:
-                            (Theme.of(context).brightness == Brightness.dark
-                                    ? AppColors.darkTextSecondary
-                                    : AppColors.lightTextSecondary)
-                                .withValues(alpha: 0.7),
-                        fontSize: 12,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      value,
-                      style: TextStyle(
-                        color: (Theme.of(context).brightness == Brightness.dark
-                            ? AppColors.darkTextPrimary
-                            : AppColors.lightTextPrimary),
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.6,
+                        ),
+                        fontSize: 11,
+                        letterSpacing: 0.3,
                       ),
                     ),
                   ],
@@ -821,63 +849,54 @@ class _QuickActionButton extends StatelessWidget {
       builder: (context, constraints) {
         final isWatch = constraints.maxWidth < 300;
 
-        return InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(isWatch ? 8 : 16),
-          child: Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: isWatch ? 8 : 20,
-              vertical: isWatch ? 8 : 18,
-            ),
-            decoration: BoxDecoration(
-              color: Theme.of(context).cardTheme.color,
-              borderRadius: BorderRadius.circular(isWatch ? 8 : 16),
-              border: Border.all(
-                color: Theme.of(context).dividerColor.withValues(alpha: 0.3),
-                width: 1,
+        final theme = Theme.of(context);
+        return Material(
+          color: theme.cardTheme.color,
+          borderRadius: BorderRadius.circular(isWatch ? 8 : 14),
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(isWatch ? 8 : 14),
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: isWatch ? 8 : 16,
+                vertical: isWatch ? 8 : 16,
               ),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: isWatch ? 40 : 56,
-                  height: isWatch ? 40 : 56,
-                  decoration: BoxDecoration(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.primary.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(isWatch ? 8 : 12),
-                  ),
-                  child: Icon(
-                    icon,
-                    color: Theme.of(context).colorScheme.primary,
-                    size: isWatch ? 16 : 28,
-                  ),
-                ),
-                SizedBox(width: isWatch ? 8 : 16),
-                Expanded(
-                  child: Text(
-                    title,
-                    style: TextStyle(
-                      color: (Theme.of(context).brightness == Brightness.dark
-                          ? AppColors.darkTextPrimary
-                          : AppColors.lightTextPrimary),
-                      fontSize: isWatch ? 11 : 17,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: -0.2,
+              child: Row(
+                children: [
+                  Container(
+                    width: isWatch ? 36 : 48,
+                    height: isWatch ? 36 : 48,
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primary.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(isWatch ? 8 : 12),
+                      border: Border.all(
+                        color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                      ),
+                    ),
+                    child: Icon(
+                      icon,
+                      color: theme.colorScheme.primary,
+                      size: isWatch ? 16 : 24,
                     ),
                   ),
-                ),
-                Icon(
-                  Icons.chevron_right,
-                  color:
-                      (Theme.of(context).brightness == Brightness.dark
-                              ? AppColors.darkTextSecondary
-                              : AppColors.lightTextSecondary)
-                          .withValues(alpha: 0.5),
-                  size: isWatch ? 16 : 24,
-                ),
-              ],
+                  SizedBox(width: isWatch ? 8 : 14),
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: TextStyle(
+                        color: theme.colorScheme.onSurface,
+                        fontSize: isWatch ? 11 : 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  Icon(
+                    Icons.chevron_right,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.35),
+                    size: isWatch ? 16 : 20,
+                  ),
+                ],
+              ),
             ),
           ),
         );
@@ -1404,7 +1423,8 @@ class _ProfilePageState extends State<ProfilePage> {
                     if (context.mounted) {
                       Navigator.of(context).pushAndRemoveUntil(
                         MaterialPageRoute(
-                          builder: (context) => const LoginScreen(fromLogout: true),
+                          builder: (context) =>
+                              const LoginScreen(fromLogout: true),
                         ),
                         (route) => false,
                       );
@@ -1593,7 +1613,8 @@ class _GestionGlobalePageState extends State<GestionGlobalePage> {
                 context,
                 icon: Icons.chat,
                 title: 'WhatsApp',
-                description: 'Gérer la connexion WhatsApp pour les notifications',
+                description:
+                    'Gérer la connexion WhatsApp pour les notifications',
                 onTap: () => setState(() => _currentView = 'whatsapp'),
               ),
             ],
@@ -2227,7 +2248,10 @@ class _GymsListViewState extends State<_GymsListView> {
                 child: Row(
                   children: [
                     IconButton(
-                      icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
+                      icon: Icon(
+                        Icons.arrow_back,
+                        color: theme.colorScheme.onSurface,
+                      ),
                       onPressed: widget.onBack,
                     ),
                     Text(
@@ -2250,7 +2274,9 @@ class _GymsListViewState extends State<_GymsListView> {
                   style: TextStyle(color: theme.colorScheme.onSurface),
                   decoration: InputDecoration(
                     hintText: 'Rechercher une salle...',
-                    hintStyle: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
+                    hintStyle: TextStyle(
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                    ),
                     prefixIcon: const Icon(
                       Icons.search,
                       color: AppColors.primary,
@@ -2259,7 +2285,9 @@ class _GymsListViewState extends State<_GymsListView> {
                         ? IconButton(
                             icon: Icon(
                               Icons.clear,
-                              color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: 0.5,
+                              ),
                             ),
                             onPressed: () {
                               _searchController.clear();
@@ -2325,7 +2353,9 @@ class _GymsListViewState extends State<_GymsListView> {
                           children: [
                             Icon(
                               Icons.fitness_center_outlined,
-                              color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: 0.5,
+                              ),
                               size: 48,
                             ),
                             const SizedBox(height: 16),
@@ -2334,7 +2364,9 @@ class _GymsListViewState extends State<_GymsListView> {
                                   ? 'Aucune salle trouvée'
                                   : 'Aucune salle',
                               style: TextStyle(
-                                color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                                color: theme.colorScheme.onSurface.withValues(
+                                  alpha: 0.5,
+                                ),
                                 fontSize: 16,
                               ),
                             ),
@@ -2419,7 +2451,9 @@ class _GymsListViewState extends State<_GymsListView> {
                     Text(
                       address,
                       style: TextStyle(
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.7,
+                        ),
                         fontSize: 14,
                       ),
                       maxLines: 2,
@@ -2516,7 +2550,10 @@ class _AdminDetailsViewState extends State<_AdminDetailsView> {
               child: Row(
                 children: [
                   IconButton(
-                    icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
+                    icon: Icon(
+                      Icons.arrow_back,
+                      color: theme.colorScheme.onSurface,
+                    ),
                     onPressed: widget.onBack,
                   ),
                   Text(
@@ -2729,7 +2766,9 @@ class _AdminDetailsViewState extends State<_AdminDetailsView> {
         ),
         content: Text(
           'Êtes-vous sûr de vouloir supprimer $name ?\n\nCette action est irréversible.',
-          style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.7)),
+          style: TextStyle(
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+          ),
         ),
         actions: [
           TextButton(
@@ -2831,7 +2870,10 @@ class _GymDetailsViewState extends State<_GymDetailsView> {
               child: Row(
                 children: [
                   IconButton(
-                    icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onSurface),
+                    icon: Icon(
+                      Icons.arrow_back,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                     onPressed: widget.onBack,
                   ),
                   Text(
@@ -3084,7 +3126,11 @@ class _GymDetailsViewState extends State<_GymDetailsView> {
         ),
         content: Text(
           'Êtes-vous sûr de vouloir supprimer la salle "$name" ?\n\nCette action supprimera également tous les membres et administrateurs associés.\n\nCette action est irréversible.',
-          style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
+          style: TextStyle(
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurface.withValues(alpha: 0.7),
+          ),
         ),
         actions: [
           TextButton(
@@ -3280,7 +3326,10 @@ class _AdminEditViewState extends State<_AdminEditView> {
               child: Row(
                 children: [
                   IconButton(
-                    icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onSurface),
+                    icon: Icon(
+                      Icons.arrow_back,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                     onPressed: widget.onBack,
                   ),
                   Text(
@@ -3325,10 +3374,16 @@ class _AdminEditViewState extends State<_AdminEditView> {
                       // Prénom
                       TextFormField(
                         controller: _firstNameController,
-                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
                         decoration: InputDecoration(
                           labelText: 'Prénom',
-                          labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
+                          labelStyle: TextStyle(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withValues(alpha: 0.6),
+                          ),
                           prefixIcon: const Icon(
                             Icons.person,
                             color: AppColors.primary,
@@ -3352,10 +3407,16 @@ class _AdminEditViewState extends State<_AdminEditView> {
                       // Nom
                       TextFormField(
                         controller: _lastNameController,
-                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
                         decoration: InputDecoration(
                           labelText: 'Nom',
-                          labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
+                          labelStyle: TextStyle(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withValues(alpha: 0.6),
+                          ),
                           prefixIcon: const Icon(
                             Icons.person_outline,
                             color: AppColors.primary,
@@ -3380,10 +3441,16 @@ class _AdminEditViewState extends State<_AdminEditView> {
                       TextFormField(
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
-                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
                         decoration: InputDecoration(
                           labelText: 'Email',
-                          labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
+                          labelStyle: TextStyle(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withValues(alpha: 0.6),
+                          ),
                           prefixIcon: const Icon(
                             Icons.email,
                             color: AppColors.primary,
@@ -3411,10 +3478,16 @@ class _AdminEditViewState extends State<_AdminEditView> {
                       DropdownButtonFormField<int>(
                         initialValue: _selectedGymId,
                         dropdownColor: Theme.of(context).cardTheme.color,
-                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
                         decoration: InputDecoration(
                           labelText: 'Salle de sport',
-                          labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
+                          labelStyle: TextStyle(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withValues(alpha: 0.6),
+                          ),
                           prefixIcon: const Icon(
                             Icons.fitness_center,
                             color: AppColors.primary,
@@ -3601,7 +3674,10 @@ class _GymEditViewState extends State<_GymEditView> {
               child: Row(
                 children: [
                   IconButton(
-                    icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onSurface),
+                    icon: Icon(
+                      Icons.arrow_back,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                     onPressed: widget.onBack,
                   ),
                   Text(
@@ -3644,10 +3720,16 @@ class _GymEditViewState extends State<_GymEditView> {
                       const SizedBox(height: 32),
                       TextFormField(
                         controller: _nameController,
-                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
                         decoration: InputDecoration(
                           labelText: 'Nom de la salle',
-                          labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
+                          labelStyle: TextStyle(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withValues(alpha: 0.6),
+                          ),
                           prefixIcon: const Icon(
                             Icons.business,
                             color: AppColors.primary,
@@ -3670,10 +3752,16 @@ class _GymEditViewState extends State<_GymEditView> {
                       TextFormField(
                         controller: _addressController,
                         maxLines: 2,
-                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
                         decoration: InputDecoration(
                           labelText: 'Adresse',
-                          labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
+                          labelStyle: TextStyle(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withValues(alpha: 0.6),
+                          ),
                           prefixIcon: const Icon(
                             Icons.location_on,
                             color: AppColors.primary,
@@ -3696,10 +3784,16 @@ class _GymEditViewState extends State<_GymEditView> {
                       TextFormField(
                         controller: _phoneController,
                         keyboardType: TextInputType.phone,
-                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
                         decoration: InputDecoration(
                           labelText: 'Téléphone (optionnel)',
-                          labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
+                          labelStyle: TextStyle(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withValues(alpha: 0.6),
+                          ),
                           prefixIcon: const Icon(
                             Icons.phone,
                             color: AppColors.primary,
@@ -3934,7 +4028,12 @@ class _GymOpeningHoursViewState extends State<_GymOpeningHoursView> {
           children: [
             Text(
               label,
-              style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 12),
+              style: TextStyle(
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.6),
+                fontSize: 12,
+              ),
             ),
             const SizedBox(height: 4),
             Row(
@@ -3985,7 +4084,10 @@ class _GymOpeningHoursViewState extends State<_GymOpeningHoursView> {
               child: Row(
                 children: [
                   IconButton(
-                    icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onSurface),
+                    icon: Icon(
+                      Icons.arrow_back,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                     onPressed: widget.onBack,
                   ),
                   Expanded(
@@ -4004,7 +4106,9 @@ class _GymOpeningHoursViewState extends State<_GymOpeningHoursView> {
                           gymName,
                           style: TextStyle(
                             fontSize: 14,
-                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
                         ),
                       ],
@@ -4054,7 +4158,10 @@ class _GymOpeningHoursViewState extends State<_GymOpeningHoursView> {
                                     Text(
                                       'Fermé',
                                       style: TextStyle(
-                                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurface
+                                            .withValues(alpha: 0.6),
                                         fontSize: 14,
                                       ),
                                     ),
@@ -4282,7 +4389,10 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
               child: Row(
                 children: [
                   IconButton(
-                    icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onSurface),
+                    icon: Icon(
+                      Icons.arrow_back,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                     onPressed: widget.onBack,
                   ),
                   Text(
@@ -4327,10 +4437,16 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
                       // Prénom
                       TextFormField(
                         controller: _firstNameController,
-                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
                         decoration: InputDecoration(
                           labelText: 'Prénom',
-                          labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
+                          labelStyle: TextStyle(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withValues(alpha: 0.6),
+                          ),
                           prefixIcon: const Icon(
                             Icons.person,
                             color: AppColors.primary,
@@ -4354,10 +4470,16 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
                       // Nom de famille
                       TextFormField(
                         controller: _lastNameController,
-                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
                         decoration: InputDecoration(
                           labelText: 'Nom de famille',
-                          labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
+                          labelStyle: TextStyle(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withValues(alpha: 0.6),
+                          ),
                           prefixIcon: const Icon(
                             Icons.person_outline,
                             color: AppColors.primary,
@@ -4382,10 +4504,16 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
                       TextFormField(
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
-                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
                         decoration: InputDecoration(
                           labelText: 'Email',
-                          labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
+                          labelStyle: TextStyle(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withValues(alpha: 0.6),
+                          ),
                           prefixIcon: const Icon(
                             Icons.email,
                             color: AppColors.primary,
@@ -4412,10 +4540,16 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
                       // Adresse
                       TextFormField(
                         controller: _addressController,
-                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
                         decoration: InputDecoration(
                           labelText: 'Adresse',
-                          labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
+                          labelStyle: TextStyle(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withValues(alpha: 0.6),
+                          ),
                           prefixIcon: const Icon(
                             Icons.home,
                             color: AppColors.primary,
@@ -4440,10 +4574,16 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
                       DropdownButtonFormField<int>(
                         initialValue: _selectedGymId,
                         dropdownColor: Theme.of(context).cardTheme.color,
-                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
                         decoration: InputDecoration(
                           labelText: 'Salle de sport',
-                          labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
+                          labelStyle: TextStyle(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withValues(alpha: 0.6),
+                          ),
                           prefixIcon: const Icon(
                             Icons.fitness_center,
                             color: AppColors.primary,
@@ -4516,10 +4656,16 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
                         TextFormField(
                           controller: _passwordController,
                           obscureText: true,
-                          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
                           decoration: InputDecoration(
                             labelText: 'Mot de passe',
-                            labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
+                            labelStyle: TextStyle(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withValues(alpha: 0.6),
+                            ),
                             prefixIcon: const Icon(
                               Icons.lock,
                               color: AppColors.primary,
@@ -4684,7 +4830,10 @@ class _GymCreateViewState extends State<_GymCreateView> {
               child: Row(
                 children: [
                   IconButton(
-                    icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onSurface),
+                    icon: Icon(
+                      Icons.arrow_back,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                     onPressed: widget.onBack,
                   ),
                   Text(
@@ -4729,10 +4878,16 @@ class _GymCreateViewState extends State<_GymCreateView> {
                       // Nom de la salle
                       TextFormField(
                         controller: _nameController,
-                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
                         decoration: InputDecoration(
                           labelText: 'Nom de la salle',
-                          labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
+                          labelStyle: TextStyle(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withValues(alpha: 0.6),
+                          ),
                           prefixIcon: const Icon(
                             Icons.business,
                             color: AppColors.primary,
@@ -4757,10 +4912,16 @@ class _GymCreateViewState extends State<_GymCreateView> {
                       TextFormField(
                         controller: _addressController,
                         maxLines: 2,
-                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
                         decoration: InputDecoration(
                           labelText: 'Adresse',
-                          labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
+                          labelStyle: TextStyle(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withValues(alpha: 0.6),
+                          ),
                           prefixIcon: const Icon(
                             Icons.location_on,
                             color: AppColors.primary,
@@ -4785,10 +4946,16 @@ class _GymCreateViewState extends State<_GymCreateView> {
                       TextFormField(
                         controller: _phoneController,
                         keyboardType: TextInputType.phone,
-                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
                         decoration: InputDecoration(
                           labelText: 'Téléphone (optionnel)',
-                          labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
+                          labelStyle: TextStyle(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withValues(alpha: 0.6),
+                          ),
                           prefixIcon: const Icon(
                             Icons.phone,
                             color: AppColors.primary,
