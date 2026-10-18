@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.60](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.59...v1.0.0-beta.60) (2026-10-18)
+
+
+### ✨ New Features
+
+* **ui:** redesign admin, member and login screens with iOS glass navigation ([1eb53a6](https://github.com/TeamFitness/mobile-app/commit/1eb53a64750ea97267000e89cf0205121bab1b03))
+
+
+### 🐛 Bug Fixes
+
+* **auth:** clear stale Keychain/Keystore token on fresh install ([60a6c15](https://github.com/TeamFitness/mobile-app/commit/60a6c15b2fa824f698b2ad4623cf0a1f5e397ccd))
+
 ## [1.0.0-beta.59](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.58...v1.0.0-beta.59) (2026-10-18)
 
 
