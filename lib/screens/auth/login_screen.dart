@@ -134,14 +134,12 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
   }
 
   Future<void> _onBiometricPressed() async {
-    // Vérifier le consentement avant d'utiliser la biométrie
     final hasConsent = await _authService.hasBiometricConsent();
     if (!hasConsent) {
-      // Si pas de consentement, ne rien faire ou afficher un message
-      if (mounted) {
-        AppSnackBar.info(context, 'Veuillez d\'abord vous connecter avec votre mot de passe pour activer la biométrie');
-      }
-      return;
+      await _showBiometricConsentDialog();
+      if (!mounted) return;
+      if (!await _authService.hasBiometricConsent()) return;
+      setState(() => _hasBiometricConsent = true);
     }
 
     setState(() => _isAuthenticating = true);
@@ -504,13 +502,12 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
   }
 
   Future<void> _authenticateWithBiometrics({bool offlineMode = false}) async {
-    // Vérifier le consentement avant d'utiliser la biométrie
     final hasConsent = await _authService.hasBiometricConsent();
     if (!hasConsent) {
-      if (mounted) {
-        AppSnackBar.info(context, 'Veuillez d\'abord vous connecter avec votre mot de passe pour activer la biométrie');
-      }
-      return;
+      await _showBiometricConsentDialog();
+      if (!mounted) return;
+      if (!await _authService.hasBiometricConsent()) return;
+      setState(() => _hasBiometricConsent = true);
     }
 
     setState(() => _isAuthenticating = true);
@@ -1069,7 +1066,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                 const SizedBox(height: 32),
 
                 // Biometric login button if available
-                if (_canCheckBiometrics && _hasBiometricConsent) ...[
+                if (_canCheckBiometrics) ...[
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
@@ -1252,7 +1249,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                 style: isDesktop ? AppTextStyles.h2 : AppTextStyles.h3,
               ),
               const SizedBox(height: 32),
-              if (_canCheckBiometrics && _hasBiometricConsent) ...[
+              if (_canCheckBiometrics) ...[
                 ModernButton(
                   text: AppLocalizations.of(context).signInBiometric,
                   icon: Icons.fingerprint,
