@@ -266,17 +266,18 @@ jobs:
 
       - name: 📤 Update version.json on server
         if: success()
+        continue-on-error: true
         run: |
           echo "📊 Mise à jour du serveur avec les informations de version"
-          
+
           # Récupérer les métadonnées de version
           VERSION_CODE=$(jq -r '.version_code' version-metadata.json)
           VERSION_NAME=$(jq -r '.version_name' version-metadata.json)
           CHANGELOG=$(jq -r '.changelog' version-metadata.json)
-          
+
           # URL du Play Store (toujours la même pour votre app)
           PLAY_STORE_URL="https://play.google.com/store/apps/details?id=team.fitness.team_fitness_app"
-          
+
           # Créer le JSON pour l'API
           JSON_PAYLOAD=$(cat <<EOF
           {
@@ -289,16 +290,16 @@ jobs:
           }
           EOF
           )
-          
+
           # Envoyer au serveur
-          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+          RESPONSE=$(curl -s --connect-timeout 10 --max-time 30 -w "\n%{http_code}" -X POST \
             "https://app.team-oustad.com/android/update-version" \
             -H "Authorization: Bearer ${{ secrets.OTA_BEARER_TOKEN }}" \
             -H "Content-Type: application/json" \
-            -d "$JSON_PAYLOAD")
-          
+            -d "$JSON_PAYLOAD") || { echo "⚠️ curl failed (exit $?)"; exit 0; }
+
           HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
-          
+
           if [ "$HTTP_CODE" -eq 200 ]; then
             echo "✅ Serveur mis à jour avec succès"
           else
