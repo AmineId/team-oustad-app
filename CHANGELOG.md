@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.65](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.64...v1.0.0-beta.65) (2026-10-18)
+
+
+### ✨ New Features
+
+* **ui:** interactive edge swipe-back for tab sub-views ([8d361a3](https://github.com/TeamFitness/mobile-app/commit/8d361a307fabb214c33c0d34b748d5e3a724c46a))
+
+
+### 🐛 Bug Fixes
+
+* **ios:** smooth content fade under native tab bar, drop hard clip ([4292621](https://github.com/TeamFitness/mobile-app/commit/4292621550912a80b65a086cf4dd133107c9906d))
+
 ## [1.0.0-beta.64](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.63...v1.0.0-beta.64) (2026-10-18)
 
 
