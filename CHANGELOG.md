@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.49](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.48...v1.0.0-beta.49) (2026-10-18)
+
+
+### 🐛 Bug Fixes
+
+* **auth:** affiche le bouton biométrie sans attendre le consentement préalable ([53d7feb](https://github.com/TeamFitness/mobile-app/commit/53d7febfca129352b70e62d4bd30366688cfb1aa))
+
 ## [1.0.0-beta.48](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.47...v1.0.0-beta.48) (2026-10-18)
 
 
