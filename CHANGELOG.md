@@ -6,6 +6,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.62](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.61...v1.0.0-beta.62) (2026-10-18)
+
+
+### ✨ New Features
+
+* **ios:** native iOS 26 Liquid Glass tab bar via cupertino_native ([9d1c5e9](https://github.com/TeamFitness/mobile-app/commit/9d1c5e9d70585751363f3f7785e61753da7e2c94))
+* **ui:** iOS 26 Liquid Glass floating tab bar and fading glass header ([a85348f](https://github.com/TeamFitness/mobile-app/commit/a85348f856c7840e55d278870812cf0d808f679f))
+* **ui:** seamless glass bars tinted from theme background ([0fce5cd](https://github.com/TeamFitness/mobile-app/commit/0fce5cd7448b2abd9c524c67f68924423e2c4fd2))
+
+
+### 🐛 Bug Fixes
+
+* **icons:** enlarge iOS launcher icon — logo now fills ~80% of canvas ([b24868a](https://github.com/TeamFitness/mobile-app/commit/b24868a6d7fc242dee41a1d2fd284db2769304d2))
+* **ui:** admin sub-screens seamless with glass shell on iOS ([d0a2147](https://github.com/TeamFitness/mobile-app/commit/d0a2147606724ea3dcd4e25fac038e7a159ecfb3))
+* **ui:** glass AppBar and clear insets on pushed member/common screens ([480ce86](https://github.com/TeamFitness/mobile-app/commit/480ce8608aea10bc85f633ab008560afa627a6df))
+* **ui:** glass AppBar on WhatsApp screen, SafeArea on profile, swipe-back ([300a358](https://github.com/TeamFitness/mobile-app/commit/300a358288b8fcb26ed5033c0854860629b68bc9))
+* **ui:** lift FABs above glass bottom nav on iOS ([635d67c](https://github.com/TeamFitness/mobile-app/commit/635d67ca4dec6135004a92d3904c0c2c4ba5f7ea))
+* **ui:** lift FABs above the floating glass tab bar ([f7cf71e](https://github.com/TeamFitness/mobile-app/commit/f7cf71e5349165e4158a0baef4cbca7afdfc3a4d))
+* **ui:** member profile and planning pages clear glass bars on iOS ([a215048](https://github.com/TeamFitness/mobile-app/commit/a2150487fe6e1095c7ceaef51c7c0e982b314cbf))
+
 ## [1.0.0-beta.61](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.60...v1.0.0-beta.61) (2026-10-18)
 
 
