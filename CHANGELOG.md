@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.45](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.44...v1.0.0-beta.45) (2026-10-18)
+
+
+### 🐛 Bug Fixes
+
+* **ios:** skip Firebase init when bundle ID mismatches xtool re-signing ([7312b80](https://github.com/TeamFitness/mobile-app/commit/7312b8056868fba8db9a24ae34d53ea4acb05ead))
+
 ## [1.0.0-beta.44](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.43...v1.0.0-beta.44) (2026-10-18)
 
 
