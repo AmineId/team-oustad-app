@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.51](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.50...v1.0.0-beta.51) (2026-10-18)
+
+
+### 🐛 Bug Fixes
+
+* **auth:** préserve le consentement biométrique lors de la déconnexion ([e2aac37](https://github.com/TeamFitness/mobile-app/commit/e2aac375891a0fa159e23dd6c622fb5e0207d81d))
+
 ## [1.0.0-beta.50](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.49...v1.0.0-beta.50) (2026-10-18)
 
 
