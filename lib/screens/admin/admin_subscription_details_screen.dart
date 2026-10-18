@@ -492,7 +492,6 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
     final status = subscription['status'] as String? ?? 'unknown';
     final startDate = subscription['startDate'] as String?;
     final endDate = subscription['endDate'] as String?;
-    final autoRenew = subscription['autoRenew'] as bool? ?? false;
 
     return Container(
       padding: const EdgeInsets.all(20),

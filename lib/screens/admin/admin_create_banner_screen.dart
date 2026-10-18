@@ -154,6 +154,7 @@ class _AdminCreateBannerScreenState extends State<AdminCreateBannerScreen> {
       },
     );
 
+    if (!mounted) return;
     if (picked != null) {
       // Aussi sélectionner l'heure
       final time = await showTimePicker(
@@ -642,7 +643,7 @@ class _AdminCreateBannerScreenState extends State<AdminCreateBannerScreen> {
                           Image.network(
                             _imageUrlController.text,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) =>
+                            errorBuilder: (_, _, _) =>
                                 _buildImagePlaceholder(),
                           ),
                         Container(

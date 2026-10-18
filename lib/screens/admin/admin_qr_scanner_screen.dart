@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../../widgets/common/glass.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -86,9 +85,6 @@ class _AdminQrScannerScreenState extends State<AdminQrScannerScreen> {
       setState(() {
         _scanResult = scanResult;
       });
-
-      // Debug: afficher le quota reçu
-      print('🔍 DEBUG Quota reçu: ${scanResult['quota']}');
 
       // Attendre 1 seconde pour afficher les infos avant de proposer le check-in
       await Future.delayed(const Duration(milliseconds: 500));

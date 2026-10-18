@@ -382,13 +382,13 @@ class _BannerCard extends StatelessWidget {
                     Image.network(
                       banner.imageUrl!,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _buildPlaceholder(),
+                      errorBuilder: (_, _, _) => _buildPlaceholder(),
                     )
                   else if (banner.imageBase64 != null)
                     Image.memory(
                       base64Decode(banner.imageBase64!.split(',').last),
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _buildPlaceholder(),
+                      errorBuilder: (_, _, _) => _buildPlaceholder(),
                     )
                   else
                     _buildPlaceholder(),

@@ -70,9 +70,6 @@ class _AdminProductsScreenState extends State<AdminProductsScreen>
   List<StoreProduct> get _activeProducts =>
       _products.where((p) => p.isActive).toList();
 
-  List<StoreProduct> get _inactiveProducts =>
-      _products.where((p) => !p.isActive).toList();
-
   List<StoreProduct> get _lowStockProducts =>
       _products.where((p) => p.availableStock <= 5 && p.isActive).toList();
 
@@ -556,7 +553,7 @@ class _ProductCard extends StatelessWidget {
         return Image.memory(
           base64Decode(base64String),
           fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => _buildPlaceholder(isDark),
+          errorBuilder: (_, _, _) => _buildPlaceholder(isDark),
         );
       } catch (_) {
         return _buildPlaceholder(isDark);
@@ -567,7 +564,7 @@ class _ProductCard extends StatelessWidget {
     return Image.network(
       mainImage,
       fit: BoxFit.cover,
-      errorBuilder: (_, __, ___) => _buildPlaceholder(isDark),
+      errorBuilder: (_, _, _) => _buildPlaceholder(isDark),
     );
   }
 

@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/services/auth_service.dart';
@@ -66,219 +65,6 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     setState(() {
       _isOwner = isOwner;
     });
-  }
-
-  Future<void> _showQrCode() async {
-    // Récupérer l'ID de l'utilisateur depuis le cache
-    final profileData = await _authService.getCachedUserProfile();
-    if (profileData == null) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Une erreur est survenue'),
-          backgroundColor: AppColors.error,
-          action: SnackBarAction(
-            label: 'Réessayer',
-            textColor: AppColors.primary,
-            onPressed: _showQrCode,
-          ),
-        ),
-      );
-      return;
-    }
-
-    final userId = profileData['id'] as int;
-    final token = await _authService.loadToken();
-    if (token == null) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Une erreur est survenue'),
-          backgroundColor: AppColors.error,
-          action: SnackBarAction(
-            label: 'Réessayer',
-            textColor: AppColors.primary,
-            onPressed: _showQrCode,
-          ),
-        ),
-      );
-      return;
-    }
-
-    // Afficher le dialog avec loading
-    if (!mounted) return;
-    final theme = Theme.of(context);
-    showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: theme.cardTheme.color,
-        title: Text(
-          'Mon QR Code',
-          style: TextStyle(color: theme.colorScheme.onSurface),
-        ),
-        content: SizedBox(
-          width: 250,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(
-                height: 200,
-                child: Center(
-                  child: CircularProgressIndicator(color: AppColors.primary),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Chargement du QR code...',
-                style: TextStyle(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-                  fontSize: 14,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-
-    try {
-      // Charger le QR code
-      final qrImageBytes = await ApiService.fromEnv().getUserQrCode(
-        userId,
-        token,
-      );
-
-      if (!mounted) return;
-
-      // Fermer le dialog de loading
-      Navigator.of(context).pop();
-
-      if (qrImageBytes == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Une erreur est survenue'),
-            backgroundColor: AppColors.error,
-            action: SnackBarAction(
-              label: 'Réessayer',
-              textColor: AppColors.primary,
-              onPressed: _showQrCode,
-            ),
-          ),
-        );
-        return;
-      }
-
-      // Afficher le QR code
-      showDialog(
-        context: context,
-        builder: (dialogContext) => AlertDialog(
-          backgroundColor: theme.cardTheme.color,
-          title: Text(
-            'Mon QR Code',
-            style: TextStyle(
-              color: theme.colorScheme.onSurface,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Image.memory(
-                  Uint8List.fromList(qrImageBytes),
-                  width: 220,
-                  height: 220,
-                  fit: BoxFit.contain,
-                ),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                getUserFullName(profileData, defaultValue: 'Utilisateur'),
-                style: TextStyle(
-                  color: theme.colorScheme.onSurface,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.5),
-                    width: 1,
-                  ),
-                ),
-                child: Text(
-                  profileData['displayId'] ?? '',
-                  style: const TextStyle(
-                    color: AppColors.primary,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 2,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Présentez ce code à l\'entrée',
-                style: TextStyle(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                  fontSize: 13,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 12,
-                ),
-              ),
-              child: const Text(
-                'Fermer',
-                style: TextStyle(color: AppColors.primary, fontSize: 16),
-              ),
-            ),
-          ],
-        ),
-      );
-    } catch (e) {
-      if (!mounted) return;
-
-      // Fermer le dialog de loading s'il est encore ouvert
-      Navigator.of(context).pop();
-
-      // Afficher l'erreur
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Une erreur est survenue'),
-          backgroundColor: AppColors.error,
-          action: SnackBarAction(
-            label: 'Réessayer',
-            textColor: AppColors.primary,
-            onPressed: _showQrCode,
-          ),
-        ),
-      );
-    }
   }
 
   Widget _buildProfileAvatar(bool isActive) {
@@ -527,7 +313,6 @@ class _AccueilPageState extends State<AccueilPage> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
 
     return RefreshIndicator(
       onRefresh: _fetchStats,
@@ -973,7 +758,6 @@ class _GestionPageState extends State<GestionPage> {
     }
 
     // Vue menu par défaut
-    final theme = Theme.of(context);
 
     return Container(
       key: const ValueKey('menu'),
@@ -1552,7 +1336,6 @@ class _GestionGlobalePageState extends State<GestionGlobalePage> {
     }
 
     // Vue menu par défaut
-    final theme = Theme.of(context);
 
     return Container(
       decoration: BoxDecoration(
@@ -2822,7 +2605,6 @@ class _GymDetailsViewState extends State<_GymDetailsView> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final name = widget.gym['name'] as String? ?? 'Sans nom';
     final address = widget.gym['address'] as String? ?? '';
     final phone = widget.gym['phone'] as String? ?? 'N/A';

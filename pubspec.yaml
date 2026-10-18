@@ -56,6 +56,7 @@ dependencies:
 
   # Direct PostgreSQL client for Dart/Flutter (mobile and desktop only; not for web).
   http: ^1.6.0
+  intl: ^0.20.2
 
   # Local notifications for reminders and alerts
   flutter_local_notifications: ^17.2.3

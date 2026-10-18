@@ -677,7 +677,7 @@ class _AdminCreateProductScreenState extends State<AdminCreateProductScreen> {
         return Image.memory(
           base64Decode(base64String),
           fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => _buildImagePlaceholder(isDark),
+          errorBuilder: (_, _, _) => _buildImagePlaceholder(isDark),
         );
       } catch (_) {
         return _buildImagePlaceholder(isDark);
@@ -687,7 +687,7 @@ class _AdminCreateProductScreenState extends State<AdminCreateProductScreen> {
     return Image.network(
       imageData,
       fit: BoxFit.cover,
-      errorBuilder: (_, __, ___) => _buildImagePlaceholder(isDark),
+      errorBuilder: (_, _, _) => _buildImagePlaceholder(isDark),
     );
   }
 
