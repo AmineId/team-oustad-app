@@ -148,6 +148,85 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
     }
   }
 
+  Future<void> _renewSubscription(Map<String, dynamic>? subscription) async {
+    final subscriptionId = subscription?['id'] as int?;
+    if (subscriptionId == null) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Theme.of(context).cardTheme.color,
+        title: const Row(
+          children: [
+            Icon(Icons.autorenew, color: AppColors.primary),
+            SizedBox(width: 8),
+            Text('Renouveler', style: TextStyle(color: Colors.white)),
+          ],
+        ),
+        content: const Text(
+          'Un nouvel abonnement du même type sera créé à partir d\'aujourd\'hui.',
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Annuler'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+            child: const Text('Renouveler'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(color: AppColors.primary),
+      ),
+    );
+
+    try {
+      final token = await _authService.loadToken();
+      if (token == null) {
+        if (!mounted) return;
+        Navigator.pop(context);
+        return;
+      }
+      final result = await _apiService.renewSubscription(subscriptionId, token);
+      if (!mounted) return;
+      Navigator.pop(context);
+      if (result != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Abonnement renouvelé avec succès'),
+            backgroundColor: AppColors.success,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Erreur lors du renouvellement'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erreur: $e'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
+  }
+
   String _formatDate(String dateStr) {
     try {
       final date = DateTime.parse(dateStr);
@@ -351,9 +430,27 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
                           ),
                         ),
                       ),
-                      
+
+                      if (subscriptionStatus == 'expired' || subscriptionStatus == 'cancelled') ...[
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () => _renewSubscription(subscription),
+                            icon: const Icon(Icons.autorenew, size: 20),
+                            label: const Text('Renouveler l\'abonnement'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            ),
+                          ),
+                        ),
+                      ],
+
                       const SizedBox(height: 32),
-                      
+
                       // Payment history section
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,

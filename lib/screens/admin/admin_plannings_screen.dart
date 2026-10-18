@@ -523,225 +523,325 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen>
     final endDate = planning['endDate'] as String?;
     final member = planning['member'] as Map<String, dynamic>?;
     final coach = planning['coach'] as Map<String, dynamic>?;
-    final days = planning['days'] as List<dynamic>? ?? [];
     final planningId = planning['id'] as int?;
+
+    // Copie mutable des jours pour pouvoir retirer des exercices sans recharger
+    final mutableDays = (planning['days'] as List<dynamic>? ?? [])
+        .map((d) {
+          final day = Map<String, dynamic>.from(d as Map<String, dynamic>);
+          day['exercises'] = List<dynamic>.from(
+            day['exercises'] as List<dynamic>? ?? [],
+          );
+          return day;
+        })
+        .toList();
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (BuildContext context) {
-        return DraggableScrollableSheet(
-          initialChildSize: 0.7,
-          minChildSize: 0.5,
-          maxChildSize: 0.95,
-          builder: (context, scrollController) {
-            return Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).cardTheme.color,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-              ),
-              child: Column(
-                children: [
-                  // Header
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).scaffoldBackgroundColor,
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(20),
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: _getStatusColor(
-                              status,
-                            ).withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Icon(
-                            Icons.fitness_center,
-                            color: _getStatusColor(status),
-                            size: 28,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                title,
-                                style: const TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: _getStatusColor(
-                                    status,
-                                  ).withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(
-                                    color: _getStatusColor(status),
-                                    width: 1,
-                                  ),
-                                ),
-                                child: Text(
-                                  _getStatusLabel(status),
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: _getStatusColor(status),
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        IconButton(
-                          onPressed: () => Navigator.pop(context),
-                          icon: const Icon(Icons.close, color: Colors.white),
-                        ),
-                      ],
-                    ),
+      builder: (BuildContext sheetContext) {
+        return StatefulBuilder(
+          builder: (sheetContext, setSheetState) {
+            Future<void> removeExercise(
+              int dayOfWeek,
+              Map<String, dynamic> exercise,
+            ) async {
+              final exerciseId = exercise['id'] as int?;
+              if (exerciseId == null || planningId == null) return;
+              final token = await _authService.loadToken();
+              if (token == null) return;
+              final ok = await _apiService.removeExerciseFromPlanningDay(
+                planningId,
+                dayOfWeek,
+                exerciseId,
+                token,
+              );
+              if (ok) {
+                setSheetState(() {
+                  for (final day in mutableDays) {
+                    if ((day['dayOfWeek'] as int?) == dayOfWeek) {
+                      (day['exercises'] as List).removeWhere(
+                        (e) => (e as Map<String, dynamic>)['id'] == exerciseId,
+                      );
+                      break;
+                    }
+                  }
+                });
+                _loadPlannings();
+              }
+            }
+
+            return DraggableScrollableSheet(
+              initialChildSize: 0.7,
+              minChildSize: 0.5,
+              maxChildSize: 0.95,
+              builder: (context, scrollController) {
+                return Container(
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).cardTheme.color,
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(20)),
                   ),
-                  // Content
-                  Expanded(
-                    child: ListView(
-                      controller: scrollController,
-                      padding: const EdgeInsets.all(20),
-                      children: [
-                        if (description != null && description.isNotEmpty) ...[
-                          Text(
-                            description,
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.9),
-                              fontSize: 15,
+                  child: Column(
+                    children: [
+                      // Header
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).scaffoldBackgroundColor,
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(20),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: _getStatusColor(
+                                  status,
+                                ).withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Icon(
+                                Icons.fitness_center,
+                                color: _getStatusColor(status),
+                                size: 28,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 20),
-                          const Divider(color: Colors.white24),
-                          const SizedBox(height: 20),
-                        ],
-                        // Membre
-                        if (member != null)
-                          _buildDetailRow(
-                            Icons.person,
-                            'Membre',
-                            getUserFullName(member),
-                          ),
-                        const SizedBox(height: 12),
-                        // Coach
-                        if (coach != null)
-                          _buildDetailRow(
-                            Icons.fitness_center,
-                            'Coach',
-                            getUserFullName(coach),
-                          ),
-                        const SizedBox(height: 12),
-                        // Dates
-                        _buildDetailRow(
-                          Icons.calendar_today,
-                          'Période',
-                          'Du ${_formatDate(startDate)} au ${_formatDate(endDate)}',
-                        ),
-                        const SizedBox(height: 20),
-                        const Divider(color: Colors.white24),
-                        const SizedBox(height: 20),
-                        // Jours d'entraînement
-                        Text(
-                          '${days.length} jour${days.length > 1 ? 's' : ''} d\'entraînement',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        ...days.map((day) {
-                          final dayData = day as Map<String, dynamic>;
-                          final exercises =
-                              dayData['exercises'] as List<dynamic>? ?? [];
-                          final dayOfWeek = dayData['dayOfWeek'] as int?;
-                          return Card(
-                            color: Theme.of(context).scaffoldBackgroundColor,
-                            margin: const EdgeInsets.only(bottom: 8),
-                            child: Padding(
-                              padding: const EdgeInsets.all(12.0),
+                            const SizedBox(width: 16),
+                            Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    _getDayName(dayOfWeek ?? 0),
+                                    title,
                                     style: const TextStyle(
-                                      fontSize: 16,
+                                      fontSize: 20,
                                       fontWeight: FontWeight.bold,
-                                      color: AppColors.primary,
+                                      color: Colors.white,
                                     ),
                                   ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    '${exercises.length} exercice${exercises.length > 1 ? 's' : ''}',
-                                    style: TextStyle(
-                                      color: Colors.white.withValues(
-                                        alpha: 0.7,
+                                  const SizedBox(height: 4),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: _getStatusColor(
+                                        status,
+                                      ).withValues(alpha: 0.2),
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(
+                                        color: _getStatusColor(status),
+                                        width: 1,
                                       ),
-                                      fontSize: 13,
+                                    ),
+                                    child: Text(
+                                      _getStatusLabel(status),
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: _getStatusColor(status),
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                          );
-                        }),
-                      ],
-                    ),
-                  ),
-                  // Bouton de suppression
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).scaffoldBackgroundColor,
-                      borderRadius: BorderRadius.vertical(
-                        bottom: Radius.circular(20),
+                            IconButton(
+                              onPressed: () => Navigator.pop(context),
+                              icon:
+                                  const Icon(Icons.close, color: Colors.white),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          _confirmDeletePlanning(planningId, title);
-                        },
-                        icon: const Icon(Icons.delete_outline, size: 20),
-                        label: const Text('Supprimer le planning'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.error,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 14,
-                            horizontal: 24,
+                      // Content
+                      Expanded(
+                        child: ListView(
+                          controller: scrollController,
+                          padding: const EdgeInsets.all(20),
+                          children: [
+                            if (description != null &&
+                                description.isNotEmpty) ...[
+                              Text(
+                                description,
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.9),
+                                  fontSize: 15,
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              const Divider(color: Colors.white24),
+                              const SizedBox(height: 20),
+                            ],
+                            if (member != null)
+                              _buildDetailRow(
+                                Icons.person,
+                                'Membre',
+                                getUserFullName(member),
+                              ),
+                            const SizedBox(height: 12),
+                            if (coach != null)
+                              _buildDetailRow(
+                                Icons.fitness_center,
+                                'Coach',
+                                getUserFullName(coach),
+                              ),
+                            const SizedBox(height: 12),
+                            _buildDetailRow(
+                              Icons.calendar_today,
+                              'Période',
+                              'Du ${_formatDate(startDate)} au ${_formatDate(endDate)}',
+                            ),
+                            const SizedBox(height: 20),
+                            const Divider(color: Colors.white24),
+                            const SizedBox(height: 20),
+                            Text(
+                              '${mutableDays.length} jour${mutableDays.length > 1 ? 's' : ''} d\'entraînement',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            ...mutableDays.map((day) {
+                              final exercises =
+                                  day['exercises'] as List<dynamic>? ?? [];
+                              final dayOfWeek = day['dayOfWeek'] as int?;
+                              return Card(
+                                color:
+                                    Theme.of(context).scaffoldBackgroundColor,
+                                margin: const EdgeInsets.only(bottom: 8),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(12.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        _getDayName(dayOfWeek ?? 0),
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppColors.primary,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      if (exercises.isEmpty)
+                                        Text(
+                                          'Aucun exercice',
+                                          style: TextStyle(
+                                            color: Colors.white.withValues(
+                                              alpha: 0.5,
+                                            ),
+                                            fontSize: 13,
+                                          ),
+                                        )
+                                      else
+                                        ...exercises.map((ex) {
+                                          final exercise =
+                                              ex as Map<String, dynamic>;
+                                          final exName =
+                                              exercise['name'] as String? ??
+                                              exercise['exercise']
+                                                  ?['name'] as String? ??
+                                              'Exercice';
+                                          return Padding(
+                                            padding: const EdgeInsets.only(
+                                              top: 6,
+                                            ),
+                                            child: Row(
+                                              children: [
+                                                const Icon(
+                                                  Icons.circle,
+                                                  size: 6,
+                                                  color: AppColors.primary,
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Expanded(
+                                                  child: Text(
+                                                    exName,
+                                                    style: TextStyle(
+                                                      color: Colors.white
+                                                          .withValues(
+                                                        alpha: 0.85,
+                                                      ),
+                                                      fontSize: 13,
+                                                    ),
+                                                  ),
+                                                ),
+                                                IconButton(
+                                                  icon: const Icon(
+                                                    Icons.remove_circle_outline,
+                                                    color: AppColors.error,
+                                                    size: 18,
+                                                  ),
+                                                  padding: EdgeInsets.zero,
+                                                  constraints:
+                                                      const BoxConstraints(
+                                                    minWidth: 32,
+                                                    minHeight: 32,
+                                                  ),
+                                                  tooltip: 'Retirer',
+                                                  onPressed: () =>
+                                                      removeExercise(
+                                                    dayOfWeek ?? 0,
+                                                    exercise,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+                                        }),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }),
+                          ],
+                        ),
+                      ),
+                      // Bouton de suppression
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).scaffoldBackgroundColor,
+                          borderRadius: BorderRadius.vertical(
+                            bottom: Radius.circular(20),
                           ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              Navigator.pop(context);
+                              _confirmDeletePlanning(planningId, title);
+                            },
+                            icon: const Icon(Icons.delete_outline, size: 20),
+                            label: const Text('Supprimer le planning'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.error,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 14,
+                                horizontal: 24,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
-              ),
+                );
+              },
             );
           },
         );

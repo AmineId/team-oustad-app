@@ -83,6 +83,74 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
     }
   }
 
+  Future<void> _renewSubscription() async {
+    if (_subscriptionDetails == null) return;
+    final subscription = _subscriptionDetails!['subscription'] as Map<String, dynamic>?;
+    if (subscription == null) return;
+    final subscriptionId = subscription['id'] as int?;
+    if (subscriptionId == null) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Theme.of(context).cardTheme.color,
+        title: const Row(
+          children: [
+            Icon(Icons.autorenew, color: AppColors.primary),
+            SizedBox(width: 8),
+            Text('Renouveler l\'abonnement', style: TextStyle(color: Colors.white)),
+          ],
+        ),
+        content: const Text(
+          'Un nouvel abonnement du même type sera créé à partir d\'aujourd\'hui.',
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Annuler'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+            child: const Text('Renouveler'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+    );
+
+    try {
+      final token = await _authService.loadToken();
+      if (token == null) {
+        if (!mounted) return;
+        Navigator.pop(context);
+        _showErrorDialog('Token non disponible');
+        return;
+      }
+      final result = await _apiService.renewSubscription(subscriptionId, token);
+      if (!mounted) return;
+      Navigator.pop(context);
+      if (result != null) {
+        _showSuccessDialog('Abonnement renouvelé avec succès');
+        _loadSubscriptionDetails();
+      } else {
+        _showErrorDialog('Erreur lors du renouvellement');
+      }
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.pop(context);
+      _showErrorDialog('Erreur: $e');
+    }
+  }
+
   Future<void> _acknowledgePayment(Map<String, dynamic> payment) async {
     final paymentId = payment['id'] as int;
     
@@ -517,6 +585,26 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
             'Fin',
             _formatDate(endDate),
           ),
+
+          if (status == 'expired' || status == 'cancelled') ...[
+            const SizedBox(height: 20),
+            const Divider(color: Colors.white24),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _renewSubscription,
+                icon: const Icon(Icons.autorenew, size: 20),
+                label: const Text('Renouveler l\'abonnement'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );

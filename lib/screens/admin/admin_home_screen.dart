@@ -19,6 +19,7 @@ import '../common/about_screen.dart';
 import 'admin_banners_screen.dart';
 import 'admin_products_screen.dart';
 import 'admin_qr_scanner_screen.dart';
+import 'admin_whatsapp_screen.dart';
 
 class AdminHomeScreen extends StatefulWidget {
   const AdminHomeScreen({super.key});
@@ -1400,7 +1401,7 @@ class GestionGlobalePage extends StatefulWidget {
 
 class _GestionGlobalePageState extends State<GestionGlobalePage> {
   String _currentView =
-      'menu'; // 'menu', 'admins', 'gyms', 'admin_details', 'gym_details', 'admin_edit', 'gym_edit', 'gym_hours', 'admin_create', 'gym_create'
+      'menu'; // 'menu', 'admins', 'gyms', 'whatsapp', 'admin_details', 'gym_details', 'admin_edit', 'gym_edit', 'gym_hours', 'admin_create', 'gym_create'
   Map<String, dynamic>? _selectedAdmin;
   Map<String, dynamic>? _selectedGym;
 
@@ -1465,6 +1466,10 @@ class _GestionGlobalePageState extends State<GestionGlobalePage> {
         onBack: () => setState(() => _currentView = 'gyms'),
         onSuccess: () => setState(() => _currentView = 'gyms'),
       );
+    } else if (_currentView == 'whatsapp') {
+      return AdminWhatsAppScreen(
+        onBack: () => setState(() => _currentView = 'menu'),
+      );
     }
 
     // Vue menu par défaut
@@ -1502,6 +1507,16 @@ class _GestionGlobalePageState extends State<GestionGlobalePage> {
                 title: 'Gestion des Salles',
                 description: 'Créer, modifier ou supprimer des salles de sport',
                 onTap: () => setState(() => _currentView = 'gyms'),
+              ),
+              const SizedBox(height: 16),
+
+              // WhatsApp
+              _buildGlobalOption(
+                context,
+                icon: Icons.chat,
+                title: 'WhatsApp',
+                description: 'Gérer la connexion WhatsApp pour les notifications',
+                onTap: () => setState(() => _currentView = 'whatsapp'),
               ),
             ],
           ),

@@ -3100,6 +3100,204 @@ class ApiService {
     }
   }
 
+  // ==================== GYMS — IMAGE ====================
+
+  /// Upload or update gym image (base64).
+  /// PUT /gyms/{id}/image
+  Future<bool> uploadGymImage(
+    int gymId,
+    String imageData,
+    String token, {
+    Duration timeout = const Duration(seconds: 30),
+  }) async {
+    final uri = baseUri.resolve('/gyms/$gymId/image');
+    try {
+      debugPrint('ApiService.uploadGymImage -> $uri');
+      final resp = await http
+          .put(
+            uri,
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
+            body: jsonEncode({'imageData': imageData}),
+          )
+          .timeout(timeout);
+      debugPrint('uploadGymImage status: ${resp.statusCode}');
+      return resp.statusCode == 200;
+    } catch (e) {
+      debugPrint('Error uploading gym image: $e');
+      return false;
+    }
+  }
+
+  // ==================== PLANNINGS — EXERCISE REMOVAL ====================
+
+  /// Remove a specific exercise from a planning day.
+  /// DELETE /plannings/{planningId}/days/{dayOfWeek}/exercises/{exerciseId}
+  Future<bool> removeExerciseFromPlanningDay(
+    int planningId,
+    int dayOfWeek,
+    int exerciseId,
+    String token, {
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
+    final uri = baseUri.resolve(
+      '/plannings/$planningId/days/$dayOfWeek/exercises/$exerciseId',
+    );
+    try {
+      debugPrint('ApiService.removeExerciseFromPlanningDay -> $uri');
+      final resp = await http
+          .delete(uri, headers: {'Authorization': 'Bearer $token'})
+          .timeout(timeout);
+      debugPrint('removeExerciseFromPlanningDay status: ${resp.statusCode}');
+      return resp.statusCode == 200 || resp.statusCode == 204;
+    } catch (e) {
+      debugPrint('Error removing exercise from planning day: $e');
+      return false;
+    }
+  }
+
+  // ==================== SUBSCRIPTIONS — RENEW ====================
+
+  /// Renew a subscription (creates new subscription of same type from today).
+  /// POST /subscriptions/{id}/renew
+  Future<Map<String, dynamic>?> renewSubscription(
+    int subscriptionId,
+    String token, {
+    Duration timeout = const Duration(seconds: 10),
+  }) async {
+    final uri = baseUri.resolve('/subscriptions/$subscriptionId/renew');
+    try {
+      debugPrint('ApiService.renewSubscription -> $uri');
+      final resp = await http
+          .post(
+            uri,
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
+          )
+          .timeout(timeout);
+      debugPrint('renewSubscription status: ${resp.statusCode}');
+      if (resp.statusCode == 201 || resp.statusCode == 200) {
+        try {
+          return jsonDecode(resp.body) as Map<String, dynamic>;
+        } catch (_) {
+          return {};
+        }
+      }
+      return null;
+    } catch (e) {
+      debugPrint('Error renewing subscription: $e');
+      return null;
+    }
+  }
+
+  // ==================== WHATSAPP ====================
+
+  /// Get WhatsApp connection status.
+  /// GET /whatsapp/status
+  Future<Map<String, dynamic>?> getWhatsAppStatus(
+    String token, {
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
+    final uri = baseUri.resolve('/whatsapp/status');
+    try {
+      debugPrint('ApiService.getWhatsAppStatus -> $uri');
+      final resp = await http
+          .get(uri, headers: {'Authorization': 'Bearer $token'})
+          .timeout(timeout);
+      debugPrint('getWhatsAppStatus status: ${resp.statusCode}');
+      if (resp.statusCode == 200) {
+        try {
+          return jsonDecode(resp.body) as Map<String, dynamic>;
+        } catch (_) {
+          return null;
+        }
+      }
+      return null;
+    } catch (e) {
+      debugPrint('Error getting WhatsApp status: $e');
+      return null;
+    }
+  }
+
+  /// Get WhatsApp QR code (data URL). Returns null if already connected or QR not ready.
+  /// GET /whatsapp/qr
+  Future<Map<String, dynamic>?> getWhatsAppQr(
+    String token, {
+    Duration timeout = const Duration(seconds: 10),
+  }) async {
+    final uri = baseUri.resolve('/whatsapp/qr');
+    try {
+      debugPrint('ApiService.getWhatsAppQr -> $uri');
+      final resp = await http
+          .get(uri, headers: {'Authorization': 'Bearer $token'})
+          .timeout(timeout);
+      debugPrint('getWhatsAppQr status: ${resp.statusCode}');
+      if (resp.statusCode == 200) {
+        try {
+          return jsonDecode(resp.body) as Map<String, dynamic>;
+        } catch (_) {
+          return null;
+        }
+      }
+      return {'statusCode': resp.statusCode};
+    } catch (e) {
+      debugPrint('Error getting WhatsApp QR: $e');
+      return null;
+    }
+  }
+
+  /// Disconnect WhatsApp session.
+  /// DELETE /whatsapp/session
+  Future<bool> disconnectWhatsApp(
+    String token, {
+    Duration timeout = const Duration(seconds: 10),
+  }) async {
+    final uri = baseUri.resolve('/whatsapp/session');
+    try {
+      debugPrint('ApiService.disconnectWhatsApp -> $uri');
+      final resp = await http
+          .delete(uri, headers: {'Authorization': 'Bearer $token'})
+          .timeout(timeout);
+      debugPrint('disconnectWhatsApp status: ${resp.statusCode}');
+      return resp.statusCode == 200;
+    } catch (e) {
+      debugPrint('Error disconnecting WhatsApp: $e');
+      return false;
+    }
+  }
+
+  // ==================== ANDROID CONFIG ====================
+
+  /// Get Android app configuration (API URL, min version, features).
+  /// GET /android/config
+  Future<Map<String, dynamic>?> getAndroidConfig({
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
+    final uri = baseUri.resolve('/android/config');
+    try {
+      debugPrint('ApiService.getAndroidConfig -> $uri');
+      final resp = await http.get(uri).timeout(timeout);
+      debugPrint('getAndroidConfig status: ${resp.statusCode}');
+      if (resp.statusCode == 200) {
+        try {
+          return jsonDecode(resp.body) as Map<String, dynamic>;
+        } catch (_) {
+          return null;
+        }
+      }
+      return null;
+    } catch (e) {
+      debugPrint('Error getting Android config: $e');
+      return null;
+    }
+  }
+
+  // ==================== MEMBERS — PREFERRED TRAINING DAYS ====================
+
   /// Update preferred training days for a member.
   /// PUT /members/{id}/preferred-training-days
   /// days can be numbers (0-6) or day names (sunday, monday, etc.)

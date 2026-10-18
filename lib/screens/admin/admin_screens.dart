@@ -15,3 +15,4 @@ export 'admin_member_details_screen.dart';
 export 'admin_plannings_screen.dart';
 export 'admin_qr_scanner_screen.dart';
 export 'admin_subscription_details_screen.dart';
+export 'admin_whatsapp_screen.dart';
