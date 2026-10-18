@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'admin_chrome.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/theme/theme.dart';
@@ -270,8 +271,14 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return adminFrame(
+      context,
+      embedded: widget.onBack != null,
+      child: Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
@@ -287,7 +294,6 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
           ),
         ),
       ),
@@ -401,6 +407,7 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
           ],
         ),
       ),
+    ),
     );
   }
 

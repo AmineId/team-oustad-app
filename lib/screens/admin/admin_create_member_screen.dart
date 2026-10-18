@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'admin_chrome.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/theme/theme.dart';
@@ -230,18 +231,23 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return adminFrame(
+      context,
+      embedded: widget.onBack != null,
+      child: Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
         title: const Text(
           'Ajouter un membre',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
             if (widget.onBack != null) {
               widget.onBack!();
@@ -768,6 +774,7 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                 ),
         ),
       ),
+    ),
     );
   }
 }

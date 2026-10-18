@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import '../../widgets/common/glass.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
@@ -216,7 +217,9 @@ class _AdminQrScannerScreenState extends State<AdminQrScannerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      extendBodyBehindAppBar: glassExtendsBody,
+      appBar: glassAppBar(
+        context,
         title: const Text(
           'Scanner QR Code',
           style: TextStyle(fontWeight: FontWeight.bold),
@@ -230,7 +233,7 @@ class _AdminQrScannerScreenState extends State<AdminQrScannerScreen> {
             ),
         ],
       ),
-      body: Stack(
+      body: glassBodyInsets(context, Stack(
         children: [
           // Scanner Camera
           MobileScanner(
@@ -284,7 +287,7 @@ class _AdminQrScannerScreenState extends State<AdminQrScannerScreen> {
               ),
             ),
         ],
-      ),
+      )),
     );
   }
 

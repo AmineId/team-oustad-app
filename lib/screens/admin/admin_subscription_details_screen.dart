@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../widgets/common/glass.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/theme/theme.dart';
@@ -383,13 +384,14 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      extendBodyBehindAppBar: glassExtendsBody,
+      appBar: glassAppBar(
+        context,
         title: const Text(
           'Détails de l\'abonnement',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
           ),
         ),
         actions: [
@@ -399,7 +401,7 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
           ),
         ],
       ),
-      body: Container(
+      body: glassBodyInsets(context, Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -409,7 +411,7 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
             ],
           ),
         ),
-        child: _isLoading
+        child: SafeArea(child: _isLoading
             ? const Center(
                 child: CircularProgressIndicator(
                   color: AppColors.primary,
@@ -476,8 +478,8 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
                         ],
                       ),
                     ),
-                  ),
-      ),
+                  )),
+      )),
     );
   }
 
