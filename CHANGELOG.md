@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.61](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.60...v1.0.0-beta.61) (2026-10-18)
+
+
+### 🐛 Bug Fixes
+
+* **ux:** predictive back, camera permissions, glass nav bg, icon size ([755be2b](https://github.com/TeamFitness/mobile-app/commit/755be2b04eb65f60769f3914be674acb9a4b9228))
+
 ## [1.0.0-beta.60](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.59...v1.0.0-beta.60) (2026-10-18)
 
 
