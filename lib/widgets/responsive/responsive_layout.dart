@@ -80,6 +80,8 @@ class ResponsiveScaffold extends StatelessWidget {
       titleSpacing: 0,
       backgroundColor: isIOS ? Colors.transparent : null,
       elevation: isIOS ? 0 : null,
+      scrolledUnderElevation: isIOS ? 0 : null,
+      forceMaterialTransparency: isIOS,
       title: Row(
         children: [
           if (leading != null) leading!,
