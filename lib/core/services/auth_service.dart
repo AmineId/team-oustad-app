@@ -516,7 +516,12 @@ class AuthService {
     try {
       await _secureStorage.deleteAll();
       final prefs = await SharedPreferences.getInstance();
+      // Preserve biometric consent across logout — it's a device-level preference
+      final biometricConsent = prefs.getBool('biometric_consent');
+      final biometricEnabled = prefs.getBool('biometric_enabled');
       await prefs.clear();
+      if (biometricConsent != null) await prefs.setBool('biometric_consent', biometricConsent);
+      if (biometricEnabled != null) await prefs.setBool('biometric_enabled', biometricEnabled);
       // Clear QR code cache on logout
       await clearQrCodeCache();
     } catch (_) {}
