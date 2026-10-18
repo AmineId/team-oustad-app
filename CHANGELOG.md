@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.54](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.53...v1.0.0-beta.54) (2026-10-18)
+
+
+### 🐛 Bug Fixes
+
+* **icons:** apply dark background to legacy launcher PNGs ([ddc0c91](https://github.com/TeamFitness/mobile-app/commit/ddc0c9118a46f7b1fedf427ce05423684af0928f)), closes [#1a1f2](https://github.com/TeamFitness/mobile-app/issues/1a1f2)
+
 ## [1.0.0-beta.53](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.52...v1.0.0-beta.53) (2026-10-18)
 
 
