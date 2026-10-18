@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:team_fitness_app/core/utils/platform_utils.dart';
 import '../../core/theme/theme.dart';
 import '../common/glass.dart';
+import '../common/native_glass_tab_bar.dart';
 
 /// A widget that builds different layouts based on device type
 class ResponsiveLayout extends StatelessWidget {
@@ -132,7 +133,7 @@ class ResponsiveScaffold extends StatelessWidget {
             data: MediaQuery.of(context).copyWith(
               padding: MediaQuery.of(context).padding.copyWith(
                 top: MediaQuery.of(context).padding.top + kToolbarHeight,
-                bottom: MediaQuery.of(context).padding.bottom + glassTabBarReserved,
+                bottom: MediaQuery.of(context).padding.bottom + glassBottomReserved,
               ),
             ),
             child: body,
@@ -144,7 +145,18 @@ class ResponsiveScaffold extends StatelessWidget {
       extendBody: isIOS,
       appBar: appBar,
       body: effectiveBody,
-      bottomNavigationBar: isIOS
+      bottomNavigationBar: isIOS && supportsNativeLiquidGlass
+          ? NativeGlassTabBar(
+              currentIndex: currentIndex,
+              onTap: onNavigationChanged,
+              items: navigationItems
+                  .map((i) => NativeTabItem(
+                        label: i.label,
+                        symbol: i.sfSymbol ?? 'circle',
+                      ))
+                  .toList(),
+            )
+          : isIOS
           ? GlassTabBar(
               currentIndex: currentIndex,
               onTap: onNavigationChanged,
@@ -357,9 +369,11 @@ class NavigationItem {
   final String label;
   final Widget? customWidget;
   final Widget? activeCustomWidget;
+  final String? sfSymbol;
 
   const NavigationItem({
     required this.icon,
+    this.sfSymbol,
     this.activeIcon,
     required this.label,
     this.customWidget,

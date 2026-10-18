@@ -409,21 +409,25 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
       navigationItems: [
         NavigationItem(
           icon: Icons.home_outlined,
+          sfSymbol: 'house',
           activeIcon: Icons.home,
           label: l10n.home,
         ),
         NavigationItem(
           icon: Icons.qr_code_2_outlined,
+          sfSymbol: 'qrcode',
           activeIcon: Icons.qr_code_2,
           label: l10n.myCard,
         ),
         NavigationItem(
           icon: Icons.fitness_center_outlined,
+          sfSymbol: 'dumbbell',
           activeIcon: Icons.fitness_center,
           label: l10n.myPlanning,
         ),
         NavigationItem(
           icon: Icons.person_outline,
+          sfSymbol: 'person.crop.circle',
           activeIcon: Icons.person,
           label: l10n.myProfile,
           customWidget: _buildProfileAvatar(false),

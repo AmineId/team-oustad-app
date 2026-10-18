@@ -131,21 +131,25 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         ? [
             NavigationItem(
               icon: Icons.home_outlined,
+              sfSymbol: 'house',
               activeIcon: Icons.home,
               label: l10n.home,
             ),
             NavigationItem(
               icon: Icons.settings_outlined,
+              sfSymbol: 'gearshape',
               activeIcon: Icons.settings,
               label: l10n.management,
             ),
             NavigationItem(
               icon: Icons.admin_panel_settings_outlined,
+              sfSymbol: 'person.badge.shield.checkmark',
               activeIcon: Icons.admin_panel_settings,
               label: l10n.globalManagement,
             ),
             NavigationItem(
               icon: Icons.person_outline,
+              sfSymbol: 'person.crop.circle',
               activeIcon: Icons.person,
               label: l10n.myProfile,
               customWidget: _buildProfileAvatar(false),
@@ -155,16 +159,19 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         : [
             NavigationItem(
               icon: Icons.home_outlined,
+              sfSymbol: 'house',
               activeIcon: Icons.home,
               label: l10n.home,
             ),
             NavigationItem(
               icon: Icons.settings_outlined,
+              sfSymbol: 'gearshape',
               activeIcon: Icons.settings,
               label: l10n.management,
             ),
             NavigationItem(
               icon: Icons.person_outline,
+              sfSymbol: 'person.crop.circle',
               activeIcon: Icons.person,
               label: l10n.myProfile,
               customWidget: _buildProfileAvatar(false),
@@ -1765,7 +1772,7 @@ class _AdminsListViewState extends State<_AdminsListView> {
         ), // SafeArea
       ), // Container
       floatingActionButton: Padding(
-        padding: EdgeInsets.only(bottom: Platform.isIOS ? glassTabBarReserved : 0),
+        padding: EdgeInsets.only(bottom: Platform.isIOS ? glassBottomReserved : 0),
         child: FloatingActionButton(
           onPressed: widget.onCreate,
           backgroundColor: theme.colorScheme.primary,
@@ -2154,7 +2161,7 @@ class _GymsListViewState extends State<_GymsListView> {
         ), // SafeArea
       ), // Container
       floatingActionButton: Padding(
-        padding: EdgeInsets.only(bottom: Platform.isIOS ? glassTabBarReserved : 0),
+        padding: EdgeInsets.only(bottom: Platform.isIOS ? glassBottomReserved : 0),
         child: FloatingActionButton(
           onPressed: widget.onCreate,
           backgroundColor: AppColors.primary,

@@ -9,6 +9,19 @@ const double glassTabBarHeight = 64;
 /// Espace vertical total réservé en bas pour la capsule, hors zone sûre.
 const double glassTabBarReserved = glassTabBarHeight + 8 + 12;
 
+/// iOS 26+ : la vraie barre native Liquid Glass (UIKit) est utilisée.
+final bool supportsNativeLiquidGlass = _detectIos26();
+
+bool _detectIos26() {
+  if (!Platform.isIOS) return false;
+  final match = RegExp(r'Version (\d+)').firstMatch(Platform.operatingSystemVersion);
+  return (int.tryParse(match?.group(1) ?? '') ?? 0) >= 26;
+}
+
+/// Espace à réserver en bas (hors zone sûre) selon la barre d'onglets utilisée.
+double get glassBottomReserved =>
+    supportsNativeLiquidGlass ? 72 : glassTabBarReserved;
+
 const List<double> _saturate = <double>[
   1.6, -0.3, -0.3, 0, 0, //
   -0.3, 1.6, -0.3, 0, 0, //

@@ -85,6 +85,7 @@ dependencies:
 
   # Google Fonts for Barlow Condensed (headings) and Barlow (body)
   google_fonts: ^6.2.1
+  cupertino_native: ^0.1.1
 
 dev_dependencies:
   flutter_test:

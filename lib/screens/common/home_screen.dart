@@ -34,21 +34,25 @@ class _HomeScreenState extends State<HomeScreen> {
       navigationItems: [
         NavigationItem(
           icon: Icons.home_outlined,
+          sfSymbol: 'house',
           activeIcon: Icons.home,
           label: l10n.home,
         ),
         NavigationItem(
           icon: Icons.search_outlined,
+          sfSymbol: 'magnifyingglass',
           activeIcon: Icons.search,
           label: l10n.search,
         ),
         NavigationItem(
           icon: Icons.person_add_outlined,
+          sfSymbol: 'person.badge.plus',
           activeIcon: Icons.person_add,
           label: l10n.add,
         ),
         NavigationItem(
           icon: Icons.person_outline,
+          sfSymbol: 'person.crop.circle',
           activeIcon: Icons.person,
           label: l10n.profile,
         ),
