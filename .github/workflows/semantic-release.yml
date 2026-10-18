@@ -177,7 +177,7 @@ jobs:
 
       - name: 📦 Install Fastlane
         run: |
-          gem install fastlane -v 2.217.0
+          cd android && bundle install
 
       - name: 🔐 Setup Play Store credentials
         run: |
@@ -254,7 +254,7 @@ jobs:
           cd android
           
           # Déployer avec Fastlane en utilisant le chemin absolu
-          fastlane supply \
+          bundle exec fastlane supply \
             --aab "$AAB_ABSOLUTE_PATH" \
             --track internal \
             --release_status draft \
