@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -2006,14 +2007,17 @@ class _AdminsListViewState extends State<_AdminsListView> {
           ),
         ), // SafeArea
       ), // Container
-      floatingActionButton: FloatingActionButton(
-        onPressed: widget.onCreate,
-        backgroundColor: theme.colorScheme.primary,
-        child: Icon(
-          Icons.add,
-          color: (Theme.of(context).brightness == Brightness.dark
-              ? AppColors.darkTextPrimary
-              : AppColors.lightTextPrimary),
+      floatingActionButton: Padding(
+        padding: EdgeInsets.only(bottom: Platform.isIOS ? kBottomNavigationBarHeight : 0),
+        child: FloatingActionButton(
+          onPressed: widget.onCreate,
+          backgroundColor: theme.colorScheme.primary,
+          child: Icon(
+            Icons.add,
+            color: (Theme.of(context).brightness == Brightness.dark
+                ? AppColors.darkTextPrimary
+                : AppColors.lightTextPrimary),
+          ),
         ),
       ),
     );
@@ -2396,10 +2400,13 @@ class _GymsListViewState extends State<_GymsListView> {
           ),
         ), // SafeArea
       ), // Container
-      floatingActionButton: FloatingActionButton(
-        onPressed: widget.onCreate,
-        backgroundColor: AppColors.primary,
-        child: const Icon(Icons.add, color: Colors.white),
+      floatingActionButton: Padding(
+        padding: EdgeInsets.only(bottom: Platform.isIOS ? kBottomNavigationBarHeight : 0),
+        child: FloatingActionButton(
+          onPressed: widget.onCreate,
+          backgroundColor: AppColors.primary,
+          child: const Icon(Icons.add, color: Colors.white),
+        ),
       ),
     );
   }
