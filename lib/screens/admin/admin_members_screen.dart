@@ -137,6 +137,7 @@ class _AdminMembersScreenState extends State<AdminMembersScreen> {
     return adminFrame(
       context,
       embedded: widget.onBack != null,
+      padBottom: false,
       child: Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -183,6 +184,7 @@ class _AdminMembersScreenState extends State<AdminMembersScreen> {
           color: Theme.of(context).scaffoldBackgroundColor,
         ),
         child: SafeArea(
+          bottom: false,
           child: Column(
             children: [
               // Barre de recherche
@@ -200,9 +202,9 @@ class _AdminMembersScreenState extends State<AdminMembersScreen> {
                     ),
                     suffixIcon: _searchController.text.isNotEmpty
                         ? IconButton(
-                            icon: const Icon(
+                            icon: Icon(
                               Icons.clear,
-                              color: Colors.white60,
+                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                             ),
                             onPressed: () {
                               _searchController.clear();
@@ -240,8 +242,8 @@ class _AdminMembersScreenState extends State<AdminMembersScreen> {
                             const SizedBox(height: 16),
                             Text(
                               _errorMessage,
-                              style: const TextStyle(
-                                color: Colors.white,
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.onSurface,
                                 fontSize: 16,
                               ),
                               textAlign: TextAlign.center,
@@ -265,7 +267,7 @@ class _AdminMembersScreenState extends State<AdminMembersScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.person_off_outlined,
                               color: Colors.white60,
                               size: 48,
@@ -275,8 +277,8 @@ class _AdminMembersScreenState extends State<AdminMembersScreen> {
                               _searchController.text.isNotEmpty
                                   ? 'Aucun membre trouvé'
                                   : 'Aucun membre',
-                              style: const TextStyle(
-                                color: Colors.white60,
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                                 fontSize: 16,
                               ),
                             ),
@@ -287,7 +289,7 @@ class _AdminMembersScreenState extends State<AdminMembersScreen> {
                         onRefresh: _loadMembers,
                         color: AppColors.primary,
                         child: ListView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          padding: EdgeInsets.fromLTRB(16, 0, 16, 16 + MediaQuery.of(context).padding.bottom),
                           itemCount: _filteredMembers.length,
                           itemBuilder: (context, index) {
                             final member = _filteredMembers[index];
@@ -432,9 +434,9 @@ class _MemberCard extends StatelessWidget {
               ),
 
               // Icône flèche
-              const Icon(
+              Icon(
                 Icons.arrow_forward_ios,
-                color: Colors.white60,
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                 size: 16,
               ),
             ],

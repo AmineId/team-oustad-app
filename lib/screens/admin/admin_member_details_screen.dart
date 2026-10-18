@@ -211,6 +211,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
     return adminFrame(
       context,
       embedded: widget.onBack != null,
+      padBottom: false,
       child: Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -261,7 +262,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                     const SizedBox(height: 16),
                     Text(
                       _errorMessage,
-                      style: const TextStyle(color: Colors.white, fontSize: 16),
+                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 16),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 16),
@@ -283,7 +284,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                 color: AppColors.primary,
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.all(16.0),
+                  padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + MediaQuery.of(context).padding.bottom),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -337,16 +338,16 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                             padding: const EdgeInsets.all(32.0),
                             child: Column(
                               children: [
-                                const Icon(
+                                Icon(
                                   Icons.subscriptions_outlined,
-                                  color: Colors.white60,
+                                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                                   size: 48,
                                 ),
                                 const SizedBox(height: 16),
-                                const Text(
+                                Text(
                                   'Aucun abonnement',
                                   style: TextStyle(
-                                    color: Colors.white60,
+                                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                                     fontSize: 16,
                                   ),
                                 ),
@@ -366,12 +367,12 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
+                          Text(
                             'Plannings',
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: Theme.of(context).colorScheme.onSurface,
                             ),
                           ),
                           IconButton(
@@ -405,16 +406,16 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                             padding: const EdgeInsets.all(32.0),
                             child: Column(
                               children: [
-                                const Icon(
+                                Icon(
                                   Icons.calendar_today_outlined,
-                                  color: Colors.white60,
+                                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                                   size: 48,
                                 ),
                                 const SizedBox(height: 16),
-                                const Text(
+                                Text(
                                   'Aucun planning',
                                   style: TextStyle(
-                                    color: Colors.white60,
+                                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                                     fontSize: 16,
                                   ),
                                 ),
@@ -485,8 +486,8 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
           // Nom
           Text(
             fullName,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
               fontSize: 22,
               fontWeight: FontWeight.bold,
             ),
@@ -513,7 +514,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
           ),
 
           const SizedBox(height: 16),
-          const Divider(color: Colors.white24),
+          Divider(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.24)),
           const SizedBox(height: 16),
 
           // Email
@@ -537,7 +538,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
           child: Text(
             text,
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.9),
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.9),
               fontSize: 14,
             ),
           ),
@@ -587,8 +588,8 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                   Expanded(
                     child: Text(
                       typeName,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
@@ -624,7 +625,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                 Text(
                   typeDescription,
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.7),
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                     fontSize: 13,
                   ),
                 ),
@@ -648,9 +649,9 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
               // Dates
               Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.calendar_today,
-                    color: Colors.white60,
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                     size: 16,
                   ),
                   const SizedBox(width: 8),
@@ -658,14 +659,14 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                     child: Text(
                       'Du ${_formatDate(startDate)} au ${_formatDate(endDate)}',
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.7),
+                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                         fontSize: 13,
                       ),
                     ),
                   ),
-                  const Icon(
+                  Icon(
                     Icons.arrow_forward_ios,
-                    color: Colors.white60,
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                     size: 16,
                   ),
                 ],
@@ -714,8 +715,8 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                   Expanded(
                     child: Text(
                       title,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
@@ -751,7 +752,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                 Text(
                   description,
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.7),
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                     fontSize: 13,
                   ),
                   maxLines: 2,
@@ -760,7 +761,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
               ],
 
               const SizedBox(height: 12),
-              const Divider(color: Colors.white24),
+              Divider(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.24)),
               const SizedBox(height: 12),
 
               // Coach
@@ -777,7 +778,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                       child: Text(
                         'Coach: ${getUserFullName(coach)}',
                         style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.9),
+                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.9),
                           fontSize: 13,
                         ),
                       ),
@@ -790,9 +791,9 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
               // Dates
               Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.calendar_today,
-                    color: Colors.white60,
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                     size: 16,
                   ),
                   const SizedBox(width: 8),
@@ -800,7 +801,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                     child: Text(
                       'Du ${_formatDate(startDate)} au ${_formatDate(endDate)}',
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.7),
+                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                         fontSize: 13,
                       ),
                     ),
@@ -813,23 +814,23 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
               // Jours d'entraînement
               Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.fitness_center,
-                    color: Colors.white60,
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                     size: 16,
                   ),
                   const SizedBox(width: 8),
                   Text(
                     '${days.length} jour${days.length > 1 ? 's' : ''} d\'entraînement',
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.7),
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                       fontSize: 13,
                     ),
                   ),
                   const Spacer(),
-                  const Icon(
+                  Icon(
                     Icons.arrow_forward_ios,
-                    color: Colors.white60,
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                     size: 16,
                   ),
                 ],
@@ -892,8 +893,8 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                         children: [
                           Text(
                             title,
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onSurface,
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                             ),
@@ -927,7 +928,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close, color: Colors.white),
+                      icon: Icon(Icons.close, color: Theme.of(context).colorScheme.onSurface),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ],
@@ -982,14 +983,14 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                     ),
 
                     const SizedBox(height: 24),
-                    const Divider(color: Colors.white24),
+                    Divider(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.24)),
                     const SizedBox(height: 16),
 
                     // Jours d'entraînement
-                    const Text(
+                    Text(
                       'Jours d\'entraînement',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
@@ -1006,7 +1007,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                         child: Text(
                           'Aucun jour d\'entraînement',
                           style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.6),
+                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                             fontSize: 14,
                           ),
                         ),
@@ -1051,8 +1052,8 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                                   children: [
                                     Text(
                                       _getDayName(dayOfWeek),
-                                      style: const TextStyle(
-                                        color: Colors.white,
+                                      style: TextStyle(
+                                        color: Theme.of(context).colorScheme.onSurface,
                                         fontSize: 14,
                                         fontWeight: FontWeight.w600,
                                       ),
@@ -1061,7 +1062,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                                     Text(
                                       '${exercises.length} exercice${exercises.length > 1 ? 's' : ''}',
                                       style: TextStyle(
-                                        color: Colors.white.withValues(
+                                        color: Theme.of(context).colorScheme.onSurface.withValues(
                                           alpha: 0.6,
                                         ),
                                         fontSize: 12,
@@ -1139,15 +1140,15 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
               Text(
                 label,
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.6),
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                   fontSize: 12,
                 ),
               ),
               const SizedBox(height: 4),
               Text(
                 value,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
@@ -1186,13 +1187,13 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Theme.of(context).cardTheme.color,
-        title: const Text(
+        title: Text(
           'Confirmer la suppression',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
         ),
         content: Text(
           'Êtes-vous sûr de vouloir supprimer le planning "$title" ?\n\nCette action est irréversible.',
-          style: TextStyle(color: Colors.white.withValues(alpha: 0.8)),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8)),
         ),
         actions: [
           TextButton(
@@ -1200,9 +1201,9 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             ),
-            child: const Text(
+            child: Text(
               'Annuler',
-              style: TextStyle(color: Colors.white70),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
             ),
           ),
           ElevatedButton(

@@ -323,10 +323,10 @@ class _AccueilPageState extends State<AccueilPage> {
     return RefreshIndicator(
       onRefresh: _fetchStats,
       color: AppColors.primary,
-      child: SafeArea(
+      child: SafeArea(top: false, bottom: false,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(24.0),
+          padding: EdgeInsets.fromLTRB(24, 24 + MediaQuery.of(context).padding.top, 24, 24 + MediaQuery.of(context).padding.bottom),
           child: LayoutBuilder(
             builder: (context, constraints) {
               final isDesktop = constraints.maxWidth > 600;
@@ -786,9 +786,9 @@ class _GestionPageState extends State<GestionPage> {
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
       ),
-      child: SafeArea(
+      child: SafeArea(top: false, bottom: false,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
+          padding: EdgeInsets.fromLTRB(24, 24 + MediaQuery.of(context).padding.top, 24, 24 + MediaQuery.of(context).padding.bottom),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -935,14 +935,14 @@ class _ProfilePageState extends State<ProfilePage> {
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
       ),
-      child: SafeArea(
+      child: SafeArea(top: false, bottom: false,
         child: RefreshIndicator(
           onRefresh: _refreshProfileData,
           color: Theme.of(context).colorScheme.primary,
           notificationPredicate: (notification) => !_isRefreshing,
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(16.0),
+            padding: EdgeInsets.fromLTRB(16, 16 + MediaQuery.of(context).padding.top, 16, 16 + MediaQuery.of(context).padding.bottom),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -1404,9 +1404,9 @@ class _GestionGlobalePageState extends State<GestionGlobalePage> {
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
       ),
-      child: SafeArea(
+      child: SafeArea(top: false, bottom: false,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
+          padding: EdgeInsets.fromLTRB(24, 24 + MediaQuery.of(context).padding.top, 24, 24 + MediaQuery.of(context).padding.bottom),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -1648,7 +1648,7 @@ class _AdminsListViewState extends State<_AdminsListView> {
         decoration: BoxDecoration(
           color: Theme.of(context).scaffoldBackgroundColor,
         ),
-        child: SafeArea(
+        child: SafeArea(bottom: false,
           child: Column(
             children: [
               // Header avec bouton retour
@@ -1811,7 +1811,7 @@ class _AdminsListViewState extends State<_AdminsListView> {
                         onRefresh: _loadAdmins,
                         color: theme.colorScheme.primary,
                         child: ListView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          padding: EdgeInsets.fromLTRB(16, 0, 16, 16 + MediaQuery.of(context).padding.bottom),
                           itemCount: _filteredAdmins.length,
                           itemBuilder: (context, index) {
                             final admin = _filteredAdmins[index];
@@ -2064,7 +2064,7 @@ class _GymsListViewState extends State<_GymsListView> {
         decoration: BoxDecoration(
           color: Theme.of(context).scaffoldBackgroundColor,
         ),
-        child: SafeArea(
+        child: SafeArea(bottom: false,
           child: Column(
             children: [
               // Header avec bouton retour
@@ -2202,7 +2202,7 @@ class _GymsListViewState extends State<_GymsListView> {
                         onRefresh: _loadGyms,
                         color: AppColors.primary,
                         child: ListView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          padding: EdgeInsets.fromLTRB(16, 0, 16, 16 + MediaQuery.of(context).padding.bottom),
                           itemCount: _filteredGyms.length,
                           itemBuilder: (context, index) {
                             final gym = _filteredGyms[index];
@@ -2367,7 +2367,7 @@ class _AdminDetailsViewState extends State<_AdminDetailsView> {
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
       ),
-      child: SafeArea(
+      child: SafeArea(bottom: false,
         child: Column(
           children: [
             // Header avec bouton retour
@@ -2402,7 +2402,7 @@ class _AdminDetailsViewState extends State<_AdminDetailsView> {
             // Contenu
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
+                padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + MediaQuery.of(context).padding.bottom),
                 child: Column(
                   children: [
                     // Avatar
@@ -2536,7 +2536,7 @@ class _AdminDetailsViewState extends State<_AdminDetailsView> {
         color: theme.cardTheme.color,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
+          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.1),
           width: 1,
         ),
       ),
@@ -2682,7 +2682,7 @@ class _GymDetailsViewState extends State<_GymDetailsView> {
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
       ),
-      child: SafeArea(
+      child: SafeArea(bottom: false,
         child: Column(
           children: [
             // Header avec bouton retour
@@ -2717,7 +2717,7 @@ class _GymDetailsViewState extends State<_GymDetailsView> {
             // Contenu
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
+                padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + MediaQuery.of(context).padding.bottom),
                 child: Column(
                   children: [
                     // Icône
@@ -2892,7 +2892,7 @@ class _GymDetailsViewState extends State<_GymDetailsView> {
         color: Theme.of(context).cardTheme.color,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
+          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.1),
           width: 1,
         ),
       ),
@@ -3131,7 +3131,7 @@ class _AdminEditViewState extends State<_AdminEditView> {
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
       ),
-      child: SafeArea(
+      child: SafeArea(bottom: false,
         child: Column(
           children: [
             // Header
@@ -3161,7 +3161,7 @@ class _AdminEditViewState extends State<_AdminEditView> {
             // Contenu
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
+                padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + MediaQuery.of(context).padding.bottom),
                 child: Form(
                   key: _formKey,
                   child: Column(
@@ -3342,7 +3342,7 @@ class _AdminEditViewState extends State<_AdminEditView> {
                           ),
                         ),
                         child: _isLoading
-                            ? const SizedBox(
+                            ? SizedBox(
                                 height: 20,
                                 width: 20,
                                 child: CircularProgressIndicator(
@@ -3352,7 +3352,7 @@ class _AdminEditViewState extends State<_AdminEditView> {
                                   ),
                                 ),
                               )
-                            : const Text(
+                            : Text(
                                 'Modifier l\'administrateur',
                                 style: TextStyle(
                                   fontSize: 16,
@@ -3472,7 +3472,7 @@ class _GymEditViewState extends State<_GymEditView> {
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
       ),
-      child: SafeArea(
+      child: SafeArea(bottom: false,
         child: Column(
           children: [
             // Header
@@ -3502,7 +3502,7 @@ class _GymEditViewState extends State<_GymEditView> {
             // Contenu
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
+                padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + MediaQuery.of(context).padding.bottom),
                 child: Form(
                   key: _formKey,
                   child: Column(
@@ -3624,7 +3624,7 @@ class _GymEditViewState extends State<_GymEditView> {
                           ),
                         ),
                         child: _isLoading
-                            ? const SizedBox(
+                            ? SizedBox(
                                 height: 20,
                                 width: 20,
                                 child: CircularProgressIndicator(
@@ -3634,7 +3634,7 @@ class _GymEditViewState extends State<_GymEditView> {
                                   ),
                                 ),
                               )
-                            : const Text(
+                            : Text(
                                 'Modifier la salle',
                                 style: TextStyle(
                                   fontSize: 16,
@@ -3875,7 +3875,7 @@ class _GymOpeningHoursViewState extends State<_GymOpeningHoursView> {
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
       ),
-      child: SafeArea(
+      child: SafeArea(bottom: false,
         child: Column(
           children: [
             // Header
@@ -3927,7 +3927,7 @@ class _GymOpeningHoursViewState extends State<_GymOpeningHoursView> {
                       ),
                     )
                   : ListView.builder(
-                      padding: const EdgeInsets.all(16),
+                      padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + MediaQuery.of(context).padding.bottom),
                       itemCount: 7,
                       itemBuilder: (context, index) {
                         final dayData = _hoursData[index];
@@ -4034,7 +4034,7 @@ class _GymOpeningHoursViewState extends State<_GymOpeningHoursView> {
                     ),
                   ),
                   child: _isLoading
-                      ? const SizedBox(
+                      ? SizedBox(
                           height: 20,
                           width: 20,
                           child: CircularProgressIndicator(
@@ -4042,7 +4042,7 @@ class _GymOpeningHoursViewState extends State<_GymOpeningHoursView> {
                             color: Colors.white,
                           ),
                         )
-                      : const Text(
+                      : Text(
                           'Enregistrer',
                           style: TextStyle(
                             fontSize: 16,
@@ -4173,7 +4173,7 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
       ),
-      child: SafeArea(
+      child: SafeArea(bottom: false,
         child: Column(
           children: [
             // Header
@@ -4203,7 +4203,7 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
             // Contenu
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
+                padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + MediaQuery.of(context).padding.bottom),
                 child: Form(
                   key: _formKey,
                   child: Column(
@@ -4413,7 +4413,7 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
                           color: Theme.of(context).cardTheme.color,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.1),
+                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.1),
                           ),
                         ),
                         child: Row(
@@ -4430,11 +4430,11 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
                               },
                             ),
                             const SizedBox(width: 8),
-                            const Expanded(
+                            Expanded(
                               child: Text(
                                 'Envoyer un email de configuration',
                                 style: TextStyle(
-                                  color: Colors.white,
+                                  color: Theme.of(context).colorScheme.onSurface,
                                   fontSize: 14,
                                 ),
                               ),
@@ -4497,7 +4497,7 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
                           ),
                         ),
                         child: _isLoading
-                            ? const SizedBox(
+                            ? SizedBox(
                                 height: 20,
                                 width: 20,
                                 child: CircularProgressIndicator(
@@ -4507,7 +4507,7 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
                                   ),
                                 ),
                               )
-                            : const Text(
+                            : Text(
                                 'Créer l\'administrateur',
                                 style: TextStyle(
                                   fontSize: 16,
@@ -4607,7 +4607,7 @@ class _GymCreateViewState extends State<_GymCreateView> {
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
       ),
-      child: SafeArea(
+      child: SafeArea(bottom: false,
         child: Column(
           children: [
             // Header
@@ -4637,7 +4637,7 @@ class _GymCreateViewState extends State<_GymCreateView> {
             // Contenu
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
+                padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + MediaQuery.of(context).padding.bottom),
                 child: Form(
                   key: _formKey,
                   child: Column(
@@ -4767,7 +4767,7 @@ class _GymCreateViewState extends State<_GymCreateView> {
                           ),
                         ),
                         child: _isLoading
-                            ? const SizedBox(
+                            ? SizedBox(
                                 height: 20,
                                 width: 20,
                                 child: CircularProgressIndicator(
@@ -4777,7 +4777,7 @@ class _GymCreateViewState extends State<_GymCreateView> {
                                   ),
                                 ),
                               )
-                            : const Text(
+                            : Text(
                                 'Créer la salle',
                                 style: TextStyle(
                                   fontSize: 16,

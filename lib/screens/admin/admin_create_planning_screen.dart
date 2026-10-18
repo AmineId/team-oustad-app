@@ -170,7 +170,7 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
         context: context,
         builder: (context) => AlertDialog(
           backgroundColor: Theme.of(context).cardTheme.color,
-          title: const Row(
+          title: Row(
             children: [
               Icon(Icons.check_circle, color: AppColors.success),
               SizedBox(width: 8),
@@ -180,7 +180,7 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
               ),
             ],
           ),
-          content: const Text(
+          content: Text(
             'Le planning a été créé avec succès',
             style: TextStyle(color: Colors.white),
           ),
@@ -222,7 +222,7 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Theme.of(context).cardTheme.color,
-        title: const Row(
+        title: Row(
           children: [
             Icon(Icons.error, color: AppColors.error),
             SizedBox(width: 8),
@@ -349,7 +349,7 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
                       foregroundColor: Colors.white,
                     ),
                     child: _isLoading && _currentStep == 2
-                        ? const SizedBox(
+                        ? SizedBox(
                             height: 16,
                             width: 16,
                             child: CircularProgressIndicator(
@@ -373,27 +373,27 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
           },
           steps: [
             Step(
-              title: const Text(
+              title: Text(
                 'Informations générales',
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
               ),
               content: _buildStep1(),
               isActive: _currentStep >= 0,
               state: _currentStep > 0 ? StepState.complete : StepState.indexed,
             ),
             Step(
-              title: const Text(
+              title: Text(
                 'Sélection des exercices',
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
               ),
               content: _buildStep2(),
               isActive: _currentStep >= 1,
               state: _currentStep > 1 ? StepState.complete : StepState.indexed,
             ),
             Step(
-              title: const Text(
+              title: Text(
                 'Détails des exercices',
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
               ),
               content: _buildStep3(),
               isActive: _currentStep >= 2,
@@ -412,12 +412,12 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
         // Titre
         TextField(
           controller: _titleController,
-          style: const TextStyle(color: Colors.white),
-          decoration: const InputDecoration(
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+          decoration: InputDecoration(
             labelText: 'Titre du planning *',
-            labelStyle: TextStyle(color: Colors.white60),
+            labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
             enabledBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: Colors.white24),
+              borderSide: BorderSide(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.24)),
             ),
             focusedBorder: UnderlineInputBorder(
               borderSide: BorderSide(color: AppColors.primary),
@@ -430,13 +430,13 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
         // Description
         TextField(
           controller: _descriptionController,
-          style: const TextStyle(color: Colors.white),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
           maxLines: 3,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             labelText: 'Description (optionnel)',
-            labelStyle: TextStyle(color: Colors.white60),
+            labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
             enabledBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: Colors.white24),
+              borderSide: BorderSide(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.24)),
             ),
             focusedBorder: UnderlineInputBorder(
               borderSide: BorderSide(color: AppColors.primary),
@@ -447,10 +447,10 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
         const SizedBox(height: 16),
         
         // Sélection du membre
-        const Text(
+        Text(
           'Membre *',
           style: TextStyle(
-            color: Colors.white60,
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
             fontSize: 12,
           ),
         ),
@@ -458,7 +458,7 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
         DropdownButtonFormField<int>(
           initialValue: _selectedMemberId,
           dropdownColor: Theme.of(context).cardTheme.color,
-          style: const TextStyle(color: Colors.white),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
           decoration: InputDecoration(
             filled: true,
             fillColor: Theme.of(context).cardTheme.color,
@@ -485,15 +485,15 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
         // Date de début
         ListTile(
           contentPadding: EdgeInsets.zero,
-          title: const Text(
+          title: Text(
             'Date de début *',
-            style: TextStyle(color: Colors.white60, fontSize: 12),
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 12),
           ),
           subtitle: Text(
             _startDate != null 
                 ? '${_startDate!.day.toString().padLeft(2, '0')}/${_startDate!.month.toString().padLeft(2, '0')}/${_startDate!.year}'
                 : 'Sélectionner une date',
-            style: const TextStyle(color: Colors.white),
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
           ),
           trailing: const Icon(Icons.calendar_today, color: AppColors.primary),
           onTap: () async {
@@ -527,15 +527,15 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
         // Date de fin
         ListTile(
           contentPadding: EdgeInsets.zero,
-          title: const Text(
+          title: Text(
             'Date de fin *',
-            style: TextStyle(color: Colors.white60, fontSize: 12),
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 12),
           ),
           subtitle: Text(
             _endDate != null 
                 ? '${_endDate!.day.toString().padLeft(2, '0')}/${_endDate!.month.toString().padLeft(2, '0')}/${_endDate!.year}'
                 : 'Sélectionner une date',
-            style: const TextStyle(color: Colors.white),
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
           ),
           trailing: const Icon(Icons.calendar_today, color: AppColors.primary),
           onTap: () async {
@@ -570,10 +570,10 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
         const SizedBox(height: 16),
         
         // Sélection des jours de la semaine
-        const Text(
+        Text(
           'Jours de la semaine *',
           style: TextStyle(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.onSurface,
             fontSize: 14,
             fontWeight: FontWeight.bold,
           ),
@@ -605,10 +605,10 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
               selectedColor: AppColors.primary.withValues(alpha: 0.3),
               checkmarkColor: AppColors.primary,
               labelStyle: TextStyle(
-                color: isSelected ? AppColors.primary : Colors.white60,
+                color: isSelected ? AppColors.primary : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
               ),
               side: BorderSide(
-                color: isSelected ? AppColors.primary : Colors.white24,
+                color: isSelected ? AppColors.primary : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.24),
               ),
             );
           }),
@@ -621,10 +621,10 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Sélectionnez les exercices pour chaque jour',
           style: TextStyle(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.onSurface,
             fontSize: 14,
           ),
         ),
@@ -641,17 +641,17 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
             child: ExpansionTile(
               title: Text(
                 dayNames[dayOfWeek],
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               subtitle: Text(
                 '${selectedExercises.length} exercice(s) sélectionné(s)',
-                style: const TextStyle(color: Colors.white60),
+                style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
               ),
               iconColor: AppColors.primary,
-              collapsedIconColor: Colors.white60,
+              collapsedIconColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
               children: _allExercises.map((exercise) {
                 final exerciseId = exercise['id'] as int;
                 final isSelected = selectedExercises.contains(exerciseId);
@@ -671,14 +671,14 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
                   },
                   title: Text(
                     exercise['name'] as String? ?? 'Exercice sans nom',
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                   ),
                   subtitle: Text(
                     exercise['category'] as String? ?? '',
-                    style: const TextStyle(color: Colors.white60, fontSize: 12),
+                    style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 12),
                   ),
                   fillColor: WidgetStateProperty.all(AppColors.primary),
-                  checkColor: Colors.white,
+                  checkColor: Theme.of(context).colorScheme.onSurface,
                 );
               }).toList(),
             ),
@@ -692,10 +692,10 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Configurez les détails de chaque exercice',
           style: TextStyle(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.onSurface,
             fontSize: 14,
           ),
         ),
@@ -743,8 +743,8 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
           children: [
             Text(
               exercise['name'] as String? ?? 'Exercice sans nom',
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface,
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
@@ -755,11 +755,11 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
               children: [
                 Expanded(
                   child: TextField(
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'Séries',
-                      labelStyle: TextStyle(color: Colors.white60, fontSize: 12),
+                      labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 12),
                       isDense: true,
                     ),
                     onChanged: (value) {
@@ -770,11 +770,11 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: TextField(
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'Répétitions',
-                      labelStyle: TextStyle(color: Colors.white60, fontSize: 12),
+                      labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 12),
                       isDense: true,
                     ),
                     onChanged: (value) {
@@ -791,11 +791,11 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
               children: [
                 Expanded(
                   child: TextField(
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'Poids (kg)',
-                      labelStyle: TextStyle(color: Colors.white60, fontSize: 12),
+                      labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 12),
                       isDense: true,
                     ),
                     onChanged: (value) {
@@ -806,11 +806,11 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: TextField(
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'Repos (sec)',
-                      labelStyle: TextStyle(color: Colors.white60, fontSize: 12),
+                      labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 12),
                       isDense: true,
                     ),
                     onChanged: (value) {
@@ -824,11 +824,11 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
             const SizedBox(height: 12),
             
             TextField(
-              style: const TextStyle(color: Colors.white),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
               maxLines: 2,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Notes',
-                labelStyle: TextStyle(color: Colors.white60, fontSize: 12),
+                labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 12),
                 isDense: true,
               ),
               onChanged: (value) {

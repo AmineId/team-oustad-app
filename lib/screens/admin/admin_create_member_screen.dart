@@ -234,6 +234,7 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
     return adminFrame(
       context,
       embedded: widget.onBack != null,
+      padBottom: false,
       child: Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -262,12 +263,13 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
           color: Theme.of(context).scaffoldBackgroundColor,
         ),
         child: SafeArea(
+          bottom: false,
           child: _isLoading
               ? const Center(
                   child: CircularProgressIndicator(color: AppColors.primary),
                 )
               : SingleChildScrollView(
-                  padding: const EdgeInsets.all(24.0),
+                  padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + MediaQuery.of(context).padding.bottom),
                   child: Form(
                     key: _formKey,
                     child: Column(
@@ -602,7 +604,7 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                                 _obscurePassword
                                     ? Icons.visibility
                                     : Icons.visibility_off,
-                                color: Colors.white60,
+                                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                               ),
                               onPressed: () {
                                 setState(() {
@@ -654,10 +656,10 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      const Text(
+                                      Text(
                                         'Envoyer un email de configuration',
                                         style: TextStyle(
-                                          color: Colors.white,
+                                          color: Theme.of(context).colorScheme.onSurface,
                                           fontSize: 14,
                                           fontWeight: FontWeight.w500,
                                         ),
@@ -666,7 +668,7 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                                       Text(
                                         'Le membre recevra un email avec un lien pour créer son mot de passe',
                                         style: TextStyle(
-                                          color: Colors.white.withValues(
+                                          color: Theme.of(context).colorScheme.onSurface.withValues(
                                             alpha: 0.7,
                                           ),
                                           fontSize: 12,
@@ -703,7 +705,7 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                                 child: Text(
                                   '* Champs requis\n\nLe numéro de téléphone est obligatoire. L\'email est optionnel mais nécessaire pour envoyer l\'email de configuration.\n\nSi vous ne fournissez pas de mot de passe et qu\'un email est fourni, le membre recevra un email pour créer son mot de passe.',
                                   style: TextStyle(
-                                    color: Colors.white.withValues(alpha: 0.9),
+                                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.9),
                                     fontSize: 12,
                                   ),
                                 ),
@@ -725,10 +727,10 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                                     vertical: 12,
                                   ),
                                 ),
-                                child: const Text(
+                                child: Text(
                                   'Annuler',
                                   style: TextStyle(
-                                    color: Colors.white60,
+                                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                                     fontSize: 16,
                                   ),
                                 ),
@@ -749,7 +751,7 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                 ),
-                                child: const Text(
+                                child: Text(
                                   'Créer le membre',
                                   style: TextStyle(
                                     color: Colors.white,

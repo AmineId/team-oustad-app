@@ -133,6 +133,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen>
     return adminFrame(
       context,
       embedded: widget.onBack != null,
+      padBottom: false,
       child: Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -176,7 +177,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen>
                       ),
                       child: Text(
                         '${_activePlannings.length}',
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: Colors.white,
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
@@ -207,7 +208,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen>
                       ),
                       child: Text(
                         '${_completedPlannings.length}',
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: Colors.white,
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
@@ -238,7 +239,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen>
                       ),
                       child: Text(
                         '${_cancelledPlannings.length}',
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: Colors.white,
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
@@ -274,7 +275,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen>
                     const SizedBox(height: 16),
                     Text(
                       _errorMessage,
-                      style: const TextStyle(color: Colors.white, fontSize: 16),
+                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 16),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 16),
@@ -328,13 +329,13 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
+            Icon(
               Icons.calendar_today_outlined,
               color: Colors.white60,
               size: 48,
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'Aucun planning',
               style: TextStyle(color: Colors.white60, fontSize: 16),
             ),
@@ -347,7 +348,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen>
       onRefresh: _loadPlannings,
       color: AppColors.primary,
       child: ListView.builder(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + MediaQuery.of(context).padding.bottom),
         itemCount: plannings.length,
         itemBuilder: (context, index) {
           final planning = plannings[index];
@@ -391,8 +392,8 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen>
                   Expanded(
                     child: Text(
                       title,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
@@ -428,7 +429,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen>
                 Text(
                   description,
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.7),
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                     fontSize: 13,
                   ),
                   maxLines: 2,
@@ -437,7 +438,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen>
               ],
 
               const SizedBox(height: 12),
-              const Divider(color: Colors.white24),
+              Divider(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.24)),
               const SizedBox(height: 12),
 
               // Membre
@@ -454,7 +455,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen>
                       child: Text(
                         'Membre: ${getUserFullName(member)}',
                         style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.9),
+                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.9),
                           fontSize: 13,
                         ),
                       ),
@@ -478,7 +479,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen>
                       child: Text(
                         'Coach: ${getUserFullName(coach)}',
                         style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.9),
+                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.9),
                           fontSize: 13,
                         ),
                       ),
@@ -491,9 +492,9 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen>
               // Dates
               Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.calendar_today,
-                    color: Colors.white60,
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                     size: 16,
                   ),
                   const SizedBox(width: 8),
@@ -501,7 +502,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen>
                     child: Text(
                       'Du ${_formatDate(startDate)} au ${_formatDate(endDate)}',
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.7),
+                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                         fontSize: 13,
                       ),
                     ),
@@ -617,10 +618,10 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen>
                                 children: [
                                   Text(
                                     title,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 20,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.white,
+                                      color: Theme.of(context).colorScheme.onSurface,
                                     ),
                                   ),
                                   const SizedBox(height: 4),
@@ -654,7 +655,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen>
                             IconButton(
                               onPressed: () => Navigator.pop(context),
                               icon:
-                                  const Icon(Icons.close, color: Colors.white),
+                                  Icon(Icons.close, color: Theme.of(context).colorScheme.onSurface),
                             ),
                           ],
                         ),
@@ -670,12 +671,12 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen>
                               Text(
                                 description,
                                 style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.9),
+                                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.9),
                                   fontSize: 15,
                                 ),
                               ),
                               const SizedBox(height: 20),
-                              const Divider(color: Colors.white24),
+                              Divider(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.24)),
                               const SizedBox(height: 20),
                             ],
                             if (member != null)
@@ -698,14 +699,14 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen>
                               'Du ${_formatDate(startDate)} au ${_formatDate(endDate)}',
                             ),
                             const SizedBox(height: 20),
-                            const Divider(color: Colors.white24),
+                            Divider(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.24)),
                             const SizedBox(height: 20),
                             Text(
                               '${mutableDays.length} jour${mutableDays.length > 1 ? 's' : ''} d\'entraînement',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                                color: Theme.of(context).colorScheme.onSurface,
                               ),
                             ),
                             const SizedBox(height: 12),
@@ -736,7 +737,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen>
                                         Text(
                                           'Aucun exercice',
                                           style: TextStyle(
-                                            color: Colors.white.withValues(
+                                            color: Theme.of(context).colorScheme.onSurface.withValues(
                                               alpha: 0.5,
                                             ),
                                             fontSize: 13,
@@ -767,7 +768,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen>
                                                   child: Text(
                                                     exName,
                                                     style: TextStyle(
-                                                      color: Colors.white
+                                                      color: Theme.of(context).colorScheme.onSurface
                                                           .withValues(
                                                         alpha: 0.85,
                                                       ),
@@ -862,15 +863,15 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen>
               Text(
                 label,
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.7),
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                   fontSize: 12,
                 ),
               ),
               const SizedBox(height: 2),
               Text(
                 value,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
                 ),
@@ -903,13 +904,13 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen>
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: Theme.of(context).cardTheme.color,
-          title: const Text(
+          title: Text(
             'Supprimer le planning',
-            style: TextStyle(color: Colors.white),
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
           ),
           content: Text(
             'Voulez-vous vraiment supprimer le planning "$title" ?\n\nCette action est irréversible.',
-            style: const TextStyle(color: Colors.white70),
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
           ),
           actions: [
             TextButton(

@@ -7,15 +7,16 @@ Widget adminFrame(
   BuildContext context, {
   required bool embedded,
   required Widget child,
+  bool padBottom = true,
 }) {
   if (!embedded) return child;
   final mq = MediaQuery.of(context);
   return Padding(
-    padding: EdgeInsets.only(top: mq.padding.top, bottom: mq.padding.bottom),
+    padding: EdgeInsets.only(top: mq.padding.top, bottom: padBottom ? mq.padding.bottom : 0),
     child: MediaQuery.removePadding(
       context: context,
       removeTop: true,
-      removeBottom: true,
+      removeBottom: padBottom,
       child: child,
     ),
   );

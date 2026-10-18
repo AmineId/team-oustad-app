@@ -4022,7 +4022,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                   color: statusBgColor.withValues(alpha: 0.3),
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
-                                    color: Colors.white.withValues(alpha: 0.4),
+                                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
                                     width: 1,
                                   ),
                                 ),
@@ -4032,7 +4032,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                     Icon(
                                       statusIcon,
                                       size: 14,
-                                      color: Colors.white,
+                                      color: Theme.of(context).colorScheme.onSurface,
                                     ),
                                     SizedBox(width: 4),
                                     Text(
@@ -4040,7 +4040,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                       style: TextStyle(
                                         fontSize: 11,
                                         fontWeight: FontWeight.w700,
-                                        color: Colors.white,
+                                        color: Theme.of(context).colorScheme.onSurface,
                                       ),
                                     ),
                                   ],
@@ -4054,7 +4054,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w800,
-                                    color: Colors.white,
+                                    color: Theme.of(context).colorScheme.onSurface,
                                     height: 1.2,
                                   ),
                                   maxLines: 1,
@@ -4066,12 +4066,12 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                               Container(
                                 padding: EdgeInsets.all(8),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.2),
+                                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2),
                                   shape: BoxShape.circle,
                                 ),
                                 child: Icon(
                                   Icons.fitness_center_rounded,
-                                  color: Colors.white,
+                                  color: Theme.of(context).colorScheme.onSurface,
                                   size: 18,
                                 ),
                               ),
@@ -4084,7 +4084,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                               goalDescription,
                               style: TextStyle(
                                 fontSize: 12,
-                                color: Colors.white.withValues(alpha: 0.9),
+                                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.9),
                                 height: 1.4,
                               ),
                               maxLines: 2,
@@ -4099,10 +4099,10 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                 vertical: 10,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.15),
+                                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                  color: Colors.white.withValues(alpha: 0.25),
+                                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.25),
                                   width: 1,
                                 ),
                               ),
@@ -4119,7 +4119,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                           children: [
                                             Icon(
                                               Icons.monitor_weight_rounded,
-                                              color: Colors.white,
+                                              color: Theme.of(context).colorScheme.onSurface,
                                               size: 16,
                                             ),
                                             SizedBox(width: 4),
@@ -4128,7 +4128,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                               style: TextStyle(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.w800,
-                                                color: Colors.white,
+                                                color: Theme.of(context).colorScheme.onSurface,
                                               ),
                                             ),
                                             SizedBox(width: 2),
@@ -4137,7 +4137,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                               style: TextStyle(
                                                 fontSize: 11,
                                                 fontWeight: FontWeight.w500,
-                                                color: Colors.white.withValues(
+                                                color: Theme.of(context).colorScheme.onSurface.withValues(
                                                   alpha: 0.8,
                                                 ),
                                               ),
@@ -4150,7 +4150,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                     Container(
                                       width: 1,
                                       height: 20,
-                                      color: Colors.white.withValues(
+                                      color: Theme.of(context).colorScheme.onSurface.withValues(
                                         alpha: 0.3,
                                       ),
                                     ),
@@ -4163,7 +4163,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                           children: [
                                             Icon(
                                               Icons.straighten_rounded,
-                                              color: Colors.white,
+                                              color: Theme.of(context).colorScheme.onSurface,
                                               size: 16,
                                             ),
                                             SizedBox(width: 4),
@@ -4172,7 +4172,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                               style: TextStyle(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.w800,
-                                                color: Colors.white,
+                                                color: Theme.of(context).colorScheme.onSurface,
                                               ),
                                             ),
                                             SizedBox(width: 2),
@@ -4181,7 +4181,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                               style: TextStyle(
                                                 fontSize: 11,
                                                 fontWeight: FontWeight.w500,
-                                                color: Colors.white.withValues(
+                                                color: Theme.of(context).colorScheme.onSurface.withValues(
                                                   alpha: 0.8,
                                                 ),
                                               ),
@@ -4202,10 +4202,10 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                 vertical: 10,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.2),
+                                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                  color: Colors.white.withValues(alpha: 0.3),
+                                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
                                   width: 1,
                                 ),
                               ),
@@ -4218,7 +4218,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                       children: [
                                         Icon(
                                           Icons.flag_rounded,
-                                          color: Colors.white,
+                                          color: Theme.of(context).colorScheme.onSurface,
                                           size: 16,
                                         ),
                                         SizedBox(width: 6),
@@ -4227,7 +4227,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                           style: TextStyle(
                                             fontSize: 14,
                                             fontWeight: FontWeight.w700,
-                                            color: Colors.white,
+                                            color: Theme.of(context).colorScheme.onSurface,
                                           ),
                                         ),
                                         SizedBox(width: 2),
@@ -4236,7 +4236,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                           style: TextStyle(
                                             fontSize: 11,
                                             fontWeight: FontWeight.w500,
-                                            color: Colors.white.withValues(
+                                            color: Theme.of(context).colorScheme.onSurface.withValues(
                                               alpha: 0.8,
                                             ),
                                           ),
@@ -4248,7 +4248,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                     Container(
                                       width: 1,
                                       height: 16,
-                                      color: Colors.white.withValues(
+                                      color: Theme.of(context).colorScheme.onSurface.withValues(
                                         alpha: 0.3,
                                       ),
                                     ),
@@ -4257,7 +4257,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                       children: [
                                         Icon(
                                           Icons.flag_rounded,
-                                          color: Colors.white,
+                                          color: Theme.of(context).colorScheme.onSurface,
                                           size: 16,
                                         ),
                                         SizedBox(width: 6),
@@ -4266,7 +4266,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                           style: TextStyle(
                                             fontSize: 14,
                                             fontWeight: FontWeight.w700,
-                                            color: Colors.white,
+                                            color: Theme.of(context).colorScheme.onSurface,
                                           ),
                                         ),
                                         SizedBox(width: 2),
@@ -4275,7 +4275,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                           style: TextStyle(
                                             fontSize: 11,
                                             fontWeight: FontWeight.w500,
-                                            color: Colors.white.withValues(
+                                            color: Theme.of(context).colorScheme.onSurface.withValues(
                                               alpha: 0.8,
                                             ),
                                           ),
@@ -4294,7 +4294,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                               children: [
                                 Icon(
                                   Icons.calendar_today_rounded,
-                                  color: Colors.white.withValues(alpha: 0.9),
+                                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.9),
                                   size: 14,
                                 ),
                                 SizedBox(width: 6),
@@ -4305,7 +4305,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                         : 'Objectif: ${_formatDateShort(targetDate!)}',
                                     style: TextStyle(
                                       fontSize: 11,
-                                      color: Colors.white.withValues(
+                                      color: Theme.of(context).colorScheme.onSurface.withValues(
                                         alpha: 0.85,
                                       ),
                                       fontWeight: FontWeight.w500,
@@ -4416,21 +4416,21 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                           color: statusBgColor.withValues(alpha: 0.3),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.4),
+                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
                             width: 1,
                           ),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(statusIcon, size: 16, color: Colors.white),
+                            Icon(statusIcon, size: 16, color: Theme.of(context).colorScheme.onSurface),
                             SizedBox(width: 6),
                             Text(
                               statusText,
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
-                                color: Colors.white,
+                                color: Theme.of(context).colorScheme.onSurface,
                               ),
                             ),
                           ],
@@ -4442,7 +4442,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                         onPressed: () => Navigator.pop(context),
                         icon: Icon(
                           Icons.close_rounded,
-                          color: Colors.white,
+                          color: Theme.of(context).colorScheme.onSurface,
                           size: 28,
                         ),
                       ),
@@ -4460,12 +4460,12 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                         Container(
                           padding: EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
+                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
                             Icons.fitness_center_rounded,
-                            color: Colors.white,
+                            color: Theme.of(context).colorScheme.onSurface,
                             size: 32,
                           ),
                         ),
@@ -4476,7 +4476,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                           style: TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.w900,
-                            color: Colors.white,
+                            color: Theme.of(context).colorScheme.onSurface,
                             height: 1.2,
                           ),
                         ),
@@ -4487,7 +4487,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                             goalDescription,
                             style: TextStyle(
                               fontSize: 16,
-                              color: Colors.white.withValues(alpha: 0.95),
+                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.95),
                               height: 1.6,
                             ),
                           ),
@@ -4500,10 +4500,10 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                           Container(
                             padding: EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.15),
+                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.25),
+                                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.25),
                                 width: 1,
                               ),
                             ),
@@ -4515,7 +4515,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                     children: [
                                       Icon(
                                         Icons.calendar_today_rounded,
-                                        color: Colors.white,
+                                        color: Theme.of(context).colorScheme.onSurface,
                                         size: 20,
                                       ),
                                       SizedBox(width: 12),
@@ -4523,7 +4523,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                         'Créé le ${_formatDate(createdAt)}',
                                         style: TextStyle(
                                           fontSize: 14,
-                                          color: Colors.white,
+                                          color: Theme.of(context).colorScheme.onSurface,
                                           fontWeight: FontWeight.w600,
                                         ),
                                       ),
@@ -4536,7 +4536,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                     children: [
                                       Icon(
                                         Icons.flag_rounded,
-                                        color: Colors.white,
+                                        color: Theme.of(context).colorScheme.onSurface,
                                         size: 20,
                                       ),
                                       SizedBox(width: 12),
@@ -4544,7 +4544,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                         'Objectif: ${_formatDate(targetDate)}',
                                         style: TextStyle(
                                           fontSize: 14,
-                                          color: Colors.white,
+                                          color: Theme.of(context).colorScheme.onSurface,
                                           fontWeight: FontWeight.w600,
                                         ),
                                       ),
@@ -4558,7 +4558,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                     children: [
                                       Icon(
                                         Icons.stars_rounded,
-                                        color: Colors.white,
+                                        color: Theme.of(context).colorScheme.onSurface,
                                         size: 20,
                                       ),
                                       SizedBox(width: 12),
@@ -4566,7 +4566,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                         'Atteint le ${_formatDate(achievedAt)}',
                                         style: TextStyle(
                                           fontSize: 14,
-                                          color: Colors.white,
+                                          color: Theme.of(context).colorScheme.onSurface,
                                           fontWeight: FontWeight.w600,
                                         ),
                                       ),
@@ -4590,10 +4590,10 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                           Container(
                             padding: EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.15),
+                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.25),
+                                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.25),
                                 width: 1,
                               ),
                             ),
@@ -4607,7 +4607,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                   style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,
-                                    color: Colors.white.withValues(alpha: 0.8),
+                                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8),
                                     letterSpacing: 0.5,
                                   ),
                                 ),
@@ -4620,7 +4620,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                           children: [
                                             Icon(
                                               Icons.monitor_weight_rounded,
-                                              color: Colors.white,
+                                              color: Theme.of(context).colorScheme.onSurface,
                                               size: 20,
                                             ),
                                             SizedBox(width: 8),
@@ -4629,7 +4629,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                               style: TextStyle(
                                                 fontSize: 18,
                                                 fontWeight: FontWeight.w800,
-                                                color: Colors.white,
+                                                color: Theme.of(context).colorScheme.onSurface,
                                               ),
                                             ),
                                           ],
@@ -4641,7 +4641,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                           children: [
                                             Icon(
                                               Icons.straighten_rounded,
-                                              color: Colors.white,
+                                              color: Theme.of(context).colorScheme.onSurface,
                                               size: 20,
                                             ),
                                             SizedBox(width: 8),
@@ -4650,7 +4650,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                               style: TextStyle(
                                                 fontSize: 18,
                                                 fontWeight: FontWeight.w800,
-                                                color: Colors.white,
+                                                color: Theme.of(context).colorScheme.onSurface,
                                               ),
                                             ),
                                           ],
@@ -4667,10 +4667,10 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                           Container(
                             padding: EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.15),
+                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.25),
+                                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.25),
                                 width: 1,
                               ),
                             ),
@@ -4682,7 +4682,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                   style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,
-                                    color: Colors.white.withValues(alpha: 0.8),
+                                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8),
                                     letterSpacing: 0.5,
                                   ),
                                 ),
@@ -4695,7 +4695,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                           children: [
                                             Icon(
                                               Icons.monitor_weight_rounded,
-                                              color: Colors.white,
+                                              color: Theme.of(context).colorScheme.onSurface,
                                               size: 20,
                                             ),
                                             SizedBox(width: 8),
@@ -4704,7 +4704,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                               style: TextStyle(
                                                 fontSize: 18,
                                                 fontWeight: FontWeight.w800,
-                                                color: Colors.white,
+                                                color: Theme.of(context).colorScheme.onSurface,
                                               ),
                                             ),
                                           ],
@@ -4716,7 +4716,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                           children: [
                                             Icon(
                                               Icons.straighten_rounded,
-                                              color: Colors.white,
+                                              color: Theme.of(context).colorScheme.onSurface,
                                               size: 20,
                                             ),
                                             SizedBox(width: 8),
@@ -4725,7 +4725,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                               style: TextStyle(
                                                 fontSize: 18,
                                                 fontWeight: FontWeight.w800,
-                                                color: Colors.white,
+                                                color: Theme.of(context).colorScheme.onSurface,
                                               ),
                                             ),
                                           ],
