@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.53](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.52...v1.0.0-beta.53) (2026-10-18)
+
+
+### ✨ New Features
+
+* implement new swagger routes (gym image, exercise removal, subscription renew, WhatsApp) ([8a0a3f4](https://github.com/TeamFitness/mobile-app/commit/8a0a3f40f62695a877f1396b329c452fed589f06))
+
+
+### 🐛 Bug Fixes
+
+* **ci:** add curl timeout and continue-on-error to server version update step ([c6c94a2](https://github.com/TeamFitness/mobile-app/commit/c6c94a22693a914a02608b935e414d4fbfbf0691))
+
 ## [1.0.0-beta.52](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.51...v1.0.0-beta.52) (2026-10-18)
 
 
