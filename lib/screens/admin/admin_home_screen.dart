@@ -1765,7 +1765,7 @@ class _AdminsListViewState extends State<_AdminsListView> {
         ), // SafeArea
       ), // Container
       floatingActionButton: Padding(
-        padding: EdgeInsets.only(bottom: Platform.isIOS ? kBottomNavigationBarHeight : 0),
+        padding: EdgeInsets.only(bottom: Platform.isIOS ? glassTabBarReserved : 0),
         child: FloatingActionButton(
           onPressed: widget.onCreate,
           backgroundColor: theme.colorScheme.primary,
@@ -2154,7 +2154,7 @@ class _GymsListViewState extends State<_GymsListView> {
         ), // SafeArea
       ), // Container
       floatingActionButton: Padding(
-        padding: EdgeInsets.only(bottom: Platform.isIOS ? kBottomNavigationBarHeight : 0),
+        padding: EdgeInsets.only(bottom: Platform.isIOS ? glassTabBarReserved : 0),
         child: FloatingActionButton(
           onPressed: widget.onCreate,
           backgroundColor: AppColors.primary,
