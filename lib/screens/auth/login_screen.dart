@@ -136,10 +136,10 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
   Future<void> _onBiometricPressed() async {
     final hasConsent = await _authService.hasBiometricConsent();
     if (!hasConsent) {
-      await _showBiometricConsentDialog();
-      if (!mounted) return;
-      if (!await _authService.hasBiometricConsent()) return;
-      setState(() => _hasBiometricConsent = true);
+      if (mounted) {
+        AppSnackBar.info(context, 'Connectez-vous d\'abord avec votre mot de passe pour activer la biométrie');
+      }
+      return;
     }
 
     setState(() => _isAuthenticating = true);
@@ -504,10 +504,10 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
   Future<void> _authenticateWithBiometrics({bool offlineMode = false}) async {
     final hasConsent = await _authService.hasBiometricConsent();
     if (!hasConsent) {
-      await _showBiometricConsentDialog();
-      if (!mounted) return;
-      if (!await _authService.hasBiometricConsent()) return;
-      setState(() => _hasBiometricConsent = true);
+      if (mounted) {
+        AppSnackBar.info(context, 'Connectez-vous d\'abord avec votre mot de passe pour activer la biométrie');
+      }
+      return;
     }
 
     setState(() => _isAuthenticating = true);
