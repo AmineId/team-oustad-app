@@ -96,28 +96,6 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
               .toList();
           debugPrint('📋 Subscriptions count: ${subscriptions.length}');
 
-          // Charger le nom du type d'abonnement pour chaque subscription
-          for (var subscription in subscriptions) {
-            final subscriptionTypeId =
-                subscription['subscriptionTypeId'] as int?;
-            if (subscriptionTypeId != null) {
-              try {
-                final subscriptionTypeData = await _apiService
-                    .getSubscriptionTypeById(subscriptionTypeId);
-                if (subscriptionTypeData != null) {
-                  subscription['subscriptionType'] = subscriptionTypeData;
-                  debugPrint(
-                    '📋 Loaded subscription type: ${subscriptionTypeData['name']}',
-                  );
-                }
-              } catch (e) {
-                debugPrint(
-                  'Erreur chargement type abonnement $subscriptionTypeId: $e',
-                );
-              }
-            }
-          }
-
           // Récupérer tous les paiements de tous les abonnements
           for (var subscription in subscriptions) {
             try {
@@ -462,7 +440,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
 
     final fullName = getUserFullName(_member);
     final email = _member!['email'] as String? ?? '';
-    final uniqueCode = _member!['uniqueCode'] as String? ?? '';
+    final uniqueCode = _member!['displayId'] as String? ?? '';
     final phone = _member!['phone'] as String?;
 
     // Obtenir les initiales pour l'avatar
@@ -575,11 +553,9 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
     final startDate = subscription['startDate'] as String?;
     final endDate = subscription['endDate'] as String?;
 
-    // Le type est dans subscriptionType['type']
-    final typeData = subscriptionType?['type'] as Map<String, dynamic>?;
-    final typeName = typeData?['name'] as String? ?? 'Abonnement';
-    final typeDescription = typeData?['description'] as String?;
-    final monthlyPrice = typeData?['monthlyPrice'];
+    final typeName = subscriptionType?['name'] as String? ?? 'Abonnement';
+    final typeDescription = subscriptionType?['description'] as String?;
+    final monthlyPrice = subscriptionType?['monthlyPrice'];
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),

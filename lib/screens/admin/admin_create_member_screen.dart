@@ -169,7 +169,6 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
       final phone = _phoneController.text.trim();
       final firstName = _firstNameController.text.trim();
       final lastName = _lastNameController.text.trim();
-      final address = _addressController.text.trim();
       final password = _passwordController.text.isNotEmpty
           ? _passwordController.text
           : null;
@@ -182,12 +181,9 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
       debugPrint('Création du membre: $firstName $lastName ($phone)');
 
       final result = await _apiService.createMember(
-        email.isNotEmpty
-            ? email
-            : phone, // Utiliser le téléphone si pas d'email
+        email.isNotEmpty ? email : phone,
         firstName,
         lastName,
-        address,
         _gymId!,
         token,
         password: password,

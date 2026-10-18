@@ -121,7 +121,7 @@ class _AdminMembersScreenState extends State<AdminMembersScreen> {
         _filteredMembers = _members.where((member) {
           final fullName = getUserFullName(member).toLowerCase();
           final email = (member['email'] as String? ?? '').toLowerCase();
-          final uniqueCode = (member['uniqueCode'] as String? ?? '')
+          final uniqueCode = (member['displayId'] as String? ?? '')
               .toLowerCase();
           return fullName.contains(query) ||
               email.contains(query) ||
@@ -337,7 +337,7 @@ class _MemberCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final fullName = getUserFullName(member);
     final email = member['email'] as String? ?? '';
-    final uniqueCode = member['uniqueCode'] as String? ?? '';
+    final uniqueCode = member['displayId'] as String? ?? '';
 
     // Obtenir les initiales pour l'avatar
     final initials = fullName

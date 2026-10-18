@@ -1620,7 +1620,6 @@ class ApiService {
     String email,
     String firstName,
     String lastName,
-    String address,
     int gymId,
     String token, {
     String? password,
@@ -1634,9 +1633,9 @@ class ApiService {
         'email': email,
         'firstName': firstName,
         'lastName': lastName,
-        'address': address,
         'role': 'member',
         'gymId': gymId,
+        'sendSetupEmail': shouldSendSetupEmail,
         if (password != null) 'password': password,
         if (phone != null) 'phoneNumber': phone,
       };
@@ -1665,21 +1664,7 @@ class ApiService {
       if (resp.statusCode == 201) {
         try {
           final responseBody = jsonDecode(resp.body);
-
-          // If shouldSendSetupEmail flag is true and email is provided, send setup email
-          if (shouldSendSetupEmail && email.isNotEmpty && password == null) {
-            try {
-              debugPrint('Sending setup email to: $email');
-              // Call the sendSetupEmail method defined elsewhere in this class
-              final emailSent = await sendSetupEmail(email, token);
-              debugPrint('Setup email sent: $emailSent');
-            } catch (emailError) {
-              // Log the error but don't fail the member creation
-              debugPrint('Failed to send setup email: $emailError');
-            }
-          }
-
-          return responseBody as Map<String, dynamic>;
+          return responseBody['user'] as Map<String, dynamic>?;
         } catch (e) {
           // ignore: avoid_print
           debugPrint('Error parsing response: $e');
