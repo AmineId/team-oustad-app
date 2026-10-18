@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.66](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.65...v1.0.0-beta.66) (2026-10-18)
+
+
+### 🐛 Bug Fixes
+
+* **ios:** transparent progressive blur under the native tab bar ([fabffc5](https://github.com/TeamFitness/mobile-app/commit/fabffc5bc29b1a4165e87c073d7a3d4060a193a8))
+* **theme:** readable text colors in light theme ([ef78882](https://github.com/TeamFitness/mobile-app/commit/ef7888295b8e1353954d6ff3b829a58f26e3e9f8))
+* **ui:** content scrolls beneath glass bars; theme-aware text colors ([6f3a24c](https://github.com/TeamFitness/mobile-app/commit/6f3a24cf0fdfbb27cc17f0387cd547cea395e2e5))
+
 ## [1.0.0-beta.65](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.64...v1.0.0-beta.65) (2026-10-18)
 
 
