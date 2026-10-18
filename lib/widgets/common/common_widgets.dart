@@ -10,3 +10,4 @@ export 'modern_text_field.dart';
 export 'status_badge.dart';
 export 'glass.dart';
 export 'native_glass_tab_bar.dart';
+export 'swipe_back.dart';

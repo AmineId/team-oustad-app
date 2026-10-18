@@ -320,7 +320,6 @@ class _AccueilPageState extends State<AccueilPage> {
 
   @override
   Widget build(BuildContext context) {
-
     return RefreshIndicator(
       onRefresh: _fetchStats,
       color: AppColors.primary,
@@ -727,6 +726,19 @@ class _GestionPageState extends State<GestionPage> {
   }
 
   Widget _buildCurrentView(BuildContext context) {
+    final view = _buildSubView();
+    if (view != null) {
+      return SwipeBack(
+        key: ValueKey('swipe_$_currentView'),
+        onBack: _navigateBack,
+        child: view,
+      );
+    }
+
+    return _buildMenuView(context);
+  }
+
+  Widget? _buildSubView() {
     if (_currentView == 'members') {
       return AdminMembersScreen(
         key: const ValueKey('members'),
@@ -763,7 +775,10 @@ class _GestionPageState extends State<GestionPage> {
         onSuccess: () => setState(() => _currentView = 'plannings'),
       );
     }
+    return null;
+  }
 
+  Widget _buildMenuView(BuildContext context) {
     // Vue menu par défaut
 
     return Container(
@@ -922,296 +937,302 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
       child: SafeArea(
         child: RefreshIndicator(
-        onRefresh: _refreshProfileData,
-        color: Theme.of(context).colorScheme.primary,
-        notificationPredicate: (notification) => !_isRefreshing,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Profile header - Full width
-              SizedBox(
-                width: double.infinity,
-                child: Container(
+          onRefresh: _refreshProfileData,
+          color: Theme.of(context).colorScheme.primary,
+          notificationPredicate: (notification) => !_isRefreshing,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Profile header - Full width
+                SizedBox(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(24.0),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Theme.of(context).cardTheme.color!,
-                        Theme.of(
-                          context,
-                        ).cardTheme.color!.withValues(alpha: 0.8),
-                      ],
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(24.0),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Theme.of(context).cardTheme.color!,
+                          Theme.of(
+                            context,
+                          ).cardTheme.color!.withValues(alpha: 0.8),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Column(
-                    children: [
-                      Stack(
-                        children: [
-                          CircleAvatar(
-                            radius: 50,
-                            backgroundColor: Theme.of(
-                              context,
-                            ).colorScheme.primary,
-                            child: Icon(
-                              Icons.person,
-                              size: 50,
-                              color:
-                                  (Theme.of(context).brightness ==
-                                      Brightness.dark
-                                  ? AppColors.darkTextPrimary
-                                  : AppColors.lightTextPrimary),
+                    child: Column(
+                      children: [
+                        Stack(
+                          children: [
+                            CircleAvatar(
+                              radius: 50,
+                              backgroundColor: Theme.of(
+                                context,
+                              ).colorScheme.primary,
+                              child: Icon(
+                                Icons.person,
+                                size: 50,
+                                color:
+                                    (Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? AppColors.darkTextPrimary
+                                    : AppColors.lightTextPrimary),
+                              ),
                             ),
-                          ),
-                          Positioned(
-                            bottom: 0,
-                            right: 0,
-                            child: Container(
-                              padding: const EdgeInsets.all(6),
-                              decoration: BoxDecoration(
-                                color: Theme.of(
-                                  context,
-                                ).scaffoldBackgroundColor,
-                                shape: BoxShape.circle,
-                                border: Border.all(
+                            Positioned(
+                              bottom: 0,
+                              right: 0,
+                              child: Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(
+                                    context,
+                                  ).scaffoldBackgroundColor,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
+                                    width: 2,
+                                  ),
+                                ),
+                                child: Icon(
+                                  role == 'owner'
+                                      ? Icons.verified
+                                      : Icons.admin_panel_settings,
+                                  size: 16,
                                   color: Theme.of(context).colorScheme.primary,
-                                  width: 2,
                                 ),
                               ),
-                              child: Icon(
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          fullName,
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color:
+                                (Theme.of(context).brightness == Brightness.dark
+                                ? AppColors.darkTextPrimary
+                                : AppColors.lightTextPrimary),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        if (email.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 4),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.email,
+                                  size: 14,
+                                  color:
+                                      (Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? AppColors.darkTextSecondary
+                                      : AppColors.lightTextSecondary),
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  email,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color:
+                                        (Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? AppColors.darkTextSecondary
+                                        : AppColors.lightTextSecondary),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        if (phoneNumber.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 4),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.phone,
+                                  size: 14,
+                                  color:
+                                      (Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? AppColors.darkTextSecondary
+                                      : AppColors.lightTextSecondary),
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  phoneNumber,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color:
+                                        (Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? AppColors.darkTextSecondary
+                                        : AppColors.lightTextSecondary),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        const SizedBox(height: 8),
+                        Text(
+                          l10n.memberSince(joinedAt),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color:
+                                (Theme.of(context).brightness == Brightness.dark
+                                        ? AppColors.darkTextSecondary
+                                        : AppColors.lightTextSecondary)
+                                    .withValues(alpha: 0.7),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.primary.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.primary.withValues(alpha: 0.5),
+                              width: 1,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
                                 role == 'owner'
                                     ? Icons.verified
                                     : Icons.admin_panel_settings,
                                 size: 16,
                                 color: Theme.of(context).colorScheme.primary,
                               ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        fullName,
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color:
-                              (Theme.of(context).brightness == Brightness.dark
-                              ? AppColors.darkTextPrimary
-                              : AppColors.lightTextPrimary),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      if (email.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 4),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.email,
-                                size: 14,
-                                color:
-                                    (Theme.of(context).brightness ==
-                                        Brightness.dark
-                                    ? AppColors.darkTextSecondary
-                                    : AppColors.lightTextSecondary),
-                              ),
                               const SizedBox(width: 6),
                               Text(
-                                email,
+                                role == 'owner'
+                                    ? l10n.ownerRole
+                                    : l10n.adminRole,
                                 style: TextStyle(
                                   fontSize: 13,
-                                  color:
-                                      (Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? AppColors.darkTextSecondary
-                                      : AppColors.lightTextSecondary),
+                                  color: Theme.of(context).colorScheme.primary,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
                             ],
                           ),
                         ),
-                      if (phoneNumber.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 4),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.phone,
-                                size: 14,
-                                color:
-                                    (Theme.of(context).brightness ==
-                                        Brightness.dark
-                                    ? AppColors.darkTextSecondary
-                                    : AppColors.lightTextSecondary),
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                phoneNumber,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color:
-                                      (Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? AppColors.darkTextSecondary
-                                      : AppColors.lightTextSecondary),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      const SizedBox(height: 8),
-                      Text(
-                        l10n.memberSince(joinedAt),
-                        style: TextStyle(
-                          fontSize: 12,
-                          color:
-                              (Theme.of(context).brightness == Brightness.dark
-                                      ? AppColors.darkTextSecondary
-                                      : AppColors.lightTextSecondary)
-                                  .withValues(alpha: 0.7),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.primary.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.primary.withValues(alpha: 0.5),
-                            width: 1,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              role == 'owner'
-                                  ? Icons.verified
-                                  : Icons.admin_panel_settings,
-                              size: 16,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              role == 'owner' ? l10n.ownerRole : l10n.adminRole,
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Theme.of(context).colorScheme.primary,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 24),
+                const SizedBox(height: 24),
 
-              // Settings options
-              Text(
-                l10n.parameters,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: (Theme.of(context).brightness == Brightness.dark
-                      ? AppColors.darkTextPrimary
-                      : AppColors.lightTextPrimary),
-                ),
-              ),
-              const SizedBox(height: 12),
-              _buildSettingsItem(context, l10n.security, Icons.security, () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const SecuritySettingsPage(),
-                  ),
-                );
-              }),
-              _buildSettingsItem(context, l10n.about, Icons.info_outline, () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const AboutScreen()),
-                );
-              }),
-              _buildSettingsItem(
-                context,
-                l10n.helpSupport,
-                Icons.help_outline,
-                () {},
-              ),
-              const SizedBox(height: 16),
-
-              // Logout button
-              Card(
-                color: AppColors.error,
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: ListTile(
-                  leading: Icon(
-                    Icons.logout,
+                // Settings options
+                Text(
+                  l10n.parameters,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
                     color: (Theme.of(context).brightness == Brightness.dark
                         ? AppColors.darkTextPrimary
                         : AppColors.lightTextPrimary),
                   ),
-                  title: Text(
-                    l10n.disconnect,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+                ),
+                const SizedBox(height: 12),
+                _buildSettingsItem(context, l10n.security, Icons.security, () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SecuritySettingsPage(),
+                    ),
+                  );
+                }),
+                _buildSettingsItem(context, l10n.about, Icons.info_outline, () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AboutScreen(),
+                    ),
+                  );
+                }),
+                _buildSettingsItem(
+                  context,
+                  l10n.helpSupport,
+                  Icons.help_outline,
+                  () {},
+                ),
+                const SizedBox(height: 16),
+
+                // Logout button
+                Card(
+                  color: AppColors.error,
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: ListTile(
+                    leading: Icon(
+                      Icons.logout,
                       color: (Theme.of(context).brightness == Brightness.dark
                           ? AppColors.darkTextPrimary
                           : AppColors.lightTextPrimary),
                     ),
+                    title: Text(
+                      l10n.disconnect,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: (Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.darkTextPrimary
+                            : AppColors.lightTextPrimary),
+                      ),
+                    ),
+                    trailing: Icon(
+                      Icons.arrow_forward_ios,
+                      color: (Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.darkTextPrimary
+                          : AppColors.lightTextPrimary),
+                      size: 16,
+                    ),
+                    onTap: () async {
+                      // Vider le cache du profil mais garder les credentials pour biométrie
+                      await _authService.clearProfileCache();
+                      await _authService.clearAll();
+                      if (context.mounted) {
+                        Navigator.of(context).pushAndRemoveUntil(
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const LoginScreen(fromLogout: true),
+                          ),
+                          (route) => false,
+                        );
+                      }
+                    },
                   ),
-                  trailing: Icon(
-                    Icons.arrow_forward_ios,
-                    color: (Theme.of(context).brightness == Brightness.dark
-                        ? AppColors.darkTextPrimary
-                        : AppColors.lightTextPrimary),
-                    size: 16,
-                  ),
-                  onTap: () async {
-                    // Vider le cache du profil mais garder les credentials pour biométrie
-                    await _authService.clearProfileCache();
-                    await _authService.clearAll();
-                    if (context.mounted) {
-                      Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              const LoginScreen(fromLogout: true),
-                        ),
-                        (route) => false,
-                      );
-                    }
-                  },
                 ),
-              ),
-              const SizedBox(height: 24),
-            ],
+                const SizedBox(height: 24),
+              ],
+            ),
           ),
         ),
-      ),
       ),
     );
   }
@@ -1279,8 +1300,40 @@ class _GestionGlobalePageState extends State<GestionGlobalePage> {
   Map<String, dynamic>? _selectedAdmin;
   Map<String, dynamic>? _selectedGym;
 
+  void _navigateBack() {
+    setState(() {
+      switch (_currentView) {
+        case 'admin_details':
+        case 'admin_create':
+          _currentView = 'admins';
+        case 'gym_details':
+        case 'gym_create':
+          _currentView = 'gyms';
+        case 'admin_edit':
+          _currentView = 'admin_details';
+        case 'gym_edit':
+        case 'gym_hours':
+          _currentView = 'gym_details';
+        default:
+          _currentView = 'menu';
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final view = _buildSubView();
+    if (view != null) {
+      return SwipeBack(
+        key: ValueKey('swipe_$_currentView'),
+        onBack: _navigateBack,
+        child: view,
+      );
+    }
+    return _buildMenuView(context);
+  }
+
+  Widget? _buildSubView() {
     // Afficher la vue appropriée
     if (_currentView == 'admins') {
       return _AdminsListView(
@@ -1341,7 +1394,10 @@ class _GestionGlobalePageState extends State<GestionGlobalePage> {
         onSuccess: () => setState(() => _currentView = 'gyms'),
       );
     }
+    return null;
+  }
 
+  Widget _buildMenuView(BuildContext context) {
     // Vue menu par défaut
 
     return Container(
@@ -1772,7 +1828,9 @@ class _AdminsListViewState extends State<_AdminsListView> {
         ), // SafeArea
       ), // Container
       floatingActionButton: Padding(
-        padding: EdgeInsets.only(bottom: Platform.isIOS ? glassBottomReserved : 0),
+        padding: EdgeInsets.only(
+          bottom: Platform.isIOS ? glassBottomReserved : 0,
+        ),
         child: FloatingActionButton(
           onPressed: widget.onCreate,
           backgroundColor: theme.colorScheme.primary,
@@ -2161,7 +2219,9 @@ class _GymsListViewState extends State<_GymsListView> {
         ), // SafeArea
       ), // Container
       floatingActionButton: Padding(
-        padding: EdgeInsets.only(bottom: Platform.isIOS ? glassBottomReserved : 0),
+        padding: EdgeInsets.only(
+          bottom: Platform.isIOS ? glassBottomReserved : 0,
+        ),
         child: FloatingActionButton(
           onPressed: widget.onCreate,
           backgroundColor: AppColors.primary,
