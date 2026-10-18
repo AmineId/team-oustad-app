@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.48](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.47...v1.0.0-beta.48) (2026-10-18)
+
+
+### ✨ New Features
+
+* **ios:** auto-detect iTunes relay + --build mode in ios-install.sh ([3230acd](https://github.com/TeamFitness/mobile-app/commit/3230acd576f56383fb7c727ec2fafb383daefab1))
+
+
+### 🐛 Bug Fixes
+
+* **ios:** trigger Face ID immediately after biometry consent ([6af598f](https://github.com/TeamFitness/mobile-app/commit/6af598fe4ee98d157322552d22e1c03e9f575e8c))
+
 ## [1.0.0-beta.47](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.46...v1.0.0-beta.47) (2026-10-18)
 
 
