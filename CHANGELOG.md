@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.46](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.45...v1.0.0-beta.46) (2026-10-18)
+
+
+### 🐛 Bug Fixes
+
+* **ios:** add NSFaceIDUsageDescription, replace task switcher text with logo ([b056c69](https://github.com/TeamFitness/mobile-app/commit/b056c69da8ee84a38e58a9d5920fff2fb8061967))
+
 ## [1.0.0-beta.45](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.44...v1.0.0-beta.45) (2026-10-18)
 
 
