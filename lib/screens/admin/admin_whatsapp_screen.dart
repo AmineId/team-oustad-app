@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
@@ -300,9 +302,18 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final isIOS = Platform.isIOS;
 
     return Scaffold(
+      extendBodyBehindAppBar: isIOS,
       appBar: AppBar(
+        automaticallyImplyLeading: widget.onBack == null,
+        centerTitle: true,
+        backgroundColor: isIOS ? Colors.transparent : null,
+        elevation: isIOS ? 0 : null,
+        scrolledUnderElevation: isIOS ? 0 : null,
+        forceMaterialTransparency: isIOS,
         leading: widget.onBack != null
             ? IconButton(
                 icon: const Icon(Icons.arrow_back),
@@ -320,6 +331,28 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
             tooltip: 'Rafraîchir',
           ),
         ],
+        flexibleSpace: isIOS
+            ? ClipRect(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? Colors.black.withValues(alpha: 0.55)
+                          : Colors.white.withValues(alpha: 0.72),
+                      border: Border(
+                        bottom: BorderSide(
+                          color: isDark
+                              ? Colors.white.withValues(alpha: 0.08)
+                              : Colors.black.withValues(alpha: 0.08),
+                          width: 0.5,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              )
+            : null,
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -330,33 +363,49 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
           ),
         ),
         child: SafeArea(
-          child: _isLoading
-              ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
-              : SingleChildScrollView(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _buildStatusCard(theme),
-                      if (_statusMessage.isNotEmpty) ...[
-                        const SizedBox(height: 12),
-                        Text(
-                          _statusMessage,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.6),
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
-                      const SizedBox(height: 24),
-                      if (!_connected) _buildConnectionSection(theme),
-                      if (_connected) _buildDisconnectSection(),
-                    ],
+          top: !isIOS,
+          child: isIOS
+              ? MediaQuery(
+                  data: MediaQuery.of(context).copyWith(
+                    padding: MediaQuery.of(context).padding.copyWith(
+                      top: MediaQuery.of(context).padding.top + kToolbarHeight,
+                    ),
                   ),
-                ),
+                  child: _buildScrollBody(theme),
+                )
+              : _buildScrollBody(theme),
         ),
       ),
+    );
+  }
+
+  Widget _buildScrollBody(ThemeData theme) {
+    return SafeArea(
+      child: _isLoading
+          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildStatusCard(theme),
+                  if (_statusMessage.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    Text(
+                      _statusMessage,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.6),
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 24),
+                  if (!_connected) _buildConnectionSection(theme),
+                  if (_connected) _buildDisconnectSection(),
+                ],
+              ),
+            ),
     );
   }
 

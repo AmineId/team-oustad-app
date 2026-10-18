@@ -1146,7 +1146,8 @@ class _ProfilePageState extends State<ProfilePage> {
           ],
         ),
       ),
-      child: RefreshIndicator(
+      child: SafeArea(
+        child: RefreshIndicator(
         onRefresh: _refreshProfileData,
         color: Theme.of(context).colorScheme.primary,
         notificationPredicate: (notification) => !_isRefreshing,
@@ -1437,6 +1438,7 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ),
       ),
+      ),
     );
   }
 
@@ -1499,7 +1501,7 @@ class GestionGlobalePage extends StatefulWidget {
 
 class _GestionGlobalePageState extends State<GestionGlobalePage> {
   String _currentView =
-      'menu'; // 'menu', 'admins', 'gyms', 'whatsapp', 'admin_details', 'gym_details', 'admin_edit', 'gym_edit', 'gym_hours', 'admin_create', 'gym_create'
+      'menu'; // 'menu', 'admins', 'gyms', 'admin_details', 'gym_details', 'admin_edit', 'gym_edit', 'gym_hours', 'admin_create', 'gym_create'
   Map<String, dynamic>? _selectedAdmin;
   Map<String, dynamic>? _selectedGym;
 
@@ -1564,10 +1566,6 @@ class _GestionGlobalePageState extends State<GestionGlobalePage> {
         onBack: () => setState(() => _currentView = 'gyms'),
         onSuccess: () => setState(() => _currentView = 'gyms'),
       );
-    } else if (_currentView == 'whatsapp') {
-      return AdminWhatsAppScreen(
-        onBack: () => setState(() => _currentView = 'menu'),
-      );
     }
 
     // Vue menu par défaut
@@ -1615,7 +1613,12 @@ class _GestionGlobalePageState extends State<GestionGlobalePage> {
                 title: 'WhatsApp',
                 description:
                     'Gérer la connexion WhatsApp pour les notifications',
-                onTap: () => setState(() => _currentView = 'whatsapp'),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const AdminWhatsAppScreen(),
+                  ),
+                ),
               ),
             ],
           ),
