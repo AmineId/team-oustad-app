@@ -3580,7 +3580,12 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
               ),
             )
           : ListView(
-              padding: EdgeInsets.all(16.0),
+              padding: EdgeInsets.fromLTRB(
+                16,
+                MediaQuery.of(context).padding.top + 16,
+                16,
+                MediaQuery.of(context).padding.bottom + 16,
+              ),
               children: [
                 // Goals carousel section
                 if (_goals != null && _goals!.isNotEmpty) ...[
@@ -5187,8 +5192,13 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
         color: Theme.of(context).colorScheme.primary,
         notificationPredicate: (notification) => !_isRefreshing,
         child: SingleChildScrollView(
-          physics: AlwaysScrollableScrollPhysics(),
-          padding: EdgeInsets.all(16.0),
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: EdgeInsets.fromLTRB(
+            16,
+            MediaQuery.of(context).padding.top + 16,
+            16,
+            MediaQuery.of(context).padding.bottom + 16,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
