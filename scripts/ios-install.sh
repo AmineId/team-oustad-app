@@ -41,10 +41,19 @@ if [[ "${1:-}" == "--build" ]]; then
 elif [[ "${1:-}" == "--download" ]]; then
   env="${2:-pprod}"
   _gh_check "--download"
-  run_id=$(gh run list --workflow ios-build.yml --status success --limit 20 \
+  run_id=""
+  while IFS= read -r candidate; do
+    if gh api "repos/{owner}/{repo}/actions/runs/$candidate/artifacts" \
+        --jq ".artifacts[] | select(.name == \"ios-ipa-$env\" and .expired == false) | .id" \
+        2>/dev/null | grep -q .; then
+      run_id="$candidate"
+      break
+    fi
+  done < <(gh run list --workflow ios-build.yml --status success --limit 50 \
     --json databaseId,displayTitle \
-    --jq "[.[] | select(.displayTitle == \"iOS build ($env)\")][0].databaseId // empty")
-  [[ -n "$run_id" ]] || { echo "❌ Aucun build iOS réussi trouvé"; exit 1; }
+    --jq ".[] | select(.displayTitle | startswith(\"iOS build\")) | .databaseId | tostring")
+  [[ -n "$run_id" ]] || { echo "❌ Aucun artefact ios-ipa-$env non expiré trouvé (50 derniers runs)"; exit 1; }
+  echo "✅ Run trouvé : $run_id"
   ipa=$(_download_artifact "$run_id" "$env")
 
 else
