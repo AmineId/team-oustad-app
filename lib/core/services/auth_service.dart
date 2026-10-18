@@ -514,7 +514,8 @@ class AuthService {
   /// Clear all stored credentials and tokens (for logout)
   Future<void> clearAll() async {
     try {
-      await _secureStorage.deleteAll();
+      // Only delete the session token — keep credentials so biometric re-login works after logout.
+      await _secureStorage.delete(key: 'auth_token');
       final prefs = await SharedPreferences.getInstance();
       // Preserve biometric consent across logout — it's a device-level preference
       final biometricConsent = prefs.getBool('biometric_consent');
