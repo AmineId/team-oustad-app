@@ -318,6 +318,16 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage>
       if (authenticated) {
         await _authService.setBiometricConsent(true);
         setState(() => _biometricEnabled = true);
+        // Envoyer le consentement en base de données
+        try {
+          final profileData = await _authService.getCachedUserProfile();
+          final token = await _authService.loadToken();
+          if (profileData != null && token != null) {
+            await _apiService.updateUserProfile(profileData['id'] as int, {
+              'biometricConsent': true,
+            }, token);
+          }
+        } catch (_) {}
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -360,6 +370,16 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage>
       if (confirmed) {
         await _authService.setBiometricConsent(false);
         setState(() => _biometricEnabled = false);
+        // Envoyer la révocation du consentement en base de données
+        try {
+          final profileData = await _authService.getCachedUserProfile();
+          final token = await _authService.loadToken();
+          if (profileData != null && token != null) {
+            await _apiService.updateUserProfile(profileData['id'] as int, {
+              'biometricConsent': false,
+            }, token);
+          }
+        } catch (_) {}
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(

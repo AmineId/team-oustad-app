@@ -1326,7 +1326,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     if (context.mounted) {
                       Navigator.of(context).pushAndRemoveUntil(
                         MaterialPageRoute(
-                          builder: (context) => const LoginScreen(),
+                          builder: (context) => const LoginScreen(fromLogout: true),
                         ),
                         (route) => false,
                       );

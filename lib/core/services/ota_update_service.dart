@@ -1,9 +1,8 @@
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:open_file/open_file.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'dart:convert';
 
 /// Service de mise à jour OTA (Over-The-Air)
@@ -109,45 +108,28 @@ class OTAUpdateService {
     }
   }
 
-  /// Ouvre le Play Store pour mettre à jour l'application
+  /// Ouvre l'URL de mise à jour (Play Store ou lien direct)
   Future<bool> openPlayStoreForUpdate(UpdateInfo updateInfo) async {
-    // Ne fonctionne que sur Android
-    if (kIsWeb || !Platform.isAndroid) {
-      debugPrint('⚠️ OTA update non supporté sur cette plateforme');
+    if (kIsWeb) {
+      debugPrint('⚠️ OTA update non supporté sur web');
       return false;
     }
 
     try {
-      // Ouvrir le Play Store avec l'app ID
-      await _openPlayStore(updateInfo.downloadUrl);
-      return true;
-    } catch (e) {
-      debugPrint('❌ Erreur lors de l\'ouverture du Play Store: $e');
-      return false;
-    }
-  }
+      final uri = Uri.parse(updateInfo.downloadUrl);
+      debugPrint('🔗 Ouverture de l\'URL de mise à jour: $uri');
 
-  /// Ouvre l'URL de téléchargement (Play Store ou autre)
-  Future<void> _openPlayStore(String downloadUrl) async {
-    if (kIsWeb || !Platform.isAndroid) return;
-
-    try {
-      debugPrint('🔗 Ouverture de l\'URL: $downloadUrl');
-
-      // Le backend redirige déjà vers le Play Store
-      // On ouvre simplement l'URL fournie
-      final uri = Uri.parse(downloadUrl);
-      final result = await OpenFile.open(uri.toString());
-
-      if (result.type == ResultType.done) {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
         debugPrint('✅ URL ouverte avec succès');
+        return true;
       } else {
-        debugPrint(
-          '⚠️ Résultat de l\'ouverture: ${result.type} - ${result.message}',
-        );
+        debugPrint('⚠️ Impossible d\'ouvrir l\'URL: $uri');
+        return false;
       }
     } catch (e) {
       debugPrint('❌ Erreur lors de l\'ouverture de l\'URL: $e');
+      return false;
     }
   }
 

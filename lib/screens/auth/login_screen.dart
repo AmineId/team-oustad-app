@@ -16,8 +16,9 @@ import '../../core/services/fcm_service.dart';
 
 class LoginScreen extends StatefulWidget {
   final bool? initialDbHealthy;
+  final bool fromLogout;
 
-  const LoginScreen({super.key, this.initialDbHealthy});
+  const LoginScreen({super.key, this.initialDbHealthy, this.fromLogout = false});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -55,7 +56,8 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
     }
 
     // Tenter l'authentification biométrique automatiquement SEULEMENT si l'utilisateur a donné son consentement
-    if (_canCheckBiometrics && _dbHealthy && _hasBiometricConsent) {
+    // et que ce n'est pas une déconnexion volontaire
+    if (_canCheckBiometrics && _dbHealthy && _hasBiometricConsent && !widget.fromLogout) {
       // Petit délai pour laisser l'UI se charger
       await Future.delayed(const Duration(milliseconds: 500));
       if (mounted) {
@@ -699,8 +701,15 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
         // Demander le consentement biométrique si disponible et pas encore donné
         if (_canCheckBiometrics && !await _authService.hasBiometricConsent()) {
           await _showBiometricConsentDialog();
+          final consentGiven = await _authService.hasBiometricConsent();
+          // Envoyer le consentement biométrique en base de données
+          try {
+            await _apiService.updateUserProfile(int.parse(userId), {
+              'biometricConsent': consentGiven,
+            }, token);
+          } catch (_) {}
           // Si consentement accordé, déclencher Face ID immédiatement pour confirmer
-          if (mounted && await _authService.hasBiometricConsent()) {
+          if (mounted && consentGiven) {
             await _authService.promptBiometric(
               localizedReason: 'Confirmez votre identité pour activer la connexion biométrique',
             );

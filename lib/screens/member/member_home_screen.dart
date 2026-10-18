@@ -5902,7 +5902,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                     await _authService.clearAll();
                     if (context.mounted) {
                       Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute(builder: (context) => LoginScreen()),
+                        MaterialPageRoute(builder: (context) => const LoginScreen(fromLogout: true)),
                         (route) => false,
                       );
                     }
