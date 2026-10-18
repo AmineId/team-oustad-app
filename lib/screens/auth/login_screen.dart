@@ -702,6 +702,12 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
         // Demander le consentement biométrique si disponible et pas encore donné
         if (_canCheckBiometrics && !await _authService.hasBiometricConsent()) {
           await _showBiometricConsentDialog();
+          // Si consentement accordé, déclencher Face ID immédiatement pour confirmer
+          if (mounted && await _authService.hasBiometricConsent()) {
+            await _authService.promptBiometric(
+              localizedReason: 'Confirmez votre identité pour activer la connexion biométrique',
+            );
+          }
         }
 
         // Check if onboarding is needed for members who haven't completed it
