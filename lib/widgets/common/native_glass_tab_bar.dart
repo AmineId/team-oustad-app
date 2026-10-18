@@ -1,5 +1,6 @@
 import 'package:cupertino_native/cupertino_native.dart';
 import 'package:flutter/material.dart';
+import 'glass.dart';
 
 class NativeTabItem {
   final String label;
@@ -9,7 +10,7 @@ class NativeTabItem {
 }
 
 /// Barre d'onglets UIKit native : sous Xcode 26 / iOS 26 elle prend le rendu
-/// Liquid Glass officiel d'Apple. Un fondu vers la couleur de fond adoucit
+/// Liquid Glass officiel d'Apple. Un flou progressif transparent adoucit
 /// l'endroit où le contenu passe derrière la barre.
 class NativeGlassTabBar extends StatelessWidget {
   final List<NativeTabItem> items;
@@ -26,7 +27,6 @@ class NativeGlassTabBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final safeBottom = MediaQuery.of(context).padding.bottom;
-    final bg = Theme.of(context).scaffoldBackgroundColor;
     return Stack(
       clipBehavior: Clip.none,
       children: [
@@ -35,16 +35,8 @@ class NativeGlassTabBar extends StatelessWidget {
           right: 0,
           bottom: 0,
           top: -56,
-          child: IgnorePointer(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [bg.withValues(alpha: 0), bg.withValues(alpha: 0.9)],
-                ),
-              ),
-            ),
+          child: const IgnorePointer(
+            child: GlassBar(top: false, opacity: 0.45),
           ),
         ),
         Padding(

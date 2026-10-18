@@ -14,7 +14,9 @@ final bool supportsNativeLiquidGlass = _detectIos26();
 
 bool _detectIos26() {
   if (!Platform.isIOS) return false;
-  final match = RegExp(r'Version (\d+)').firstMatch(Platform.operatingSystemVersion);
+  final match = RegExp(
+    r'Version (\d+)',
+  ).firstMatch(Platform.operatingSystemVersion);
   return (int.tryParse(match?.group(1) ?? '') ?? 0) >= 26;
 }
 
@@ -30,9 +32,9 @@ const List<double> _saturate = <double>[
 ];
 
 ImageFilter _glassFilter(double sigma) => ImageFilter.compose(
-      outer: ImageFilter.blur(sigmaX: sigma, sigmaY: sigma),
-      inner: const ColorFilter.matrix(_saturate),
-    );
+  outer: ImageFilter.blur(sigmaX: sigma, sigmaY: sigma),
+  inner: const ColorFilter.matrix(_saturate),
+);
 
 /// Surface "Liquid Glass" : flou saturé, voile dégradé, bord réfléchissant.
 class LiquidGlass extends StatelessWidget {
@@ -97,8 +99,9 @@ class LiquidGlass extends StatelessWidget {
 class GlassBar extends StatelessWidget {
   final Widget? child;
   final bool top;
+  final double opacity;
 
-  const GlassBar({super.key, this.child, this.top = true});
+  const GlassBar({super.key, this.child, this.top = true, this.opacity = 1});
 
   @override
   Widget build(BuildContext context) {
@@ -119,7 +122,10 @@ class GlassBar extends StatelessWidget {
               gradient: LinearGradient(
                 begin: top ? Alignment.topCenter : Alignment.bottomCenter,
                 end: top ? Alignment.bottomCenter : Alignment.topCenter,
-                colors: [bg.withValues(alpha: 0.85), bg.withValues(alpha: 0.35)],
+                colors: [
+                  bg.withValues(alpha: 0.85 * opacity),
+                  bg.withValues(alpha: 0.35 * opacity),
+                ],
               ),
             ),
             child: child ?? const SizedBox.expand(),
@@ -205,7 +211,12 @@ class GlassTabBar extends StatelessWidget {
     final safeBottom = MediaQuery.of(context).padding.bottom;
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(16, 0, 16, safeBottom > 0 ? safeBottom - 10 : 12),
+      padding: EdgeInsets.fromLTRB(
+        16,
+        0,
+        16,
+        safeBottom > 0 ? safeBottom - 10 : 12,
+      ),
       child: SizedBox(
         height: glassTabBarHeight,
         child: LiquidGlass(
