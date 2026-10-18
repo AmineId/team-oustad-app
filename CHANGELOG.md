@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.56](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.55...v1.0.0-beta.56) (2026-10-18)
+
+
+### ✨ New Features
+
+* **whatsapp:** add pairing code alternative to QR scan ([a7c36f4](https://github.com/TeamFitness/mobile-app/commit/a7c36f4f7dbad37c6cd5f3d0eb8b6845cba2d01c))
+
 ## [1.0.0-beta.55](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.54...v1.0.0-beta.55) (2026-10-18)
 
 
