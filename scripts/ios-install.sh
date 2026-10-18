@@ -15,12 +15,24 @@ done
 
 _gh_check() { command -v gh >/dev/null || { echo "❌ 'gh' requis pour $1"; exit 1; }; }
 
+# Trouve le nom exact de l'artefact ios-ipa-<env>* dans un run donné.
+_find_artifact_name() {
+  local run_id="$1" env="$2"
+  gh api "repos/{owner}/{repo}/actions/runs/$run_id/artifacts" \
+    --jq ".artifacts[] | select(.name | startswith(\"ios-ipa-$env\")) | select(.expired == false) | .name" \
+    2>/dev/null | head -1
+}
+
 _download_artifact() {
   local run_id="$1" env="$2"
+  local artifact_name
+  artifact_name=$(_find_artifact_name "$run_id" "$env")
+  [[ -n "$artifact_name" ]] || { echo "❌ Artefact ios-ipa-$env* introuvable ou expiré dans run $run_id"; exit 1; }
   local out="build/ipa-download"
   rm -rf "$out" && mkdir -p "$out"
-  gh run download "$run_id" --name "ios-ipa-$env" --dir "$out"
-  echo "$out/TeamFitness-$env.ipa"
+  gh run download "$run_id" --name "$artifact_name" --dir "$out"
+  # Le nom du .ipa peut varier (avec ou sans version) — on prend le premier trouvé.
+  find "$out" -name "*.ipa" | head -1
 }
 
 if [[ "${1:-}" == "--build" ]]; then
@@ -44,7 +56,7 @@ elif [[ "${1:-}" == "--download" ]]; then
   run_id=""
   while IFS= read -r candidate; do
     if gh api "repos/{owner}/{repo}/actions/runs/$candidate/artifacts" \
-        --jq ".artifacts[] | select(.name == \"ios-ipa-$env\" and .expired == false) | .id" \
+        --jq ".artifacts[] | select((.name | startswith(\"ios-ipa-$env\")) and .expired == false) | .id" \
         2>/dev/null | grep -q .; then
       run_id="$candidate"
       break
