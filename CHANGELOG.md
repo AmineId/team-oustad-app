@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.63](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.62...v1.0.0-beta.63) (2026-10-18)
+
+
+### 🐛 Bug Fixes
+
+* **ios:** native tab bar no longer stretches to half the screen ([5d248b4](https://github.com/TeamFitness/mobile-app/commit/5d248b4dad6ff7d0085e55a1fe4f38ee4459f0a9))
+
 ## [1.0.0-beta.62](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.61...v1.0.0-beta.62) (2026-10-18)
 
 
