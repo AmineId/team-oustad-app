@@ -7,6 +7,7 @@ import '../../core/services/api_service.dart';
 import '../../core/theme/theme.dart';
 import '../../core/utils/user_utils.dart';
 import '../../core/l10n/app_localizations.dart';
+import '../../core/services/notification_router.dart';
 import '../../widgets/common/common_widgets.dart';
 import '../../widgets/responsive/responsive_layout.dart';
 import '../auth/login_screen.dart';
@@ -49,6 +50,25 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     super.initState();
     _checkUserRole();
     _loadProfileData();
+    NotificationRouter.pending.addListener(_openFromNotification);
+    // L'app a pu être lancée par un tap sur une notification.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _openFromNotification());
+  }
+
+  @override
+  void dispose() {
+    NotificationRouter.pending.removeListener(_openFromNotification);
+    super.dispose();
+  }
+
+  /// Les notifications admin (demandes d'aide, paiements) ramènent à l'accueil.
+  void _openFromNotification() {
+    if (!mounted || NotificationRouter.pending.value == null) return;
+    NotificationRouter.take();
+    // Fermer les écrans ouverts par-dessus l'accueil (sans dépiler l'accueil).
+    final home = ModalRoute.of(context);
+    Navigator.of(context).popUntil((route) => route == home);
+    setState(() => _currentIndex = 0);
   }
 
   Future<void> _loadProfileData() async {

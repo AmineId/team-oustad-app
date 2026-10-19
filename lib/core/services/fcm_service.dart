@@ -4,7 +4,9 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'notification_service.dart';
+import 'notification_router.dart';
 import 'api_service.dart';
+import 'auth_service.dart';
 
 /// Service de gestion des notifications push Firebase Cloud Messaging (FCM)
 /// Permet de recevoir des notifications depuis le serveur
@@ -115,7 +117,6 @@ class FCMService {
         _fcmToken = newToken;
         // ignore: avoid_print
         debugPrint('🔄 Nouveau FCM Token: $newToken');
-        // TODO: Envoyer le nouveau token au serveur
         _sendTokenToServer(newToken);
       });
 
@@ -205,6 +206,9 @@ class FCMService {
     String exerciseName,
     String response,
   ) async {
+    // Le JWT n'est pas transmis à l'initialisation (avant le login) : le
+    // relire depuis le stockage sécurisé.
+    _currentUserToken ??= await AuthService(_apiService).loadToken();
     if (_currentUserToken == null) {
       // ignore: avoid_print
       debugPrint('❌ Pas de token utilisateur disponible');
@@ -273,7 +277,6 @@ class FCMService {
     // ignore: avoid_print
     debugPrint('   Data: ${message.data}');
 
-    // TODO: Naviguer vers l'écran approprié selon message.data
     _handleNotificationTap(message.data);
   }
 
@@ -288,37 +291,25 @@ class FCMService {
     }
   }
 
-  /// Gère le tap sur une notification
+  /// Gère le tap sur une notification : l'accueil bascule sur l'onglet
+  /// correspondant au type (payment, subscription, planning, …).
   void _handleNotificationTap(Map<String, dynamic> data) {
-    final type = data['type'] as String?;
-
-    switch (type) {
-      case 'payment':
-        // TODO: Naviguer vers l'écran de paiement
-        // final paymentId = data['paymentId'];
-        break;
-      case 'planning':
-        // TODO: Naviguer vers l'écran de planning
-        // final planningId = data['planningId'];
-        break;
-      case 'subscription':
-        // TODO: Naviguer vers l'écran d'abonnement
-        // final subscriptionId = data['subscriptionId'];
-        break;
-      default:
-        // TODO: Naviguer vers l'écran d'accueil
-        break;
-    }
+    NotificationRouter.open(data['type'] as String?);
   }
 
-  /// Envoie le token FCM au serveur
-  /// À appeler après le login de l'utilisateur
+  /// Envoie le token FCM au serveur quand Firebase le renouvelle.
+  /// Sans session (avant le login), rien à faire : le login l'enverra.
   Future<void> _sendTokenToServer(String token) async {
     try {
-      // TODO: Implémenter l'envoi au serveur
-      // await ApiService.fromEnv().updateUserFCMToken(userId, token);
+      final jwt = await AuthService(_apiService).loadToken();
+      if (jwt == null) return;
+      final result = await _apiService.updateUserFCMToken(null, token, jwt);
       // ignore: avoid_print
-      debugPrint('✅ Token FCM envoyé au serveur');
+      debugPrint(
+        result != null
+            ? '✅ Token FCM envoyé au serveur'
+            : '❌ Échec envoi token FCM au serveur',
+      );
     } catch (e) {
       // ignore: avoid_print
       debugPrint('❌ Erreur envoi token au serveur: $e');

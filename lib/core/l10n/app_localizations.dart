@@ -39,13 +39,11 @@ class AppLocalizations {
       'scan_card': 'Scanner une carte',
       'search': 'Recherche',
       'search_member_hint': 'Rechercher un membre...',
-      'search_feature_todo': 'Fonctionnalité de recherche\nà implémenter',
       'add_new_member_title': 'Ajouter un nouveau membre',
       'full_name': 'Nom complet',
       'email': 'Email',
       'phone': 'Téléphone',
       'save': 'Enregistrer',
-      'feature_todo': 'Fonctionnalité à implémenter',
       'administrator': 'Administrateur',
       'settings': 'Paramètres',
       'security': 'Sécurité',
@@ -212,13 +210,11 @@ class AppLocalizations {
       'scan_card': 'Scan Card',
       'search': 'Search',
       'search_member_hint': 'Search for a member...',
-      'search_feature_todo': 'Search feature\nto be implemented',
       'add_new_member_title': 'Add New Member',
       'full_name': 'Full Name',
       'email': 'Email',
       'phone': 'Phone',
       'save': 'Save',
-      'feature_todo': 'Feature to be implemented',
       'administrator': 'Administrator',
       'settings': 'Settings',
       'security': 'Security',
@@ -379,13 +375,11 @@ class AppLocalizations {
       'scan_card': 'مسح البطاقة',
       'search': 'بحث',
       'search_member_hint': 'البحث عن عضو...',
-      'search_feature_todo': 'ميزة البحث\nقيد التنفيذ',
       'add_new_member_title': 'إضافة عضو جديد',
       'full_name': 'الاسم الكامل',
       'email': 'البريد الإلكتروني',
       'phone': 'الهاتف',
       'save': 'حفظ',
-      'feature_todo': 'ميزة قيد التنفيذ',
       'administrator': 'مسؤول',
       'settings': 'الإعدادات',
       'security': 'الأمان',
@@ -549,13 +543,11 @@ class AppLocalizations {
   String get scanCard => translate('scan_card');
   String get search => translate('search');
   String get searchMemberHint => translate('search_member_hint');
-  String get searchFeatureTodo => translate('search_feature_todo');
   String get addNewMemberTitle => translate('add_new_member_title');
   String get fullName => translate('full_name');
   String get email => translate('email');
   String get phone => translate('phone');
   String get save => translate('save');
-  String get featureTodo => translate('feature_todo');
   String get administrator => translate('administrator');
   String get settings => translate('settings');
   String get security => translate('security');

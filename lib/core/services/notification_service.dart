@@ -1,7 +1,9 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+import 'notification_router.dart';
 
 /// Service de gestion des notifications locales
 /// Permet d'envoyer des notifications immédiates et planifiées
@@ -124,8 +126,26 @@ class NotificationService {
       return;
     }
     
-    // TODO: Implémenter la navigation vers l'écran approprié
-    // selon le payload de la notification
+    // Tap sur le corps de la notification : ouvrir l'onglet concerné.
+    NotificationRouter.open(_payloadType(response.payload));
+  }
+
+  /// Type d'une notification d'après son payload : data FCM encodé en JSON,
+  /// ou format local `type|…` / `type_<id>` (help_request, payment, planning…).
+  static String? _payloadType(String? payload) {
+    if (payload == null || payload.isEmpty) return null;
+    if (payload.startsWith('{')) {
+      try {
+        final data = jsonDecode(payload);
+        return data is Map<String, dynamic> ? data['type'] as String? : null;
+      } catch (_) {
+        return null;
+      }
+    }
+    final type = payload.split('|').first;
+    if (type != payload) return type;
+    final underscore = payload.lastIndexOf('_');
+    return underscore > 0 ? payload.substring(0, underscore) : payload;
   }
 
   /// Gestionnaire d'actions de notification (pour les réponses aux demandes d'aide)

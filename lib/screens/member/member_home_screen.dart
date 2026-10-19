@@ -8,6 +8,7 @@ import '../../core/services/auth_service.dart';
 import '../../core/services/api_service.dart';
 import '../../core/theme/theme.dart';
 import '../../core/l10n/app_localizations.dart';
+import '../../core/services/notification_router.dart';
 import '../../core/utils/user_utils.dart';
 import '../../widgets/common/common_widgets.dart';
 import '../../widgets/responsive/responsive_layout.dart';
@@ -65,6 +66,31 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
     super.initState();
     _loadProfileData();
     _loadData();
+    NotificationRouter.pending.addListener(_openFromNotification);
+    // L'app a pu être lancée par un tap sur une notification.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _openFromNotification());
+  }
+
+  @override
+  void dispose() {
+    NotificationRouter.pending.removeListener(_openFromNotification);
+    super.dispose();
+  }
+
+  void _openFromNotification() {
+    if (!mounted || NotificationRouter.pending.value == null) return;
+    final type = NotificationRouter.take();
+    // Fermer les écrans ouverts par-dessus l'accueil (sans dépiler l'accueil).
+    final home = ModalRoute.of(context);
+    Navigator.of(context).popUntil((route) => route == home);
+    setState(() {
+      _currentIndex = switch (type) {
+        'planning' || 'help_response' => 2,
+        _ => 0,
+      };
+    });
+    // Paiement / abonnement : l'état affiché sur l'accueil a pu changer.
+    if (type == 'payment' || type == 'subscription') _loadData();
   }
 
   Future<void> _loadData() async {

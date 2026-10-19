@@ -1355,7 +1355,7 @@ class ApiService {
   /// PUT /users/fcm-token
   /// L'utilisateur est identifié par le token JWT
   Future<Map<String, dynamic>?> updateUserFCMToken(
-    int userId, // Gardé pour compatibilité mais non utilisé dans l'URL
+    int? userId, // Gardé pour compatibilité mais non utilisé dans l'URL
     String fcmToken,
     String token, {
     Duration timeout = const Duration(seconds: 8),
@@ -1392,7 +1392,7 @@ class ApiService {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer $token',
             },
-            body: jsonEncode({'id': userId, 'fcmToken': fcmToken}),
+            body: jsonEncode({'id': ?userId, 'fcmToken': fcmToken}),
           )
           .timeout(timeout);
 
@@ -1413,6 +1413,23 @@ class ApiService {
       // ignore: avoid_print
       debugPrint('❌ Error updating FCM token: $e');
       return null;
+    }
+  }
+
+  /// Remove user FCM token (logout from notifications)
+  /// DELETE /users/fcm-token
+  Future<bool> removeUserFCMToken(
+    String token, {
+    Duration timeout = const Duration(seconds: 5),
+  }) async {
+    final uri = baseUri.resolve('/users/fcm-token');
+    try {
+      final resp = await http
+          .delete(uri, headers: {'Authorization': 'Bearer $token'})
+          .timeout(timeout);
+      return resp.statusCode == 200;
+    } catch (_) {
+      return false;
     }
   }
 

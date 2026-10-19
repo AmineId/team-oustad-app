@@ -528,6 +528,12 @@ class AuthService {
   /// Clear all stored credentials and tokens (for logout)
   Future<void> clearAll() async {
     try {
+      // Désinscrire l'appareil des push tant que le JWT est encore disponible,
+      // sinon il continuerait à recevoir les notifications du compte.
+      final token = await loadToken();
+      if (token != null) await _apiService.removeUserFCMToken(token);
+    } catch (_) {}
+    try {
       // Only delete the session token — keep credentials so biometric re-login works after logout.
       await _secureStorage.delete(key: 'auth_token');
       final prefs = await SharedPreferences.getInstance();
