@@ -5,6 +5,8 @@ import 'package:url_launcher/url_launcher.dart';
 import 'dart:convert';
 import 'dart:io';
 
+import 'api_service.dart';
+
 /// Vérification de version, sur toutes les plateformes.
 /// Compare le build number installé à la dernière version publiée ; la mise à
 /// jour elle-même passe par le store (Play Store sur Android), jamais par un
@@ -20,14 +22,9 @@ class AppVersionService {
   /// Seul Android a un store où renvoyer l'utilisateur.
   static bool get canOpenStore => !kIsWeb && Platform.isAndroid;
 
-  // URL du serveur qui héberge les informations de mise à jour
-  // Détermine automatiquement l'URL selon l'environnement
+  // Même API que le reste de l'app (api-pprod sur staging, api en prod) :
+  // chaque environnement publie sa propre version, sans canal beta.
   static String get _updateCheckUrl {
-    const environment = String.fromEnvironment(
-      'ENVIRONMENT',
-      defaultValue: 'dev',
-    );
-
     // Si une URL custom est définie, l'utiliser en priorité
     const customUrl = String.fromEnvironment(
       'UPDATE_CHECK_URL',
@@ -37,16 +34,9 @@ class AppVersionService {
       return customUrl;
     }
 
-    // Sinon, déterminer selon l'environnement
-    switch (environment) {
-      case 'pprod':
-        return 'https://app.team-oustad.com/android/beta/check-update';
-      case 'prod':
-        return 'https://app.team-oustad.com/android/check-update';
-      case 'dev':
-      default:
-        return 'http://localhost:3000/android/check-update';
-    }
+    return ApiService.fromEnv().baseUri
+        .resolve('/android/check-update')
+        .toString();
   }
 
   bool _isChecking = false;

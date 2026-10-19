@@ -26,6 +26,7 @@ jobs:
       version: ${{ steps.check.outputs.version }}
       environment: ${{ steps.setup.outputs.environment }}
       dart_env: ${{ steps.setup.outputs.dart_env }}
+      api_url: ${{ steps.setup.outputs.api_url }}
     
     steps:
       - name: 📥 Checkout
@@ -45,9 +46,11 @@ jobs:
           if [[ "${{ github.ref_name }}" == "main" ]]; then
             echo "environment=production" >> $GITHUB_OUTPUT
             echo "dart_env=prod" >> $GITHUB_OUTPUT
+            echo "api_url=https://api.team-oustad.com" >> $GITHUB_OUTPUT
           else
             echo "environment=beta" >> $GITHUB_OUTPUT
             echo "dart_env=pprod" >> $GITHUB_OUTPUT
+            echo "api_url=https://api-pprod.team-oustad.com" >> $GITHUB_OUTPUT
           fi
 
       - name: 📦 Install semantic-release
@@ -93,7 +96,7 @@ jobs:
       contents: read
     environment:
       name: ${{ needs.version.outputs.environment }}
-      url: https://app.team-oustad.com/android/version.json
+      url: ${{ needs.version.outputs.api_url }}/android/version.json
     
     steps:
       - name: 📥 Checkout updated code
@@ -164,7 +167,7 @@ jobs:
           fi
 
       - name: 🏗️ Build AAB (for Play Store)
-        run: flutter build appbundle --release --dart-define=ENVIRONMENT=${{ needs.version.outputs.dart_env }}
+        run: flutter build appbundle --release --dart-define=ENVIRONMENT=${{ needs.version.outputs.dart_env }} --dart-define=API_BASE_URL=${{ needs.version.outputs.api_url }}
 
       - name: 🔧 Setup Ruby
         uses: ruby/setup-ruby@v1
@@ -263,22 +266,23 @@ jobs:
 
       - name: 📤 Publish version to server
         # Seule source du version.json servi par /android/check-update
-        # (vérification de version de l'app, toutes plateformes)
+        # (vérification de version de l'app, toutes plateformes). Chaque
+        # environnement a sa propre API : pas de canal beta, toujours "production".
+        # Les secrets OTA_BEARER_TOKEN sont propres à chaque environnement GitHub.
         run: |
           JSON_PAYLOAD=$(jq -n \
             --slurpfile meta version-metadata.json \
-            --arg channel "${{ needs.version.outputs.environment }}" \
             --arg url "https://play.google.com/store/apps/details?id=team.fitness.team_fitness_app" \
             '$meta[0] | {
               version_code, version_name, changelog, force_update,
               min_supported_version,
               download_url: $url,
-              channel: $channel
+              channel: "production"
             }')
           echo "$JSON_PAYLOAD" | jq '.'
 
           RESPONSE=$(curl -s --connect-timeout 10 --max-time 30 -w "\n%{http_code}" -X POST \
-            "https://app.team-oustad.com/android/update-version" \
+            "${{ needs.version.outputs.api_url }}/android/update-version" \
             -H "Authorization: Bearer ${{ secrets.OTA_BEARER_TOKEN }}" \
             -H "Content-Type: application/json" \
             -d "$JSON_PAYLOAD")
@@ -337,7 +341,7 @@ jobs:
       - name: 🏗️ Build iOS (no codesign)
         run: |
           flutter build ios --release --no-codesign \
-            --dart-define=ENVIRONMENT=${{ needs.version.outputs.dart_env }}
+            --dart-define=ENVIRONMENT=${{ needs.version.outputs.dart_env }} --dart-define=API_BASE_URL=${{ needs.version.outputs.api_url }}
 
       - name: 📦 Package .ipa
         run: |
