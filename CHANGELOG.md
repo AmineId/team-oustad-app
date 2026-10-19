@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.71](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.70...v1.0.0-beta.71) (2026-10-19)
+
+
+### 🐛 Bug Fixes
+
+* **ios:** guard secure layer setup before window is attached ([81f24e8](https://github.com/TeamFitness/mobile-app/commit/81f24e8042769296952f39ef58ece54f6bc7c7a3))
+
+
+### ⚡ Performance Improvements
+
+* **member:** show cached profile first on QR page ([32a5b23](https://github.com/TeamFitness/mobile-app/commit/32a5b23a63378bf9981496655dcadcc35998ff30))
+
+
+### ♻️ Code Refactoring
+
+* replace OTA updater with cross-platform version check ([772d5d3](https://github.com/TeamFitness/mobile-app/commit/772d5d3ff580a87c4c35a51923abfe91a4069f58))
+
 ## [1.0.0-beta.70](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.69...v1.0.0-beta.70) (2026-10-19)
 
 
