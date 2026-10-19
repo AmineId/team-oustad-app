@@ -96,10 +96,13 @@ import UIKit
     guard let window = self.window else { return }
 
     if secureField == nil {
+      // Sans couche parente, la fenêtre serait déplacée dans une couche
+      // détachée de l'écran (app noire) : on réessaiera au prochain appel.
+      guard blocked, let rootLayer = window.layer.superlayer else { return }
       let field = UITextField()
       field.isUserInteractionEnabled = false
       window.addSubview(field)
-      window.layer.superlayer?.addSublayer(field.layer)
+      rootLayer.addSublayer(field.layer)
       // Le conteneur sécurisé est la dernière sous-couche depuis iOS 17
       if #available(iOS 17.0, *) {
         field.layer.sublayers?.last?.addSublayer(window.layer)
