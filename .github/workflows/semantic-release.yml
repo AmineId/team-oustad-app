@@ -163,9 +163,6 @@ jobs:
             echo "⚠️ No keystore configured, using debug signing"
           fi
 
-      - name: 🏗️ Build APK
-        run: flutter build apk --release --dart-define=ENVIRONMENT=${{ needs.version.outputs.dart_env }}
-
       - name: 🏗️ Build AAB (for Play Store)
         run: flutter build appbundle --release --dart-define=ENVIRONMENT=${{ needs.version.outputs.dart_env }}
 
@@ -264,91 +261,36 @@ jobs:
             --skip_upload_images \
             --skip_upload_screenshots
 
-      - name: 📤 Update version.json on server
-        if: success()
-        continue-on-error: true
+      - name: 📤 Publish version to server
+        # Seule source du version.json servi par /android/check-update
+        # (vérification de version de l'app, toutes plateformes)
         run: |
-          echo "📊 Mise à jour du serveur avec les informations de version"
+          JSON_PAYLOAD=$(jq -n \
+            --slurpfile meta version-metadata.json \
+            --arg channel "${{ needs.version.outputs.environment }}" \
+            --arg url "https://play.google.com/store/apps/details?id=team.fitness.team_fitness_app" \
+            '$meta[0] | {
+              version_code, version_name, changelog, force_update,
+              min_supported_version,
+              download_url: $url,
+              channel: $channel
+            }')
+          echo "$JSON_PAYLOAD" | jq '.'
 
-          # Récupérer les métadonnées de version
-          VERSION_CODE=$(jq -r '.version_code' version-metadata.json)
-          VERSION_NAME=$(jq -r '.version_name' version-metadata.json)
-          CHANGELOG=$(jq -r '.changelog' version-metadata.json)
-
-          # URL du Play Store (toujours la même pour votre app)
-          PLAY_STORE_URL="https://play.google.com/store/apps/details?id=team.fitness.team_fitness_app"
-
-          # Créer le JSON pour l'API
-          JSON_PAYLOAD=$(cat <<EOF
-          {
-            "version_code": $VERSION_CODE,
-            "version_name": "$VERSION_NAME",
-            "download_url": "$PLAY_STORE_URL",
-            "changelog": "$CHANGELOG",
-            "force_update": false,
-            "channel": "${{ needs.version.outputs.environment }}"
-          }
-          EOF
-          )
-
-          # Envoyer au serveur
           RESPONSE=$(curl -s --connect-timeout 10 --max-time 30 -w "\n%{http_code}" -X POST \
             "https://app.team-oustad.com/android/update-version" \
             -H "Authorization: Bearer ${{ secrets.OTA_BEARER_TOKEN }}" \
             -H "Content-Type: application/json" \
-            -d "$JSON_PAYLOAD") || { echo "⚠️ curl failed (exit $?)"; exit 0; }
+            -d "$JSON_PAYLOAD")
 
           HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          echo "$RESPONSE" | head -n-1
 
-          if [ "$HTTP_CODE" -eq 200 ]; then
-            echo "✅ Serveur mis à jour avec succès"
-          else
-            echo "⚠️ Erreur lors de la mise à jour du serveur: HTTP $HTTP_CODE"
-            echo "$RESPONSE" | head -n-1
-          fi
-
-      - name: 📊 Read metadata for OTA
-        id: meta
-        run: |
-          jq -r 'to_entries | map("\(.key)=\(.value)") | .[]' version-metadata.json >> $GITHUB_OUTPUT
-          echo "channel=${{ needs.version.outputs.environment }}" >> $GITHUB_OUTPUT
-
-      - name: 📤 Deploy OTA
-        continue-on-error: true
-        run: |
-          APK_PATH="build/app/outputs/flutter-apk/app-release.apk"
-          
-          if [ ! -f "$APK_PATH" ]; then
-            echo "❌ APK not found at $APK_PATH"
+          if [ "$HTTP_CODE" -ne 200 ]; then
+            echo "❌ Publication de la version échouée: HTTP $HTTP_CODE"
             exit 1
           fi
-          
-          echo "✅ APK located at $APK_PATH"
-          echo "📦 Uploading APK to OTA server"
-          
-          RESPONSE=$(curl -s --connect-timeout 10 --max-time 120 -w "\n%{http_code}" -X POST \
-            "https://app.team-oustad.com/android/upload" \
-            -H "Authorization: Bearer ${{ secrets.OTA_BEARER_TOKEN }}" \
-            -H "Accept: application/json" \
-            -F "apk=@${APK_PATH}" \
-            -F "version_code=${{ steps.meta.outputs.version_code }}" \
-            -F "version_name=${{ steps.meta.outputs.version_name }}" \
-            -F "changelog=${{ steps.meta.outputs.changelog }}" \
-            -F "force_update=${{ steps.meta.outputs.force_update }}" \
-            -F "min_supported_version=${{ steps.meta.outputs.min_supported_version }}" \
-            -F "channel=${{ steps.meta.outputs.channel }}")
-
-          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
-
-          if [ "$HTTP_CODE" -eq 200 ]; then
-            echo "✅ OTA deployed successfully"
-            echo "$RESPONSE" | head -n-1 | jq '.'
-          else
-            echo "❌ OTA deploy failed: HTTP $HTTP_CODE"
-            echo "Raw response body (excluding status code line):"
-            echo "$RESPONSE" | head -n-1 || true
-            exit 1
-          fi
+          echo "✅ Version publiée"
 
       - name: 🧹 Cleanup
         if: always()

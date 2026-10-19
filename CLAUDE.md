@@ -23,7 +23,7 @@ iOS can't be built from this (WSL/Windows) machine: `.github/workflows/ios-build
 
 `scripts.ps1` (PowerShell) and `Makefile` wrap the same commands (`.\scripts.ps1 run-android-pprod`, `.\scripts.ps1 run-windows -Url http://192.168.1.50:3000`, etc.).
 
-One-off PowerShell scripts (`bump-version`, `deploy-ota`, `deploy-web`, `setup-play-store-secrets`, `test-design-system`) live in `scripts/` and use paths relative to the repo root, so run them from the root (`.\scripts\deploy-ota.ps1`). Docs are grouped by topic under `docs/` (`architecture/`, `design/`, `features/`, `notifications/`, `play-store/`, `release/`, `ios/`); `docs/index.html` is the browsable overview.
+One-off PowerShell scripts (`bump-version`, `deploy-web`, `setup-play-store-secrets`, `test-design-system`) live in `scripts/` and use paths relative to the repo root, so run them from the root (`.\scripts\deploy-web.ps1`). Docs are grouped by topic under `docs/` (`architecture/`, `design/`, `features/`, `notifications/`, `play-store/`, `release/`, `ios/`); `docs/index.html` is the browsable overview.
 
 Note: `test/widget_test.dart` is still the default Flutter counter template and does not match the app; `test/screens` and `test/widgets` are empty.
 
@@ -56,5 +56,5 @@ Versioning is fully automated by semantic-release (`.releaserc.json`, `.github/w
 
 - Commits must follow Conventional Commits (`feat:` → minor, `fix:`/`perf:`/`refactor:` → patch, `!`/BREAKING → major; `docs/chore/style/test/ci/build` → no release).
 - Push to `staging` → `x.y.z-beta.N` prerelease built with `ENVIRONMENT=pprod`; push to `main` → production release built with `ENVIRONMENT=prod`.
-- `scripts/update-version-metadata.js` rewrites `pubspec.yaml` and `version-metadata.json` during release; the single build-and-deploy job then signs the APK/AAB, uploads the AAB via Fastlane (`android/fastlane`) and the APK + metadata to `/android/upload`. That upload is the only thing that writes the server's `version.json`, which the in-app version check reads (`/android/update-version` called by CI does not exist on the backend).
+- `scripts/update-version-metadata.js` rewrites `pubspec.yaml` and `version-metadata.json` during release; the single build-and-deploy job then signs the AAB, uploads it via Fastlane (`android/fastlane`), and publishes the version metadata to `POST /android/update-version` — the only source of the server's `version.json`, which the in-app version check reads. No APK is built or distributed outside the Play Store.
 - PRs into `main`/`staging` run `pr-validation.yml`: analyze (`--fatal-infos`), test, debug APK build. CI pins Flutter 3.35.7 and Java 17.
