@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.67](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.66...v1.0.0-beta.67) (2026-10-19)
+
+
+### 🐛 Bug Fixes
+
+* **ui:** keep FABs above the glass tab bar; block taps through glass bars ([4fdb18f](https://github.com/TeamFitness/mobile-app/commit/4fdb18f568fa40d3577a9f669eee9e8bfb35ef44))
+
 ## [1.0.0-beta.66](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.65...v1.0.0-beta.66) (2026-10-18)
 
 
