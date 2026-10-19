@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'admin_chrome.dart';
+import '../../widgets/common/glass.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/theme/theme.dart';
@@ -157,27 +158,30 @@ class _AdminMembersScreenState extends State<AdminMembersScreen> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          if (widget.onCreateMember != null) {
-            // Utiliser le callback si fourni (navigation interne)
-            widget.onCreateMember!();
-          } else {
-            // Naviguer vers l'écran de création de membre (navigation classique)
-            final result = await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const AdminCreateMemberScreen(),
-              ),
-            );
-            // Recharger la liste si un membre a été créé
-            if (result == true) {
-              _loadMembers();
+      floatingActionButton: glassFab(
+        context,
+        FloatingActionButton(
+          onPressed: () async {
+            if (widget.onCreateMember != null) {
+              // Utiliser le callback si fourni (navigation interne)
+              widget.onCreateMember!();
+            } else {
+              // Naviguer vers l'écran de création de membre (navigation classique)
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AdminCreateMemberScreen(),
+                ),
+              );
+              // Recharger la liste si un membre a été créé
+              if (result == true) {
+                _loadMembers();
+              }
             }
-          }
-        },
-        backgroundColor: AppColors.primary,
-        child: const Icon(Icons.add, color: Colors.white),
+          },
+          backgroundColor: AppColors.primary,
+          child: const Icon(Icons.add, color: Colors.white),
+        ),
       ),
       body: Container(
         decoration: BoxDecoration(

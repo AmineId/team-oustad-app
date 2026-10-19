@@ -143,9 +143,14 @@ class ResponsiveScaffold extends StatelessWidget {
     return Scaffold(
       extendBodyBehindAppBar: isIOS,
       extendBody: isIOS,
-      appBar: appBar,
+      appBar: isIOS ? blockTapsThroughAppBar(appBar) : appBar,
       body: effectiveBody,
-      bottomNavigationBar: isIOS && supportsNativeLiquidGlass
+      bottomNavigationBar: isIOS ? blockTapsThrough(_buildIosTabBar()) : bottomNav,
+    );
+  }
+
+  Widget _buildIosTabBar() {
+    return supportsNativeLiquidGlass
           ? NativeGlassTabBar(
               currentIndex: currentIndex,
               onTap: onNavigationChanged,
@@ -156,8 +161,7 @@ class ResponsiveScaffold extends StatelessWidget {
                       ))
                   .toList(),
             )
-          : isIOS
-          ? GlassTabBar(
+          : GlassTabBar(
               currentIndex: currentIndex,
               onTap: onNavigationChanged,
               items: navigationItems
@@ -169,9 +173,7 @@ class ResponsiveScaffold extends StatelessWidget {
                         label: item.label,
                       ))
                   .toList(),
-            )
-          : bottomNav,
-    );
+            );
   }
 
   Widget _buildDesktopLayout(BuildContext context) {

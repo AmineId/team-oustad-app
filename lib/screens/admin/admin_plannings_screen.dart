@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'admin_chrome.dart';
+import '../../widgets/common/glass.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/theme/theme.dart';
@@ -301,23 +302,26 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen>
                 ],
               ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          if (widget.onCreatePlanning != null) {
-            widget.onCreatePlanning!();
-          } else {
-            await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const AdminCreatePlanningScreen(),
-              ),
-            );
-            // Recharger après création
-            _loadPlannings();
-          }
-        },
-        backgroundColor: AppColors.primary,
-        child: const Icon(Icons.add, color: Colors.white),
+      floatingActionButton: glassFab(
+        context,
+        FloatingActionButton(
+          onPressed: () async {
+            if (widget.onCreatePlanning != null) {
+              widget.onCreatePlanning!();
+            } else {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AdminCreatePlanningScreen(),
+                ),
+              );
+              // Recharger après création
+              _loadPlannings();
+            }
+          },
+          backgroundColor: AppColors.primary,
+          child: const Icon(Icons.add, color: Colors.white),
+        ),
       ),
     ),
     );

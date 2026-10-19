@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' as math;
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -136,6 +137,32 @@ class GlassBar extends StatelessWidget {
   }
 }
 
+/// Les barres glass sont translucides : sans ça, un tap sur leurs zones vides
+/// (AppBar transparente, marges autour de la capsule) atteint le contenu qui
+/// défile dessous.
+Widget blockTapsThrough(Widget child) =>
+    Listener(behavior: HitTestBehavior.opaque, child: child);
+
+/// Variante pour le slot `appBar` d'un Scaffold.
+PreferredSizeWidget blockTapsThroughAppBar(PreferredSizeWidget appBar) =>
+    PreferredSize(
+      preferredSize: appBar.preferredSize,
+      child: blockTapsThrough(appBar),
+    );
+
+/// Remonte un FAB au-dessus de la barre d'onglets glass quand l'écran est
+/// affiché sous celle-ci (le shell ajoute sa hauteur à `padding` mais pas à
+/// `viewPadding`, sur lequel le Scaffold se base pour placer le FAB).
+Widget glassFab(BuildContext context, Widget fab) {
+  final mq = MediaQuery.of(context);
+  final extra = math.max(0.0, mq.padding.bottom - mq.viewPadding.bottom);
+  if (extra == 0) return fab;
+  return Padding(
+    padding: EdgeInsets.only(bottom: extra),
+    child: fab,
+  );
+}
+
 /// Fond uni commun à toutes les pages, identique à la teinte des barres glass.
 BoxDecoration appBackgroundDecoration(BuildContext context) =>
     BoxDecoration(color: Theme.of(context).scaffoldBackgroundColor);
@@ -150,7 +177,7 @@ PreferredSizeWidget glassAppBar(
   bool centerTitle = true,
 }) {
   final isIOS = Platform.isIOS;
-  return AppBar(
+  final appBar = AppBar(
     title: title,
     actions: actions,
     leading: leading,
@@ -161,6 +188,7 @@ PreferredSizeWidget glassAppBar(
     forceMaterialTransparency: isIOS,
     flexibleSpace: isIOS ? const GlassBar() : null,
   );
+  return isIOS ? blockTapsThroughAppBar(appBar) : appBar;
 }
 
 bool get glassExtendsBody => Platform.isIOS;
