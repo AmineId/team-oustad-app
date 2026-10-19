@@ -2271,11 +2271,13 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
   }
 
   Future<void> _loadProfileData() async {
-    // Try to refresh profile from API first (to get displayId)
-    var profileData = await _authService.refreshUserProfile();
+    // Cache d'abord : nom et code affichés immédiatement, même hors ligne
+    final cached = await _authService.getCachedUserProfile();
+    if (cached != null && mounted) setState(() => _profileData = cached);
 
-    // If refresh fails, fallback to cache
-    profileData ??= await _authService.getCachedUserProfile();
+    // Then refresh from API (to get displayId), keeping the cache on failure
+    var profileData = await _authService.refreshUserProfile();
+    profileData ??= cached;
 
     // Debug logs
     if (profileData != null) {
