@@ -14,12 +14,14 @@ class MainActivity : FlutterFragmentActivity() {
         
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, SECURITY_CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
-                "disableScreenCapture" -> {
+                // Activé uniquement sur les écrans sensibles (programme, planning)
+                "setScreenCaptureBlocked" -> {
                     try {
-                        window.setFlags(
-                            WindowManager.LayoutParams.FLAG_SECURE,
-                            WindowManager.LayoutParams.FLAG_SECURE
-                        )
+                        if (call.arguments as? Boolean == true) {
+                            window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                        } else {
+                            window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                        }
                         result.success(true)
                     } catch (e: Exception) {
                         result.error("SCREEN_CAPTURE_ERROR", e.message, null)

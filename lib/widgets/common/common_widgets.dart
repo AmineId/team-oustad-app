@@ -11,3 +11,4 @@ export 'status_badge.dart';
 export 'glass.dart';
 export 'native_glass_tab_bar.dart';
 export 'swipe_back.dart';
+export 'secure_screen.dart';

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
@@ -57,7 +58,8 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
   final List<Widget> _pages = [
     MemberDashboardPage(),
     MemberQrCodePage(),
-    MemberPlanningPage(),
+    // Programme d'entraînement + planning : captures d'écran bloquées
+    SecureScreen(child: MemberPlanningPage()),
     MemberProfilePage(),
   ];
 
@@ -1373,313 +1375,315 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          child: Container(
-            constraints: BoxConstraints(maxHeight: 600),
-            decoration: BoxDecoration(
-              color: Theme.of(context).cardTheme.color,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Header
-                Container(
-                  padding: EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).cardTheme.color!,
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(20),
-                      topRight: Radius.circular(20),
+        return SecureScreen(
+          child: Dialog(
+            backgroundColor: Colors.transparent,
+            child: Container(
+              constraints: BoxConstraints(maxHeight: 600),
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardTheme.color,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Header
+                  Container(
+                    padding: EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).cardTheme.color!,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(20),
+                        topRight: Radius.circular(20),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.primary.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Icon(
+                            Icons.fitness_center,
+                            color: Theme.of(context).colorScheme.primary,
+                            size: 24,
+                          ),
+                        ),
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                planning?['title'] ??
+                                    AppLocalizations.of(context).myWorkout,
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color:
+                                      (Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? AppColors.darkTextPrimary
+                                      : AppColors.lightTextPrimary),
+                                ),
+                              ),
+                              SizedBox(height: 4),
+                              Text(
+                                '${exercises.length} exercice${exercises.length > 1 ? 's' : ''} • $workoutStatus',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color:
+                                      (Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? AppColors.darkTextSecondary
+                                      : AppColors.lightTextSecondary),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          tooltip: 'Fermer',
+                          onPressed: () => Navigator.pop(context),
+                          icon: Icon(
+                            Icons.close,
+                            color:
+                                (Theme.of(context).brightness == Brightness.dark
+                                ? AppColors.darkTextPrimary
+                                : AppColors.lightTextPrimary),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.primary.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Icon(
-                          Icons.fitness_center,
-                          color: Theme.of(context).colorScheme.primary,
-                          size: 24,
-                        ),
-                      ),
-                      SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              planning?['title'] ??
-                                  AppLocalizations.of(context).myWorkout,
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color:
-                                    (Theme.of(context).brightness ==
-                                        Brightness.dark
-                                    ? AppColors.darkTextPrimary
-                                    : AppColors.lightTextPrimary),
+                  // Exercises list
+                  Flexible(
+                    child: exercises.isEmpty
+                        ? Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(32.0),
+                              child: Text(
+                                'Aucun exercice prévu',
+                                style: TextStyle(
+                                  color:
+                                      (Theme.of(context).brightness ==
+                                                  Brightness.dark
+                                              ? AppColors.darkTextSecondary
+                                              : AppColors.lightTextSecondary)
+                                          .withValues(alpha: 0.7),
+                                  fontSize: 16,
+                                ),
                               ),
                             ),
-                            SizedBox(height: 4),
-                            Text(
-                              '${exercises.length} exercice${exercises.length > 1 ? 's' : ''} • $workoutStatus',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color:
-                                    (Theme.of(context).brightness ==
-                                        Brightness.dark
-                                    ? AppColors.darkTextSecondary
-                                    : AppColors.lightTextSecondary),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      IconButton(
-                        tooltip: 'Fermer',
-                        onPressed: () => Navigator.pop(context),
-                        icon: Icon(
-                          Icons.close,
-                          color:
-                              (Theme.of(context).brightness == Brightness.dark
-                              ? AppColors.darkTextPrimary
-                              : AppColors.lightTextPrimary),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                // Exercises list
-                Flexible(
-                  child: exercises.isEmpty
-                      ? Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(32.0),
-                            child: Text(
-                              'Aucun exercice prévu',
-                              style: TextStyle(
-                                color:
-                                    (Theme.of(context).brightness ==
-                                                Brightness.dark
-                                            ? AppColors.darkTextSecondary
-                                            : AppColors.lightTextSecondary)
-                                        .withValues(alpha: 0.7),
-                                fontSize: 16,
-                              ),
-                            ),
-                          ),
-                        )
-                      : ListView.builder(
-                          shrinkWrap: true,
-                          padding: EdgeInsets.all(20),
-                          itemCount: exercises.length,
-                          itemBuilder: (context, index) {
-                            final exerciseData =
-                                exercises[index] as Map<String, dynamic>;
-                            final exercise =
-                                exerciseData['exercise']
-                                    as Map<String, dynamic>?;
-                            final sets = exerciseData['sets'] as int?;
-                            final reps = exerciseData['reps'] as int?;
-                            final weightValue = exerciseData['weight'];
-                            final weight = weightValue != null
-                                ? (weightValue is int
-                                      ? weightValue.toDouble()
-                                      : weightValue as double?)
-                                : null;
-                            final notes = exerciseData['notes'] as String?;
+                          )
+                        : ListView.builder(
+                            shrinkWrap: true,
+                            padding: EdgeInsets.all(20),
+                            itemCount: exercises.length,
+                            itemBuilder: (context, index) {
+                              final exerciseData =
+                                  exercises[index] as Map<String, dynamic>;
+                              final exercise =
+                                  exerciseData['exercise']
+                                      as Map<String, dynamic>?;
+                              final sets = exerciseData['sets'] as int?;
+                              final reps = exerciseData['reps'] as int?;
+                              final weightValue = exerciseData['weight'];
+                              final weight = weightValue != null
+                                  ? (weightValue is int
+                                        ? weightValue.toDouble()
+                                        : weightValue as double?)
+                                  : null;
+                              final notes = exerciseData['notes'] as String?;
 
-                            return Card(
-                              color: Theme.of(context).cardTheme.color,
-                              margin: EdgeInsets.only(bottom: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Padding(
-                                padding: EdgeInsets.all(16.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Container(
-                                          width: 32,
-                                          height: 32,
-                                          decoration: BoxDecoration(
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .primary
-                                                .withValues(alpha: 0.2),
-                                            borderRadius: BorderRadius.circular(
-                                              8,
-                                            ),
-                                          ),
-                                          child: Center(
-                                            child: Text(
-                                              '${index + 1}',
-                                              style: TextStyle(
-                                                color: Theme.of(
-                                                  context,
-                                                ).colorScheme.primary,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 14,
+                              return Card(
+                                color: Theme.of(context).cardTheme.color,
+                                margin: EdgeInsets.only(bottom: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Padding(
+                                  padding: EdgeInsets.all(16.0),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Container(
+                                            width: 32,
+                                            height: 32,
+                                            decoration: BoxDecoration(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .primary
+                                                  .withValues(alpha: 0.2),
+                                              borderRadius: BorderRadius.circular(
+                                                8,
                                               ),
                                             ),
-                                          ),
-                                        ),
-                                        SizedBox(width: 12),
-                                        Expanded(
-                                          child: Text(
-                                            exercise?['name'] ?? 'Exercice',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color:
-                                                  (Theme.of(
-                                                        context,
-                                                      ).brightness ==
-                                                      Brightness.dark
-                                                  ? AppColors.darkTextPrimary
-                                                  : AppColors.lightTextPrimary),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    if (sets != null ||
-                                        reps != null ||
-                                        weight != null) ...[
-                                      SizedBox(height: 12),
-                                      Wrap(
-                                        spacing: 12,
-                                        runSpacing: 8,
-                                        children: [
-                                          if (sets != null)
-                                            _buildInfoChip(
-                                              'Séries',
-                                              sets.toString(),
-                                              Icons.repeat,
-                                            ),
-                                          if (reps != null)
-                                            _buildInfoChip(
-                                              'Reps',
-                                              reps.toString(),
-                                              Icons.fitness_center,
-                                            ),
-                                          if (weight != null)
-                                            _buildInfoChip(
-                                              'Poids',
-                                              '${weight}kg',
-                                              Icons.monitor_weight,
-                                            ),
-                                        ],
-                                      ),
-                                    ],
-                                    if (notes != null && notes.isNotEmpty) ...[
-                                      SizedBox(height: 12),
-                                      Container(
-                                        padding: EdgeInsets.all(12),
-                                        decoration: BoxDecoration(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .surface
-                                              .withValues(alpha: 0.05),
-                                          borderRadius: BorderRadius.circular(
-                                            8,
-                                          ),
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            Icon(
-                                              Icons.note,
-                                              size: 16,
-                                              color:
-                                                  (Theme.of(
-                                                        context,
-                                                      ).brightness ==
-                                                      Brightness.dark
-                                                  ? AppColors.darkTextSecondary
-                                                  : AppColors
-                                                        .lightTextSecondary),
-                                            ),
-                                            SizedBox(width: 8),
-                                            Expanded(
+                                            child: Center(
                                               child: Text(
-                                                notes,
+                                                '${index + 1}',
                                                 style: TextStyle(
-                                                  fontSize: 13,
-                                                  color:
-                                                      (Theme.of(
-                                                            context,
-                                                          ).brightness ==
-                                                          Brightness.dark
-                                                      ? AppColors
-                                                            .darkTextSecondary
-                                                      : AppColors
-                                                            .lightTextSecondary),
+                                                  color: Theme.of(
+                                                    context,
+                                                  ).colorScheme.primary,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 14,
                                                 ),
                                               ),
                                             ),
+                                          ),
+                                          SizedBox(width: 12),
+                                          Expanded(
+                                            child: Text(
+                                              exercise?['name'] ?? 'Exercice',
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                                color:
+                                                    (Theme.of(
+                                                          context,
+                                                        ).brightness ==
+                                                        Brightness.dark
+                                                    ? AppColors.darkTextPrimary
+                                                    : AppColors.lightTextPrimary),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      if (sets != null ||
+                                          reps != null ||
+                                          weight != null) ...[
+                                        SizedBox(height: 12),
+                                        Wrap(
+                                          spacing: 12,
+                                          runSpacing: 8,
+                                          children: [
+                                            if (sets != null)
+                                              _buildInfoChip(
+                                                'Séries',
+                                                sets.toString(),
+                                                Icons.repeat,
+                                              ),
+                                            if (reps != null)
+                                              _buildInfoChip(
+                                                'Reps',
+                                                reps.toString(),
+                                                Icons.fitness_center,
+                                              ),
+                                            if (weight != null)
+                                              _buildInfoChip(
+                                                'Poids',
+                                                '${weight}kg',
+                                                Icons.monitor_weight,
+                                              ),
                                           ],
                                         ),
-                                      ),
-                                    ],
-                                    SizedBox(height: 12),
-                                    SizedBox(
-                                      width: double.infinity,
-                                      child: OutlinedButton.icon(
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                          _requestHelp(
-                                            exercise?['name'] ?? 'Exercice',
-                                          );
-                                        },
-                                        icon: Icon(
-                                          Icons.help_outline,
-                                          size: 18,
-                                        ),
-                                        label: Text(
-                                          AppLocalizations.of(
-                                            context,
-                                          ).askForHelp,
-                                        ),
-                                        style: OutlinedButton.styleFrom(
-                                          foregroundColor: Theme.of(
-                                            context,
-                                          ).colorScheme.primary,
-                                          side: BorderSide(
-                                            color: Theme.of(
-                                              context,
-                                            ).colorScheme.primary,
-                                          ),
-                                          padding: EdgeInsets.symmetric(
-                                            vertical: 10,
-                                            horizontal: 20,
-                                          ),
-                                          shape: RoundedRectangleBorder(
+                                      ],
+                                      if (notes != null && notes.isNotEmpty) ...[
+                                        SizedBox(height: 12),
+                                        Container(
+                                          padding: EdgeInsets.all(12),
+                                          decoration: BoxDecoration(
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .surface
+                                                .withValues(alpha: 0.05),
                                             borderRadius: BorderRadius.circular(
                                               8,
                                             ),
                                           ),
+                                          child: Row(
+                                            children: [
+                                              Icon(
+                                                Icons.note,
+                                                size: 16,
+                                                color:
+                                                    (Theme.of(
+                                                          context,
+                                                        ).brightness ==
+                                                        Brightness.dark
+                                                    ? AppColors.darkTextSecondary
+                                                    : AppColors
+                                                          .lightTextSecondary),
+                                              ),
+                                              SizedBox(width: 8),
+                                              Expanded(
+                                                child: Text(
+                                                  notes,
+                                                  style: TextStyle(
+                                                    fontSize: 13,
+                                                    color:
+                                                        (Theme.of(
+                                                              context,
+                                                            ).brightness ==
+                                                            Brightness.dark
+                                                        ? AppColors
+                                                              .darkTextSecondary
+                                                        : AppColors
+                                                              .lightTextSecondary),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                      SizedBox(height: 12),
+                                      SizedBox(
+                                        width: double.infinity,
+                                        child: OutlinedButton.icon(
+                                          onPressed: () {
+                                            Navigator.pop(context);
+                                            _requestHelp(
+                                              exercise?['name'] ?? 'Exercice',
+                                            );
+                                          },
+                                          icon: Icon(
+                                            Icons.help_outline,
+                                            size: 18,
+                                          ),
+                                          label: Text(
+                                            AppLocalizations.of(
+                                              context,
+                                            ).askForHelp,
+                                          ),
+                                          style: OutlinedButton.styleFrom(
+                                            foregroundColor: Theme.of(
+                                              context,
+                                            ).colorScheme.primary,
+                                            side: BorderSide(
+                                              color: Theme.of(
+                                                context,
+                                              ).colorScheme.primary,
+                                            ),
+                                            padding: EdgeInsets.symmetric(
+                                              vertical: 10,
+                                              horizontal: 20,
+                                            ),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(
+                                                8,
+                                              ),
+                                            ),
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            );
-                          },
-                        ),
-                ),
-              ],
+                              );
+                            },
+                          ),
+                  ),
+                ],
+              ),
             ),
           ),
         );
@@ -2218,13 +2222,52 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
   Map<String, dynamic>? _profileData;
   bool _hasConnectivity = true;
   bool _isCheckingConnectivity = true;
+  bool _isFromCache = false;
+  StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
 
   @override
   void initState() {
     super.initState();
     _loadProfileData();
-    _checkConnectivity();
-    _tryLoadCachedQr();
+    _initQrCode();
+    _connectivitySub = Connectivity().onConnectivityChanged.listen(
+      _onConnectivityChanged,
+    );
+  }
+
+  @override
+  void dispose() {
+    _connectivitySub?.cancel();
+    super.dispose();
+  }
+
+  /// Sans Wi-Fi ni données mobiles : bascule directement sur le QR en cache.
+  Future<void> _initQrCode() async {
+    await _checkConnectivity();
+    if (!_hasConnectivity) await _showCachedQr();
+  }
+
+  void _onConnectivityChanged(List<ConnectivityResult> results) {
+    if (!mounted) return;
+    final hasConnection = !results.contains(ConnectivityResult.none);
+    setState(() {
+      _hasConnectivity = hasConnection;
+      _isCheckingConnectivity = false;
+    });
+    if (!hasConnection && !_showQrCode) _showCachedQr();
+  }
+
+  /// Affiche le QR code en cache. Retourne false s'il n'y en a pas.
+  Future<bool> _showCachedQr() async {
+    final cachedQr = await _authService.getQrCodeCache();
+    if (cachedQr == null || !mounted) return false;
+    setState(() {
+      _qrImageBytes = cachedQr;
+      _isFromCache = true;
+      _showQrCode = true;
+      _isLoading = false;
+    });
+    return true;
   }
 
   Future<void> _loadProfileData() async {
@@ -2273,18 +2316,6 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
     }
   }
 
-  Future<void> _tryLoadCachedQr() async {
-    // Try to load QR from cache if no connectivity
-    if (!_hasConnectivity) {
-      final cachedQr = await _authService.getQrCodeCache();
-      if (cachedQr != null && mounted) {
-        setState(() {
-          _qrImageBytes = cachedQr;
-        });
-      }
-    }
-  }
-
   Future<void> _toggleQrCode() async {
     if (_showQrCode) {
       // Hide QR code
@@ -2299,12 +2330,7 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
 
     // If no connectivity, try to use cached QR
     if (!_hasConnectivity) {
-      final cachedQr = await _authService.getQrCodeCache();
-      if (cachedQr != null) {
-        setState(() {
-          _qrImageBytes = cachedQr;
-          _showQrCode = true;
-        });
+      if (await _showCachedQr()) {
         return;
       } else {
         // No cache and no connectivity
@@ -2375,6 +2401,9 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
         if (!mounted) return;
 
         if (qrImageBytes == null) {
+          // Réseau présent mais API injoignable : repli sur le cache
+          if (await _showCachedQr()) return;
+          if (!mounted) return;
           final l10n = AppLocalizations.of(context);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -2398,10 +2427,12 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
 
         setState(() {
           _qrImageBytes = qrImageBytes;
+          _isFromCache = false;
           _showQrCode = true;
           _isLoading = false;
         });
       } catch (e) {
+        if (await _showCachedQr()) return;
         if (!mounted) return;
 
         final l10n = AppLocalizations.of(context);
@@ -2530,7 +2561,7 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
               Column(
                 children: [
                   // Offline indicator on QR card if applicable
-                  if (!_hasConnectivity)
+                  if (_isFromCache)
                     Container(
                       margin: EdgeInsets.only(bottom: 12),
                       padding: EdgeInsets.symmetric(

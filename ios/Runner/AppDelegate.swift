@@ -30,6 +30,9 @@ import UIKit
           } else {
             result(false)
           }
+        case "setScreenCaptureBlocked":
+          self.setScreenCaptureBlocked(call.arguments as? Bool ?? false)
+          result(true)
         default:
           result(FlutterMethodNotImplemented)
         }
@@ -85,6 +88,30 @@ import UIKit
     }
   }
   
+  // Champ sécurisé dont la couche héberge la fenêtre : quand isSecureTextEntry
+  // est actif, iOS rend le contenu noir dans les captures et enregistrements.
+  private var secureField: UITextField?
+
+  private func setScreenCaptureBlocked(_ blocked: Bool) {
+    guard let window = self.window else { return }
+
+    if secureField == nil {
+      let field = UITextField()
+      field.isUserInteractionEnabled = false
+      window.addSubview(field)
+      window.layer.superlayer?.addSublayer(field.layer)
+      // Le conteneur sécurisé est la dernière sous-couche depuis iOS 17
+      if #available(iOS 17.0, *) {
+        field.layer.sublayers?.last?.addSublayer(window.layer)
+      } else {
+        field.layer.sublayers?.first?.addSublayer(window.layer)
+      }
+      secureField = field
+    }
+
+    secureField?.isSecureTextEntry = blocked
+  }
+
   // Overlay pour masquer le contenu
   private var securityView: UIView?
   

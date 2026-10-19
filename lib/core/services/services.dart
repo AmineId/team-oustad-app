@@ -8,6 +8,7 @@ export 'locale_service.dart';
 export 'notification_service.dart';
 export 'notification_router.dart';
 export 'ota_update_service.dart';
+export 'screen_security_service.dart';
 
 
 

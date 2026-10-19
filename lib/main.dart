@@ -16,8 +16,8 @@ void main() async {
   // Ensure Flutter bindings are initialized
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Bloquer les screenshots et l'enregistrement d'écran
-  await _disableScreenCapture();
+  // Captures d'écran bloquées uniquement sur les écrans sensibles
+  // (voir SecureScreen / ScreenSecurityService)
   
   // Initialize Firebase
   try {
@@ -103,34 +103,6 @@ void main() async {
   };
 
   runApp(MyApp(localeService: localeService));
-}
-
-/// Désactive la capture d'écran et l'enregistrement d'écran
-Future<void> _disableScreenCapture() async {
-  // Ne pas exécuter sur le web
-  if (kIsWeb) {
-    debugPrint('🌐 Protection des screenshots non applicable sur le web');
-    return;
-  }
-
-  // Protection native (Android/iOS uniquement)
-  try {
-    if (Platform.isAndroid) {
-      // Sur Android, empêcher les screenshots et l'enregistrement d'écran
-      const platform = MethodChannel('team.fitness.security');
-      await platform.invokeMethod('disableScreenCapture');
-      // ignore: avoid_print
-      debugPrint('🔒 Protection des screenshots activée (Android)');
-    } else if (Platform.isIOS) {
-      // Sur iOS, masquer le contenu dans le task switcher
-      // La protection contre les screenshots est gérée au niveau système iOS
-      // ignore: avoid_print
-      debugPrint('🔒 Protection des screenshots activée (iOS)');
-    }
-  } catch (e) {
-    // ignore: avoid_print
-    debugPrint('⚠️ Erreur lors de l\'activation de la protection: $e');
-  }
 }
 
 class MyApp extends StatefulWidget {
