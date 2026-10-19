@@ -143,7 +143,7 @@ class _MyAppState extends State<MyApp> {
             localeService: widget.localeService,
             child: MaterialApp(
               navigatorKey: appNavigatorKey,
-              title: 'Team Fitness App',
+              title: 'Team Oustad',
               theme: AppTheme.lightTheme,
               darkTheme: AppTheme.darkTheme,
               themeMode: _themeProvider.themeMode,
