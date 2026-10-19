@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.68](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.67...v1.0.0-beta.68) (2026-10-19)
+
+
+### ✨ New Features
+
+* **notifications:** open the matching tab on notification tap; keep FCM token in sync ([7a05556](https://github.com/TeamFitness/mobile-app/commit/7a055563a78503d2e18ba268afddc1032e5abc49))
+
+
+### 🐛 Bug Fixes
+
+* **whatsapp:** read pairing code from the new 'code' response field ([ff7b335](https://github.com/TeamFitness/mobile-app/commit/ff7b33568f4dc39697b48f975a0d5ede133b0669))
+
 ## [1.0.0-beta.67](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.66...v1.0.0-beta.67) (2026-10-19)
 
 
