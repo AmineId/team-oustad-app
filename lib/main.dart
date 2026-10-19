@@ -8,6 +8,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'screens/common/common_screens.dart';
 import 'screens/admin/admin_screens.dart';
 import 'core/services/services.dart';
+import 'core/utils/app_navigator.dart';
 import 'core/theme/theme.dart';
 import 'core/l10n/app_localizations.dart';
 import 'firebase_options.dart';
@@ -141,6 +142,7 @@ class _MyAppState extends State<MyApp> {
           child: LocaleServiceScope(
             localeService: widget.localeService,
             child: MaterialApp(
+              navigatorKey: appNavigatorKey,
               title: 'Team Fitness App',
               theme: AppTheme.lightTheme,
               darkTheme: AppTheme.darkTheme,

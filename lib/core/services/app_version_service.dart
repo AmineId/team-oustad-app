@@ -1,16 +1,24 @@
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:convert';
+import 'dart:io';
 
-/// Service de mise à jour OTA (Over-The-Air)
-/// Vérifie et installe automatiquement les mises à jour de l'application
-class OTAUpdateService {
-  static final OTAUpdateService _instance = OTAUpdateService._internal();
-  factory OTAUpdateService() => _instance;
-  OTAUpdateService._internal();
+/// Vérification de version, sur toutes les plateformes.
+/// Compare le build number installé à la dernière version publiée ; la mise à
+/// jour elle-même passe par le store (Play Store sur Android), jamais par un
+/// téléchargement d'APK dans l'app.
+class AppVersionService {
+  static final AppVersionService _instance = AppVersionService._internal();
+  factory AppVersionService() => _instance;
+  AppVersionService._internal();
+
+  static const playStoreUrl =
+      'https://play.google.com/store/apps/details?id=team.fitness.team_fitness_app';
+
+  /// Seul Android a un store où renvoyer l'utilisateur.
+  static bool get canOpenStore => !kIsWeb && Platform.isAndroid;
 
   // URL du serveur qui héberge les informations de mise à jour
   // Détermine automatiquement l'URL selon l'environnement
@@ -78,7 +86,6 @@ class OTAUpdateService {
 
         final latestVersion = versionData['version_name'] as String;
         final latestBuildNumber = versionData['version_code'] as int;
-        final downloadUrl = versionData['download_url'] as String;
         final changelog =
             versionData['changelog'] as String? ??
             'Nouvelles fonctionnalités et corrections';
@@ -92,7 +99,6 @@ class OTAUpdateService {
           latestVersion: latestVersion,
           currentBuildNumber: currentBuildNumber,
           latestBuildNumber: latestBuildNumber,
-          downloadUrl: downloadUrl,
           changelog: changelog,
           forceUpdate: forceUpdate,
           minSupportedVersion: minSupportedVersion,
@@ -108,64 +114,18 @@ class OTAUpdateService {
     }
   }
 
-  /// Ouvre l'URL de mise à jour (Play Store ou lien direct)
-  Future<bool> openPlayStoreForUpdate(UpdateInfo updateInfo) async {
-    if (kIsWeb) {
-      debugPrint('⚠️ OTA update non supporté sur web');
-      return false;
-    }
+  /// Ouvre la fiche Play Store de l'app (Android uniquement).
+  Future<bool> openStore() async {
+    if (!canOpenStore) return false;
 
     try {
-      final uri = Uri.parse(updateInfo.downloadUrl);
-      debugPrint('🔗 Ouverture de l\'URL de mise à jour: $uri');
-
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-        debugPrint('✅ URL ouverte avec succès');
-        return true;
-      } else {
-        debugPrint('⚠️ Impossible d\'ouvrir l\'URL: $uri');
-        return false;
-      }
+      return await launchUrl(
+        Uri.parse(playStoreUrl),
+        mode: LaunchMode.externalApplication,
+      );
     } catch (e) {
-      debugPrint('❌ Erreur lors de l\'ouverture de l\'URL: $e');
+      debugPrint('❌ Erreur lors de l\'ouverture du Play Store: $e');
       return false;
-    }
-  }
-
-  /// Vérifie automatiquement les mises à jour (appelé au démarrage)
-  Future<void> autoCheckForUpdates() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-
-      // Vérifier si l'auto-update est activé
-      final autoUpdateEnabled = prefs.getBool('auto_update_enabled') ?? true;
-      if (!autoUpdateEnabled) return;
-
-      // Vérifier la dernière fois qu'on a vérifié (éviter de vérifier trop souvent)
-      final lastCheck = prefs.getInt('last_update_check') ?? 0;
-      final now = DateTime.now().millisecondsSinceEpoch;
-      const checkInterval = 24 * 60 * 60 * 1000; // 24 heures
-
-      if (now - lastCheck < checkInterval) {
-        debugPrint('ℹ️ Dernière vérification récente, skip');
-        return;
-      }
-
-      // Sauvegarder la date de vérification
-      await prefs.setInt('last_update_check', now);
-
-      // Vérifier les mises à jour
-      final updateInfo = await checkForUpdate();
-
-      if (updateInfo != null) {
-        debugPrint('🆕 Mise à jour disponible: ${updateInfo.latestVersion}');
-        // La notification de mise à jour sera gérée par l'UI
-      } else {
-        debugPrint('✅ Application à jour');
-      }
-    } catch (e) {
-      debugPrint('❌ Erreur auto-check: $e');
     }
   }
 
@@ -179,7 +139,6 @@ class UpdateInfo {
   final String latestVersion;
   final int currentBuildNumber;
   final int latestBuildNumber;
-  final String downloadUrl;
   final String changelog;
   final bool forceUpdate;
   final int? minSupportedVersion;
@@ -189,25 +148,10 @@ class UpdateInfo {
     required this.latestVersion,
     required this.currentBuildNumber,
     required this.latestBuildNumber,
-    required this.downloadUrl,
     required this.changelog,
     required this.forceUpdate,
     this.minSupportedVersion,
   });
-
-  /// Construit une info de mise à jour depuis JSON
-  factory UpdateInfo.fromJson(Map<String, dynamic> json) {
-    return UpdateInfo(
-      currentVersion: json['currentVersion'] as String,
-      latestVersion: json['version'] as String,
-      currentBuildNumber: json['currentBuildNumber'] as int,
-      latestBuildNumber: json['buildNumber'] as int,
-      downloadUrl: json['downloadUrl'] as String,
-      changelog: json['changelog'] as String? ?? 'Nouvelles fonctionnalités',
-      forceUpdate: json['force_update'] as bool? ?? false,
-      minSupportedVersion: json['min_supported_version'] as int?,
-    );
-  }
 
   /// Détermine si la mise à jour est critique (force l'utilisateur à mettre à jour)
   bool get isCritical {
@@ -216,8 +160,4 @@ class UpdateInfo {
     // Comparer le build number actuel avec la version minimale supportée
     return currentBuildNumber < minSupportedVersion!;
   }
-
-  /// Alias pour la compatibilité (deprecated)
-  @Deprecated('Use forceUpdate instead')
-  bool get isMandatory => forceUpdate;
 }

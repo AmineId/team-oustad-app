@@ -282,7 +282,7 @@ footer { color: var(--ink-3); font-size: .85rem; padding-top: 24px; border-top: 
 ├─ <span class="d">core/</span>                <span class="c">aucune UI</span>
 │  ├─ config/           <span class="c">AppConfig : l'URL selon l'environnement</span>
 │  ├─ services/         <span class="c">ApiService (presque tous les appels backend), AuthService (biométrie),</span>
-│  │                    <span class="c">FCM, notifications locales, mises à jour OTA, langue, boutique, bannières</span>
+│  │                    <span class="c">FCM, notifications locales, vérification de version, langue, boutique, bannières</span>
 │  ├─ models/  theme/  utils/
 │  └─ l10n/             <span class="c">traductions écrites à la main (fr / en / ar), pas d'ARB</span>
 ├─ <span class="d">screens/</span>             <span class="c">auth · admin · member · common, SplashScreen route selon le rôle</span>
@@ -294,7 +294,7 @@ footer { color: var(--ink-3); font-size: .85rem; padding-top: 24px; border-top: 
     <section id="release">
       <div class="eyebrow">semantic-release</div>
       <h2>Release</h2>
-      <p>La version n'est jamais modifiée à la main : le type de commit décide. Le pipeline réécrit <code>pubspec.yaml</code> et <code>version-metadata.json</code>, signe l'APK et l'AAB, puis les publie sur le Play Store et le serveur OTA.</p>
+      <p>La version n'est jamais modifiée à la main : le type de commit décide. Le pipeline réécrit <code>pubspec.yaml</code> et <code>version-metadata.json</code>, signe l'APK et l'AAB, publie l'AAB sur le Play Store et envoie l'APK et la version au serveur, qui sert la vérification de version dans l'app.</p>
       <div class="flow-wrap">
         <div class="commit">feat(store): panier<br><span style="color:var(--ink-3)">fix: crash check-in</span></div>
         <div class="arrows" aria-hidden="true"><span>↗</span><span>↘</span></div>

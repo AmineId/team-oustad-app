@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/services/api_service.dart';
-import '../../core/services/ota_update_service.dart';
+import '../../core/services/app_version_service.dart';
 import '../../core/theme/theme.dart';
 import '../../widgets/common/language_switcher_button.dart';
+import '../../widgets/common/update_available_dialog.dart';
 import '../../main.dart';
 
 class SecuritySettingsPage extends StatefulWidget {
@@ -19,7 +19,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage>
     with WidgetsBindingObserver {
   final AuthService _authService = AuthService(ApiService.fromEnv());
   final ApiService _apiService = ApiService.fromEnv();
-  final OTAUpdateService _otaService = OTAUpdateService();
+  final AppVersionService _versionService = AppVersionService();
   bool _canCheckBiometrics = false;
   bool _biometricEnabled = false;
   bool _notificationsEnabled = true;
@@ -617,7 +617,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage>
     );
 
     try {
-      final updateInfo = await _otaService.checkForUpdate();
+      final updateInfo = await _versionService.checkForUpdate();
 
       if (!mounted) return;
       Navigator.pop(context); // Fermer le dialog de chargement
@@ -632,7 +632,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage>
         );
       } else {
         // Mise à jour disponible
-        _showUpdateAvailableDialog(updateInfo);
+        showUpdateAvailableDialog(context, updateInfo);
       }
     } catch (e) {
       if (!mounted) return;
@@ -699,188 +699,6 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage>
         ],
       ),
     );
-  }
-
-  Future<void> _showUpdateAvailableDialog(UpdateInfo updateInfo) async {
-    final packageInfo = await PackageInfo.fromPlatform();
-
-    if (!mounted) return;
-
-    showDialog(
-      context: context,
-      barrierDismissible: !updateInfo.forceUpdate,
-      builder: (context) => AlertDialog(
-        backgroundColor: Theme.of(context).cardTheme.color,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppColors.info.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(
-                Icons.system_update,
-                color: AppColors.info,
-                size: 28,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Mise à jour disponible',
-                    style: TextStyle(
-                      color: (Theme.of(context).brightness == Brightness.dark
-                          ? AppColors.darkTextPrimary
-                          : AppColors.lightTextPrimary),
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    '${packageInfo.version} → ${updateInfo.latestVersion}',
-                    style: TextStyle(
-                      color: (Theme.of(context).brightness == Brightness.dark
-                          ? AppColors.darkTextSecondary
-                          : AppColors.lightTextSecondary),
-                      fontSize: 13,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (updateInfo.forceUpdate)
-              Container(
-                padding: const EdgeInsets.all(12),
-                margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(
-                  color: AppColors.error.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: AppColors.error.withValues(alpha: 0.5),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.warning, color: AppColors.error, size: 20),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Builder(
-                        builder: (context) => Text(
-                          'Cette mise à jour est obligatoire',
-                          style: TextStyle(
-                            color:
-                                (Theme.of(context).brightness == Brightness.dark
-                                ? AppColors.darkTextPrimary
-                                : AppColors.lightTextPrimary),
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            Builder(
-              builder: (context) => Text(
-                'Nouveautés :',
-                style: TextStyle(
-                  color: (Theme.of(context).brightness == Brightness.dark
-                      ? AppColors.darkTextPrimary
-                      : AppColors.lightTextPrimary),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              updateInfo.changelog,
-              style: TextStyle(
-                color: (Theme.of(context).brightness == Brightness.dark
-                    ? AppColors.darkTextSecondary
-                    : AppColors.lightTextSecondary),
-                fontSize: 14,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          if (!updateInfo.forceUpdate)
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
-                ),
-              ),
-              child: Builder(
-                builder: (context) => Text(
-                  'Plus tard',
-                  style: TextStyle(
-                    color: (Theme.of(context).brightness == Brightness.dark
-                        ? AppColors.darkTextSecondary
-                        : AppColors.lightTextSecondary),
-                    fontSize: 16,
-                  ),
-                ),
-              ),
-            ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.info,
-              foregroundColor: Theme.of(context).brightness == Brightness.dark
-                  ? (Theme.of(context).brightness == Brightness.dark
-                        ? AppColors.darkTextPrimary
-                        : AppColors.lightTextPrimary)
-                  : AppColors.primaryDark,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            ),
-            onPressed: () {
-              Navigator.pop(context);
-              _startUpdateDownload(updateInfo);
-            },
-            child: const Text('Mettre à jour', style: TextStyle(fontSize: 16)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _startUpdateDownload(UpdateInfo updateInfo) async {
-    // Ouvrir directement le Play Store
-    final success = await _otaService.openPlayStoreForUpdate(updateInfo);
-
-    if (!mounted) return;
-
-    if (success) {
-      _showUpdateDialog(
-        title: 'Play Store ouvert',
-        message: 'Veuillez installer la mise à jour depuis le Play Store.',
-        icon: Icons.check_circle_outline,
-        iconColor: AppColors.success,
-      );
-    } else {
-      _showUpdateDialog(
-        title: 'Erreur',
-        message: 'Impossible d\'ouvrir le Play Store.',
-        icon: Icons.error_outline,
-        iconColor: AppColors.error,
-      );
-    }
   }
 
   @override

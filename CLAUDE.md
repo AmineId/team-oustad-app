@@ -42,7 +42,7 @@ Layered, with barrel files at every level (`core/core.dart`, `services/services.
 - `lib/core/` — no UI.
   - `services/api_service.dart` — singleton (`ApiService.fromEnv()`), a single large HTTP client holding nearly every backend call (auth, members, gyms, subscriptions, plannings, check-in, admins). It is the most-connected node in the codebase; most screens depend on it plus `AuthService`. Smaller feature services (`banner_service`, `store_service`) wrap `ApiService` for their domain.
   - `auth_service.dart` — session/token persistence (`flutter_secure_storage`) and biometric login (`local_auth`).
-  - `fcm_service.dart` (Firebase push, registers device token with backend), `notification_service.dart` (local/scheduled notifications), `ota_update_service.dart` (in-app APK updates driven by `version-metadata.json`), `locale_service.dart`.
+  - `fcm_service.dart` (Firebase push, registers device token with backend), `notification_service.dart` (local/scheduled notifications), `app_version_service.dart` (version check on every platform against the server's latest `version_code`; update goes through the Play Store on Android, a message elsewhere — no in-app APK download), `locale_service.dart`.
   - `theme/` — `AppColors`, `AppTextStyles`, `AppTheme` (light/dark), `ThemeProvider` (persisted in SharedPreferences).
   - `l10n/app_localizations.dart` — hand-written translation map (fr / en / ar with RTL), **not** generated from ARB. Add a key to all three language maps and a getter.
 - `lib/screens/{auth,admin,member,common}/` — screens by role. `SplashScreen` is the entry and routes to admin or member home based on the logged-in user's role.
@@ -56,5 +56,5 @@ Versioning is fully automated by semantic-release (`.releaserc.json`, `.github/w
 
 - Commits must follow Conventional Commits (`feat:` → minor, `fix:`/`perf:`/`refactor:` → patch, `!`/BREAKING → major; `docs/chore/style/test/ci/build` → no release).
 - Push to `staging` → `x.y.z-beta.N` prerelease built with `ENVIRONMENT=pprod`; push to `main` → production release built with `ENVIRONMENT=prod`.
-- `scripts/update-version-metadata.js` rewrites `pubspec.yaml` and `version-metadata.json` (consumed by the OTA updater) during release; the single build-and-deploy job then signs the APK/AAB and uploads via Fastlane (`android/fastlane`) and to the OTA server.
+- `scripts/update-version-metadata.js` rewrites `pubspec.yaml` and `version-metadata.json` during release; the single build-and-deploy job then signs the APK/AAB, uploads the AAB via Fastlane (`android/fastlane`) and the APK + metadata to `/android/upload`. That upload is the only thing that writes the server's `version.json`, which the in-app version check reads (`/android/update-version` called by CI does not exist on the backend).
 - PRs into `main`/`staging` run `pr-validation.yml`: analyze (`--fatal-infos`), test, debug APK build. CI pins Flutter 3.35.7 and Java 17.
