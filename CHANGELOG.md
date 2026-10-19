@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.73](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.72...v1.0.0-beta.73) (2026-10-19)
+
+
+### 🐛 Bug Fixes
+
+* use Team Oustad as the app title in Android recent apps ([09aa9a9](https://github.com/TeamFitness/mobile-app/commit/09aa9a9159e6138e5042f900fcedcc079978eaa5))
+* use the environment API for version check and publishing ([cf8386f](https://github.com/TeamFitness/mobile-app/commit/cf8386f0ad33f661dc79b0ee3283c6cf2d0918b9))
+
+
+### 📚 Documentation
+
+* sync swagger with backend (POST /android/update-version) ([1222231](https://github.com/TeamFitness/mobile-app/commit/1222231107bc02c4b1287822f27e05701a9ab3ee))
+
 ## [1.0.0-beta.72](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.71...v1.0.0-beta.72) (2026-10-19)
 
 
