@@ -80,3 +80,6 @@ graphify-out/
 
 # Claude Code local config and memory
 .claude/
+
+# Serena (MCP code agent) — config locale
+.serena/
