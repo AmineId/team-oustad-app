@@ -201,7 +201,8 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
         return;
       }
 
-      final code = result?['pairingCode'] as String?;
+      // `code` depuis la v2 du swagger ; `pairingCode` pour les anciens serveurs.
+      final code = (result?['code'] ?? result?['pairingCode']) as String?;
       if (code == null) {
         setState(() {
           _pairingError = 'Réponse inattendue du serveur';
