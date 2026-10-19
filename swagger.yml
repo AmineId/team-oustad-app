@@ -7510,6 +7510,11 @@ paths:
                     type: string
                     nullable: true
                     example: "212600123456"
+                  displayName:
+                    type: string
+                    nullable: true
+                    description: Nom d'affichage personnalisé, null si non défini
+                    example: "Team Fitness"
         '403':
           description: Accès réservé aux propriétaires
 
@@ -7585,7 +7590,7 @@ paths:
   /whatsapp/session:
     delete:
       summary: Déconnecter WhatsApp
-      description: Déconnecte le client WhatsApp et supprime la session. Un nouveau scan QR sera nécessaire. Réservé aux propriétaires.
+      description: Déconnecte le client WhatsApp, supprime la session et réinitialise le client. Un nouveau QR ou code de couplage sera généré automatiquement. Réservé aux propriétaires.
       tags: [WhatsApp]
       security:
         - bearerAuth: []
@@ -7604,3 +7609,90 @@ paths:
           description: Accès réservé aux propriétaires
         '500':
           description: Erreur lors de la déconnexion
+
+  /whatsapp/display-name:
+    put:
+      summary: Définir le nom d'affichage WhatsApp
+      description: |
+        Change le nom affiché aux destinataires (pushName). Persisté et réappliqué automatiquement à chaque reconnexion.
+        Passer `null` ou chaîne vide pour revenir au nom du compte. Réservé aux propriétaires.
+      tags: [WhatsApp]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [displayName]
+              properties:
+                displayName:
+                  type: string
+                  nullable: true
+                  example: "Team Fitness"
+      responses:
+        '200':
+          description: Nom mis à jour
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  displayName:
+                    type: string
+                    nullable: true
+                    example: "Team Fitness"
+                  applied:
+                    type: boolean
+                    description: true si appliqué immédiatement, false si sera appliqué à la prochaine connexion
+                    example: true
+        '403':
+          description: Accès réservé aux propriétaires
+        '500':
+          description: Erreur lors du changement de nom
+
+  /whatsapp/profile-picture:
+    put:
+      summary: Définir la photo de profil WhatsApp
+      description: |
+        Change la photo de profil du compte WhatsApp connecté.
+        L'image doit être envoyée en base64 (sans le préfixe `data:image/...`).
+        WhatsApp doit être connecté. Réservé aux propriétaires.
+      tags: [WhatsApp]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [image]
+              properties:
+                image:
+                  type: string
+                  description: Image encodée en base64
+                  example: "/9j/4AAQSkZJRgABAQEASABIAAD..."
+                mimeType:
+                  type: string
+                  description: Type MIME (défaut image/jpeg)
+                  enum: [image/jpeg, image/png, image/webp]
+                  example: "image/jpeg"
+      responses:
+        '200':
+          description: Photo de profil mise à jour
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '400':
+          description: Image manquante ou WhatsApp non connecté
+        '403':
+          description: Accès réservé aux propriétaires
+        '500':
+          description: Erreur lors du changement de photo

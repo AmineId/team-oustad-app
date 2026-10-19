@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/theme/theme.dart';
@@ -36,6 +37,13 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
   bool _pairingLoading = false;
   String? _pairingError;
 
+  // Profil affiché aux destinataires
+  final TextEditingController _nameController = TextEditingController();
+  String? _displayName;
+  bool _nameSaving = false;
+  bool _photoUploading = false;
+  Uint8List? _photoPreview;
+
   @override
   void initState() {
     super.initState();
@@ -50,6 +58,7 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
     _tabController.removeListener(_onTabChanged);
     _tabController.dispose();
     _phoneController.dispose();
+    _nameController.dispose();
     super.dispose();
   }
 
@@ -83,6 +92,8 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
       setState(() {
         _connected = status?['connected'] as bool? ?? false;
         _phone = status?['phone'] as String?;
+        _displayName = status?['displayName'] as String?;
+        _nameController.text = _displayName ?? '';
         _isLoading = false;
       });
       if (!_connected) {
@@ -250,7 +261,7 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
           ],
         ),
         content: Text(
-          'La session WhatsApp sera supprimée. Un nouveau scan QR sera nécessaire pour reconnecter.',
+          'La session WhatsApp sera supprimée. Un nouveau QR code ou code de couplage sera nécessaire pour reconnecter.',
           style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
         ),
         actions: [
@@ -297,6 +308,82 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
     } catch (e) {
       if (!mounted) return;
       setState(() => _actionLoading = false);
+    }
+  }
+
+  void _showSnack(String message, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: color),
+    );
+  }
+
+  Future<void> _saveDisplayName() async {
+    final name = _nameController.text.trim();
+    if (name == (_displayName ?? '')) return;
+    FocusScope.of(context).unfocus();
+    setState(() => _nameSaving = true);
+    try {
+      final token = await _authService.loadToken();
+      if (token == null) return;
+      // Chaîne vide → null : le serveur revient au nom du compte WhatsApp.
+      final result = await _apiService.setWhatsAppDisplayName(
+        name.isEmpty ? null : name,
+        token,
+      );
+      if (!mounted) return;
+      if (result == null) {
+        _showSnack('Erreur lors du changement de nom', AppColors.error);
+        return;
+      }
+      setState(() => _displayName = result['displayName'] as String?);
+      _showSnack(
+        result['applied'] == false
+            ? 'Nom enregistré, appliqué à la prochaine connexion'
+            : 'Nom d\'affichage mis à jour',
+        AppColors.success,
+      );
+    } finally {
+      if (mounted) setState(() => _nameSaving = false);
+    }
+  }
+
+  Future<void> _pickProfilePicture() async {
+    final picked = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 640,
+      maxHeight: 640,
+      imageQuality: 85,
+    );
+    if (picked == null) return;
+    final bytes = await picked.readAsBytes();
+    final ext = picked.name.split('.').last.toLowerCase();
+    final mimeType = switch (ext) {
+      'png' => 'image/png',
+      'webp' => 'image/webp',
+      _ => 'image/jpeg',
+    };
+
+    setState(() => _photoUploading = true);
+    try {
+      final token = await _authService.loadToken();
+      if (token == null) return;
+      final status = await _apiService.setWhatsAppProfilePicture(
+        base64Encode(bytes),
+        mimeType,
+        token,
+      );
+      if (!mounted) return;
+      if (status == 200) {
+        setState(() => _photoPreview = bytes);
+        _showSnack('Photo de profil mise à jour', AppColors.success);
+      } else if (status == 400) {
+        _showSnack('WhatsApp doit être connecté', AppColors.error);
+        _loadStatus();
+      } else {
+        _showSnack('Erreur lors du changement de photo', AppColors.error);
+      }
+    } finally {
+      if (mounted) setState(() => _photoUploading = false);
     }
   }
 
@@ -355,6 +442,8 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
                       ),
                     ),
                   ],
+                  const SizedBox(height: 16),
+                  _buildProfileSection(theme),
                   const SizedBox(height: 24),
                   if (!_connected) _buildConnectionSection(theme),
                   if (_connected) _buildDisconnectSection(),
@@ -428,6 +517,144 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// Photo et nom vus par les membres qui reçoivent les messages.
+  /// Le nom peut être défini hors connexion ; la photo exige une session.
+  Widget _buildProfileSection(ThemeData theme) {
+    final muted = theme.colorScheme.onSurface.withValues(alpha: 0.6);
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: theme.cardTheme.color,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Profil WhatsApp',
+            style: TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.bold,
+              color: theme.colorScheme.onSurface,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Ce que voient les membres qui reçoivent vos messages',
+            style: TextStyle(color: muted, fontSize: 13),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              _buildProfilePictureButton(theme),
+              const SizedBox(width: 16),
+              Expanded(
+                child: TextField(
+                  controller: _nameController,
+                  textInputAction: TextInputAction.done,
+                  maxLength: 25,
+                  style: TextStyle(color: theme.colorScheme.onSurface),
+                  decoration: InputDecoration(
+                    labelText: 'Nom d\'affichage',
+                    hintText: 'Nom du compte',
+                    counterText: '',
+                    filled: true,
+                    fillColor: theme.colorScheme.onSurface.withValues(
+                      alpha: 0.05,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    suffixIcon: _nameSaving
+                        ? const Padding(
+                            padding: EdgeInsets.all(14),
+                            child: SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          )
+                        : IconButton(
+                            icon: const Icon(Icons.check),
+                            color: AppColors.primary,
+                            tooltip: 'Enregistrer',
+                            onPressed: _saveDisplayName,
+                          ),
+                  ),
+                  onSubmitted: (_) => _saveDisplayName(),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _connected
+                ? 'Laissez le nom vide pour utiliser celui du compte.'
+                : 'Connectez WhatsApp pour changer la photo.',
+            style: TextStyle(color: muted, fontSize: 12),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProfilePictureButton(ThemeData theme) {
+    final enabled = _connected && !_photoUploading;
+    return Semantics(
+      button: true,
+      label: 'Changer la photo de profil WhatsApp',
+      child: GestureDetector(
+        onTap: enabled ? _pickProfilePicture : null,
+        child: Opacity(
+          opacity: _connected ? 1 : 0.4,
+          child: Stack(
+            children: [
+              CircleAvatar(
+                radius: 32,
+                backgroundColor: AppColors.primary.withValues(alpha: 0.15),
+                backgroundImage: _photoPreview != null
+                    ? MemoryImage(_photoPreview!)
+                    : null,
+                child: _photoUploading
+                    ? const CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppColors.primary,
+                      )
+                    : _photoPreview == null
+                    ? const Icon(Icons.person, color: AppColors.primary)
+                    : null,
+              ),
+              Positioned(
+                right: 0,
+                bottom: 0,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: theme.cardTheme.color ?? theme.colorScheme.surface,
+                      width: 2,
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.camera_alt,
+                    size: 12,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -3344,6 +3344,74 @@ class ApiService {
     }
   }
 
+  /// Set the WhatsApp display name (pushName). `null` or empty resets it to
+  /// the account name. Returns `{displayName, applied}` — `applied` is false
+  /// when WhatsApp is disconnected (applied on next connection).
+  /// PUT /whatsapp/display-name
+  Future<Map<String, dynamic>?> setWhatsAppDisplayName(
+    String? displayName,
+    String token, {
+    Duration timeout = const Duration(seconds: 10),
+  }) async {
+    final uri = baseUri.resolve('/whatsapp/display-name');
+    try {
+      debugPrint('ApiService.setWhatsAppDisplayName -> $uri');
+      final resp = await http
+          .put(
+            uri,
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
+            body: jsonEncode({'displayName': displayName}),
+          )
+          .timeout(timeout);
+      debugPrint('setWhatsAppDisplayName status: ${resp.statusCode}');
+      if (resp.statusCode == 200) {
+        try {
+          return jsonDecode(resp.body) as Map<String, dynamic>;
+        } catch (_) {
+          return {'displayName': displayName, 'applied': true};
+        }
+      }
+      return null;
+    } catch (e) {
+      debugPrint('Error setting WhatsApp display name: $e');
+      return null;
+    }
+  }
+
+  /// Set the WhatsApp profile picture. [imageBase64] is raw base64 (no
+  /// `data:` prefix). Returns the HTTP status code (200 on success, 400 when
+  /// WhatsApp is not connected), or null on network error.
+  /// PUT /whatsapp/profile-picture
+  Future<int?> setWhatsAppProfilePicture(
+    String imageBase64,
+    String mimeType,
+    String token, {
+    Duration timeout = const Duration(seconds: 30),
+  }) async {
+    final uri = baseUri.resolve('/whatsapp/profile-picture');
+    try {
+      debugPrint('ApiService.setWhatsAppProfilePicture -> $uri');
+      final resp = await http
+          .put(
+            uri,
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
+            body: jsonEncode({'image': imageBase64, 'mimeType': mimeType}),
+          )
+          .timeout(timeout);
+      debugPrint('setWhatsAppProfilePicture status: ${resp.statusCode}');
+      return resp.statusCode;
+    } catch (e) {
+      debugPrint('Error setting WhatsApp profile picture: $e');
+      return null;
+    }
+  }
+
   // ==================== ANDROID CONFIG ====================
 
   /// Get Android app configuration (API URL, min version, features).
