@@ -360,6 +360,11 @@ jobs:
     name: 🍎 Build iOS
     needs: version
     if: needs.version.outputs.released == 'true'
+    # Environnement dédié (créé automatiquement par GitHub) : affiche la barre
+    # « Deploying to ios-… » sans partager l'historique ni les règles d'Android.
+    environment:
+      name: ios-${{ needs.version.outputs.environment }}
+      url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
     runs-on: macos-26
     timeout-minutes: 45
 
