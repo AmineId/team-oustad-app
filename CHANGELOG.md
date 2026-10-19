@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.69](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.68...v1.0.0-beta.69) (2026-10-19)
+
+
+### ✨ New Features
+
+* **whatsapp:** edit the sender display name and profile picture ([5cd4920](https://github.com/TeamFitness/mobile-app/commit/5cd492031c3992b5ca9aad1e6c7480d5a393209f))
+
 ## [1.0.0-beta.68](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.67...v1.0.0-beta.68) (2026-10-19)
 
 
