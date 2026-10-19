@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.70](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.69...v1.0.0-beta.70) (2026-10-19)
+
+
+### ✨ New Features
+
+* **member:** block screenshots on training program and planning, offline QR fallback ([9571b33](https://github.com/TeamFitness/mobile-app/commit/9571b33ce6b6513bd12b7afade5fd29b017ea20f))
+* rename launcher app name to Team Oustad ([8667d1d](https://github.com/TeamFitness/mobile-app/commit/8667d1d36982bee3e53733a8f1ba63011a2f8d36))
+
 ## [1.0.0-beta.69](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.68...v1.0.0-beta.69) (2026-10-19)
 
 
