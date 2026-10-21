@@ -933,23 +933,11 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Row(
         children: [
-          Container(
-            width: 30,
-            height: 30,
-            decoration: BoxDecoration(
-              color: AppColors.primary,
-              borderRadius: BorderRadius.circular(7),
-            ),
-            child: Center(
-              child: Text(
-                'TF',
-                style: GoogleFonts.barlowCondensed(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.black87,
-                ),
-              ),
-            ),
+          Image.asset(
+            'assets/images/logo.png',
+            width: 34,
+            height: 34,
+            fit: BoxFit.contain,
           ),
           const SizedBox(width: 10),
           Text(
