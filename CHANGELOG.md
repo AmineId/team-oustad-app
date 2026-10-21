@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.75](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.74...v1.0.0-beta.75) (2026-10-21)
+
+
+### ✨ New Features
+
+* add kiosk install doc with Play Store/IPA links, split CI into reusable workflows, rebrand to Team Oustad ([17c41f0](https://github.com/TeamFitness/mobile-app/commit/17c41f0a1c63d868f951ff733068074af26ff276))
+
+
+### 🐛 Bug Fixes
+
+* remove reserved GITHUB_TOKEN secret and fix stale released-tag detection ([ecc7751](https://github.com/TeamFitness/mobile-app/commit/ecc7751d1ecbdbb6512e4f06e9d7411dd176ceca)), closes [#98](https://github.com/TeamFitness/mobile-app/issues/98) [#96](https://github.com/TeamFitness/mobile-app/issues/96) [#97](https://github.com/TeamFitness/mobile-app/issues/97)
+
 ## [1.0.0-beta.74](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.73...v1.0.0-beta.74) (2026-10-21)
 
 
