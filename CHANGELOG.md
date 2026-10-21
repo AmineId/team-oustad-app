@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.74](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.73...v1.0.0-beta.74) (2026-10-21)
+
+
+### ✨ New Features
+
+* add borne d'accueil button in admin home + kiosk scripts.ps1 commands ([47a9375](https://github.com/TeamFitness/mobile-app/commit/47a9375a8c07ea39d7acb4965b3fb402dac966b4))
+* add kiosk check-in terminal + Cloudflare Pages CI ([680bc77](https://github.com/TeamFitness/mobile-app/commit/680bc7771acb5cbd5303a539f3980c39cacdfcf3))
+
 ## [1.0.0-beta.73](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.72...v1.0.0-beta.73) (2026-10-19)
 
 
