@@ -22,6 +22,10 @@ on:
         required: false
         type: string
         default: ''
+      altstore-source-url:
+        required: false
+        type: string
+        default: ''
       ref:
         required: false
         type: string
@@ -57,6 +61,11 @@ on:
         default: ''
       ipa-url:
         description: 'URL de téléchargement IPA (optionnel)'
+        required: false
+        type: string
+        default: ''
+      altstore-source-url:
+        description: 'URL de la source AltStore (optionnel)'
         required: false
         type: string
         default: ''
@@ -102,6 +111,9 @@ jobs:
           fi
           if [ -n "${{ inputs.ipa-url }}" ]; then
             DEFINES="$DEFINES --dart-define=KIOSK_IPA_URL=${{ inputs.ipa-url }}"
+          fi
+          if [ -n "${{ inputs.altstore-source-url }}" ]; then
+            DEFINES="$DEFINES --dart-define=KIOSK_ALTSTORE_SOURCE_URL=${{ inputs.altstore-source-url }}"
           fi
           flutter build web --release $DEFINES --no-source-maps
           echo "artifact-name=${{ inputs.web-target }}-web-${{ inputs.dart-env }}" >> $GITHUB_OUTPUT

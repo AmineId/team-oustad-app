@@ -1,34 +1,34 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:team_fitness_app/main.dart';
-import 'package:team_fitness_app/core/services/locale_service.dart';
+import 'package:team_fitness_app/screens/kiosk/kiosk_links.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Create locale service for test
-    final localeService = LocaleService();
-    
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(MyApp(localeService: localeService));
+  group('Liens de distribution kiosk', () {
+    test('la source AltStore est une URL HTTPS vers un fichier JSON', () {
+      final uri = Uri.parse(kAltStoreSourceUrl);
+      expect(uri.scheme, 'https');
+      expect(uri.host, isNotEmpty);
+      expect(uri.path, endsWith('.json'));
+    });
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    test('le lien AltStore ajoute la bonne source', () {
+      final uri = Uri.parse(kAltStoreAddSourceUrl);
+      expect(uri.scheme, 'altstore');
+      expect(uri.host, 'source');
+      expect(uri.queryParameters['url'], kAltStoreSourceUrl);
+    });
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    test('le lien SideStore utilise la même source', () {
+      final uri = Uri.parse(kSideStoreAddSourceUrl);
+      expect(uri.scheme, 'sidestore');
+      expect(uri.host, 'source');
+      expect(uri.queryParameters['url'], kAltStoreSourceUrl);
+    });
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    test("l'IPA est téléchargeable en HTTPS", () {
+      final uri = Uri.parse(kIpaDownloadUrl);
+      expect(uri.scheme, 'https');
+      expect(uri.path, endsWith('.ipa'));
+    });
   });
 }

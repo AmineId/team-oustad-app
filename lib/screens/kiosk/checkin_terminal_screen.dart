@@ -11,16 +11,7 @@ import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/theme/app_colors.dart';
 import 'kiosk_audio.dart';
-
-// URLs de distribution pprod — à mettre à jour à chaque release
-const _kAndroidTestingUrl = String.fromEnvironment(
-  'ANDROID_TESTING_URL',
-  defaultValue: 'https://play.google.com/apps/internaltest/4700178556172561963',
-);
-const _kIpaDownloadUrl = String.fromEnvironment(
-  'KIOSK_IPA_URL',
-  defaultValue: 'https://kiosk.team-oustad.com/TeamOustad.ipa',
-);
+import 'kiosk_links.dart';
 
 enum _ScanStatus { idle, processing, success, denied, error }
 
@@ -450,7 +441,7 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
                     'Lance "Team Oustad" et connecte-toi',
                   ],
                   actionLabel: 'Rejoindre le test Android',
-                  actionUrl: _kAndroidTestingUrl,
+                  actionUrl: kAndroidTestingUrl,
                   note:
                       'Le compte Google doit être ajouté à la liste de testeurs dans Play Console avant d\'accepter.',
                 ),
@@ -462,24 +453,23 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
                   icon: Icons.apple_rounded,
                   color: Colors.white,
                   title: 'iOS',
-                  badge: 'Installation manuelle (IPA) avec Sideloadly',
+                  badge: 'AltStore (source privée Team Oustad)',
                   tools: const [
-                    'PC Windows ou Mac (pas de Mac requis)',
-                    'iTunes installé sur le PC (pilotes Apple)',
-                    'Sideloadly (sideloadly.io)',
-                    'Câble USB + identifiant Apple (email + mot de passe)',
+                    'AltStore installé sur l\'iPhone (altstore.io, une seule fois)',
+                    'PC Windows ou Mac pour la 1re installation d\'AltStore',
+                    'Identifiant Apple gratuit',
                   ],
                   steps: const [
-                    'Télécharge le fichier .ipa via le lien ci-dessous',
-                    'Connecte l\'iPhone en USB et fais confiance à l\'ordinateur',
-                    'Dans Sideloadly : glisse le .ipa, saisis ton Apple ID, clique sur "Start"',
-                    'Sur l\'iPhone : Réglages → Général → VPN et gestion → faire confiance au profil',
+                    'Installe AltStore sur l\'iPhone (voir le guide détaillé)',
+                    'Sur l\'iPhone, ouvre le bouton ci-dessous : la source Team Oustad s\'ajoute dans AltStore',
+                    'Dans AltStore → Parcourir → Team Oustad → Installer',
+                    'Les mises à jour arrivent ensuite directement dans AltStore',
                   ],
-                  actionLabel: 'Télécharger le fichier IPA',
-                  actionUrl: _kIpaDownloadUrl,
+                  actionLabel: 'Ajouter la source dans AltStore',
+                  actionUrl: kAltStoreAddSourceUrl,
                   note:
-                      'Avec un Apple ID gratuit, l\'app expire après 7 jours (à réinstaller via Sideloadly).',
-                  onGuideTap: _showSideloadlyGuide,
+                      'À ouvrir depuis l\'iPhone. Avec un Apple ID gratuit, AltStore doit rafraîchir l\'app tous les 7 jours.',
+                  onGuideTap: _showAltStoreGuide,
                 ),
 
                 const SizedBox(height: 24),
@@ -744,9 +734,9 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
     );
   }
 
-  // ── Guide Sideloadly détaillé (pas-à-pas pour le staff) ────────────────────────
+  // ── Guide AltStore détaillé (pas-à-pas pour le staff) ─────────────────────────
 
-  void _showSideloadlyGuide() {
+  void _showAltStoreGuide() {
     Widget sectionTitle(String text) => Padding(
       padding: const EdgeInsets.only(top: 18, bottom: 8),
       child: Text(
@@ -805,6 +795,55 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
       ),
     );
 
+    Widget link(String label, String url) => Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(6),
+        onTap: () =>
+            launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 2),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Padding(
+                padding: EdgeInsets.only(top: 2, right: 8),
+                child: Icon(
+                  Icons.link_rounded,
+                  size: 14,
+                  color: AppColors.primary,
+                ),
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: GoogleFonts.barlow(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.primary,
+                        decoration: TextDecoration.underline,
+                        decorationColor: AppColors.primary,
+                      ),
+                    ),
+                    SelectableText(
+                      url,
+                      style: GoogleFonts.barlow(
+                        fontSize: 11,
+                        color: AppColors.darkTextTertiary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
     showDialog(
       context: context,
       builder: (_) => Dialog(
@@ -827,7 +866,7 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Installer avec Sideloadly',
+                        'Installer avec AltStore',
                         style: GoogleFonts.barlowCondensed(
                           fontSize: 20,
                           fontWeight: FontWeight.w700,
@@ -853,8 +892,9 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Pas besoin de Mac ni de compte développeur payant : un PC Windows ou Mac, '
-                        'Sideloadly et un identifiant Apple gratuit suffisent.',
+                        'Pas besoin de compte développeur payant : AltStore signe l\'app avec ton '
+                        'identifiant Apple gratuit, puis installe et met à jour Team Oustad '
+                        'directement depuis notre source privée.',
                         style: GoogleFonts.barlow(
                           fontSize: 12.5,
                           color: AppColors.darkTextTertiary,
@@ -862,70 +902,113 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
                         ),
                       ),
 
+                      sectionTitle('Liens utiles'),
+                      link(
+                        'Ajouter la source Team Oustad (AltStore)',
+                        kAltStoreAddSourceUrl,
+                      ),
+                      link(
+                        'Ajouter la source Team Oustad (SideStore)',
+                        kSideStoreAddSourceUrl,
+                      ),
+                      link(
+                        'URL de la source (ajout manuel)',
+                        kAltStoreSourceUrl,
+                      ),
+                      link(
+                        'Télécharger AltServer (PC / Mac)',
+                        'https://altstore.io/',
+                      ),
+                      link(
+                        'iTunes pour Windows (version Apple)',
+                        'https://www.apple.com/itunes/',
+                      ),
+                      link(
+                        'iCloud pour Windows (version Apple)',
+                        'https://support.apple.com/fr-fr/103232',
+                      ),
+                      link(
+                        'Fichier IPA (installation manuelle)',
+                        kIpaDownloadUrl,
+                      ),
+
                       sectionTitle('Ce qu\'il faut'),
                       Wrap(
                         spacing: 6,
                         runSpacing: 6,
                         children: const [
-                          'PC Windows ou Mac',
-                          'iTunes (pilotes Apple)',
-                          'Sideloadly (sideloadly.io)',
+                          'iPhone (iOS 16+ recommandé)',
+                          'PC Windows ou Mac (1re installation)',
+                          'iTunes + iCloud version Apple (Windows)',
+                          'AltServer (altstore.io)',
                           'Câble USB',
                           'Identifiant Apple (gratuit)',
                         ].map((t) => _Chip(label: t)).toList(),
                       ),
 
                       sectionTitle('Étapes'),
-                      step('1. Installer les outils (une seule fois)', const [
-                        'Installe iTunes depuis le site d\'Apple et ouvre-le une première fois.',
-                        'Installe Sideloadly et lance-le.',
+                      step('1. Préparer le PC (une seule fois)', const [
+                        'Windows : installe iTunes et iCloud depuis le site d\'Apple (pas la version Microsoft Store), puis ouvre-les une fois.',
+                        'Installe AltServer depuis altstore.io et lance-le (icône dans la barre des tâches ou la barre des menus).',
                       ]),
-                      step('2. Connecter l\'iPhone', const [
-                        'Branche l\'iPhone au PC avec le câble USB.',
-                        'Sur l\'iPhone : accepte "Faire confiance à cet ordinateur ?" et entre le code.',
-                        'L\'iPhone doit apparaître dans la liste déroulante de Sideloadly.',
+                      step('2. Installer AltStore sur l\'iPhone (une seule fois)', const [
+                        'Branche l\'iPhone au PC et accepte "Faire confiance à cet ordinateur ?".',
+                        'Clique sur l\'icône AltServer → Install AltStore → choisis ton iPhone.',
+                        'Entre ton identifiant Apple et son mot de passe : AltServer signe et installe AltStore.',
                       ]),
-                      step('3. Installer l\'app', const [
-                        'Télécharge TeamOustad.ipa (lien ci-dessus).',
-                        'Glisse le fichier .ipa dans la zone centrale de Sideloadly.',
-                        'Renseigne ton Apple ID (email), puis clique sur "Start".',
-                        'Entre le mot de passe du compte (et le code à 6 chiffres si la double authentification est activée).',
-                        'Laisse Sideloadly signer et installer l\'app (1 à 2 minutes).',
+                      step('3. Autoriser AltStore sur l\'iPhone', const [
+                        'Réglages → Général → VPN et gestion de l\'appareil → touche ton adresse Apple → Faire confiance.',
+                        'iOS 16 et plus : Réglages → Confidentialité et sécurité → Mode développeur → activer, puis redémarrer.',
                       ]),
-                      step('4. Faire confiance à l\'app sur l\'iPhone', const [
-                        'Réglages → Général → VPN et gestion de l\'appareil.',
-                        'Sous "App développeur", touche l\'adresse email Apple utilisée.',
-                        'Touche "Faire confiance à ..." puis confirme, et lance l\'app.',
+                      step('4. Ajouter la source Team Oustad', const [
+                        'Sur l\'iPhone, ouvre le lien "Ajouter la source Team Oustad (AltStore)" ci-dessus.',
+                        'Ou dans AltStore → Sources → + → colle l\'URL de la source.',
+                      ]),
+                      step('5. Installer l\'app', const [
+                        'AltStore → Parcourir → Team Oustad → Installer.',
+                        'Les nouvelles versions apparaissent dans Mes apps → Mettre à jour.',
+                      ]),
+
+                      sectionTitle('Rafraîchir tous les 7 jours'),
+                      step('', const [
+                        'Avec un Apple ID gratuit, la signature expire après 7 jours.',
+                        'AltStore rafraîchit automatiquement si l\'iPhone et le PC (AltServer ouvert) sont sur le même Wi-Fi.',
+                        'Sinon : AltStore → Mes apps → Tout rafraîchir.',
                       ]),
 
                       sectionTitle('Limitations (Apple ID gratuit)'),
                       step('', const [
-                        'Expire après 7 jours : réinstalle via Sideloadly (1 minute, mêmes identifiants).',
-                        '3 apps maximum installées ainsi sur le même iPhone.',
+                        '3 apps maximum signées ainsi par iPhone (AltStore compte pour une).',
                         'Pas de notifications push (FCM) avec ce mode de signature.',
+                        'Le lien de la source ne s\'ouvre que sur un iPhone où AltStore est installé.',
                       ]),
 
                       sectionTitle('Problèmes fréquents'),
                       const _TroubleshootRow(
-                        symptom: 'Sideloadly ne voit pas l\'iPhone',
+                        symptom: 'AltServer ne voit pas l\'iPhone',
                         solution:
-                            'Réinstalle/répare iTunes, rebranche le câble, redémarre Sideloadly.',
+                            'Installe iTunes et iCloud version Apple, rebranche le câble, relance AltServer.',
+                      ),
+                      const _TroubleshootRow(
+                        symptom: 'Le lien de la source ne fait rien',
+                        solution:
+                            'Ouvre-le sur l\'iPhone où AltStore est installé, ou ajoute l\'URL à la main dans Sources.',
                       ),
                       const _TroubleshootRow(
                         symptom: '"Impossible de vérifier l\'app" au lancement',
                         solution:
-                            'Refais l\'étape 4 (faire confiance au profil).',
+                            'Refais l\'étape 3 (faire confiance au profil, mode développeur).',
                       ),
                       const _TroubleshootRow(
-                        symptom: 'L\'app a disparu après quelques jours',
+                        symptom: 'L\'app ne s\'ouvre plus après quelques jours',
                         solution:
-                            'Normal avec un Apple ID gratuit (7 jours) → réinstalle via Sideloadly.',
+                            'Signature expirée (7 jours) → AltStore → Mes apps → Tout rafraîchir.',
                       ),
                       const _TroubleshootRow(
                         symptom:
                             'Erreur de mot de passe alors qu\'il est correct',
                         solution:
-                            'La double authentification bloque Sideloadly → utilise un mot de passe '
+                            'Avec la double authentification, utilise un mot de passe '
                             'd\'application généré sur appleid.apple.com.',
                       ),
                     ],
