@@ -74,8 +74,10 @@ fi
 
 [[ -f "$ipa" ]] || { echo "❌ Fichier introuvable : $ipa"; exit 1; }
 
-# Sous WSL2 : tunnel socat vers le relais iTunes TCP du host Windows (port 27015).
-# Prérequis Windows : netsh portproxy forwarde 172.17.80.1:27015 → 127.0.0.1:27015.
+# Sous WSL2 : tunnel vers le relais iTunes TCP du host Windows (port 27015).
+# Prérequis Windows (PowerShell admin, à relancer après chaque reboot) :
+#   $ip = (Get-NetIPAddress -InterfaceAlias "vEthernet (WSL*)" -AddressFamily IPv4).IPAddress
+#   netsh interface portproxy set v4tov4 listenport=27015 connectaddress=127.0.0.1 connectport=27015 listenaddress=$ip
 # Fallback : usbmuxd local (nécessite usbipd attach).
 WIN_HOST=$(ip route show default 2>/dev/null | awk '/default/{print $3; exit}')
 if [[ -n "$WIN_HOST" ]] && nc -z -w1 "$WIN_HOST" 27015 2>/dev/null; then
@@ -83,6 +85,12 @@ if [[ -n "$WIN_HOST" ]] && nc -z -w1 "$WIN_HOST" 27015 2>/dev/null; then
   # sudo pkill -x usbmuxd 2>/dev/null || true
   export USBMUXD_SOCKET_ADDRESS="$WIN_HOST:27015"
 else
+  echo "⚠️  Relais iTunes non détecté sur $WIN_HOST:27015"
+  echo "   → Dans PowerShell admin Windows :"
+  echo '   $ip = (Get-NetIPAddress -InterfaceAlias "vEthernet (WSL*)" -AddressFamily IPv4).IPAddress'
+  echo '   netsh interface portproxy set v4tov4 listenport=27015 connectaddress=127.0.0.1 connectport=27015 listenaddress=$ip'
+  echo '   New-NetFirewallRule -DisplayName "WSL-usbmuxd-27015" -Direction Inbound -Protocol TCP -LocalPort 27015 -Action Allow'
+  echo "   Fallback usbmuxd local…"
   pgrep -x usbmuxd >/dev/null || sudo usbmuxd
 fi
 
