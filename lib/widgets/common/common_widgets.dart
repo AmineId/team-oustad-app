@@ -9,6 +9,7 @@ export 'modern_card.dart';
 export 'modern_text_field.dart';
 export 'status_badge.dart';
 export 'glass.dart';
+export 'reveal_on_load.dart';
 export 'native_glass_tab_bar.dart';
 export 'swipe_back.dart';
 export 'secure_screen.dart';

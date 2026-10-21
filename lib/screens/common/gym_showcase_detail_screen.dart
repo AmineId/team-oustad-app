@@ -1,17 +1,27 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/services/api_service.dart';
 import '../../core/theme/theme.dart';
-import '../../widgets/responsive/responsive_grid.dart';
+import '../../widgets/widgets.dart';
 
-/// Fiche détaillée d'une salle sur la page vitrine publique.
+bool get _reduceMotion => SchedulerBinding
+    .instance.platformDispatcher.accessibilityFeatures.disableAnimations;
+
+/// Fiche détaillée d'une salle sur la page vitrine publique. Même habillage
+/// "brand" sombre + doré que [GymShowcaseListScreen], fixé indépendamment du
+/// thème clair/sombre de l'app.
 class GymShowcaseDetailScreen extends StatefulWidget {
   final String slugOrId;
 
   const GymShowcaseDetailScreen({super.key, required this.slugOrId});
 
   @override
-  State<GymShowcaseDetailScreen> createState() => _GymShowcaseDetailScreenState();
+  State<GymShowcaseDetailScreen> createState() =>
+      _GymShowcaseDetailScreenState();
 }
 
 class _GymShowcaseDetailScreenState extends State<GymShowcaseDetailScreen> {
@@ -70,26 +80,40 @@ class _GymShowcaseDetailScreenState extends State<GymShowcaseDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(title: Text(_gym?['name'] as String? ?? 'Salle')),
-      body: _buildBody(context),
+    return Theme(
+      data: AppTheme.darkTheme,
+      child: Scaffold(
+        backgroundColor: AppColors.darkBackground,
+        body: _buildBody(context),
+      ),
     );
   }
 
   Widget _buildBody(BuildContext context) {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+      return Stack(
+        children: [
+          const Center(
+            child: CircularProgressIndicator(color: AppColors.primary),
+          ),
+          _FloatingBackButton(),
+        ],
+      );
     }
     if (_hasError || _gym == null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Text(
-            'Cette salle n\'est pas disponible.',
-            style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
+      return Stack(
+        children: [
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Text(
+                'Cette salle n\'est pas disponible.',
+                style: TextStyle(color: AppColors.darkTextTertiary),
+              ),
+            ),
           ),
-        ),
+          _FloatingBackButton(),
+        ],
       );
     }
 
@@ -109,155 +133,167 @@ class _GymShowcaseDetailScreenState extends State<GymShowcaseDetailScreen> {
         .map((t) => t as Map<String, dynamic>)
         .toList();
 
-    return SingleChildScrollView(
-      child: ResponsiveContainer(
-        maxWidth: 900,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _PhotoCarousel(photos: photos),
-            const SizedBox(height: 24),
-            Text(
-              name,
-              style: TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-            ),
-            if (memberCountDisplay != null) ...[
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  '$memberCountDisplay membres',
-                  style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600),
-                ),
-              ),
-            ],
-            const SizedBox(height: 24),
+    final width = MediaQuery.of(context).size.width;
+    final isDesktop = width >= 900;
 
-            // Adresse + téléphone
-            if (address.isNotEmpty)
-              _ActionRow(
-                icon: Icons.location_on,
-                label: address,
-                buttonLabel: 'Voir sur la carte',
-                onTap: () => _openMaps(address),
-              ),
-            if (phone != null && phone.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              _ActionRow(
-                icon: Icons.phone,
-                label: phone,
-                buttonLabel: 'Appeler',
-                onTap: () => _call(phone),
-              ),
-            ],
-            const SizedBox(height: 32),
-
-            if (openingHours.isNotEmpty) ...[
-              Text(
-                'Horaires d\'ouverture',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.onSurface,
+    return CustomScrollView(
+      slivers: [
+        SliverAppBar(
+          pinned: true,
+          expandedHeight: isDesktop ? 460 : 380,
+          backgroundColor: AppColors.darkSurface,
+          elevation: 0,
+          leading: const Padding(
+            padding: EdgeInsets.all(8),
+            child: _FloatingBackButton(),
+          ),
+          flexibleSpace: FlexibleSpaceBar(
+            collapseMode: CollapseMode.pin,
+            background: Stack(
+              fit: StackFit.expand,
+              children: [
+                _PhotoCarousel(photos: photos),
+                const DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Colors.transparent, Colors.transparent, Colors.black87],
+                      stops: [0, 0.45, 1],
+                    ),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).cardTheme.color,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  children: openingHours.map((hour) {
-                    final isClosed = hour['isClosed'] == true;
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            _dayName(hour['dayOfWeek'] as int),
-                            style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
-                          ),
-                          Text(
-                            isClosed ? 'Fermé' : '${hour['openTime']} - ${hour['closeTime']}',
-                            style: TextStyle(
-                              color: isClosed
-                                  ? AppColors.error
-                                  : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ),
-              const SizedBox(height: 32),
-            ],
-
-            if (team.isNotEmpty) ...[
-              Text(
-                'La team',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 16,
-                runSpacing: 16,
-                children: team.map((member) {
-                  final photoUrl = member['photoUrl'] as String?;
-                  return SizedBox(
-                    width: 110,
+                Positioned(
+                  left: 20,
+                  right: 20,
+                  bottom: 20,
+                  child: RevealOnLoad(
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        CircleAvatar(
-                          radius: 36,
-                          backgroundColor: AppColors.primary.withValues(alpha: 0.15),
-                          backgroundImage: photoUrl != null ? NetworkImage(photoUrl) : null,
-                          child: photoUrl == null
-                              ? const Icon(Icons.person, color: AppColors.primary)
-                              : null,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          member['fullName'] as String? ?? '',
-                          textAlign: TextAlign.center,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            color: Theme.of(context).colorScheme.onSurface,
+                        if (memberCountDisplay != null)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 10),
+                            child: _MemberPill(display: memberCountDisplay),
                           ),
-                        ),
                         Text(
-                          _roleLabel(member['role'] as String?),
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                          name,
+                          style: GoogleFonts.barlowCondensed(
+                            fontSize: isDesktop ? 44 : 32,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                            height: 1.0,
                           ),
                         ),
                       ],
                     ),
-                  );
-                }).toList(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        SliverToBoxAdapter(
+          child: ResponsiveContainer(
+            maxWidth: 900,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 28, 20, 48),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (address.isNotEmpty || (phone != null && phone.isNotEmpty))
+                    RevealOnLoad(
+                      child: _ActionsCard(
+                        address: address,
+                        phone: phone,
+                        onMap: address.isNotEmpty ? () => _openMaps(address) : null,
+                        onCall: (phone != null && phone.isNotEmpty) ? () => _call(phone) : null,
+                      ),
+                    ),
+                  if (openingHours.isNotEmpty) ...[
+                    const SizedBox(height: 24),
+                    RevealOnLoad(
+                      delay: const Duration(milliseconds: 80),
+                      child: _OpeningHoursCard(hours: openingHours, dayName: _dayName),
+                    ),
+                  ],
+                  if (team.isNotEmpty) ...[
+                    const SizedBox(height: 28),
+                    RevealOnLoad(
+                      delay: const Duration(milliseconds: 160),
+                      child: _TeamSection(team: team, roleLabel: _roleLabel),
+                    ),
+                  ],
+                  const SizedBox(height: 28),
+                  RevealOnLoad(
+                    delay: const Duration(milliseconds: 220),
+                    child: Center(
+                      child: Column(
+                        children: [
+                          Image.asset('assets/images/logo.png', width: 30, height: 30),
+                          const SizedBox(height: 8),
+                          Text(
+                            'TEAM OUSTAD',
+                            style: GoogleFonts.barlowCondensed(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.darkTextTertiary,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 32),
-            ],
-          ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+int? _parseMinutes(String? hhmm) {
+  if (hhmm == null) return null;
+  final parts = hhmm.split(':');
+  if (parts.length < 2) return null;
+  final h = int.tryParse(parts[0]);
+  final m = int.tryParse(parts[1]);
+  if (h == null || m == null) return null;
+  return h * 60 + m;
+}
+
+bool? _isOpenNow(Map<String, dynamic>? todayHours) {
+  if (todayHours == null) return null;
+  if (todayHours['isClosed'] == true) return false;
+  final open = _parseMinutes(todayHours['openTime'] as String?);
+  final close = _parseMinutes(todayHours['closeTime'] as String?);
+  if (open == null || close == null) return null;
+  final now = TimeOfDay.now();
+  final nowMinutes = now.hour * 60 + now.minute;
+  if (close > open) {
+    return nowMinutes >= open && nowMinutes < close;
+  }
+  // Plage à cheval sur minuit (ex: 22:00 - 02:00).
+  return nowMinutes >= open || nowMinutes < close;
+}
+
+class _FloatingBackButton extends StatelessWidget {
+  const _FloatingBackButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      bottom: false,
+      child: LiquidGlass(
+        borderRadius: BorderRadius.circular(999),
+        child: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+          tooltip: 'Retour',
+          onPressed: () => Navigator.of(context).maybePop(),
         ),
       ),
     );
@@ -286,103 +322,491 @@ class _PhotoCarouselState extends State<_PhotoCarousel> {
   @override
   Widget build(BuildContext context) {
     if (widget.photos.isEmpty) {
-      return AspectRatio(
-        aspectRatio: 16 / 9,
-        child: Container(
-          decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: const Center(
-            child: Icon(Icons.fitness_center, color: AppColors.primary, size: 56),
+      return ColoredBox(
+        color: AppColors.darkElevated,
+        child: Center(
+          child: Icon(
+            Icons.fitness_center_rounded,
+            color: AppColors.primary.withValues(alpha: 0.5),
+            size: 64,
           ),
         ),
       );
     }
 
-    return Column(
+    return Stack(
+      fit: StackFit.expand,
       children: [
-        AspectRatio(
-          aspectRatio: 16 / 9,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: PageView.builder(
-              controller: _controller,
-              itemCount: widget.photos.length,
-              onPageChanged: (page) => setState(() => _page = page),
-              itemBuilder: (context, index) {
-                final url = widget.photos[index]['url'] as String?;
-                return Image.network(
-                  url ?? '',
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stack) => Container(
-                    color: AppColors.primary.withValues(alpha: 0.1),
-                    child: const Icon(Icons.broken_image, color: AppColors.primary),
-                  ),
-                );
-              },
-            ),
-          ),
+        PageView.builder(
+          controller: _controller,
+          itemCount: widget.photos.length,
+          onPageChanged: (page) => setState(() => _page = page),
+          itemBuilder: (context, index) {
+            final url = widget.photos[index]['url'] as String?;
+            return Image.network(
+              url ?? '',
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stack) => ColoredBox(
+                color: AppColors.darkElevated,
+                child: const Icon(Icons.broken_image_rounded, color: AppColors.primary),
+              ),
+            );
+          },
         ),
-        if (widget.photos.length > 1) ...[
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(
-              widget.photos.length,
-              (index) => Container(
-                margin: const EdgeInsets.symmetric(horizontal: 3),
-                width: index == _page ? 10 : 6,
-                height: 6,
-                decoration: BoxDecoration(
-                  color: index == _page ? AppColors.primary : Colors.white24,
-                  borderRadius: BorderRadius.circular(3),
+        if (widget.photos.length > 1)
+          Positioned(
+            top: 16,
+            left: 0,
+            right: 0,
+            child: SafeArea(
+              bottom: false,
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.35),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: List.generate(
+                      widget.photos.length,
+                      (index) => AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        margin: const EdgeInsets.symmetric(horizontal: 3),
+                        width: index == _page ? 16 : 6,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: index == _page ? AppColors.primary : Colors.white38,
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
           ),
-        ],
       ],
     );
   }
 }
 
-class _ActionRow extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String buttonLabel;
-  final VoidCallback onTap;
+class _MemberPill extends StatelessWidget {
+  final String display;
 
-  const _ActionRow({
-    required this.icon,
-    required this.label,
-    required this.buttonLabel,
-    required this.onTap,
+  const _MemberPill({required this.display});
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.35),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppColors.primary.withValues(alpha: 0.5)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.people_alt_rounded, size: 13, color: AppColors.primary),
+              const SizedBox(width: 5),
+              Text(
+                '$display membres',
+                style: GoogleFonts.barlow(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ActionsCard extends StatelessWidget {
+  final String address;
+  final String? phone;
+  final VoidCallback? onMap;
+  final VoidCallback? onCall;
+
+  const _ActionsCard({
+    required this.address,
+    required this.phone,
+    required this.onMap,
+    required this.onCall,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardTheme.color,
-        borderRadius: BorderRadius.circular(16),
+        color: AppColors.darkCard,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: AppColors.primary),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              label,
-              style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
-            ),
-          ),
-          TextButton(
-            onPressed: onTap,
-            child: Text(buttonLabel),
+          if (address.isNotEmpty) _infoLine(Icons.location_on_rounded, address),
+          if (phone != null && phone!.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            _infoLine(Icons.phone_rounded, phone!),
+          ],
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: [
+              if (onMap != null)
+                _GlowButton(icon: Icons.map_rounded, label: 'Itinéraire', onTap: onMap!, filled: true),
+              if (onCall != null)
+                _GlowButton(icon: Icons.call_rounded, label: 'Appeler', onTap: onCall!),
+            ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _infoLine(IconData icon, String text) {
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: AppColors.primary),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            text,
+            style: GoogleFonts.barlow(fontSize: 14, color: Colors.white.withValues(alpha: 0.85)),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _GlowButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  final bool filled;
+
+  const _GlowButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.filled = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(28),
+        onTap: () {
+          HapticFeedback.mediumImpact();
+          onTap();
+        },
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 48),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          decoration: BoxDecoration(
+            color: filled ? AppColors.primary : AppColors.darkCard,
+            borderRadius: BorderRadius.circular(28),
+            border: filled ? null : Border.all(color: AppColors.primary.withValues(alpha: 0.4)),
+            boxShadow: filled
+                ? [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.35),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 18, color: filled ? AppColors.darkBackground : AppColors.primary),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: GoogleFonts.barlow(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: filled ? AppColors.darkBackground : Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _OpeningHoursCard extends StatefulWidget {
+  final List<Map<String, dynamic>> hours;
+  final String Function(int) dayName;
+
+  const _OpeningHoursCard({required this.hours, required this.dayName});
+
+  @override
+  State<_OpeningHoursCard> createState() => _OpeningHoursCardState();
+}
+
+class _OpeningHoursCardState extends State<_OpeningHoursCard>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _pulse;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulse = AnimationController(vsync: this, duration: const Duration(seconds: 2));
+    if (_reduceMotion) {
+      _pulse.value = 1;
+    } else {
+      _pulse.repeat(reverse: true);
+    }
+  }
+
+  @override
+  void dispose() {
+    _pulse.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final todayIndex = DateTime.now().weekday % 7;
+    Map<String, dynamic>? todayHours;
+    for (final h in widget.hours) {
+      if (h['dayOfWeek'] == todayIndex) {
+        todayHours = h;
+        break;
+      }
+    }
+    final openNow = _isOpenNow(todayHours);
+
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: AppColors.darkCard,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Horaires d\'ouverture',
+                  style: GoogleFonts.barlowCondensed(
+                    fontSize: 19,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              if (openNow != null) _StatusChip(open: openNow, pulse: _pulse),
+            ],
+          ),
+          const SizedBox(height: 14),
+          ...widget.hours.map((hour) {
+            final isToday = hour['dayOfWeek'] == todayIndex;
+            final isClosed = hour['isClosed'] == true;
+            return Container(
+              margin: const EdgeInsets.symmetric(vertical: 2),
+              padding: EdgeInsets.symmetric(horizontal: isToday ? 10 : 0, vertical: 8),
+              decoration: isToday
+                  ? BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    )
+                  : null,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    widget.dayName(hour['dayOfWeek'] as int),
+                    style: GoogleFonts.barlow(
+                      fontSize: 14,
+                      fontWeight: isToday ? FontWeight.w700 : FontWeight.w400,
+                      color: isToday ? AppColors.primary : Colors.white.withValues(alpha: 0.85),
+                    ),
+                  ),
+                  Text(
+                    isClosed ? 'Fermé' : '${hour['openTime']} - ${hour['closeTime']}',
+                    style: GoogleFonts.barlow(
+                      fontSize: 14,
+                      fontWeight: isToday ? FontWeight.w700 : FontWeight.w400,
+                      color: isClosed
+                          ? AppColors.errorLight
+                          : (isToday ? AppColors.primary : Colors.white.withValues(alpha: 0.7)),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatusChip extends StatelessWidget {
+  final bool open;
+  final Animation<double> pulse;
+
+  const _StatusChip({required this.open, required this.pulse});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = open ? AppColors.success : AppColors.errorLight;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withValues(alpha: 0.4)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AnimatedBuilder(
+            animation: pulse,
+            builder: (context, child) => Opacity(opacity: 0.5 + 0.5 * pulse.value, child: child),
+            child: Container(
+              width: 7,
+              height: 7,
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+            ),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            open ? 'Ouvert maintenant' : 'Fermé',
+            style: GoogleFonts.barlow(fontSize: 11, fontWeight: FontWeight.w700, color: color),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TeamSection extends StatelessWidget {
+  final List<Map<String, dynamic>> team;
+  final String Function(String?) roleLabel;
+
+  const _TeamSection({required this.team, required this.roleLabel});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'La team',
+          style: GoogleFonts.barlowCondensed(
+            fontSize: 19,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+          ),
+        ),
+        const SizedBox(height: 14),
+        Wrap(
+          spacing: 18,
+          runSpacing: 18,
+          children: [
+            for (var i = 0; i < team.length; i++)
+              RevealOnLoad(
+                delay: Duration(milliseconds: 40 * i.clamp(0, 8)),
+                beginOffset: const Offset(0, 0.15),
+                child: _TeamMember(member: team[i], roleLabel: roleLabel),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _TeamMember extends StatefulWidget {
+  final Map<String, dynamic> member;
+  final String Function(String?) roleLabel;
+
+  const _TeamMember({required this.member, required this.roleLabel});
+
+  @override
+  State<_TeamMember> createState() => _TeamMemberState();
+}
+
+class _TeamMemberState extends State<_TeamMember> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final photoUrl = widget.member['photoUrl'] as String?;
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: AnimatedScale(
+        scale: _hovered ? 1.06 : 1.0,
+        duration: const Duration(milliseconds: 160),
+        curve: Curves.easeOut,
+        child: SizedBox(
+          width: 100,
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(3),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: AppColors.primary.withValues(alpha: _hovered ? 0.9 : 0.4),
+                    width: 2,
+                  ),
+                ),
+                child: CircleAvatar(
+                  radius: 34,
+                  backgroundColor: AppColors.darkElevated,
+                  backgroundImage: photoUrl != null ? NetworkImage(photoUrl) : null,
+                  child: photoUrl == null
+                      ? const Icon(Icons.person_rounded, color: AppColors.primary)
+                      : null,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                widget.member['fullName'] as String? ?? '',
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.barlow(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                  color: Colors.white,
+                ),
+              ),
+              Text(
+                widget.roleLabel(widget.member['role'] as String?),
+                style: GoogleFonts.barlow(fontSize: 11, color: AppColors.darkTextTertiary),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
