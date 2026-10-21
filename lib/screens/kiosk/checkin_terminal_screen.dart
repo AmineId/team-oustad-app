@@ -1164,8 +1164,18 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
         return;
       }
 
+      final userType = loginResult['userType'] as String?;
+      if (userType != 'admin' && userType != 'owner') {
+        setState(() {
+          _loginError = 'Accès réservé aux administrateurs et propriétaires';
+          _loggingIn = false;
+        });
+        return;
+      }
+
       final token = loginResult['token'] as String;
       await _auth.saveToken(token);
+      await _auth.saveUserType(userType!);
       await _auth.fetchAndCacheUserProfile(token);
 
       final profile = await _auth.getCachedUserProfile();
