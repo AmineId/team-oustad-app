@@ -80,7 +80,7 @@ fi
 WIN_HOST=$(ip route show default 2>/dev/null | awk '/default/{print $3; exit}')
 if [[ -n "$WIN_HOST" ]] && nc -z -w1 "$WIN_HOST" 27015 2>/dev/null; then
   echo "📡 Relais iTunes actif ($WIN_HOST:27015)"
-  sudo pkill -x usbmuxd 2>/dev/null || true
+  # sudo pkill -x usbmuxd 2>/dev/null || true
   export USBMUXD_SOCKET_ADDRESS="$WIN_HOST:27015"
 else
   pgrep -x usbmuxd >/dev/null || sudo usbmuxd
