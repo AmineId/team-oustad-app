@@ -157,11 +157,10 @@ class _MyAppState extends State<MyApp> {
               ],
               supportedLocales: LocaleService.supportedLocales,
               locale: widget.localeService.currentLocale,
-              // Build dédié à la borne d'accueil (kiosk.team-oustad.com) : saute
-              // le splash/login normal et démarre direct sur l'écran de check-in.
-              home: const bool.fromEnvironment('KIOSK_MODE', defaultValue: false)
-                  ? const CheckinTerminalScreen()
-                  : const SplashScreen(),
+              // Le build web n'est utilisé que pour la borne d'accueil
+              // (kiosk.team-oustad.com) : saute le splash/login normal et
+              // démarre direct sur l'écran de check-in.
+              home: kIsWeb ? const CheckinTerminalScreen() : const SplashScreen(),
               routes: {
                 '/admin/members': (context) => const AdminMembersScreen(),
                 '/admin/plannings': (context) => const AdminPlanningsScreen(),
