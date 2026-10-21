@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.85](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.84...v1.0.0-beta.85) (2026-10-21)
+
+
+### 🐛 Bug Fixes
+
+* **ci:** use kiosk app icon in AltStore source ([6416f09](https://github.com/TeamFitness/mobile-app/commit/6416f090242944764cd7d0b651ddb97d6f788c54))
+
 ## [1.0.0-beta.84](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.83...v1.0.0-beta.84) (2026-10-21)
 
 
