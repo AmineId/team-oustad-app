@@ -131,6 +131,7 @@ jobs:
       ref: ${{ github.ref }}
       android-testing-url: ${{ vars.ANDROID_TESTING_URL }}
       ipa-url: https://kiosk.team-oustad.com/TeamOustad.ipa
+      altstore-source-url: ${{ github.ref_name == 'main' && 'https://team-fitness-kiosk.pages.dev/altstore.json' || format('https://{0}.team-fitness-kiosk.pages.dev/altstore.json', github.ref_name) }}
 
   # Étape 2d: Build Web page vitrine salles (même build, home différent via WEB_TARGET)
   build-web-showcase:
