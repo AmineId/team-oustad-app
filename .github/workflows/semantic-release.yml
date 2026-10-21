@@ -117,7 +117,6 @@ jobs:
       api-url: ${{ needs.version.outputs.api_url }}
       ref: ${{ github.ref }}
       ipa-filename: TeamOustad-${{ needs.version.outputs.dart_env }}-${{ needs.version.outputs.version }}.ipa
-    secrets: inherit
 
   # Étape 2c: Build Web kiosk (en parallèle avec build-android/build-ios, réutilise _build-web.yml)
   build-web-kiosk:
@@ -170,6 +169,59 @@ jobs:
           IPA_FILE=$(ls /tmp/ipa/*.ipa | head -1)
           cp "$IPA_FILE" build/web/TeamOustad.ipa
           echo "✅ IPA inclus : $(du -sh build/web/TeamOustad.ipa)"
+
+      # Source AltStore / SideStore : servie à côté de l'IPA sur Cloudflare Pages,
+      # via l'alias de branche (*.team-fitness-kiosk.pages.dev) tant que le DNS
+      # kiosk.team-oustad.com n'est pas prêt.
+      - name: 📲 Générer la source AltStore
+        env:
+          BRANCH: ${{ github.ref_name }}
+          VERSION: ${{ needs.version.outputs.version }}
+          DART_ENV: ${{ needs.version.outputs.dart_env }}
+        run: |
+          set -euo pipefail
+          if [ "$BRANCH" = "main" ]; then
+            BASE_URL="https://team-fitness-kiosk.pages.dev"
+          else
+            ALIAS=$(echo "$BRANCH" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g')
+            BASE_URL="https://${ALIAS}.team-fitness-kiosk.pages.dev"
+          fi
+          python3 - "$BASE_URL" <<'PY'
+          import json, os, plistlib, sys, zipfile, datetime
+          base = sys.argv[1]
+          ipa = "build/web/TeamOustad.ipa"
+          with zipfile.ZipFile(ipa) as z:
+              name = next(n for n in z.namelist()
+                          if n.startswith("Payload/") and n.endswith(".app/Info.plist") and n.count("/") == 2)
+              info = plistlib.loads(z.read(name))
+          env = os.environ["DART_ENV"]
+          source = {
+              "name": f"Team Oustad ({env})",
+              "identifier": f"com.teamoustad.source.{env}",
+              "apps": [{
+                  "name": "Team Oustad",
+                  "bundleIdentifier": info["CFBundleIdentifier"],
+                  "developerName": "Team Oustad",
+                  "localizedDescription": "Builds de test privés.",
+                  "iconURL": "",
+                  "versions": [{
+                      "version": os.environ["VERSION"],
+                      "date": datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+                      "size": os.path.getsize(ipa),
+                      "downloadURL": f"{base}/TeamOustad.ipa",
+                      "minOSVersion": info.get("MinimumOSVersion", "13.0"),
+                  }],
+              }],
+              "news": [],
+          }
+          json.dump(source, open("build/web/altstore.json", "w"), indent=2)
+          url = f"{base}/altstore.json"
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as f:
+              f.write(f"### 📲 Source AltStore — {os.environ['VERSION']}\n\n"
+                      f"- AltStore : `altstore://source?url={url}`\n"
+                      f"- SideStore : `sidestore://source?url={url}`\n")
+          print(url)
+          PY
 
       - name: 🌐 Create CF Pages project (if not exists)
         run: |
