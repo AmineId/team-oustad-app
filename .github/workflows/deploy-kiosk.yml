@@ -1,0 +1,54 @@
+name: 🏋 Deploy Kiosk
+
+on:
+  push:
+    branches:
+      - staging
+      - main
+  workflow_dispatch:
+
+env:
+  FLUTTER_VERSION: '3.35.7'
+
+jobs:
+  deploy:
+    name: 🌐 Build & Deploy Cloudflare Pages
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Determine environment
+        id: env
+        run: |
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            echo "dart_env=prod" >> $GITHUB_OUTPUT
+            echo "cf_branch=main" >> $GITHUB_OUTPUT
+          else
+            echo "dart_env=pprod" >> $GITHUB_OUTPUT
+            echo "cf_branch=staging" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build Flutter Web
+        run: |
+          flutter build web \
+            --release \
+            --dart-define=ENVIRONMENT=${{ steps.env.outputs.dart_env }} \
+            --no-source-maps
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy build/web --project-name=team-fitness-kiosk --branch=${{ steps.env.outputs.cf_branch }}
