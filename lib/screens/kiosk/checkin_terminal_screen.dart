@@ -92,8 +92,10 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
     _auth = AuthService(_api);
 
     _countdownCtrl = AnimationController(vsync: this, duration: _resetDuration);
-    _pulseCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 2400))
-      ..repeat(reverse: true);
+    _pulseCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2400),
+    )..repeat(reverse: true);
 
     _clockTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted) setState(() => _now = DateTime.now());
@@ -116,7 +118,10 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
     }
 
     await _refreshTodayCount();
-    _refreshTimer = Timer.periodic(const Duration(seconds: 30), (_) => _refreshTodayCount());
+    _refreshTimer = Timer.periodic(
+      const Duration(seconds: 30),
+      (_) => _refreshTodayCount(),
+    );
 
     if (mounted) {
       setState(() => _initialized = true);
@@ -181,7 +186,10 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
       final canCheckIn = quota?['canCheckIn'] as bool? ?? false;
 
       if (!canCheckIn) {
-        final reason = _resolveReason(scanResult['reason'] as String?, scanResult['message'] as String?);
+        final reason = _resolveReason(
+          scanResult['reason'] as String?,
+          scanResult['message'] as String?,
+        );
         setState(() {
           _status = _ScanStatus.denied;
           _errorMessage = reason;
@@ -202,7 +210,10 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
       );
 
       if (checkInResult == null || (checkInResult['success'] == false)) {
-        final msg = checkInResult?['message'] ?? checkInResult?['error'] ?? 'Check-in échoué';
+        final msg =
+            checkInResult?['message'] ??
+            checkInResult?['error'] ??
+            'Check-in échoué';
         setState(() {
           _status = _ScanStatus.denied;
           _errorMessage = msg as String;
@@ -296,7 +307,13 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
     setState(() {
       _sessionEntries.insert(
         0,
-        _ScanEntry(name: full, initials: initials, subscriptionName: subName, time: DateTime.now(), allowed: allowed),
+        _ScanEntry(
+          name: full,
+          initials: initials,
+          subscriptionName: subName,
+          time: DateTime.now(),
+          allowed: allowed,
+        ),
       );
     });
 
@@ -314,23 +331,25 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
       body: PopScope(
         canPop: false,
         child: !_initialized
-            ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+            ? const Center(
+                child: CircularProgressIndicator(color: AppColors.primary),
+              )
             : _token == null
-                ? _buildNoSession()
-                : Column(
-                    children: [
-                      _buildHeader(),
-                      Expanded(
-                        child: Row(
-                          children: [
-                            Expanded(flex: 6, child: _buildScanPanel()),
-                            Container(width: 1, color: const Color(0xFF374151)),
-                            Expanded(flex: 4, child: _buildTodayPanel()),
-                          ],
-                        ),
-                      ),
-                    ],
+            ? _buildNoSession()
+            : Column(
+                children: [
+                  _buildHeader(),
+                  Expanded(
+                    child: Row(
+                      children: [
+                        Expanded(flex: 6, child: _buildScanPanel()),
+                        Container(width: 1, color: const Color(0xFF374151)),
+                        Expanded(flex: 4, child: _buildTodayPanel()),
+                      ],
+                    ),
                   ),
+                ],
+              ),
       ),
     );
   }
@@ -354,23 +373,43 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.warning.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
+                        border: Border.all(
+                          color: AppColors.warning.withValues(alpha: 0.3),
+                        ),
                       ),
-                      child: Text('PPROD', style: GoogleFonts.barlow(
-                        fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.warning, letterSpacing: 1,
-                      )),
+                      child: Text(
+                        'PPROD',
+                        style: GoogleFonts.barlow(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.warning,
+                          letterSpacing: 1,
+                        ),
+                      ),
                     ),
                     const SizedBox(width: 10),
-                    Text('Installer l\'app mobile', style: GoogleFonts.barlowCondensed(
-                      fontSize: 22, fontWeight: FontWeight.w700, color: Colors.white,
-                    )),
+                    Text(
+                      'Installer l\'app mobile',
+                      style: GoogleFonts.barlowCondensed(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
                     const Spacer(),
                     IconButton(
-                      icon: const Icon(Icons.close_rounded, color: AppColors.darkTextTertiary, size: 20),
+                      icon: const Icon(
+                        Icons.close_rounded,
+                        color: AppColors.darkTextTertiary,
+                        size: 20,
+                      ),
                       onPressed: () => Navigator.of(context).pop(),
                     ),
                   ],
@@ -383,7 +422,10 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
                   color: const Color(0xFF3DDC84),
                   title: 'Android',
                   badge: 'Play Store (test interne)',
-                  tools: const ['Téléphone Android', 'Compte Google ajouté aux testeurs'],
+                  tools: const [
+                    'Téléphone Android',
+                    'Compte Google ajouté aux testeurs',
+                  ],
                   steps: const [
                     'Ouvre le lien ci-dessous sur le téléphone et accepte l\'invitation',
                     'Installe depuis le Play Store (bouton "Rejoindre")',
@@ -391,7 +433,8 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
                   ],
                   actionLabel: 'Rejoindre le test Android',
                   actionUrl: _kAndroidTestingUrl,
-                  note: 'Le compte Google doit être ajouté à la liste de testeurs dans Play Console avant d\'accepter.',
+                  note:
+                      'Le compte Google doit être ajouté à la liste de testeurs dans Play Console avant d\'accepter.',
                 ),
 
                 const SizedBox(height: 20),
@@ -416,14 +459,21 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
                   ],
                   actionLabel: 'Télécharger le fichier IPA',
                   actionUrl: _kIpaDownloadUrl,
-                  note: 'Avec un Apple ID gratuit, l\'app expire après 7 jours (à réinstaller via Sideloadly). Guide détaillé : docs/ios/IOS_SIDELOADLY.md.',
+                  note:
+                      'Avec un Apple ID gratuit, l\'app expire après 7 jours (à réinstaller via Sideloadly).',
+                  onGuideTap: _showSideloadlyGuide,
                 ),
 
                 const SizedBox(height: 24),
                 Center(
                   child: TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: Text('Fermer', style: GoogleFonts.barlow(color: AppColors.darkTextSecondary)),
+                    child: Text(
+                      'Fermer',
+                      style: GoogleFonts.barlow(
+                        color: AppColors.darkTextSecondary,
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -444,6 +494,7 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
     required String actionLabel,
     required String actionUrl,
     required String note,
+    VoidCallback? onGuideTap,
   }) {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -456,88 +507,163 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // En-tête section
-          Row(children: [
-            Icon(icon, color: color, size: 20),
-            const SizedBox(width: 8),
-            Text(title, style: GoogleFonts.barlowCondensed(
-              fontSize: 17, fontWeight: FontWeight.w700, color: Colors.white,
-            )),
-            const SizedBox(width: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(4),
+          Row(
+            children: [
+              Icon(icon, color: color, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: GoogleFonts.barlowCondensed(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
               ),
-              child: Text(badge, style: GoogleFonts.barlow(
-                fontSize: 10, color: color, fontWeight: FontWeight.w600,
-              )),
-            ),
-          ]),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  badge,
+                  style: GoogleFonts.barlow(
+                    fontSize: 10,
+                    color: color,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
           const SizedBox(height: 14),
 
           // Outils requis
-          Text('Requis', style: GoogleFonts.barlow(
-            fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.darkTextTertiary, letterSpacing: 0.8,
-          )),
+          Text(
+            'Requis',
+            style: GoogleFonts.barlow(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: AppColors.darkTextTertiary,
+              letterSpacing: 0.8,
+            ),
+          ),
           const SizedBox(height: 6),
           Wrap(
-            spacing: 6, runSpacing: 6,
-            children: tools.map((t) => Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: AppColors.darkBackground,
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: const Color(0xFF374151)),
-              ),
-              child: Row(mainAxisSize: MainAxisSize.min, children: [
-                Icon(Icons.check_circle_outline_rounded, size: 11, color: color),
-                const SizedBox(width: 4),
-                Text(t, style: GoogleFonts.barlow(fontSize: 11, color: AppColors.darkTextSecondary)),
-              ]),
-            )).toList(),
+            spacing: 6,
+            runSpacing: 6,
+            children: tools
+                .map(
+                  (t) => Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.darkBackground,
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: const Color(0xFF374151)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.check_circle_outline_rounded,
+                          size: 11,
+                          color: color,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          t,
+                          style: GoogleFonts.barlow(
+                            fontSize: 11,
+                            color: AppColors.darkTextSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+                .toList(),
           ),
           const SizedBox(height: 14),
 
           // Étapes
-          Text('Étapes', style: GoogleFonts.barlow(
-            fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.darkTextTertiary, letterSpacing: 0.8,
-          )),
-          const SizedBox(height: 8),
-          ...steps.asMap().entries.map((e) => Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 20, height: 20,
-                  margin: const EdgeInsets.only(right: 10, top: 1),
-                  decoration: BoxDecoration(color: color.withValues(alpha: 0.15), shape: BoxShape.circle),
-                  child: Center(child: Text('${e.key + 1}', style: GoogleFonts.barlow(
-                    fontSize: 10, fontWeight: FontWeight.w700, color: color,
-                  ))),
-                ),
-                Expanded(child: Text(e.value, style: GoogleFonts.barlow(
-                  fontSize: 13, color: AppColors.darkTextSecondary, height: 1.5,
-                ))),
-              ],
+          Text(
+            'Étapes',
+            style: GoogleFonts.barlow(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: AppColors.darkTextTertiary,
+              letterSpacing: 0.8,
             ),
-          )),
+          ),
+          const SizedBox(height: 8),
+          ...steps.asMap().entries.map(
+            (e) => Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 20,
+                    height: 20,
+                    margin: const EdgeInsets.only(right: 10, top: 1),
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Text(
+                        '${e.key + 1}',
+                        style: GoogleFonts.barlow(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: color,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      e.value,
+                      style: GoogleFonts.barlow(
+                        fontSize: 13,
+                        color: AppColors.darkTextSecondary,
+                        height: 1.5,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
 
           // Bouton lien
           const SizedBox(height: 8),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: () => launchUrl(Uri.parse(actionUrl), mode: LaunchMode.externalApplication),
+              onPressed: () => launchUrl(
+                Uri.parse(actionUrl),
+                mode: LaunchMode.externalApplication,
+              ),
               icon: Icon(icon, size: 16, color: Colors.black87),
-              label: Text(actionLabel, style: GoogleFonts.barlow(
-                fontWeight: FontWeight.w700, fontSize: 13, color: Colors.black87,
-              )),
+              label: Text(
+                actionLabel,
+                style: GoogleFonts.barlow(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13,
+                  color: Colors.black87,
+                ),
+              ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: color,
                 padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
             ),
           ),
@@ -547,14 +673,250 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.info_outline_rounded, size: 12, color: AppColors.darkTextTertiary),
+              Icon(
+                Icons.info_outline_rounded,
+                size: 12,
+                color: AppColors.darkTextTertiary,
+              ),
               const SizedBox(width: 5),
-              Expanded(child: Text(note, style: GoogleFonts.barlow(
-                fontSize: 11, color: AppColors.darkTextTertiary, fontStyle: FontStyle.italic,
-              ))),
+              Expanded(
+                child: Text(
+                  note,
+                  style: GoogleFonts.barlow(
+                    fontSize: 11,
+                    color: AppColors.darkTextTertiary,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ),
             ],
           ),
+
+          if (onGuideTap != null) ...[
+            const SizedBox(height: 10),
+            InkWell(
+              borderRadius: BorderRadius.circular(6),
+              onTap: onGuideTap,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.menu_book_rounded, size: 14, color: color),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Voir le guide détaillé',
+                      style: GoogleFonts.barlow(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: color,
+                        decoration: TextDecoration.underline,
+                        decorationColor: color,
+                      ),
+                    ),
+                    const SizedBox(width: 2),
+                    Icon(Icons.chevron_right_rounded, size: 16, color: color),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ],
+      ),
+    );
+  }
+
+  // ── Guide Sideloadly détaillé (pas-à-pas pour le staff) ────────────────────────
+
+  void _showSideloadlyGuide() {
+    Widget sectionTitle(String text) => Padding(
+      padding: const EdgeInsets.only(top: 18, bottom: 8),
+      child: Text(
+        text,
+        style: GoogleFonts.barlowCondensed(
+          fontSize: 16,
+          fontWeight: FontWeight.w700,
+          color: AppColors.primary,
+        ),
+      ),
+    );
+
+    Widget step(String title, List<String> lines) => Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: GoogleFonts.barlow(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 4),
+          ...lines.map(
+            (l) => Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.only(top: 6, right: 8),
+                    child: Icon(
+                      Icons.circle,
+                      size: 4,
+                      color: AppColors.darkTextTertiary,
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      l,
+                      style: GoogleFonts.barlow(
+                        fontSize: 12.5,
+                        color: AppColors.darkTextSecondary,
+                        height: 1.5,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    showDialog(
+      context: context,
+      builder: (_) => Dialog(
+        backgroundColor: AppColors.darkSurface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: SizedBox(
+          width: 620,
+          height: 640,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(28, 24, 16, 0),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.apple_rounded,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Installer avec Sideloadly',
+                        style: GoogleFonts.barlowCondensed(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(
+                        Icons.close_rounded,
+                        color: AppColors.darkTextTertiary,
+                        size: 20,
+                      ),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(28, 0, 28, 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Pas besoin de Mac ni de compte développeur payant : un PC Windows ou Mac, '
+                        'Sideloadly et un identifiant Apple gratuit suffisent.',
+                        style: GoogleFonts.barlow(
+                          fontSize: 12.5,
+                          color: AppColors.darkTextTertiary,
+                          height: 1.5,
+                        ),
+                      ),
+
+                      sectionTitle('Ce qu\'il faut'),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: const [
+                          'PC Windows ou Mac',
+                          'iTunes (pilotes Apple)',
+                          'Sideloadly (sideloadly.io)',
+                          'Câble USB',
+                          'Identifiant Apple (gratuit)',
+                        ].map((t) => _Chip(label: t)).toList(),
+                      ),
+
+                      sectionTitle('Étapes'),
+                      step('1. Installer les outils (une seule fois)', const [
+                        'Installe iTunes depuis le site d\'Apple et ouvre-le une première fois.',
+                        'Installe Sideloadly et lance-le.',
+                      ]),
+                      step('2. Connecter l\'iPhone', const [
+                        'Branche l\'iPhone au PC avec le câble USB.',
+                        'Sur l\'iPhone : accepte "Faire confiance à cet ordinateur ?" et entre le code.',
+                        'L\'iPhone doit apparaître dans la liste déroulante de Sideloadly.',
+                      ]),
+                      step('3. Installer l\'app', const [
+                        'Télécharge TeamOustad.ipa (lien ci-dessus).',
+                        'Glisse le fichier .ipa dans la zone centrale de Sideloadly.',
+                        'Renseigne ton Apple ID (email), puis clique sur "Start".',
+                        'Entre le mot de passe du compte (et le code à 6 chiffres si la double authentification est activée).',
+                        'Laisse Sideloadly signer et installer l\'app (1 à 2 minutes).',
+                      ]),
+                      step('4. Faire confiance à l\'app sur l\'iPhone', const [
+                        'Réglages → Général → VPN et gestion de l\'appareil.',
+                        'Sous "App développeur", touche l\'adresse email Apple utilisée.',
+                        'Touche "Faire confiance à ..." puis confirme, et lance l\'app.',
+                      ]),
+
+                      sectionTitle('Limitations (Apple ID gratuit)'),
+                      step('', const [
+                        'Expire après 7 jours : réinstalle via Sideloadly (1 minute, mêmes identifiants).',
+                        '3 apps maximum installées ainsi sur le même iPhone.',
+                        'Pas de notifications push (FCM) avec ce mode de signature.',
+                      ]),
+
+                      sectionTitle('Problèmes fréquents'),
+                      const _TroubleshootRow(
+                        symptom: 'Sideloadly ne voit pas l\'iPhone',
+                        solution:
+                            'Réinstalle/répare iTunes, rebranche le câble, redémarre Sideloadly.',
+                      ),
+                      const _TroubleshootRow(
+                        symptom: '"Impossible de vérifier l\'app" au lancement',
+                        solution:
+                            'Refais l\'étape 4 (faire confiance au profil).',
+                      ),
+                      const _TroubleshootRow(
+                        symptom: 'L\'app a disparu après quelques jours',
+                        solution:
+                            'Normal avec un Apple ID gratuit (7 jours) → réinstalle via Sideloadly.',
+                      ),
+                      const _TroubleshootRow(
+                        symptom:
+                            'Erreur de mot de passe alors qu\'il est correct',
+                        solution:
+                            'La double authentification bloque Sideloadly → utilise un mot de passe '
+                            'd\'application généré sur appleid.apple.com.',
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -572,39 +934,71 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
       child: Row(
         children: [
           Container(
-            width: 30, height: 30,
-            decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(7)),
+            width: 30,
+            height: 30,
+            decoration: BoxDecoration(
+              color: AppColors.primary,
+              borderRadius: BorderRadius.circular(7),
+            ),
             child: Center(
-              child: Text('TF', style: GoogleFonts.barlowCondensed(
-                fontSize: 12, fontWeight: FontWeight.w800, color: Colors.black87,
-              )),
+              child: Text(
+                'TF',
+                style: GoogleFonts.barlowCondensed(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.black87,
+                ),
+              ),
             ),
           ),
           const SizedBox(width: 10),
-          Text('Borne d\'accueil', style: GoogleFonts.barlowCondensed(
-            fontSize: 18, fontWeight: FontWeight.w700, color: Colors.white, letterSpacing: 0.4,
-          )),
+          Text(
+            'Borne d\'accueil',
+            style: GoogleFonts.barlowCondensed(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+              letterSpacing: 0.4,
+            ),
+          ),
           const Spacer(),
           Text(
             dateStr,
-            style: GoogleFonts.barlow(fontSize: 13, color: AppColors.darkTextTertiary),
+            style: GoogleFonts.barlow(
+              fontSize: 13,
+              color: AppColors.darkTextTertiary,
+            ),
           ),
           const SizedBox(width: 20),
-          Text(timeStr, style: GoogleFonts.barlowCondensed(
-            fontSize: 24, fontWeight: FontWeight.w600, color: Colors.white, letterSpacing: 1.5,
-            fontFeatures: const [FontFeature.tabularFigures()],
-          )),
+          Text(
+            timeStr,
+            style: GoogleFonts.barlowCondensed(
+              fontSize: 24,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+              letterSpacing: 1.5,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+          ),
           const SizedBox(width: 20),
           _buildCountBadge(),
           const SizedBox(width: 12),
           if (AppConfig.fromEnvironment().isPreProduction)
             IconButton(
-              icon: const Icon(Icons.install_mobile_outlined, size: 18, color: AppColors.warning),
+              icon: const Icon(
+                Icons.install_mobile_outlined,
+                size: 18,
+                color: AppColors.warning,
+              ),
               tooltip: 'Installer l\'app mobile',
               onPressed: _showInstallDoc,
             ),
           IconButton(
-            icon: const Icon(Icons.close_rounded, size: 18, color: AppColors.darkTextTertiary),
+            icon: const Icon(
+              Icons.close_rounded,
+              size: 18,
+              color: AppColors.darkTextTertiary,
+            ),
             tooltip: 'Quitter la borne',
             onPressed: () => Navigator.of(context).pop(),
           ),
@@ -624,12 +1018,18 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.people_outline_rounded, size: 14, color: AppColors.primary),
+          const Icon(
+            Icons.people_outline_rounded,
+            size: 14,
+            color: AppColors.primary,
+          ),
           const SizedBox(width: 5),
           Text(
             '$_todayCount',
             style: GoogleFonts.barlowCondensed(
-              fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.primary,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: AppColors.primary,
               fontFeatures: const [FontFeature.tabularFigures()],
             ),
           ),
@@ -644,19 +1044,26 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
     return Stack(
       fit: StackFit.expand,
       children: [
-        GestureDetector(onTap: _refocusQr, child: Container(color: Colors.transparent)),
+        GestureDetector(
+          onTap: _refocusQr,
+          child: Container(color: Colors.transparent),
+        ),
         // Hidden QR capture field
         Positioned(
-          left: -200, top: -200,
+          left: -200,
+          top: -200,
           child: SizedBox(
-            width: 1, height: 1,
+            width: 1,
+            height: 1,
             child: TextField(
               controller: _qrCtrl,
               focusNode: _qrFocus,
               autofocus: true,
               onSubmitted: _handleQrInput,
               keyboardType: TextInputType.text,
-              inputFormatters: [FilteringTextInputFormatter.deny(RegExp(r'[\n\r]'))],
+              inputFormatters: [
+                FilteringTextInputFormatter.deny(RegExp(r'[\n\r]')),
+              ],
             ),
           ),
         ),
@@ -665,7 +1072,10 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
           duration: const Duration(milliseconds: 280),
           transitionBuilder: (child, anim) => FadeTransition(
             opacity: anim,
-            child: ScaleTransition(scale: Tween(begin: 0.97, end: 1.0).animate(anim), child: child),
+            child: ScaleTransition(
+              scale: Tween(begin: 0.97, end: 1.0).animate(anim),
+              child: child,
+            ),
           ),
           child: switch (_status) {
             _ScanStatus.idle => _buildIdleState(),
@@ -677,14 +1087,18 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
         // Countdown bar (visible when not idle)
         if (_status != _ScanStatus.idle && _status != _ScanStatus.processing)
           Positioned(
-            bottom: 0, left: 0, right: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
             child: AnimatedBuilder(
               animation: _countdownCtrl,
               builder: (_, _) => LinearProgressIndicator(
                 value: 1.0 - _countdownCtrl.value,
                 backgroundColor: Colors.transparent,
                 valueColor: AlwaysStoppedAnimation(
-                  _status == _ScanStatus.success ? AppColors.success : AppColors.error,
+                  _status == _ScanStatus.success
+                      ? AppColors.success
+                      : AppColors.error,
                 ),
                 minHeight: 3,
               ),
@@ -716,14 +1130,19 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
           Text(
             'EN ATTENTE DE SCAN',
             style: GoogleFonts.barlowCondensed(
-              fontSize: 30, fontWeight: FontWeight.w800,
-              color: Colors.white, letterSpacing: 2,
+              fontSize: 30,
+              fontWeight: FontWeight.w800,
+              color: Colors.white,
+              letterSpacing: 2,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             'Approchez le QR code du lecteur',
-            style: GoogleFonts.barlow(fontSize: 15, color: AppColors.darkTextTertiary),
+            style: GoogleFonts.barlow(
+              fontSize: 15,
+              color: AppColors.darkTextTertiary,
+            ),
           ),
         ],
       ),
@@ -741,11 +1160,34 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
         scaleX: flipH ? -1 : 1,
         scaleY: flipV ? -1 : 1,
         child: SizedBox(
-          width: cornerLen, height: cornerLen,
+          width: cornerLen,
+          height: cornerLen,
           child: Stack(
             children: [
-              Positioned(top: 0, left: 0, right: 0, child: Container(height: cornerThick, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(cornerThick)))),
-              Positioned(top: 0, left: 0, bottom: 0, child: Container(width: cornerThick, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(cornerThick)))),
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  height: cornerThick,
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(cornerThick),
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 0,
+                left: 0,
+                bottom: 0,
+                child: Container(
+                  width: cornerThick,
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(cornerThick),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -753,25 +1195,49 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
     }
 
     return SizedBox(
-      width: frameSize, height: frameSize,
+      width: frameSize,
+      height: frameSize,
       child: Stack(
         children: [
           // Subtle dot grid
-          ...List.generate(4, (r) => List.generate(4, (c) => Positioned(
-            left: 22.0 + c * 44,
-            top: 22.0 + r * 44,
-            child: Container(
-              width: 4, height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: opacity * 0.25),
-                borderRadius: BorderRadius.circular(2),
+          ...List.generate(
+            4,
+            (r) => List.generate(
+              4,
+              (c) => Positioned(
+                left: 22.0 + c * 44,
+                top: 22.0 + r * 44,
+                child: Container(
+                  width: 4,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: opacity * 0.25),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
               ),
             ),
-          ))).expand((e) => e),
-          Positioned(top: 0, left: 0, child: corner(flipH: false, flipV: false)),
-          Positioned(top: 0, right: 0, child: corner(flipH: true, flipV: false)),
-          Positioned(bottom: 0, left: 0, child: corner(flipH: false, flipV: true)),
-          Positioned(bottom: 0, right: 0, child: corner(flipH: true, flipV: true)),
+          ).expand((e) => e),
+          Positioned(
+            top: 0,
+            left: 0,
+            child: corner(flipH: false, flipV: false),
+          ),
+          Positioned(
+            top: 0,
+            right: 0,
+            child: corner(flipH: true, flipV: false),
+          ),
+          Positioned(
+            bottom: 0,
+            left: 0,
+            child: corner(flipH: false, flipV: true),
+          ),
+          Positioned(
+            bottom: 0,
+            right: 0,
+            child: corner(flipH: true, flipV: true),
+          ),
         ],
       ),
     );
@@ -784,14 +1250,23 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
         mainAxisSize: MainAxisSize.min,
         children: [
           const SizedBox(
-            width: 56, height: 56,
-            child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 3),
+            width: 56,
+            height: 56,
+            child: CircularProgressIndicator(
+              color: AppColors.primary,
+              strokeWidth: 3,
+            ),
           ),
           const SizedBox(height: 22),
-          Text('Validation en cours…', style: GoogleFonts.barlowCondensed(
-            fontSize: 22, fontWeight: FontWeight.w600,
-            color: AppColors.darkTextSecondary, letterSpacing: 0.5,
-          )),
+          Text(
+            'Validation en cours…',
+            style: GoogleFonts.barlowCondensed(
+              fontSize: 22,
+              fontWeight: FontWeight.w600,
+              color: AppColors.darkTextSecondary,
+              letterSpacing: 0.5,
+            ),
+          ),
         ],
       ),
     );
@@ -824,7 +1299,8 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
       } catch (_) {}
     }
 
-    final isExpired = subStatus == 'expired' || (daysLeft != null && daysLeft < 0);
+    final isExpired =
+        subStatus == 'expired' || (daysLeft != null && daysLeft < 0);
     final isExpiringSoon = !isExpired && daysLeft != null && daysLeft <= 7;
 
     final sessionsRemaining = quota?['sessionsRemaining'] as int?;
@@ -845,13 +1321,24 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    width: 60, height: 60,
+                    width: 60,
+                    height: 60,
                     decoration: BoxDecoration(
                       color: AppColors.success,
                       shape: BoxShape.circle,
-                      boxShadow: [BoxShadow(color: AppColors.success.withValues(alpha: 0.4), blurRadius: 28, spreadRadius: 4)],
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.success.withValues(alpha: 0.4),
+                          blurRadius: 28,
+                          spreadRadius: 4,
+                        ),
+                      ],
                     ),
-                    child: const Icon(Icons.check_rounded, color: Colors.white, size: 34),
+                    child: const Icon(
+                      Icons.check_rounded,
+                      color: Colors.white,
+                      size: 34,
+                    ),
                   ),
                   const SizedBox(height: 20),
                   _buildAvatar(profileUrl, initials, 100),
@@ -867,24 +1354,44 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
                     Text(
                       full.toUpperCase(),
                       style: GoogleFonts.barlowCondensed(
-                        fontSize: 54, fontWeight: FontWeight.w800,
-                        color: Colors.white, height: 1, letterSpacing: -0.5,
+                        fontSize: 54,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                        height: 1,
+                        letterSpacing: -0.5,
                       ),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
                     ),
                     const SizedBox(height: 10),
                     Wrap(
-                      spacing: 8, runSpacing: 6,
+                      spacing: 8,
+                      runSpacing: 6,
                       children: [
                         if (subName.isNotEmpty)
-                          _buildBadge(subName, AppColors.primary.withValues(alpha: 0.18), AppColors.primary),
+                          _buildBadge(
+                            subName,
+                            AppColors.primary.withValues(alpha: 0.18),
+                            AppColors.primary,
+                          ),
                         if (isExpired)
-                          _buildBadge('Expiré', AppColors.error.withValues(alpha: 0.2), AppColors.error)
+                          _buildBadge(
+                            'Expiré',
+                            AppColors.error.withValues(alpha: 0.2),
+                            AppColors.error,
+                          )
                         else if (isExpiringSoon)
-                          _buildBadge('Expire dans $daysLeft j', AppColors.warning.withValues(alpha: 0.2), AppColors.warning)
+                          _buildBadge(
+                            'Expire dans $daysLeft j',
+                            AppColors.warning.withValues(alpha: 0.2),
+                            AppColors.warning,
+                          )
                         else
-                          _buildBadge('✓ Actif', AppColors.success.withValues(alpha: 0.2), AppColors.success),
+                          _buildBadge(
+                            '✓ Actif',
+                            AppColors.success.withValues(alpha: 0.2),
+                            AppColors.success,
+                          ),
                       ],
                     ),
                     const SizedBox(height: 28),
@@ -913,13 +1420,19 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
         textBaseline: TextBaseline.alphabetic,
         children: [
           if (isUnlimited)
-            const Icon(Icons.all_inclusive_rounded, color: AppColors.primary, size: 52)
+            const Icon(
+              Icons.all_inclusive_rounded,
+              color: AppColors.primary,
+              size: 52,
+            )
           else
             Text(
               '${sessionsRemaining ?? 0}',
               style: GoogleFonts.barlowCondensed(
-                fontSize: 68, fontWeight: FontWeight.w800,
-                color: Colors.white, height: 1,
+                fontSize: 68,
+                fontWeight: FontWeight.w800,
+                color: Colors.white,
+                height: 1,
                 fontFeatures: const [FontFeature.tabularFigures()],
               ),
             ),
@@ -930,13 +1443,18 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
               Text(
                 isUnlimited ? 'ILLIMITÉ' : 'SÉANCES',
                 style: GoogleFonts.barlow(
-                  fontSize: 11, fontWeight: FontWeight.w700,
-                  color: AppColors.darkTextTertiary, letterSpacing: 1.5,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.darkTextTertiary,
+                  letterSpacing: 1.5,
                 ),
               ),
               Text(
                 isUnlimited ? 'abonnement' : 'restantes',
-                style: GoogleFonts.barlow(fontSize: 11, color: AppColors.darkTextTertiary),
+                style: GoogleFonts.barlow(
+                  fontSize: 11,
+                  color: AppColors.darkTextTertiary,
+                ),
               ),
             ],
           ),
@@ -960,29 +1478,42 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 64, height: 64,
+              width: 64,
+              height: 64,
               decoration: BoxDecoration(
                 color: AppColors.error,
                 shape: BoxShape.circle,
-                boxShadow: [BoxShadow(color: AppColors.error.withValues(alpha: 0.4), blurRadius: 28, spreadRadius: 4)],
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.error.withValues(alpha: 0.4),
+                    blurRadius: 28,
+                    spreadRadius: 4,
+                  ),
+                ],
               ),
               child: Icon(
                 isDenied ? Icons.block_rounded : Icons.error_outline_rounded,
-                color: Colors.white, size: 36,
+                color: Colors.white,
+                size: 36,
               ),
             ),
             const SizedBox(height: 24),
             Text(
               isDenied ? 'ACCÈS REFUSÉ' : 'ERREUR',
               style: GoogleFonts.barlowCondensed(
-                fontSize: 40, fontWeight: FontWeight.w800,
-                color: Colors.white, letterSpacing: 1.5,
+                fontSize: 40,
+                fontWeight: FontWeight.w800,
+                color: Colors.white,
+                letterSpacing: 1.5,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               _errorMessage ?? 'Erreur inconnue',
-              style: GoogleFonts.barlow(fontSize: 18, color: AppColors.errorLight),
+              style: GoogleFonts.barlow(
+                fontSize: 18,
+                color: AppColors.errorLight,
+              ),
               textAlign: TextAlign.center,
             ),
             if (full.isNotEmpty) ...[
@@ -990,7 +1521,8 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
               Text(
                 full,
                 style: GoogleFonts.barlowCondensed(
-                  fontSize: 28, fontWeight: FontWeight.w600,
+                  fontSize: 28,
+                  fontWeight: FontWeight.w600,
                   color: Colors.white.withValues(alpha: 0.5),
                 ),
               ),
@@ -1016,27 +1548,43 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Aujourd\'hui', style: GoogleFonts.barlowCondensed(
-                    fontSize: 16, fontWeight: FontWeight.w700,
-                    color: Colors.white, letterSpacing: 0.3,
-                  )),
-                  Text(dateStr, style: GoogleFonts.barlow(
-                    fontSize: 12, color: AppColors.darkTextTertiary,
-                  )),
+                  Text(
+                    'Aujourd\'hui',
+                    style: GoogleFonts.barlowCondensed(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                  Text(
+                    dateStr,
+                    style: GoogleFonts.barlow(
+                      fontSize: 12,
+                      color: AppColors.darkTextTertiary,
+                    ),
+                  ),
                 ],
               ),
               const Spacer(),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.success.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.success.withValues(alpha: 0.25)),
+                  border: Border.all(
+                    color: AppColors.success.withValues(alpha: 0.25),
+                  ),
                 ),
                 child: Text(
                   '$_todayCount entrées',
                   style: GoogleFonts.barlow(
-                    fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.success,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.success,
                   ),
                 ),
               ),
@@ -1063,11 +1611,19 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.people_outline_rounded, size: 40, color: AppColors.darkTextTertiary.withValues(alpha: 0.5)),
+          Icon(
+            Icons.people_outline_rounded,
+            size: 40,
+            color: AppColors.darkTextTertiary.withValues(alpha: 0.5),
+          ),
           const SizedBox(height: 12),
-          Text('Aucune entrée cette session', style: GoogleFonts.barlow(
-            fontSize: 13, color: AppColors.darkTextTertiary,
-          )),
+          Text(
+            'Aucune entrée cette session',
+            style: GoogleFonts.barlow(
+              fontSize: 13,
+              color: AppColors.darkTextTertiary,
+            ),
+          ),
         ],
       ),
     );
@@ -1089,15 +1645,21 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
         child: Row(
           children: [
             Container(
-              width: 34, height: 34,
+              width: 34,
+              height: 34,
               decoration: BoxDecoration(
                 color: AppColors.primary.withValues(alpha: 0.18),
                 shape: BoxShape.circle,
               ),
               child: Center(
-                child: Text(entry.initials, style: GoogleFonts.barlowCondensed(
-                  fontSize: 12, fontWeight: FontWeight.w800, color: AppColors.primary,
-                )),
+                child: Text(
+                  entry.initials,
+                  style: GoogleFonts.barlowCondensed(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.primary,
+                  ),
+                ),
               ),
             ),
             const SizedBox(width: 10),
@@ -1106,13 +1668,24 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(entry.name, style: GoogleFonts.barlow(
-                    fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white,
-                  ), overflow: TextOverflow.ellipsis),
+                  Text(
+                    entry.name,
+                    style: GoogleFonts.barlow(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                   if (entry.subscriptionName.isNotEmpty)
-                    Text(entry.subscriptionName, style: GoogleFonts.barlow(
-                      fontSize: 10, color: AppColors.darkTextTertiary,
-                    ), overflow: TextOverflow.ellipsis),
+                    Text(
+                      entry.subscriptionName,
+                      style: GoogleFonts.barlow(
+                        fontSize: 10,
+                        color: AppColors.darkTextTertiary,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                 ],
               ),
             ),
@@ -1121,15 +1694,22 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
               crossAxisAlignment: CrossAxisAlignment.end,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(timeStr, style: GoogleFonts.barlowCondensed(
-                  fontSize: 13, fontWeight: FontWeight.w600,
-                  color: AppColors.darkTextTertiary,
-                  fontFeatures: const [FontFeature.tabularFigures()],
-                )),
+                Text(
+                  timeStr,
+                  style: GoogleFonts.barlowCondensed(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.darkTextTertiary,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                ),
                 const SizedBox(height: 2),
                 Icon(
-                  entry.allowed ? Icons.check_circle_rounded : Icons.cancel_rounded,
-                  size: 13, color: color,
+                  entry.allowed
+                      ? Icons.check_circle_rounded
+                      : Icons.cancel_rounded,
+                  size: 13,
+                  color: color,
                 ),
               ],
             ),
@@ -1191,7 +1771,10 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
 
       await _refreshTodayCount();
       _refreshTimer?.cancel();
-      _refreshTimer = Timer.periodic(const Duration(seconds: 30), (_) => _refreshTodayCount());
+      _refreshTimer = Timer.periodic(
+        const Duration(seconds: 30),
+        (_) => _refreshTodayCount(),
+      );
       _refocusQr();
     } catch (_) {
       if (!mounted) return;
@@ -1209,15 +1792,29 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Image.asset('assets/images/logo.png', width: 96, height: 96, fit: BoxFit.contain),
+            Image.asset(
+              'assets/images/logo.png',
+              width: 96,
+              height: 96,
+              fit: BoxFit.contain,
+            ),
             const SizedBox(height: 20),
-            Text('Borne d\'accueil', style: GoogleFonts.barlowCondensed(
-              fontSize: 26, fontWeight: FontWeight.w700, color: Colors.white,
-            )),
+            Text(
+              'Borne d\'accueil',
+              style: GoogleFonts.barlowCondensed(
+                fontSize: 26,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
+            ),
             const SizedBox(height: 4),
-            Text('Connexion requise pour activer la borne', style: GoogleFonts.barlow(
-              fontSize: 13, color: AppColors.darkTextTertiary,
-            )),
+            Text(
+              'Connexion requise pour activer la borne',
+              style: GoogleFonts.barlow(
+                fontSize: 13,
+                color: AppColors.darkTextTertiary,
+              ),
+            ),
             const SizedBox(height: 28),
             TextField(
               controller: _loginEmailCtrl,
@@ -1226,11 +1823,19 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
               style: GoogleFonts.barlow(color: Colors.white),
               decoration: InputDecoration(
                 labelText: 'Email',
-                labelStyle: GoogleFonts.barlow(color: AppColors.darkTextTertiary),
-                prefixIcon: const Icon(Icons.person_outline_rounded, color: AppColors.darkTextTertiary),
+                labelStyle: GoogleFonts.barlow(
+                  color: AppColors.darkTextTertiary,
+                ),
+                prefixIcon: const Icon(
+                  Icons.person_outline_rounded,
+                  color: AppColors.darkTextTertiary,
+                ),
                 filled: true,
                 fillColor: AppColors.darkCard,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide.none,
+                ),
               ),
               onSubmitted: (_) => _handleKioskLogin(),
             ),
@@ -1242,24 +1847,38 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
               style: GoogleFonts.barlow(color: Colors.white),
               decoration: InputDecoration(
                 labelText: 'Mot de passe',
-                labelStyle: GoogleFonts.barlow(color: AppColors.darkTextTertiary),
-                prefixIcon: const Icon(Icons.lock_outline_rounded, color: AppColors.darkTextTertiary),
+                labelStyle: GoogleFonts.barlow(
+                  color: AppColors.darkTextTertiary,
+                ),
+                prefixIcon: const Icon(
+                  Icons.lock_outline_rounded,
+                  color: AppColors.darkTextTertiary,
+                ),
                 suffixIcon: IconButton(
                   icon: Icon(
-                    _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                    _obscurePassword
+                        ? Icons.visibility_outlined
+                        : Icons.visibility_off_outlined,
                     color: AppColors.darkTextTertiary,
                   ),
-                  onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                  onPressed: () =>
+                      setState(() => _obscurePassword = !_obscurePassword),
                 ),
                 filled: true,
                 fillColor: AppColors.darkCard,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide.none,
+                ),
               ),
               onSubmitted: (_) => _handleKioskLogin(),
             ),
             if (_loginError != null) ...[
               const SizedBox(height: 12),
-              Text(_loginError!, style: GoogleFonts.barlow(color: AppColors.error, fontSize: 13)),
+              Text(
+                _loginError!,
+                style: GoogleFonts.barlow(color: AppColors.error, fontSize: 13),
+              ),
             ],
             const SizedBox(height: 20),
             SizedBox(
@@ -1269,16 +1888,26 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
                 child: _loggingIn
                     ? const SizedBox(
-                        width: 20, height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.5,
+                          color: Colors.white,
+                        ),
                       )
-                    : Text('Activer la borne', style: GoogleFonts.barlow(
-                        fontWeight: FontWeight.w700, color: Colors.white,
-                      )),
+                    : Text(
+                        'Activer la borne',
+                        style: GoogleFonts.barlow(
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
               ),
             ),
           ],
@@ -1291,17 +1920,25 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
 
   Widget _buildAvatar(String? imageUrl, String initials, double size) {
     return Container(
-      width: size, height: size,
+      width: size,
+      height: size,
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: AppColors.primary,
         shape: BoxShape.circle,
         border: Border.all(color: AppColors.success, width: 3),
-        boxShadow: [BoxShadow(color: AppColors.success.withValues(alpha: 0.25), blurRadius: 16, spreadRadius: 2)],
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.success.withValues(alpha: 0.25),
+            blurRadius: 16,
+            spreadRadius: 2,
+          ),
+        ],
       ),
       child: imageUrl != null && imageUrl.isNotEmpty
           ? Image.network(
-              imageUrl, fit: BoxFit.cover,
+              imageUrl,
+              fit: BoxFit.cover,
               errorBuilder: (_, _, _) => _buildInitials(initials, size),
             )
           : _buildInitials(initials, size),
@@ -1310,9 +1947,14 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
 
   Widget _buildInitials(String initials, double size) {
     return Center(
-      child: Text(initials, style: GoogleFonts.barlowCondensed(
-        fontSize: size * 0.35, fontWeight: FontWeight.w800, color: Colors.black87,
-      )),
+      child: Text(
+        initials,
+        style: GoogleFonts.barlowCondensed(
+          fontSize: size * 0.35,
+          fontWeight: FontWeight.w800,
+          color: Colors.black87,
+        ),
+      ),
     );
   }
 
@@ -1324,9 +1966,96 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
         borderRadius: BorderRadius.circular(6),
         border: Border.all(color: fg.withValues(alpha: 0.3)),
       ),
-      child: Text(label, style: GoogleFonts.barlow(
-        fontSize: 12, fontWeight: FontWeight.w600, color: fg,
-      )),
+      child: Text(
+        label,
+        style: GoogleFonts.barlow(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: fg,
+        ),
+      ),
+    );
+  }
+}
+
+class _Chip extends StatelessWidget {
+  final String label;
+
+  const _Chip({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.darkBackground,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: const Color(0xFF374151)),
+      ),
+      child: Text(
+        label,
+        style: GoogleFonts.barlow(
+          fontSize: 11,
+          color: AppColors.darkTextSecondary,
+        ),
+      ),
+    );
+  }
+}
+
+class _TroubleshootRow extends StatelessWidget {
+  final String symptom;
+  final String solution;
+
+  const _TroubleshootRow({required this.symptom, required this.solution});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: AppColors.darkCard.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(
+                Icons.warning_amber_rounded,
+                size: 13,
+                color: AppColors.warning,
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  symptom,
+                  style: GoogleFonts.barlow(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Padding(
+            padding: const EdgeInsets.only(left: 19),
+            child: Text(
+              solution,
+              style: GoogleFonts.barlow(
+                fontSize: 12,
+                color: AppColors.darkTextSecondary,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
