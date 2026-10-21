@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/config/app_config.dart';
 import '../../core/services/api_service.dart';
@@ -67,6 +68,12 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
   final FocusNode _qrFocus = FocusNode();
   final ScrollController _listScroll = ScrollController();
 
+  // Scan webcam (en plus du lecteur USB/Bluetooth qui tape dans _qrCtrl) —
+  // dégrade silencieusement si aucune caméra n'est disponible/autorisée.
+  final MobileScannerController _scannerController = MobileScannerController(
+    detectionSpeed: DetectionSpeed.noDuplicates,
+  );
+
   // Connexion directe depuis la borne (pas de passage par l'app complète)
   final TextEditingController _loginEmailCtrl = TextEditingController();
   final TextEditingController _loginPasswordCtrl = TextEditingController();
@@ -85,6 +92,7 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
   late AnimationController _pulseCtrl;
 
   static const _resetDuration = Duration(seconds: 5);
+  static const _qrFrameSize = 168.0;
 
   @override
   void initState() {
@@ -147,10 +155,20 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
     _clockTimer?.cancel();
     _countdownCtrl.dispose();
     _pulseCtrl.dispose();
+    _scannerController.dispose();
     super.dispose();
   }
 
   // ── QR handling ─────────────────────────────────────────────────────────────
+
+  /// Détection via la webcam — même point d'entrée que le lecteur USB
+  /// (_handleQrInput), ignorée hors de l'état idle pour ne pas re-déclencher
+  /// tant qu'un code reste dans le cadre pendant l'affichage du résultat.
+  void _handleBarcodeDetect(BarcodeCapture capture) {
+    if (_status != _ScanStatus.idle) return;
+    final code = capture.barcodes.firstOrNull?.rawValue;
+    if (code != null) _handleQrInput(code);
+  }
 
   Future<void> _handleQrInput(String raw) async {
     final qrCode = raw.trim();
@@ -1110,7 +1128,27 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
               final scale = 1.0 + 0.04 * math.sin(t * math.pi);
               return Transform.scale(
                 scale: scale,
-                child: _buildQrFrame(opacity),
+                child: SizedBox(
+                  width: _qrFrameSize,
+                  height: _qrFrameSize,
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(18),
+                          child: MobileScanner(
+                            controller: _scannerController,
+                            onDetect: _handleBarcodeDetect,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error) =>
+                                const SizedBox.shrink(),
+                          ),
+                        ),
+                      ),
+                      _buildQrFrame(opacity),
+                    ],
+                  ),
+                ),
               );
             },
           ),
@@ -1126,7 +1164,7 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
           ),
           const SizedBox(height: 8),
           Text(
-            'Approchez le QR code du lecteur',
+            'Approchez le QR code du lecteur ou de la webcam',
             style: GoogleFonts.barlow(
               fontSize: 15,
               color: AppColors.darkTextTertiary,
@@ -1138,7 +1176,7 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
   }
 
   Widget _buildQrFrame(double opacity) {
-    const frameSize = 168.0;
+    const frameSize = _qrFrameSize;
     const cornerLen = 36.0;
     const cornerThick = 4.0;
     final color = AppColors.primary.withValues(alpha: opacity);
