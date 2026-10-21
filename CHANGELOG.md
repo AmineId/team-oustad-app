@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.76](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.75...v1.0.0-beta.76) (2026-10-21)
+
+
+### ♻️ Code Refactoring
+
+* **ci:** fold kiosk deploy into Release & Deploy, add standalone dispatch to each reusable workflow ([3b5407e](https://github.com/TeamFitness/mobile-app/commit/3b5407e2319ccca0171b325d28d5cea414d2a6d8))
+
 ## [1.0.0-beta.75](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.74...v1.0.0-beta.75) (2026-10-21)
 
 
