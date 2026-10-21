@@ -6,6 +6,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.77](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.76...v1.0.0-beta.77) (2026-10-21)
+
+
+### ✨ New Features
+
+* **kiosk:** dedicated login screen + KIOSK_MODE direct boot ([2e78f97](https://github.com/TeamFitness/mobile-app/commit/2e78f9757c4da214fbb0bd845eccba6cdafead18))
+* **kiosk:** restrict kiosk login to admin/owner roles only ([0d27a1c](https://github.com/TeamFitness/mobile-app/commit/0d27a1cf678c8377f44c31d9415c2c4a680f60f9))
+
+
+### 🐛 Bug Fixes
+
+* **ci:** auto-publish Android internal testing release instead of leaving it as draft ([f649d23](https://github.com/TeamFitness/mobile-app/commit/f649d238caf53ed4923dfa02013e45c4e4ff6fd7))
+
+
+### ♻️ Code Refactoring
+
+* **kiosk:** use kIsWeb instead of a KIOSK_MODE dart-define ([cda0cc2](https://github.com/TeamFitness/mobile-app/commit/cda0cc2c816b1f1105555484b9ce6fa2cbff9268))
+
 ## [1.0.0-beta.76](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.75...v1.0.0-beta.76) (2026-10-21)
 
 
