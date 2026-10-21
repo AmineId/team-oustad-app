@@ -46,13 +46,13 @@
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>Team Fitness utilise l'appareil photo pour scanner les QR codes d'entrée et prendre une photo de profil.</string>
+	<string>Team Oustad utilise l'appareil photo pour scanner les QR codes d'entrée et prendre une photo de profil.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Team Fitness accède à votre galerie pour choisir une photo de profil.</string>
+	<string>Team Oustad accède à votre galerie pour choisir une photo de profil.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Team Fitness peut enregistrer des photos dans votre galerie.</string>
+	<string>Team Oustad peut enregistrer des photos dans votre galerie.</string>
 	<key>NSFaceIDUsageDescription</key>
-	<string>Team Fitness utilise Face ID pour vous connecter rapidement et en toute sécurité.</string>
+	<string>Team Oustad utilise Face ID pour vous connecter rapidement et en toute sécurité.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Cette app utilise votre localisation pour afficher votre position sur la carte.</string>
 	<key>NSLocationAlwaysUsageDescription</key>

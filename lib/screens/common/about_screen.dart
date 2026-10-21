@@ -104,13 +104,6 @@ class _AboutScreenState extends State<AboutScreen> {
                         fit: BoxFit.contain,
                       ),
                       const SizedBox(height: 16),
-                      Text(
-                        'Team Fitness',
-                        style: AppTextStyles.h2.copyWith(
-                          color: theme.colorScheme.primary,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
                       
                       // Version info
                       Container(
@@ -178,7 +171,7 @@ class _AboutScreenState extends State<AboutScreen> {
                               ),
                               const SizedBox(height: 12),
                               Text(
-                                'Team Fitness est une application de gestion complète pour votre salle de sport. '
+                                'Team Oustad est une application de gestion complète pour votre salle de sport. '
                                 'Gérez vos membres, plannings d\'entraînement, présences et bien plus encore.',
                                 style: TextStyle(
                                   fontSize: 14,

@@ -977,15 +977,6 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                                     fit: BoxFit.contain,
                                   ),
                                   const SizedBox(height: 24),
-                                  const Text(
-                                    'Team Fitness',
-                                    style: TextStyle(
-                                      fontSize: 32,
-                                      fontWeight: FontWeight.bold,
-                                      color: AppColors.primary,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 12),
                                   Builder(
                                     builder: (context) => Text(
                                       AppLocalizations.of(

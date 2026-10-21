@@ -13,7 +13,7 @@ class ErrorReporter {
     final stackStr = stack?.toString();
 
     // Open mail client with prefilled body so developer can receive the error.
-    final subject = Uri.encodeComponent('Crash report: Team Fitness App');
+    final subject = Uri.encodeComponent('Crash report: Team Oustad App');
     final body = Uri.encodeComponent('Error:\n$message\n\nStack:\n${stackStr ?? "(no stack)"}');
     final mailto = Uri(scheme: 'mailto', path: supportEmail, query: 'subject=$subject&body=$body');
     try {

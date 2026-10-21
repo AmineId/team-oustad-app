@@ -86,274 +86,30 @@ jobs:
             echo "ℹ️  No release"
           fi
 
-  # Étape 2: Build et déploiement (sans artifacts)
-  build-and-deploy:
-    name: 🏗️ Build & Deploy
+  # Étape 2a: Build Android + Play Store (réutilise _build-android.yml)
+  build-android:
+    name: 🤖 Build & Deploy Android
     needs: version
     if: needs.version.outputs.released == 'true'
-    runs-on: ubuntu-latest
+    uses: ./.github/workflows/_build-android.yml
     permissions:
       contents: read
-    environment:
-      name: ${{ needs.version.outputs.environment }}
-      url: ${{ needs.version.outputs.api_url }}/android/version.json
-    
-    steps:
-      - name: 📥 Checkout updated code
-        uses: actions/checkout@v6
-        with:
-          ref: ${{ github.ref }}
-          fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
-      
-      - name: 🔄 Fetch and checkout release commit
-        run: |
-          echo "🔍 Current commit: $(git rev-parse HEAD)"
-          git fetch origin ${{ github.ref_name }}
-          git reset --hard origin/${{ github.ref_name }}
-          echo "✅ Updated to commit: $(git rev-parse HEAD)"
-          echo "📋 Latest commits:"
-          git log --oneline -3
-      
-      - name: 🔍 Verify version files
-        run: |
-          echo "📋 Content of version-metadata.json:"
-          cat version-metadata.json | jq '.'
-          echo ""
-          echo "📋 Version in pubspec.yaml:"
-          grep "^version:" pubspec.yaml
+    with:
+      dart-env: ${{ needs.version.outputs.dart_env }}
+      api-url: ${{ needs.version.outputs.api_url }}
+      ref: ${{ github.ref }}
+      deploy-to-play: true
+      publish-version: true
+    secrets: inherit
 
-      - name: ☕ Setup Java
-        uses: actions/setup-java@v6
-        with:
-          distribution: 'temurin'
-          java-version: ${{ env.JAVA_VERSION }}
-
-      - name: 🐦 Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          channel: 'stable'
-          cache: true
-
-      - name: 🔧 Configure Firebase
-        run: |
-          if [[ "${{ needs.version.outputs.environment }}" == "production" ]]; then
-            cp android/app/google-services-prod.json android/app/google-services.json
-          else
-            cp android/app/google-services-pprod.json android/app/google-services.json
-          fi
-
-      - name: 📦 Get dependencies
-        run: flutter pub get
-
-      - name: 🔐 Setup Android signing
-        run: |
-          # Décoder le keystore depuis base64 si disponible
-          if [[ -n "${{ secrets.KEYSTORE_BASE64 }}" ]]; then
-            echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/app/upload-keystore.jks
-            
-            # Créer le fichier key.properties
-            cat > android/key.properties << EOF
-          storePassword=${{ secrets.KEYSTORE_PASSWORD }}
-          keyPassword=${{ secrets.KEY_PASSWORD }}
-          keyAlias=${{ secrets.KEY_ALIAS }}
-          storeFile=upload-keystore.jks
-          EOF
-            
-            echo "✅ Android signing configured with production keystore"
-          else
-            echo "⚠️ No keystore configured, using debug signing"
-          fi
-
-      - name: 🏗️ Build AAB (for Play Store)
-        run: flutter build appbundle --release --dart-define=ENVIRONMENT=${{ needs.version.outputs.dart_env }} --dart-define=API_BASE_URL=${{ needs.version.outputs.api_url }}
-
-      - name: 🔧 Setup Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.2'
-          bundler-cache: false
-
-      - name: 📦 Install Fastlane
-        run: |
-          cd android && bundle install
-
-      - name: 🔐 Setup Play Store credentials
-        run: |
-          mkdir -p android/fastlane
-          # Écrire le JSON en utilisant cat et un heredoc pour éviter les problèmes d'échappement
-          cat > android/fastlane/service-account-key.json << 'EOFJSON'
-          ${{ secrets.SERVICE_ACCOUNT_JSON }}
-          EOFJSON
-          
-          # Vérifier que le JSON est valide
-          if jq empty android/fastlane/service-account-key.json 2>/dev/null; then
-            echo "✅ Service account JSON is valid"
-          else
-            echo "❌ Service account JSON is invalid"
-            cat android/fastlane/service-account-key.json | head -n 5
-            exit 1
-          fi
-
-      - name: 📝 Generate release notes
-        id: release_notes
-        run: |
-          # Générer les notes de version pour Play Store (max 500 caractères)
-          NOTES="Nouveautés :
-          • Mode clair/sombre avec basculement automatique
-          • Interface moderne avec nouveaux composants UI
-          • Notifications d'entraînement personnalisables
-          
-          Corrections :
-          • Résolution de bugs d'interface
-          • Optimisations de performance
-          
-          À tester :
-          ✅ Le basculement entre mode clair/sombre
-          ✅ La navigation générale
-          ✅ Les notifications d'entraînement
-          
-          Merci de vos retours ! 💪"
-          
-          # Sauvegarder dans un fichier
-          echo "$NOTES" > release-notes-fr.txt
-          echo "✅ Notes de version générées"
-
-      - name: 📤 Deploy to Play Store Internal Testing
-        env:
-          FASTLANE_SKIP_UPDATE_CHECK: "true"
-        run: |
-          # Trouver le fichier AAB
-          AAB_PATH="build/app/outputs/bundle/release/app-release.aab"
-          
-          if [ ! -f "$AAB_PATH" ]; then
-            echo "❌ AAB file not found at $AAB_PATH"
-            exit 1
-          fi
-          
-          echo "✅ AAB found at: $AAB_PATH"
-          
-          # Get absolute path to AAB before changing directory
-          AAB_ABSOLUTE_PATH="$(pwd)/$AAB_PATH"
-          echo "📍 Absolute AAB path: $AAB_ABSOLUTE_PATH"
-          
-          # Vérifier que le service account existe
-          if [ ! -f "android/fastlane/service-account-key.json" ]; then
-            echo "❌ Service account JSON not found!"
-            exit 1
-          fi
-          
-          echo "✅ Service account found"
-          
-          # Créer le dossier pour les notes de version dans le répertoire android/fastlane
-          mkdir -p android/fastlane/metadata/android/fr-FR/changelogs
-          cp release-notes-fr.txt android/fastlane/metadata/android/fr-FR/changelogs/default.txt
-          
-          # Changer vers le répertoire android pour exécuter fastlane
-          cd android
-          
-          # Déployer avec Fastlane en utilisant le chemin absolu
-          bundle exec fastlane supply \
-            --aab "$AAB_ABSOLUTE_PATH" \
-            --track internal \
-            --release_status draft \
-            --json_key fastlane/service-account-key.json \
-            --package_name team.fitness.team_fitness_app \
-            --skip_upload_metadata \
-            --skip_upload_images \
-            --skip_upload_screenshots
-
-      - name: 📤 Publish version to server
-        # Seule source du version.json servi par /android/check-update
-        # (vérification de version de l'app, toutes plateformes). Chaque
-        # environnement a sa propre API : pas de canal beta, toujours "production".
-        # Les secrets OTA_BEARER_TOKEN sont propres à chaque environnement GitHub.
-        run: |
-          JSON_PAYLOAD=$(jq -n \
-            --slurpfile meta version-metadata.json \
-            --arg url "https://play.google.com/store/apps/details?id=team.fitness.team_fitness_app" \
-            '$meta[0] | {
-              version_code, version_name, changelog, force_update,
-              min_supported_version,
-              download_url: $url,
-              channel: "production"
-            }')
-          echo "$JSON_PAYLOAD" | jq '.'
-
-          RESPONSE=$(curl -s --connect-timeout 10 --max-time 30 -w "\n%{http_code}" -X POST \
-            "${{ needs.version.outputs.api_url }}/android/update-version" \
-            -H "Authorization: Bearer ${{ secrets.OTA_BEARER_TOKEN }}" \
-            -H "Content-Type: application/json" \
-            -d "$JSON_PAYLOAD")
-
-          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
-          echo "$RESPONSE" | head -n-1
-
-          if [ "$HTTP_CODE" -ne 200 ]; then
-            echo "❌ Publication de la version échouée: HTTP $HTTP_CODE"
-            exit 1
-          fi
-          echo "✅ Version publiée"
-
-      - name: 🧹 Cleanup
-        if: always()
-        run: |
-          rm -f android/fastlane/service-account-key.json
-
-  # Étape 2b: Build iOS (en parallèle avec build-and-deploy)
+  # Étape 2b: Build iOS (en parallèle avec build-android, réutilise _build-ios.yml)
   build-ios:
     name: 🍎 Build iOS
     needs: version
     if: needs.version.outputs.released == 'true'
-    # Environnement dédié (créé automatiquement par GitHub) : affiche la barre
-    # « Deploying to ios-… » sans partager l'historique ni les règles d'Android.
-    environment:
-      name: ios-${{ needs.version.outputs.environment }}
-      url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-    runs-on: macos-26
-    timeout-minutes: 45
-
-    steps:
-      - name: 📥 Checkout updated code
-        uses: actions/checkout@v6
-        with:
-          ref: ${{ github.ref }}
-          fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: 🔄 Fetch and checkout release commit
-        run: |
-          git fetch origin ${{ github.ref_name }}
-          git reset --hard origin/${{ github.ref_name }}
-          echo "✅ iOS build on commit: $(git rev-parse HEAD)"
-
-      - name: 🐦 Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          channel: stable
-          cache: true
-
-      - name: 📦 Get dependencies
-        run: flutter pub get
-
-      - name: 🏗️ Build iOS (no codesign)
-        run: |
-          flutter build ios --release --no-codesign \
-            --dart-define=ENVIRONMENT=${{ needs.version.outputs.dart_env }} --dart-define=API_BASE_URL=${{ needs.version.outputs.api_url }}
-
-      - name: 📦 Package .ipa
-        run: |
-          mkdir -p build/ipa/Payload
-          cp -R build/ios/iphoneos/Runner.app build/ipa/Payload/
-          cd build/ipa
-          zip -qry "TeamFitness-${{ needs.version.outputs.dart_env }}-${{ needs.version.outputs.version }}.ipa" Payload
-          ls -lh *.ipa
-
-      - name: 📤 Upload artifact
-        uses: actions/upload-artifact@v6
-        with:
-          name: ios-ipa-${{ needs.version.outputs.dart_env }}-${{ needs.version.outputs.version }}
-          path: build/ipa/TeamFitness-${{ needs.version.outputs.dart_env }}-${{ needs.version.outputs.version }}.ipa
-          retention-days: 14
+    uses: ./.github/workflows/_build-ios.yml
+    with:
+      environment: ${{ needs.version.outputs.dart_env }}
+      api-url: ${{ needs.version.outputs.api_url }}
+      ref: ${{ github.ref }}
+      ipa-filename: TeamOustad-${{ needs.version.outputs.dart_env }}-${{ needs.version.outputs.version }}.ipa

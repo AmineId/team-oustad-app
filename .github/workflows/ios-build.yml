@@ -18,48 +18,9 @@ on:
           - prod
           - dev
 
-env:
-  FLUTTER_VERSION: '3.35.7'
-
 jobs:
-  build-ios:
-    # macos-26 : Xcode 26 / SDK iOS 26 requis pour le rendu Liquid Glass natif
-    runs-on: macos-26
-    timeout-minutes: 45
-
-    steps:
-      - name: 📥 Checkout
-        uses: actions/checkout@v6
-
-      - name: 🐦 Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          channel: stable
-          cache: true
-
-      - name: 🔎 Xcode version
-        run: xcodebuild -version
-
-      - name: 📦 Get dependencies
-        run: flutter pub get
-
-      - name: 🏗️ Build iOS (no codesign)
-        run: |
-          flutter build ios --release --no-codesign \
-            --dart-define=ENVIRONMENT=${{ inputs.environment }}
-
-      - name: 📦 Package .ipa
-        run: |
-          mkdir -p build/ipa/Payload
-          cp -R build/ios/iphoneos/Runner.app build/ipa/Payload/
-          cd build/ipa
-          zip -qry "TeamFitness-${{ inputs.environment }}.ipa" Payload
-          ls -lh *.ipa
-
-      - name: 📤 Upload artifact
-        uses: actions/upload-artifact@v6
-        with:
-          name: ios-ipa-${{ inputs.environment }}
-          path: build/ipa/TeamFitness-${{ inputs.environment }}.ipa
-          retention-days: 14
+  build:
+    uses: ./.github/workflows/_build-ios.yml
+    with:
+      environment: ${{ inputs.environment }}
+      ipa-filename: TeamOustad-${{ inputs.environment }}.ipa

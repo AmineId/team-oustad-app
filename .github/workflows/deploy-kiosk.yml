@@ -2,62 +2,119 @@ name: 🏋 Deploy Kiosk
 
 on:
   push:
-    branches:
-      - staging
-      - main
+    branches: [staging, main]
   workflow_dispatch:
 
-env:
-  FLUTTER_VERSION: '3.35.7'
-
 jobs:
-  deploy:
-    name: 🌐 Build & Deploy Cloudflare Pages
+  # ── Détermine l'environnement ──────────────────────────────────────────────
+  env-setup:
+    name: ⚙️ Environment
     runs-on: ubuntu-latest
-
+    outputs:
+      dart-env: ${{ steps.cfg.outputs.dart-env }}
+      cf-branch: ${{ steps.cfg.outputs.cf-branch }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - id: cfg
+        run: |
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            echo "dart-env=prod"     >> $GITHUB_OUTPUT
+            echo "cf-branch=main"    >> $GITHUB_OUTPUT
+          else
+            echo "dart-env=pprod"    >> $GITHUB_OUTPUT
+            echo "cf-branch=staging" >> $GITHUB_OUTPUT
+          fi
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+  # ── Build iOS IPA (pprod — pour le doc d'install dans le kiosk) ───────────
+  build-ios:
+    name: 🍎 Build iOS IPA
+    needs: env-setup
+    uses: ./.github/workflows/_build-ios.yml
+    with:
+      environment: pprod
+      ipa-filename: TeamOustad.ipa
+
+  # ── Build Flutter Web (kiosk) ─────────────────────────────────────────────
+  build-web:
+    name: 🌐 Build Kiosk Web
+    needs: env-setup
+    runs-on: ubuntu-latest
+    env:
+      FLUTTER_VERSION: '3.35.7'
+    outputs:
+      artifact-name: kiosk-web-${{ needs.env-setup.outputs.dart-env }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
 
-      - name: Install dependencies
-        run: flutter pub get
+      - run: flutter pub get
 
-      - name: Determine environment
-        id: env
+      - name: 🏗️ Build Flutter Web
         run: |
-          if [ "${{ github.ref_name }}" = "main" ]; then
-            echo "dart_env=prod" >> $GITHUB_OUTPUT
-            echo "cf_branch=main" >> $GITHUB_OUTPUT
-          else
-            echo "dart_env=pprod" >> $GITHUB_OUTPUT
-            echo "cf_branch=staging" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Build Flutter Web
-        run: |
-          flutter build web \
-            --release \
-            --dart-define=ENVIRONMENT=${{ steps.env.outputs.dart_env }} \
+          flutter build web --release \
+            --dart-define=ENVIRONMENT=${{ needs.env-setup.outputs.dart-env }} \
+            --dart-define=ANDROID_TESTING_URL=${{ vars.ANDROID_TESTING_URL }} \
+            --dart-define=KIOSK_IPA_URL=https://kiosk.team-oustad.com/TeamOustad.ipa \
             --no-source-maps
 
-      - name: Create Cloudflare Pages project (if not exists)
+      - name: 📤 Upload web artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: kiosk-web-${{ needs.env-setup.outputs.dart-env }}
+          path: build/web
+          retention-days: 1
+
+  # ── Deploy : merge IPA dans web, push vers Cloudflare Pages ───────────────
+  deploy:
+    name: 🚀 Deploy to Cloudflare Pages
+    needs: [env-setup, build-ios, build-web]
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Download web build
+        uses: actions/download-artifact@v6
+        with:
+          name: ${{ needs.build-web.outputs.artifact-name }}
+          path: build/web
+
+      - name: 📥 Download IPA
+        uses: actions/download-artifact@v6
+        with:
+          name: ${{ needs.build-ios.outputs.artifact-name }}
+          path: /tmp/ipa
+
+      - name: 📦 Merge IPA dans le build web
+        run: |
+          cp /tmp/ipa/TeamOustad.ipa build/web/TeamOustad.ipa
+          echo "✅ IPA inclus : $(du -sh build/web/TeamOustad.ipa)"
+
+      - name: 🌐 Create CF Pages project (if not exists)
         run: |
           curl -s -X POST \
             "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CLOUDFLARE_ACCOUNT_ID }}/pages/projects" \
             -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
             -H "Content-Type: application/json" \
             --data '{"name":"team-fitness-kiosk","production_branch":"main"}' \
-            | python3 -c "import sys,json; r=json.load(sys.stdin); print('Project ready:', r.get('result',{}).get('name','already exists') if r.get('success') else r.get('errors'))"
+            | python3 -c "
+          import sys, json
+          r = json.load(sys.stdin)
+          if r.get('success'):
+              print('✅ Projet créé:', r['result'].get('name'))
+          elif any(e.get('code') == 8000007 for e in r.get('errors', [])):
+              print('ℹ️  Projet déjà existant')
+          else:
+              print('⚠️ ', r.get('errors'))
+          "
 
-      - name: Deploy to Cloudflare Pages
+      - name: 🚀 Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy build/web --project-name=team-fitness-kiosk --branch=${{ steps.env.outputs.cf_branch }} --commit-dirty=true
+          command: >
+            pages deploy build/web
+            --project-name=team-fitness-kiosk
+            --branch=${{ needs.env-setup.outputs.cf-branch }}
+            --commit-dirty=true

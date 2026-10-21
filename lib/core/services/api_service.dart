@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../config/app_config.dart';
 
-/// Simple API client for the Team Fitness Express+Prisma backend.
+/// Simple API client for the Team Oustad Express+Prisma backend.
 ///
 /// The base URL is determined by:
 /// 1. API_BASE_URL variable - for custom URLs (optional override)

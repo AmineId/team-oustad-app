@@ -1,0 +1,172 @@
+name: 🤖 Android Build (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      dart-env:
+        required: true
+        type: string   # pprod | prod
+      api-url:
+        required: true
+        type: string
+      ref:
+        required: false
+        type: string
+        default: ''
+      deploy-to-play:
+        required: false
+        type: boolean
+        default: false
+      publish-version:
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      KEYSTORE_BASE64:
+        required: false
+      KEYSTORE_PASSWORD:
+        required: false
+      KEY_PASSWORD:
+        required: false
+      KEY_ALIAS:
+        required: false
+      SERVICE_ACCOUNT_JSON:
+        required: false
+      OTA_BEARER_TOKEN:
+        required: false
+      GITHUB_TOKEN:
+        required: false
+
+env:
+  FLUTTER_VERSION: '3.35.7'
+  JAVA_VERSION: '17'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.ref != '' && inputs.ref || github.ref }}
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN || github.token }}
+
+      - name: ☕ Setup Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: 🐦 Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: 🔧 Configure Firebase
+        run: |
+          if [ "${{ inputs.dart-env }}" = "prod" ]; then
+            cp android/app/google-services-prod.json android/app/google-services.json
+          else
+            cp android/app/google-services-pprod.json android/app/google-services.json
+          fi
+
+      - name: 📦 Get dependencies
+        run: flutter pub get
+
+      - name: 🔐 Setup Android signing
+        run: |
+          if [ -n "${{ secrets.KEYSTORE_BASE64 }}" ]; then
+            echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/app/upload-keystore.jks
+            cat > android/key.properties << EOF
+          storePassword=${{ secrets.KEYSTORE_PASSWORD }}
+          keyPassword=${{ secrets.KEY_PASSWORD }}
+          keyAlias=${{ secrets.KEY_ALIAS }}
+          storeFile=upload-keystore.jks
+          EOF
+            echo "✅ Signing configuré"
+          else
+            echo "⚠️  Pas de keystore, debug signing"
+          fi
+
+      - name: 🏗️ Build AAB
+        run: |
+          flutter build appbundle --release \
+            --dart-define=ENVIRONMENT=${{ inputs.dart-env }} \
+            --dart-define=API_BASE_URL=${{ inputs.api-url }}
+
+      - name: 🔧 Setup Ruby + Fastlane
+        if: inputs.deploy-to-play
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: false
+
+      - name: 📦 Install Fastlane
+        if: inputs.deploy-to-play
+        run: cd android && bundle install
+
+      - name: 🔐 Setup Play Store credentials
+        if: inputs.deploy-to-play
+        run: |
+          mkdir -p android/fastlane
+          cat > android/fastlane/service-account-key.json << 'EOFJSON'
+          ${{ secrets.SERVICE_ACCOUNT_JSON }}
+          EOFJSON
+          jq empty android/fastlane/service-account-key.json || exit 1
+
+      - name: 📝 Generate release notes
+        if: inputs.deploy-to-play
+        run: |
+          mkdir -p android/fastlane/metadata/android/fr-FR/changelogs
+          cat > android/fastlane/metadata/android/fr-FR/changelogs/default.txt << 'EOF'
+          Nouveautés :
+          • Borne d'accueil kiosk (scan QR)
+          • Interface modernisée
+
+          Corrections : résolution de bugs et optimisations
+          EOF
+
+      - name: 📤 Deploy to Play Store (internal testing)
+        if: inputs.deploy-to-play
+        env:
+          FASTLANE_SKIP_UPDATE_CHECK: 'true'
+        run: |
+          AAB="$(pwd)/build/app/outputs/bundle/release/app-release.aab"
+          [ -f "$AAB" ] || { echo "❌ AAB introuvable"; exit 1; }
+          cd android && bundle exec fastlane supply \
+            --aab "$AAB" \
+            --track internal \
+            --release_status draft \
+            --json_key fastlane/service-account-key.json \
+            --package_name team.fitness.team_fitness_app \
+            --skip_upload_metadata \
+            --skip_upload_images \
+            --skip_upload_screenshots
+
+      - name: 📤 Publish version to server
+        if: inputs.publish-version
+        run: |
+          JSON_PAYLOAD=$(jq -n \
+            --slurpfile meta version-metadata.json \
+            --arg url "https://play.google.com/store/apps/details?id=team.fitness.team_fitness_app" \
+            '$meta[0] | {version_code, version_name, changelog, force_update,
+              min_supported_version, download_url: $url, channel: "production"}')
+          echo "$JSON_PAYLOAD" | jq '.'
+          RESPONSE=$(curl -s -w "\n%{http_code}" --connect-timeout 10 --max-time 30 \
+            -X POST "${{ inputs.api-url }}/android/update-version" \
+            -H "Authorization: Bearer ${{ secrets.OTA_BEARER_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d "$JSON_PAYLOAD")
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          if [ "$HTTP_CODE" -ne 200 ]; then
+            echo "❌ Publication échouée: HTTP $HTTP_CODE"; exit 1
+          fi
+          echo "✅ Version publiée"
+
+      - name: 🧹 Cleanup
+        if: always()
+        run: rm -f android/fastlane/service-account-key.json android/app/upload-keystore.jks

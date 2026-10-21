@@ -4,10 +4,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../core/config/app_config.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/theme/app_colors.dart';
 import 'kiosk_audio.dart';
+
+// URLs de distribution pprod — à mettre à jour à chaque release
+const _kAndroidTestingUrl = String.fromEnvironment(
+  'ANDROID_TESTING_URL',
+  defaultValue: 'https://play.google.com/apps/internaltest/4700178556172561963',
+);
+const _kIpaDownloadUrl = String.fromEnvironment(
+  'KIOSK_IPA_URL',
+  defaultValue: 'https://kiosk.team-oustad.com/TeamOustad.ipa',
+);
 
 enum _ScanStatus { idle, processing, success, denied, error }
 
@@ -314,6 +326,230 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
     );
   }
 
+  // ── Install doc (pprod only) ─────────────────────────────────────────────────
+
+  void _showInstallDoc() {
+    showDialog(
+      context: context,
+      builder: (_) => Dialog(
+        backgroundColor: AppColors.darkSurface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: SizedBox(
+          width: 580,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Titre
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: AppColors.warning.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
+                      ),
+                      child: Text('PPROD', style: GoogleFonts.barlow(
+                        fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.warning, letterSpacing: 1,
+                      )),
+                    ),
+                    const SizedBox(width: 10),
+                    Text('Installer l\'app mobile', style: GoogleFonts.barlowCondensed(
+                      fontSize: 22, fontWeight: FontWeight.w700, color: Colors.white,
+                    )),
+                    const Spacer(),
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded, color: AppColors.darkTextTertiary, size: 20),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+
+                // Android
+                _buildInstallSection(
+                  icon: Icons.android_rounded,
+                  color: const Color(0xFF3DDC84),
+                  title: 'Android',
+                  badge: 'Play Store (test interne)',
+                  tools: const ['Téléphone Android', 'Compte Google ajouté aux testeurs'],
+                  steps: const [
+                    'Ouvre le lien ci-dessous sur le téléphone et accepte l\'invitation',
+                    'Installe depuis le Play Store (bouton "Rejoindre")',
+                    'Lance "Team Oustad" et connecte-toi',
+                  ],
+                  actionLabel: 'Rejoindre le test Android',
+                  actionUrl: _kAndroidTestingUrl,
+                  note: 'Le compte Google doit être ajouté à la liste de testeurs dans Play Console avant d\'accepter.',
+                ),
+
+                const SizedBox(height: 20),
+
+                // iOS
+                _buildInstallSection(
+                  icon: Icons.apple_rounded,
+                  color: Colors.white,
+                  title: 'iOS',
+                  badge: 'Installation manuelle (IPA)',
+                  tools: const [
+                    'Câble USB Lightning / USB-C',
+                    'iTunes ouvert sur le PC',
+                    'WSL2 avec xtool installé',
+                    'iPhone déverrouillé',
+                  ],
+                  steps: const [
+                    'Télécharge le fichier .ipa via le lien ci-dessous',
+                    'Connecte l\'iPhone en USB et ouvre iTunes',
+                    'Dans WSL : ./scripts/ios-install.sh',
+                    'Sur l\'iPhone : Réglages → Général → VPN et gestion → faire confiance à "Team Oustad"',
+                  ],
+                  actionLabel: 'Télécharger le fichier IPA',
+                  actionUrl: _kIpaDownloadUrl,
+                  note: 'Le certificat xtool doit être configuré. Voir docs/ios/IOS_XTOOL.md.',
+                ),
+
+                const SizedBox(height: 24),
+                Center(
+                  child: TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Text('Fermer', style: GoogleFonts.barlow(color: AppColors.darkTextSecondary)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInstallSection({
+    required IconData icon,
+    required Color color,
+    required String title,
+    required String badge,
+    required List<String> tools,
+    required List<String> steps,
+    required String actionLabel,
+    required String actionUrl,
+    required String note,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.darkCard.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // En-tête section
+          Row(children: [
+            Icon(icon, color: color, size: 20),
+            const SizedBox(width: 8),
+            Text(title, style: GoogleFonts.barlowCondensed(
+              fontSize: 17, fontWeight: FontWeight.w700, color: Colors.white,
+            )),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(badge, style: GoogleFonts.barlow(
+                fontSize: 10, color: color, fontWeight: FontWeight.w600,
+              )),
+            ),
+          ]),
+          const SizedBox(height: 14),
+
+          // Outils requis
+          Text('Requis', style: GoogleFonts.barlow(
+            fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.darkTextTertiary, letterSpacing: 0.8,
+          )),
+          const SizedBox(height: 6),
+          Wrap(
+            spacing: 6, runSpacing: 6,
+            children: tools.map((t) => Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppColors.darkBackground,
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: const Color(0xFF374151)),
+              ),
+              child: Row(mainAxisSize: MainAxisSize.min, children: [
+                Icon(Icons.check_circle_outline_rounded, size: 11, color: color),
+                const SizedBox(width: 4),
+                Text(t, style: GoogleFonts.barlow(fontSize: 11, color: AppColors.darkTextSecondary)),
+              ]),
+            )).toList(),
+          ),
+          const SizedBox(height: 14),
+
+          // Étapes
+          Text('Étapes', style: GoogleFonts.barlow(
+            fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.darkTextTertiary, letterSpacing: 0.8,
+          )),
+          const SizedBox(height: 8),
+          ...steps.asMap().entries.map((e) => Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 20, height: 20,
+                  margin: const EdgeInsets.only(right: 10, top: 1),
+                  decoration: BoxDecoration(color: color.withValues(alpha: 0.15), shape: BoxShape.circle),
+                  child: Center(child: Text('${e.key + 1}', style: GoogleFonts.barlow(
+                    fontSize: 10, fontWeight: FontWeight.w700, color: color,
+                  ))),
+                ),
+                Expanded(child: Text(e.value, style: GoogleFonts.barlow(
+                  fontSize: 13, color: AppColors.darkTextSecondary, height: 1.5,
+                ))),
+              ],
+            ),
+          )),
+
+          // Bouton lien
+          const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () => launchUrl(Uri.parse(actionUrl), mode: LaunchMode.externalApplication),
+              icon: Icon(icon, size: 16, color: Colors.black87),
+              label: Text(actionLabel, style: GoogleFonts.barlow(
+                fontWeight: FontWeight.w700, fontSize: 13, color: Colors.black87,
+              )),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: color,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+            ),
+          ),
+
+          // Note
+          const SizedBox(height: 10),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.info_outline_rounded, size: 12, color: AppColors.darkTextTertiary),
+              const SizedBox(width: 5),
+              Expanded(child: Text(note, style: GoogleFonts.barlow(
+                fontSize: 11, color: AppColors.darkTextTertiary, fontStyle: FontStyle.italic,
+              ))),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   // ── Header ───────────────────────────────────────────────────────────────────
 
   Widget _buildHeader() {
@@ -352,6 +588,12 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
           const SizedBox(width: 20),
           _buildCountBadge(),
           const SizedBox(width: 12),
+          if (AppConfig.fromEnvironment().isPreProduction)
+            IconButton(
+              icon: const Icon(Icons.install_mobile_outlined, size: 18, color: AppColors.warning),
+              tooltip: 'Installer l\'app mobile',
+              onPressed: _showInstallDoc,
+            ),
           IconButton(
             icon: const Icon(Icons.close_rounded, size: 18, color: AppColors.darkTextTertiary),
             tooltip: 'Quitter la borne',

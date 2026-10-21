@@ -1,11 +1,11 @@
 {
-    "name": "team_fitness_app",
-    "short_name": "team_fitness_app",
+    "name": "Team Oustad",
+    "short_name": "Team Oustad",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#1a1f2e",
     "theme_color": "#e89547",
-    "description": "A new Flutter project.",
+    "description": "Team Oustad - Gestion de salle de sport",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

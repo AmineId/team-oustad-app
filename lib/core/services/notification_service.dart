@@ -184,8 +184,8 @@ class NotificationService {
 
     const androidDetails = AndroidNotificationDetails(
       'team_fitness_channel',
-      'Team Fitness',
-      channelDescription: 'Notifications de l\'application Team Fitness',
+      'Team Oustad',
+      channelDescription: 'Notifications de l\'application Team Oustad',
       importance: Importance.high,
       priority: Priority.high,
       showWhen: true,
@@ -335,8 +335,8 @@ class NotificationService {
 
     const androidDetails = AndroidNotificationDetails(
       'team_fitness_channel',
-      'Team Fitness',
-      channelDescription: 'Notifications de l\'application Team Fitness',
+      'Team Oustad',
+      channelDescription: 'Notifications de l\'application Team Oustad',
       importance: Importance.high,
       priority: Priority.high,
     );

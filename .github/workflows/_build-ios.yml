@@ -1,0 +1,77 @@
+name: 🍎 iOS Build (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string   # pprod | prod | dev
+      api-url:
+        required: false
+        type: string
+        default: ''
+      ref:
+        required: false
+        type: string
+        default: ''
+      ipa-filename:
+        required: false
+        type: string
+        default: 'TeamOustad.ipa'
+    outputs:
+      artifact-name:
+        description: "Nom de l'artifact IPA uploade"
+        value: ${{ jobs.build.outputs.artifact-name }}
+
+env:
+  FLUTTER_VERSION: '3.35.7'
+
+jobs:
+  build:
+    runs-on: macos-26
+    timeout-minutes: 45
+    outputs:
+      artifact-name: ${{ steps.meta.outputs.artifact-name }}
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.ref != '' && inputs.ref || github.ref }}
+          fetch-depth: 0
+
+      - name: 🐦 Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: 📦 Get dependencies
+        run: flutter pub get
+
+      - name: 🏗️ Build iOS (no codesign)
+        run: |
+          DEFINES="--dart-define=ENVIRONMENT=${{ inputs.environment }}"
+          if [ -n "${{ inputs.api-url }}" ]; then
+            DEFINES="$DEFINES --dart-define=API_BASE_URL=${{ inputs.api-url }}"
+          fi
+          flutter build ios --release --no-codesign $DEFINES
+
+      - name: 📦 Package IPA
+        id: meta
+        run: |
+          ARTIFACT_NAME="ios-ipa-${{ inputs.environment }}"
+          mkdir -p build/ipa/Payload
+          cp -R build/ios/iphoneos/Runner.app build/ipa/Payload/
+          cd build/ipa
+          zip -qry "${{ inputs.ipa-filename }}" Payload
+          ls -lh "${{ inputs.ipa-filename }}"
+          echo "artifact-name=${ARTIFACT_NAME}" >> $GITHUB_OUTPUT
+
+      - name: 📤 Upload artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ steps.meta.outputs.artifact-name }}
+          path: build/ipa/${{ inputs.ipa-filename }}
+          retention-days: 14

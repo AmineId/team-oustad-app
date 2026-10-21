@@ -208,15 +208,6 @@ class ResponsiveScaffold extends StatelessWidget {
                         height: 80,
                         fit: BoxFit.contain,
                       ),
-                      const SizedBox(height: 12),
-                      const Text(
-                        'Team Fitness',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
                     ],
                   ),
                 ),
