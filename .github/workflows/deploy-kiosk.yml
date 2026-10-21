@@ -46,6 +46,15 @@ jobs:
             --dart-define=ENVIRONMENT=${{ steps.env.outputs.dart_env }} \
             --no-source-maps
 
+      - name: Create Cloudflare Pages project (if not exists)
+        run: |
+          curl -s -X POST \
+            "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CLOUDFLARE_ACCOUNT_ID }}/pages/projects" \
+            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            --data '{"name":"team-fitness-kiosk","production_branch":"main"}' \
+            | python3 -c "import sys,json; r=json.load(sys.stdin); print('Project ready:', r.get('result',{}).get('name','already exists') if r.get('success') else r.get('errors'))"
+
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
