@@ -70,6 +70,11 @@ function Show-Help {
     Write-Host "  upgrade            - Upgrade all dependencies" -ForegroundColor Green
     Write-Host "  doctor             - Check Flutter installation" -ForegroundColor Green
     Write-Host ""
+    Write-Host "🏋  Borne d'accueil (kiosk):" -ForegroundColor Cyan
+    Write-Host "  kiosk-setup        - Création du tunnel Cloudflare (une seule fois)" -ForegroundColor Magenta
+    Write-Host "  kiosk-build        - Rebuild Flutter Web + lancer borne + tunnel" -ForegroundColor Magenta
+    Write-Host "  kiosk              - Lancer borne (build existant) + tunnel" -ForegroundColor Magenta
+    Write-Host ""
     Write-Host "💡 Quick Examples:" -ForegroundColor Yellow
     Write-Host "   .\scripts.ps1 run-windows           # Dev with localhost" -ForegroundColor Gray
     Write-Host "   .\scripts.ps1 run-windows-pprod     # Pre-prod environment" -ForegroundColor Gray
@@ -340,6 +345,15 @@ switch ($Command) {
     "doctor" {
         Write-Host "Checking Flutter installation..." -ForegroundColor Cyan
         flutter doctor -v
+    }
+    "kiosk" {
+        & "$PSScriptRoot\scripts\start-kiosk.ps1"
+    }
+    "kiosk-build" {
+        & "$PSScriptRoot\scripts\start-kiosk.ps1" -Build
+    }
+    "kiosk-setup" {
+        & "$PSScriptRoot\scripts\start-kiosk.ps1" -Setup
     }
     default {
         if ($Command) {
