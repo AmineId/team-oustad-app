@@ -87,6 +87,10 @@ dependencies:
   google_fonts: ^6.2.1
   cupertino_native: ^0.1.1
 
+  # Typed DOM bindings for the web-only Google Maps iframe embed on the
+  # public gym showcase (lib/widgets/common/gym_map_embed_web.dart).
+  web: ^1.1.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

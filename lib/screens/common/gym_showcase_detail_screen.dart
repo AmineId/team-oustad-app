@@ -132,6 +132,7 @@ class _GymShowcaseDetailScreenState extends State<GymShowcaseDetailScreen> {
     final name = gym['name'] as String? ?? 'Salle';
     final address = gym['address'] as String? ?? '';
     final phone = gym['phone'] as String?;
+    final description = gym['description'] as String?;
     final memberCountDisplay = gym['memberCountDisplay'] as String?;
     final photos = ((gym['photos'] as List<dynamic>?) ?? [])
         .map((p) => p as Map<String, dynamic>)
@@ -219,6 +220,19 @@ class _GymShowcaseDetailScreenState extends State<GymShowcaseDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  if (description != null && description.isNotEmpty) ...[
+                    RevealOnVisible(
+                      child: Text(
+                        description,
+                        style: GoogleFonts.barlow(
+                          fontSize: 15,
+                          height: 1.6,
+                          color: Colors.white.withValues(alpha: 0.85),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
                   if (address.isNotEmpty || (phone != null && phone.isNotEmpty))
                     RevealOnVisible(
                       child: _ActionsCard(
@@ -232,6 +246,10 @@ class _GymShowcaseDetailScreenState extends State<GymShowcaseDetailScreen> {
                             : null,
                       ),
                     ),
+                  if (address.isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    RevealOnVisible(child: GymMapEmbed(address: address)),
+                  ],
                   if (openingHours.isNotEmpty) ...[
                     const SizedBox(height: 24),
                     RevealOnVisible(

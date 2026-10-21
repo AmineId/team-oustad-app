@@ -970,6 +970,7 @@ class ApiService {
     String address,
     String token, {
     String? phone,
+    String? description,
     Duration timeout = const Duration(seconds: 8),
   }) async {
     final uri = baseUri.resolve('/gyms');
@@ -978,6 +979,7 @@ class ApiService {
         'name': name,
         'address': address,
         'phone': ?phone,
+        'description': ?description,
       };
 
       final resp = await http
@@ -1066,6 +1068,7 @@ class ApiService {
     String? name,
     String? address,
     String? phone,
+    String? description,
     bool? isPublished,
     Duration timeout = const Duration(seconds: 8),
   }) async {
@@ -1075,6 +1078,7 @@ class ApiService {
       if (name != null) body['name'] = name;
       if (address != null) body['address'] = address;
       if (phone != null) body['phone'] = phone;
+      if (description != null) body['description'] = description;
       if (isPublished != null) body['isPublished'] = isPublished;
 
       final resp = await http

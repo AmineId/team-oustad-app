@@ -11,12 +11,14 @@ model Gym {
   // ... champs existants (id, name, address, phone, ...)
   isPublished Boolean  @default(false) // affichage sur la page vitrine publique
   slug        String?  @unique         // ex: "fitness-center-a-1", généré à la création
+  description String?  @db.Text        // texte libre affiché sur la fiche publique
 }
 ```
 
 - Pas de coordonnées GPS : la position n'est jamais saisie dans l'app, uniquement l'adresse texte existante (`address`). La page publique affichera une carte en se basant directement sur cette adresse (ex: lien/iframe Google Maps avec l'adresse en requête), pas besoin de latitude/longitude stockées. L'app ne les envoie plus du tout (retiré de `createGym`/`updateGym` côté client).
 - `isPublished` : nouveau champ accepté en plus sur `PUT /gyms/{id}` (optionnel, booléen). Déjà câblé côté app (`ApiService.updateGym` envoie `isPublished`, toggle "Publier sur le site vitrine" dans l'écran d'édition). Même règle de permission que le reste de cette route (owner : toutes les salles, admin : uniquement sa salle). Défaut `false` à la création — une salle n'apparaît jamais publiquement sans action explicite. La réponse de `PUT /gyms/{id}` doit renvoyer `isPublished` dans l'objet `gym`.
 - `slug` : généré automatiquement à la création (`POST /gyms`) à partir du nom en kebab-case + suffixe id pour garantir l'unicité (ex: "Fitness Center A" → `fitness-center-a-1`). Ne change pas automatiquement si le nom est modifié ensuite (stabilité des URLs publiques). Accepter en plus un override manuel optionnel via `PUT /gyms/{id}` (`slug: string`) si l'owner veut un slug plus propre.
+- `description` : texte libre optionnel (prévoir ~500 caractères, c'est la limite côté app), accepté sur `POST /gyms` et `PUT /gyms/{id}` (déjà câblé côté app : champ "Description" dans `_GymEditView`, `ApiService.createGym`/`updateGym` envoient `description`). Même règle de permission que le reste de la route. Pas de sanitization HTML particulière attendue côté serveur au-delà de ce qui est déjà fait pour les autres champs texte (`name`, `address`) — la page publique l'affiche en texte brut.
 
 ## 2. Galerie photo (nouvelle table `GymPhoto`)
 
@@ -100,6 +102,7 @@ Lookup par `slug` (fallback sur l'id numérique si le paramètre est un entier).
     "address": "123 Main St",
     "phone": "+1234567890",
     "memberCountDisplay": "250+",
+    "description": "Salle de sport moderne avec équipements dernier cri...",
     "openingHours": [
       { "dayOfWeek": 1, "openTime": "09:00", "closeTime": "22:00", "isClosed": false }
     ],
@@ -132,12 +135,12 @@ Binaire, même source de données que l'actuel `GET /users/{id}/profile-image`. 
 | Route | Auth | Qui |
 |---|---|---|
 | `POST/GET/DELETE /gyms/{id}/photos*` | Bearer | owner (toutes salles), admin (sa salle) — identique aux règles déjà appliquées sur `/gyms/{id}` |
-| `PUT /gyms/{id}` (+ `isPublished`, `slug`) | Bearer | idem, pas de nouvelle règle |
+| `PUT /gyms/{id}` (+ `isPublished`, `slug`, `description`) | Bearer | idem, pas de nouvelle règle |
 | `GET /public/*` | Aucune | public, lecture seule, jamais de données sensibles (pas d'email, pas de compte exact, pas de salle non publiée) |
 
 ## 7. Checklist pour claude serveur
 
-- [ ] Migration Prisma : `Gym.isPublished`, `Gym.slug` + table `GymPhoto`
+- [ ] Migration Prisma : `Gym.isPublished`, `Gym.slug`, `Gym.description` + table `GymPhoto`
 - [ ] Génération de `slug` à la création (kebab-case + id, unique)
 - [ ] `isPublished` acceptable sur `PUT /gyms/{id}`, défaut `false` à la création
 - [ ] Endpoints galerie photo authentifiés (section 2)

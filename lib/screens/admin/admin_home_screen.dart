@@ -3503,6 +3503,7 @@ class _GymEditViewState extends State<_GymEditView> {
   late TextEditingController _nameController;
   late TextEditingController _addressController;
   late TextEditingController _phoneController;
+  late TextEditingController _descriptionController;
   late bool _isPublished;
 
   bool _isLoading = false;
@@ -3519,6 +3520,9 @@ class _GymEditViewState extends State<_GymEditView> {
     _phoneController = TextEditingController(
       text: widget.gym['phone'] as String? ?? '',
     );
+    _descriptionController = TextEditingController(
+      text: widget.gym['description'] as String? ?? '',
+    );
     _isPublished = widget.gym['isPublished'] == true;
   }
 
@@ -3527,6 +3531,7 @@ class _GymEditViewState extends State<_GymEditView> {
     _nameController.dispose();
     _addressController.dispose();
     _phoneController.dispose();
+    _descriptionController.dispose();
     super.dispose();
   }
 
@@ -3546,6 +3551,9 @@ class _GymEditViewState extends State<_GymEditView> {
         address: _addressController.text.trim(),
         phone: _phoneController.text.trim().isNotEmpty
             ? _phoneController.text.trim()
+            : null,
+        description: _descriptionController.text.trim().isNotEmpty
+            ? _descriptionController.text.trim()
             : null,
         isPublished: _isPublished,
       );
@@ -3718,6 +3726,36 @@ class _GymEditViewState extends State<_GymEditView> {
                             Icons.phone,
                             color: AppColors.primary,
                           ),
+                          filled: true,
+                          fillColor: Theme.of(context).cardTheme.color,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _descriptionController,
+                        maxLines: 4,
+                        maxLength: 500,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                        decoration: InputDecoration(
+                          labelText: 'Description (optionnel)',
+                          helperText:
+                              'Affichée sur la fiche de la salle sur team-oustad.com',
+                          labelStyle: TextStyle(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withValues(alpha: 0.6),
+                          ),
+                          prefixIcon: const Icon(
+                            Icons.notes_rounded,
+                            color: AppColors.primary,
+                          ),
+                          alignLabelWithHint: true,
                           filled: true,
                           fillColor: Theme.of(context).cardTheme.color,
                           border: OutlineInputBorder(
