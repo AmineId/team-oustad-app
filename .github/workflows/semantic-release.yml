@@ -74,10 +74,14 @@ jobs:
       - name: ✅ Check release
         id: check
         run: |
-          # Récupère la dernière version depuis le tag Git
+          # Un tag qui existe déjà dans l'historique ne veut pas dire que CE run
+          # vient d'en créer un (ex: commit ci:/chore: → pas de release). On ne
+          # considère "released" que si le tag le plus récent pointe exactement
+          # sur HEAD, c-à-d qu'il vient d'être créé par semantic-release/git ci-dessus.
+          git fetch origin --tags --force
           VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-          
-          if [ -n "$VERSION" ]; then
+
+          if [ -n "$VERSION" ] && [ "$(git rev-list -n 1 "$VERSION")" = "$(git rev-parse HEAD)" ]; then
             echo "released=true" >> $GITHUB_OUTPUT
             echo "version=$VERSION" >> $GITHUB_OUTPUT
             echo "✅ New version: $VERSION"

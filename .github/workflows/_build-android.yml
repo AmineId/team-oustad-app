@@ -34,8 +34,6 @@ on:
         required: false
       OTA_BEARER_TOKEN:
         required: false
-      GITHUB_TOKEN:
-        required: false
 
 env:
   FLUTTER_VERSION: '3.35.7'
