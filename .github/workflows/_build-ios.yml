@@ -23,6 +23,31 @@ on:
         description: "Nom de l'artifact IPA uploade"
         value: ${{ jobs.build.outputs.artifact-name }}
 
+  # Permet de lancer ce build iOS seul, sans passer par Release & Deploy
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'API / Firebase environment'
+        required: true
+        type: choice
+        default: 'pprod'
+        options: [pprod, prod, dev]
+      api-url:
+        description: 'Override API_BASE_URL (optionnel)'
+        required: false
+        type: string
+        default: ''
+      ref:
+        description: 'Branche/ref à builder (vide = branche courante)'
+        required: false
+        type: string
+        default: ''
+      ipa-filename:
+        description: 'Nom du fichier .ipa produit'
+        required: false
+        type: string
+        default: 'TeamOustad.ipa'
+
 env:
   FLUTTER_VERSION: '3.35.7'
 

@@ -1,0 +1,104 @@
+name: 🌐 Kiosk Web Build (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      dart-env:
+        required: true
+        type: string   # pprod | prod
+      api-url:
+        required: false
+        type: string
+        default: ''
+      android-testing-url:
+        required: false
+        type: string
+        default: ''
+      ipa-url:
+        required: false
+        type: string
+        default: ''
+      ref:
+        required: false
+        type: string
+        default: ''
+    outputs:
+      artifact-name:
+        value: ${{ jobs.build.outputs.artifact-name }}
+
+  # Permet de lancer ce build web seul, sans passer par Release & Deploy
+  workflow_dispatch:
+    inputs:
+      dart-env:
+        description: 'Environnement API / Firebase'
+        required: true
+        type: choice
+        default: 'pprod'
+        options: [pprod, prod]
+      api-url:
+        description: 'Override API_BASE_URL (optionnel)'
+        required: false
+        type: string
+        default: ''
+      android-testing-url:
+        description: 'Lien Play Store internal testing (optionnel)'
+        required: false
+        type: string
+        default: ''
+      ipa-url:
+        description: 'URL de téléchargement IPA (optionnel)'
+        required: false
+        type: string
+        default: ''
+      ref:
+        description: 'Branche/ref à builder (vide = branche courante)'
+        required: false
+        type: string
+        default: ''
+
+env:
+  FLUTTER_VERSION: '3.35.7'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      artifact-name: ${{ steps.meta.outputs.artifact-name }}
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.ref != '' && inputs.ref || github.ref }}
+
+      - name: 🐦 Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: 📦 Get dependencies
+        run: flutter pub get
+
+      - name: 🏗️ Build Flutter Web
+        id: meta
+        run: |
+          DEFINES="--dart-define=ENVIRONMENT=${{ inputs.dart-env }}"
+          if [ -n "${{ inputs.api-url }}" ]; then
+            DEFINES="$DEFINES --dart-define=API_BASE_URL=${{ inputs.api-url }}"
+          fi
+          if [ -n "${{ inputs.android-testing-url }}" ]; then
+            DEFINES="$DEFINES --dart-define=ANDROID_TESTING_URL=${{ inputs.android-testing-url }}"
+          fi
+          if [ -n "${{ inputs.ipa-url }}" ]; then
+            DEFINES="$DEFINES --dart-define=KIOSK_IPA_URL=${{ inputs.ipa-url }}"
+          fi
+          flutter build web --release $DEFINES --no-source-maps
+          echo "artifact-name=kiosk-web-${{ inputs.dart-env }}" >> $GITHUB_OUTPUT
+
+      - name: 📤 Upload web artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ steps.meta.outputs.artifact-name }}
+          path: build/web
+          retention-days: 1

@@ -35,6 +35,38 @@ on:
       OTA_BEARER_TOKEN:
         required: false
 
+  # Permet de lancer ce build Android seul, sans passer par Release & Deploy.
+  # deploy-to-play / publish-version à false par défaut : un run manuel ne
+  # garantit pas que version-metadata.json correspond à ce build.
+  workflow_dispatch:
+    inputs:
+      dart-env:
+        description: 'Environnement API / Firebase'
+        required: true
+        type: choice
+        default: 'pprod'
+        options: [pprod, prod]
+      api-url:
+        description: 'URL de l API backend'
+        required: true
+        type: string
+        default: 'https://api-pprod.team-oustad.com'
+      ref:
+        description: 'Branche/ref à builder (vide = branche courante)'
+        required: false
+        type: string
+        default: ''
+      deploy-to-play:
+        description: 'Déployer sur Play Store (internal testing)'
+        required: false
+        type: boolean
+        default: false
+      publish-version:
+        description: 'Publier version-metadata.json sur le serveur'
+        required: false
+        type: boolean
+        default: false
+
 env:
   FLUTTER_VERSION: '3.35.7'
   JAVA_VERSION: '17'
