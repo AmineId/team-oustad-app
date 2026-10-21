@@ -17,6 +17,11 @@ on:
           - pprod
           - prod
           - dev
+      publish_altstore:
+        description: 'Publish to the private AltStore / SideStore source'
+        required: false
+        default: true
+        type: boolean
 
 env:
   FLUTTER_VERSION: '3.35.7'
@@ -59,3 +64,77 @@ jobs:
           name: ios-ipa-${{ inputs.environment }}
           path: build/ipa/TeamFitness-${{ inputs.environment }}.ipa
           retention-days: 14
+
+      # ── Private AltStore / SideStore source ────────────────────────────────
+      # The repo is private, so GitHub release links can't be downloaded by
+      # AltStore. The .ipa and source.json are uploaded to a Cloudflare R2
+      # bucket exposed publicly on a custom domain, under an unguessable path.
+      # Required secrets: R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY,
+      # R2_BUCKET. Required repo variables (not secrets, or GitHub masks the
+      # link in the summary): ALTSTORE_BASE_URL (e.g. https://apps.team-oustad.com),
+      # ALTSTORE_SECRET_PATH (e.g. s/8f3k2q9x).
+      - name: 📲 Publish to private AltStore source
+        if: ${{ inputs.publish_altstore }}
+        env:
+          ENVIRONMENT: ${{ inputs.environment }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+          R2_ENDPOINT: https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          BASE_URL: ${{ vars.ALTSTORE_BASE_URL }}
+          SECRET_PATH: ${{ vars.ALTSTORE_SECRET_PATH }}
+        run: |
+          set -euo pipefail
+          PLIST=build/ios/iphoneos/Runner.app/Info.plist
+          BUNDLE_ID=$(/usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "$PLIST")
+          VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$PLIST")
+          MIN_OS=$(/usr/libexec/PlistBuddy -c "Print :MinimumOSVersion" "$PLIST" 2>/dev/null || echo "13.0")
+          BUILD="${VERSION}-${ENVIRONMENT}.${GITHUB_RUN_NUMBER}"
+
+          IPA="build/ipa/TeamFitness-${ENVIRONMENT}.ipa"
+          IPA_KEY="${SECRET_PATH}/ipa/TeamFitness-${BUILD}.ipa"
+          SOURCE_KEY="${SECRET_PATH}/source.json"
+          SIZE=$(stat -f%z "$IPA")
+          R2="aws s3 --endpoint-url $R2_ENDPOINT"
+
+          # Upload the .ipa
+          $R2 cp "$IPA" "s3://${R2_BUCKET}/${IPA_KEY}" --content-type application/octet-stream
+
+          # Fetch the existing source.json, or start a new one
+          if ! $R2 cp "s3://${R2_BUCKET}/${SOURCE_KEY}" source.json 2>/dev/null; then
+            jq -n --arg id "$BUNDLE_ID" '{
+              name: "Team Oustad (Private)",
+              identifier: "com.teamoustad.private-source",
+              apps: [{
+                name: "Team Oustad",
+                bundleIdentifier: $id,
+                developerName: "Team Oustad",
+                localizedDescription: "Private test builds.",
+                iconURL: "",
+                versions: []
+              }],
+              news: []
+            }' > source.json
+          fi
+
+          # Prepend the new version, keep the 10 most recent
+          jq --arg v "$BUILD" --arg d "$(date -u +%FT%TZ)" \
+             --arg u "${BASE_URL}/${IPA_KEY}" --argjson s "$SIZE" \
+             --arg min "$MIN_OS" --arg env "$ENVIRONMENT" --arg id "$BUNDLE_ID" \
+             '.apps[0].bundleIdentifier = $id
+              | .apps[0].versions = ([{version:$v, date:$d, size:$s, downloadURL:$u,
+                  minOSVersion:$min, localizedDescription:("Build " + $env)}]
+                + .apps[0].versions)[:10]' \
+             source.json > source.new.json
+
+          $R2 cp source.new.json "s3://${R2_BUCKET}/${SOURCE_KEY}" \
+            --content-type application/json --cache-control "no-cache"
+
+          SOURCE_URL="${BASE_URL}/${SOURCE_KEY}"
+          {
+            echo "### 📲 AltStore source updated — ${BUILD}"
+            echo ""
+            echo "- AltStore: \`altstore://source?url=${SOURCE_URL}\`"
+            echo "- SideStore: \`sidestore://source?url=${SOURCE_URL}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
