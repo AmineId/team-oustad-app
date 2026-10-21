@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.79](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.78...v1.0.0-beta.79) (2026-10-21)
+
+
+### ✨ New Features
+
+* **gyms:** redesign public showcase with bold dark/gold brand theme ([f9cb8ce](https://github.com/TeamFitness/mobile-app/commit/f9cb8ceb8e0452a66d2209d00292911e2a56a9ae))
+
+
+### 📚 Documentation
+
+* **ios:** replace WSL/xtool kiosk install step with Sideloadly guide ([cc2abb4](https://github.com/TeamFitness/mobile-app/commit/cc2abb44646264ecbfaae5f100cf833224979dbe))
+
 ## [1.0.0-beta.78](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.77...v1.0.0-beta.78) (2026-10-21)
 
 
