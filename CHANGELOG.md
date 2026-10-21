@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.81](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.80...v1.0.0-beta.81) (2026-10-21)
+
+
+### ✨ New Features
+
+* **gyms:** layered TEAM/OUSTAD wordmark with Vlavour + Roboto Black ([d8375d7](https://github.com/TeamFitness/mobile-app/commit/d8375d7d0f0579df0057fd91df539da55a75747f))
+
+
+### 📚 Documentation
+
+* **ios:** fix portproxy setup commands and add relay diagnostics ([4cebf37](https://github.com/TeamFitness/mobile-app/commit/4cebf370a6c88053d995d0fb592126a0bd7187aa))
+
 ## [1.0.0-beta.80](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.79...v1.0.0-beta.80) (2026-10-21)
 
 
