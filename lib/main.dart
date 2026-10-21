@@ -157,10 +157,15 @@ class _MyAppState extends State<MyApp> {
               ],
               supportedLocales: LocaleService.supportedLocales,
               locale: widget.localeService.currentLocale,
-              // Le build web n'est utilisé que pour la borne d'accueil
-              // (kiosk.team-oustad.com) : saute le splash/login normal et
-              // démarre direct sur l'écran de check-in.
-              home: kIsWeb ? const CheckinTerminalScreen() : const SplashScreen(),
+              // Deux builds web distincts (WEB_TARGET) partagent ce même code :
+              // kiosk.team-oustad.com (borne d'accueil, check-in) et
+              // team-oustad.com (page vitrine publique des salles). Hors web,
+              // c'est toujours le flow normal (splash/login).
+              home: !kIsWeb
+                  ? const SplashScreen()
+                  : (const String.fromEnvironment('WEB_TARGET', defaultValue: 'kiosk') == 'showcase'
+                      ? const GymShowcaseListScreen()
+                      : const CheckinTerminalScreen()),
               routes: {
                 '/admin/members': (context) => const AdminMembersScreen(),
                 '/admin/plannings': (context) => const AdminPlanningsScreen(),

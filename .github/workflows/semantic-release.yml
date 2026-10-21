@@ -119,30 +119,43 @@ jobs:
       ipa-filename: TeamOustad-${{ needs.version.outputs.dart_env }}-${{ needs.version.outputs.version }}.ipa
 
   # Étape 2c: Build Web kiosk (en parallèle avec build-android/build-ios, réutilise _build-web.yml)
-  build-web:
+  build-web-kiosk:
     name: 🌐 Build Kiosk Web
     needs: version
     if: needs.version.outputs.released == 'true'
     uses: ./.github/workflows/_build-web.yml
     with:
       dart-env: ${{ needs.version.outputs.dart_env }}
+      web-target: kiosk
       api-url: ${{ needs.version.outputs.api_url }}
       ref: ${{ github.ref }}
       android-testing-url: ${{ vars.ANDROID_TESTING_URL }}
       ipa-url: https://kiosk.team-oustad.com/TeamOustad.ipa
 
-  # Étape 3: Deploy kiosk — récupère l'IPA buildé par build-ios (pas de rebuild),
-  # le place dans le build web buildé par build-web, et pousse le tout sur Pages.
+  # Étape 2d: Build Web page vitrine salles (même build, home différent via WEB_TARGET)
+  build-web-showcase:
+    name: 🏋 Build Showcase Web
+    needs: version
+    if: needs.version.outputs.released == 'true'
+    uses: ./.github/workflows/_build-web.yml
+    with:
+      dart-env: ${{ needs.version.outputs.dart_env }}
+      web-target: showcase
+      api-url: ${{ needs.version.outputs.api_url }}
+      ref: ${{ github.ref }}
+
+  # Étape 3a: Deploy kiosk — récupère l'IPA buildé par build-ios (pas de rebuild),
+  # le place dans le build web buildé par build-web-kiosk, et pousse le tout sur Pages.
   deploy-kiosk:
     name: 🏋 Deploy Kiosk
-    needs: [version, build-ios, build-web]
+    needs: [version, build-ios, build-web-kiosk]
     if: needs.version.outputs.released == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: 📥 Download web build
         uses: actions/download-artifact@v6
         with:
-          name: ${{ needs.build-web.outputs.artifact-name }}
+          name: ${{ needs.build-web-kiosk.outputs.artifact-name }}
           path: build/web
 
       - name: 📥 Download IPA
@@ -183,5 +196,47 @@ jobs:
           command: >
             pages deploy build/web
             --project-name=team-fitness-kiosk
+            --branch=${{ github.ref_name }}
+            --commit-dirty=true
+
+  # Étape 3b: Deploy showcase — page vitrine publique des salles (team-oustad.com).
+  deploy-showcase:
+    name: 🏋 Deploy Showcase
+    needs: [version, build-web-showcase]
+    if: needs.version.outputs.released == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Download web build
+        uses: actions/download-artifact@v6
+        with:
+          name: ${{ needs.build-web-showcase.outputs.artifact-name }}
+          path: build/web
+
+      - name: 🌐 Create CF Pages project (if not exists)
+        run: |
+          curl -s -X POST \
+            "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CLOUDFLARE_ACCOUNT_ID }}/pages/projects" \
+            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            --data '{"name":"team-fitness-showcase","production_branch":"main"}' \
+            | python3 -c "
+          import sys, json
+          r = json.load(sys.stdin)
+          if r.get('success'):
+              print('✅ Projet créé:', r['result'].get('name'))
+          elif any(e.get('code') == 8000007 for e in r.get('errors', [])):
+              print('ℹ️  Projet déjà existant')
+          else:
+              print('⚠️ ', r.get('errors'))
+          "
+
+      - name: 🚀 Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: >
+            pages deploy build/web
+            --project-name=team-fitness-showcase
             --branch=${{ github.ref_name }}
             --commit-dirty=true

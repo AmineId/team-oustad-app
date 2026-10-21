@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/services/api_service.dart';
@@ -1328,7 +1329,7 @@ class GestionGlobalePage extends StatefulWidget {
 
 class _GestionGlobalePageState extends State<GestionGlobalePage> {
   String _currentView =
-      'menu'; // 'menu', 'admins', 'gyms', 'admin_details', 'gym_details', 'admin_edit', 'gym_edit', 'gym_hours', 'admin_create', 'gym_create'
+      'menu'; // 'menu', 'admins', 'gyms', 'admin_details', 'gym_details', 'admin_edit', 'gym_edit', 'gym_hours', 'gym_gallery', 'admin_create', 'gym_create'
   Map<String, dynamic>? _selectedAdmin;
   Map<String, dynamic>? _selectedGym;
 
@@ -1345,6 +1346,7 @@ class _GestionGlobalePageState extends State<GestionGlobalePage> {
           _currentView = 'admin_details';
         case 'gym_edit':
         case 'gym_hours':
+        case 'gym_gallery':
           _currentView = 'gym_details';
         default:
           _currentView = 'menu';
@@ -1397,6 +1399,7 @@ class _GestionGlobalePageState extends State<GestionGlobalePage> {
         onBack: () => setState(() => _currentView = 'gyms'),
         onEdit: () => setState(() => _currentView = 'gym_edit'),
         onManageHours: () => setState(() => _currentView = 'gym_hours'),
+        onManageGallery: () => setState(() => _currentView = 'gym_gallery'),
       );
     } else if (_currentView == 'admin_edit' && _selectedAdmin != null) {
       return _AdminEditView(
@@ -1408,10 +1411,18 @@ class _GestionGlobalePageState extends State<GestionGlobalePage> {
       return _GymEditView(
         gym: _selectedGym!,
         onBack: () => setState(() => _currentView = 'gym_details'),
-        onSuccess: () => setState(() => _currentView = 'gym_details'),
+        onSuccess: (updatedGym) => setState(() {
+          _selectedGym = updatedGym;
+          _currentView = 'gym_details';
+        }),
       );
     } else if (_currentView == 'gym_hours' && _selectedGym != null) {
       return _GymOpeningHoursView(
+        gym: _selectedGym!,
+        onBack: () => setState(() => _currentView = 'gym_details'),
+      );
+    } else if (_currentView == 'gym_gallery' && _selectedGym != null) {
+      return _GymGalleryView(
         gym: _selectedGym!,
         onBack: () => setState(() => _currentView = 'gym_details'),
       );
@@ -2686,12 +2697,14 @@ class _GymDetailsView extends StatefulWidget {
   final VoidCallback onBack;
   final VoidCallback onEdit;
   final VoidCallback onManageHours;
+  final VoidCallback onManageGallery;
 
   const _GymDetailsView({
     required this.gym,
     required this.onBack,
     required this.onEdit,
     required this.onManageHours,
+    required this.onManageGallery,
   });
 
   @override
@@ -2802,6 +2815,49 @@ class _GymDetailsViewState extends State<_GymDetailsView> {
                         ),
                       ),
                     ),
+                    const SizedBox(height: 8),
+
+                    // Statut de publication sur le site vitrine
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: (widget.gym['isPublished'] == true
+                                ? AppColors.success
+                                : Colors.white38)
+                            .withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            widget.gym['isPublished'] == true
+                                ? Icons.public
+                                : Icons.public_off,
+                            size: 14,
+                            color: widget.gym['isPublished'] == true
+                                ? AppColors.success
+                                : Colors.white60,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            widget.gym['isPublished'] == true
+                                ? 'Visible sur le site vitrine'
+                                : 'Non publiée',
+                            style: TextStyle(
+                              color: widget.gym['isPublished'] == true
+                                  ? AppColors.success
+                                  : Colors.white60,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                     const SizedBox(height: 32),
 
                     // Informations
@@ -2880,6 +2936,24 @@ class _GymDetailsViewState extends State<_GymDetailsView> {
                           ),
                         ),
                       ],
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Bouton galerie photos (page vitrine)
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: widget.onManageGallery,
+                        icon: const Icon(Icons.photo_library_outlined),
+                        label: const Text('Galerie photos (site vitrine)'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
                     ),
                     const SizedBox(height: 12),
 
@@ -3409,7 +3483,7 @@ class _AdminEditViewState extends State<_AdminEditView> {
 class _GymEditView extends StatefulWidget {
   final Map<String, dynamic> gym;
   final VoidCallback onBack;
-  final VoidCallback onSuccess;
+  final void Function(Map<String, dynamic> updatedGym) onSuccess;
 
   const _GymEditView({
     required this.gym,
@@ -3429,6 +3503,7 @@ class _GymEditViewState extends State<_GymEditView> {
   late TextEditingController _nameController;
   late TextEditingController _addressController;
   late TextEditingController _phoneController;
+  late bool _isPublished;
 
   bool _isLoading = false;
 
@@ -3444,6 +3519,7 @@ class _GymEditViewState extends State<_GymEditView> {
     _phoneController = TextEditingController(
       text: widget.gym['phone'] as String? ?? '',
     );
+    _isPublished = widget.gym['isPublished'] == true;
   }
 
   @override
@@ -3471,6 +3547,7 @@ class _GymEditViewState extends State<_GymEditView> {
         phone: _phoneController.text.trim().isNotEmpty
             ? _phoneController.text.trim()
             : null,
+        isPublished: _isPublished,
       );
 
       if (response != null && mounted) {
@@ -3480,7 +3557,11 @@ class _GymEditViewState extends State<_GymEditView> {
             backgroundColor: AppColors.success,
           ),
         );
-        widget.onSuccess();
+        widget.onSuccess({
+          ...widget.gym,
+          ...(response['gym'] as Map<String, dynamic>? ?? {}),
+          'isPublished': _isPublished,
+        });
       } else {
         throw Exception('Erreur lors de la modification');
       }
@@ -3645,6 +3726,35 @@ class _GymEditViewState extends State<_GymEditView> {
                           ),
                         ),
                       ),
+                      const SizedBox(height: 16),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).cardTheme.color,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: SwitchListTile(
+                          value: _isPublished,
+                          onChanged: (value) =>
+                              setState(() => _isPublished = value),
+                          activeThumbColor: AppColors.primary,
+                          title: Text(
+                            'Publier sur le site vitrine',
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onSurface,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          subtitle: Text(
+                            'Affiche cette salle (adresse, horaires, téléphone, photos, équipe) sur team-oustad.com',
+                            style: TextStyle(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withValues(alpha: 0.6),
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      ),
                       const SizedBox(height: 32),
                       ElevatedButton(
                         onPressed: _isLoading ? null : _updateGym,
@@ -3679,6 +3789,387 @@ class _GymEditViewState extends State<_GymEditView> {
                   ),
                 ),
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Vue galerie photos salle (page vitrine publique)
+class _GymGalleryView extends StatefulWidget {
+  final Map<String, dynamic> gym;
+  final VoidCallback onBack;
+
+  const _GymGalleryView({required this.gym, required this.onBack});
+
+  @override
+  State<_GymGalleryView> createState() => _GymGalleryViewState();
+}
+
+class _GymGalleryViewState extends State<_GymGalleryView> {
+  final ApiService _apiService = ApiService.fromEnv();
+  final AuthService _authService = AuthService(ApiService.fromEnv());
+  final _imagePicker = ImagePicker();
+
+  String? _token;
+  List<Map<String, dynamic>> _photos = [];
+  bool _isLoading = true;
+  bool _isUploading = false;
+
+  int get _gymId => widget.gym['id'] as int;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPhotos();
+  }
+
+  Future<void> _loadPhotos() async {
+    setState(() => _isLoading = true);
+    try {
+      final token = await _authService.loadToken();
+      if (token == null) throw Exception('Token non disponible');
+      _token = token;
+
+      final photos = await _apiService.getGymPhotos(_gymId, token);
+      setState(() {
+        _photos = (photos ?? [])
+            .map((p) => p as Map<String, dynamic>)
+            .toList()
+          ..sort(
+            (a, b) =>
+                (a['position'] as int? ?? 0).compareTo(b['position'] as int? ?? 0),
+          );
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur chargement galerie: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _addPhoto() async {
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardTheme.color,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.white30,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'Ajouter une photo',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface,
+                fontSize: 17,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildSourceBtn(Icons.camera_alt_rounded, 'Caméra', ImageSource.camera),
+                _buildSourceBtn(Icons.photo_library_rounded, 'Galerie', ImageSource.gallery),
+              ],
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+    if (source == null || _token == null) return;
+
+    final picked = await _imagePicker.pickImage(
+      source: source,
+      maxWidth: 1600,
+      maxHeight: 1200,
+      imageQuality: 85,
+    );
+    if (picked == null) return;
+
+    setState(() => _isUploading = true);
+    try {
+      final bytes = await picked.readAsBytes();
+      final imageBase64 = 'data:image/jpeg;base64,${base64Encode(bytes)}';
+      final photo = await _apiService.addGymPhoto(_gymId, imageBase64, _token!);
+      if (photo == null) throw Exception('Échec de l\'upload');
+      await _loadPhotos();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isUploading = false);
+    }
+  }
+
+  Widget _buildSourceBtn(IconData icon, String label, ImageSource source) {
+    return InkWell(
+      onTap: () => Navigator.pop(context, source),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
+        decoration: BoxDecoration(
+          color: AppColors.primary.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: AppColors.primary, size: 32),
+            const SizedBox(height: 8),
+            Text(label, style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 13)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _setCover(int photoId) async {
+    if (_token == null) return;
+    final success = await _apiService.setGymPhotoCover(_gymId, photoId, _token!);
+    if (success) {
+      await _loadPhotos();
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Erreur lors du changement de couverture'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
+  }
+
+  Future<void> _deletePhoto(int photoId) async {
+    if (_token == null) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Theme.of(context).cardTheme.color,
+        title: Text(
+          'Supprimer cette photo ?',
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+        ),
+        content: Text(
+          'Elle disparaîtra aussi de la page vitrine.',
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Annuler'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
+            child: const Text('Supprimer'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    final success = await _apiService.deleteGymPhoto(_gymId, photoId, _token!);
+    if (success) {
+      await _loadPhotos();
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Erreur lors de la suppression'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
+  }
+
+  Future<void> _onReorder(int oldIndex, int newIndex) async {
+    if (_token == null) return;
+    setState(() {
+      if (newIndex > oldIndex) newIndex -= 1;
+      final item = _photos.removeAt(oldIndex);
+      _photos.insert(newIndex, item);
+    });
+    final order = _photos.map((p) => p['id'] as int).toList();
+    final success = await _apiService.reorderGymPhotos(_gymId, order, _token!);
+    if (!success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Erreur lors de la réorganisation'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      await _loadPhotos();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(color: Theme.of(context).scaffoldBackgroundColor),
+      child: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: Icon(
+                      Icons.arrow_back,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                    onPressed: widget.onBack,
+                  ),
+                  Expanded(
+                    child: Text(
+                      'Galerie photos',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: _isUploading
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.add_a_photo, color: AppColors.primary),
+                    onPressed: _isUploading ? null : _addPhoto,
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Text(
+                'Glisse-dépose pour réordonner. La première photo (étoile) est celle utilisée en couverture sur le site vitrine.',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                  fontSize: 12,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Expanded(
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _photos.isEmpty
+                      ? Center(
+                          child: Text(
+                            'Aucune photo pour le moment',
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                            ),
+                          ),
+                        )
+                      : ReorderableListView.builder(
+                          padding: EdgeInsets.fromLTRB(
+                            24,
+                            0,
+                            24,
+                            24 + MediaQuery.of(context).padding.bottom,
+                          ),
+                          itemCount: _photos.length,
+                          onReorder: _onReorder,
+                          itemBuilder: (context, index) {
+                            final photo = _photos[index];
+                            final photoId = photo['id'] as int;
+                            final isCover = photo['isCover'] == true;
+                            return Container(
+                              key: ValueKey(photoId),
+                              margin: const EdgeInsets.only(bottom: 12),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).cardTheme.color,
+                                borderRadius: BorderRadius.circular(16),
+                                border: isCover
+                                    ? Border.all(color: AppColors.primary, width: 2)
+                                    : null,
+                              ),
+                              child: Row(
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: const BorderRadius.horizontal(
+                                      left: Radius.circular(16),
+                                    ),
+                                    child: Image.network(
+                                      _apiService.gymPhotoImageUri(_gymId, photoId).toString(),
+                                      headers: {'Authorization': 'Bearer $_token'},
+                                      width: 90,
+                                      height: 90,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stack) => Container(
+                                        width: 90,
+                                        height: 90,
+                                        color: AppColors.primary.withValues(alpha: 0.1),
+                                        child: const Icon(Icons.broken_image, color: AppColors.primary),
+                                      ),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                                      child: Text(
+                                        isCover ? 'Photo de couverture' : 'Photo ${index + 1}',
+                                        style: TextStyle(
+                                          color: Theme.of(context).colorScheme.onSurface,
+                                          fontWeight: isCover ? FontWeight.bold : FontWeight.normal,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  IconButton(
+                                    icon: Icon(
+                                      isCover ? Icons.star : Icons.star_border,
+                                      color: isCover ? AppColors.primary : Colors.white38,
+                                    ),
+                                    tooltip: 'Définir comme couverture',
+                                    onPressed: isCover ? null : () => _setCover(photoId),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete_outline, color: AppColors.error),
+                                    onPressed: () => _deletePhoto(photoId),
+                                  ),
+                                  const SizedBox(width: 4),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
             ),
           ],
         ),

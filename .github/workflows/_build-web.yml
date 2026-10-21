@@ -1,4 +1,4 @@
-name: 🌐 Kiosk Web Build (reusable)
+name: 🌐 Web Build — kiosk / showcase (reusable)
 
 on:
   workflow_call:
@@ -6,6 +6,10 @@ on:
       dart-env:
         required: true
         type: string   # pprod | prod
+      web-target:
+        required: false
+        type: string   # kiosk | showcase
+        default: 'kiosk'
       api-url:
         required: false
         type: string
@@ -35,6 +39,12 @@ on:
         type: choice
         default: 'pprod'
         options: [pprod, prod]
+      web-target:
+        description: 'Cible web'
+        required: true
+        type: choice
+        default: 'kiosk'
+        options: [kiosk, showcase]
       api-url:
         description: 'Override API_BASE_URL (optionnel)'
         required: false
@@ -83,7 +93,7 @@ jobs:
       - name: 🏗️ Build Flutter Web
         id: meta
         run: |
-          DEFINES="--dart-define=ENVIRONMENT=${{ inputs.dart-env }}"
+          DEFINES="--dart-define=ENVIRONMENT=${{ inputs.dart-env }} --dart-define=WEB_TARGET=${{ inputs.web-target }}"
           if [ -n "${{ inputs.api-url }}" ]; then
             DEFINES="$DEFINES --dart-define=API_BASE_URL=${{ inputs.api-url }}"
           fi
@@ -94,7 +104,7 @@ jobs:
             DEFINES="$DEFINES --dart-define=KIOSK_IPA_URL=${{ inputs.ipa-url }}"
           fi
           flutter build web --release $DEFINES --no-source-maps
-          echo "artifact-name=kiosk-web-${{ inputs.dart-env }}" >> $GITHUB_OUTPUT
+          echo "artifact-name=${{ inputs.web-target }}-web-${{ inputs.dart-env }}" >> $GITHUB_OUTPUT
 
       - name: 📤 Upload web artifact
         uses: actions/upload-artifact@v6

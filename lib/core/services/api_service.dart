@@ -970,8 +970,6 @@ class ApiService {
     String address,
     String token, {
     String? phone,
-    double? latitude,
-    double? longitude,
     Duration timeout = const Duration(seconds: 8),
   }) async {
     final uri = baseUri.resolve('/gyms');
@@ -980,8 +978,6 @@ class ApiService {
         'name': name,
         'address': address,
         'phone': ?phone,
-        'latitude': ?latitude,
-        'longitude': ?longitude,
       };
 
       final resp = await http
@@ -1070,8 +1066,7 @@ class ApiService {
     String? name,
     String? address,
     String? phone,
-    double? latitude,
-    double? longitude,
+    bool? isPublished,
     Duration timeout = const Duration(seconds: 8),
   }) async {
     final uri = baseUri.resolve('/gyms/$gymId');
@@ -1080,8 +1075,7 @@ class ApiService {
       if (name != null) body['name'] = name;
       if (address != null) body['address'] = address;
       if (phone != null) body['phone'] = phone;
-      if (latitude != null) body['latitude'] = latitude;
-      if (longitude != null) body['longitude'] = longitude;
+      if (isPublished != null) body['isPublished'] = isPublished;
 
       final resp = await http
           .put(
@@ -3167,6 +3161,186 @@ class ApiService {
     } catch (e) {
       debugPrint('Error uploading gym image: $e');
       return false;
+    }
+  }
+
+  // ==================== GYMS — PHOTO GALLERY (page vitrine) ====================
+
+  /// List photo metadata for a gym (id, position, isCover).
+  /// Expected backend endpoint: GET /gyms/{id}/photos
+  Future<List<dynamic>?> getGymPhotos(
+    int gymId,
+    String token, {
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
+    final uri = baseUri.resolve('/gyms/$gymId/photos');
+    try {
+      final resp = await http
+          .get(uri, headers: {'Authorization': 'Bearer $token'})
+          .timeout(timeout);
+      if (resp.statusCode == 200) {
+        try {
+          final body = jsonDecode(resp.body);
+          return body['photos'] as List<dynamic>;
+        } catch (_) {
+          return null;
+        }
+      }
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Returns the authenticated URL serving a given photo's binary data.
+  /// Expected backend endpoint: GET /gyms/{id}/photos/{photoId}/image
+  Uri gymPhotoImageUri(int gymId, int photoId) {
+    return baseUri.resolve('/gyms/$gymId/photos/$photoId/image');
+  }
+
+  /// Add a photo to a gym's gallery (base64).
+  /// Expected backend endpoint: POST /gyms/{id}/photos
+  Future<Map<String, dynamic>?> addGymPhoto(
+    int gymId,
+    String imageData,
+    String token, {
+    Duration timeout = const Duration(seconds: 30),
+  }) async {
+    final uri = baseUri.resolve('/gyms/$gymId/photos');
+    try {
+      final resp = await http
+          .post(
+            uri,
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
+            body: jsonEncode({'imageData': imageData}),
+          )
+          .timeout(timeout);
+      if (resp.statusCode == 201) {
+        try {
+          final body = jsonDecode(resp.body);
+          return body['photo'] as Map<String, dynamic>;
+        } catch (_) {
+          return null;
+        }
+      }
+      return null;
+    } catch (e) {
+      debugPrint('Error adding gym photo: $e');
+      return null;
+    }
+  }
+
+  /// Delete a photo from a gym's gallery.
+  /// Expected backend endpoint: DELETE /gyms/{id}/photos/{photoId}
+  Future<bool> deleteGymPhoto(
+    int gymId,
+    int photoId,
+    String token, {
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
+    final uri = baseUri.resolve('/gyms/$gymId/photos/$photoId');
+    try {
+      final resp = await http
+          .delete(uri, headers: {'Authorization': 'Bearer $token'})
+          .timeout(timeout);
+      return resp.statusCode == 200;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Reorder a gym's gallery photos.
+  /// Expected backend endpoint: PUT /gyms/{id}/photos/reorder
+  Future<bool> reorderGymPhotos(
+    int gymId,
+    List<int> orderedPhotoIds,
+    String token, {
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
+    final uri = baseUri.resolve('/gyms/$gymId/photos/reorder');
+    try {
+      final resp = await http
+          .put(
+            uri,
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
+            body: jsonEncode({'order': orderedPhotoIds}),
+          )
+          .timeout(timeout);
+      return resp.statusCode == 200;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Set a photo as the gym's cover photo.
+  /// Expected backend endpoint: PUT /gyms/{id}/photos/{photoId}/cover
+  Future<bool> setGymPhotoCover(
+    int gymId,
+    int photoId,
+    String token, {
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
+    final uri = baseUri.resolve('/gyms/$gymId/photos/$photoId/cover');
+    try {
+      final resp = await http
+          .put(uri, headers: {'Authorization': 'Bearer $token'})
+          .timeout(timeout);
+      return resp.statusCode == 200;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  // ==================== GYMS — PAGE VITRINE PUBLIQUE (sans auth) ====================
+
+  /// List published gyms for the public showcase site.
+  /// Expected backend endpoint: GET /public/gyms
+  Future<List<dynamic>?> getPublicGyms({
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
+    final uri = baseUri.resolve('/public/gyms');
+    try {
+      final resp = await http.get(uri).timeout(timeout);
+      if (resp.statusCode == 200) {
+        try {
+          final body = jsonDecode(resp.body);
+          return body['gyms'] as List<dynamic>;
+        } catch (_) {
+          return null;
+        }
+      }
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Get full public details (photos, team, opening hours) for a published gym.
+  /// Expected backend endpoint: GET /public/gyms/{slugOrId}
+  Future<Map<String, dynamic>?> getPublicGym(
+    String slugOrId, {
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
+    final uri = baseUri.resolve('/public/gyms/$slugOrId');
+    try {
+      final resp = await http.get(uri).timeout(timeout);
+      if (resp.statusCode == 200) {
+        try {
+          final body = jsonDecode(resp.body);
+          return body['gym'] as Map<String, dynamic>;
+        } catch (_) {
+          return null;
+        }
+      }
+      return null;
+    } catch (_) {
+      return null;
     }
   }
 
