@@ -303,7 +303,7 @@ class _ShowcaseHero extends StatelessWidget {
     final width = MediaQuery.of(context).size.width;
     final isDesktop = width >= 900;
     final isTablet = width >= 600;
-    final height = isDesktop ? 680.0 : (isTablet ? 600.0 : 560.0);
+    final height = isDesktop ? 560.0 : (isTablet ? 500.0 : 480.0);
 
     return SizedBox(
       height: height,
@@ -491,17 +491,14 @@ class _MarqueeBandState extends State<_MarqueeBand>
       children: [for (final w in _words) _wordChip(w)],
     );
 
-    return Transform.rotate(
-      angle: -0.022,
-      child: Container(
-        color: AppColors.primary,
-        padding: const EdgeInsets.symmetric(vertical: 14),
-        child: SingleChildScrollView(
-          controller: _scrollController,
-          scrollDirection: Axis.horizontal,
-          physics: const NeverScrollableScrollPhysics(),
-          child: Row(mainAxisSize: MainAxisSize.min, children: [block, block]),
-        ),
+    return Container(
+      color: AppColors.primary,
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      child: SingleChildScrollView(
+        controller: _scrollController,
+        scrollDirection: Axis.horizontal,
+        physics: const NeverScrollableScrollPhysics(),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [block, block]),
       ),
     );
   }
@@ -564,11 +561,9 @@ class _Eyebrow extends StatelessWidget {
   }
 }
 
-/// "TEAM" (police Vlavour, brush/agressive) posé en diagonal au-dessus de
-/// "OUSTAD" (Roboto Black), en cachant légèrement le haut — effet logo
-/// superposé. La largeur de la boîte est mesurée sur "OUSTAD" (via
-/// TextPainter) pour que le bloc se centre pile dans le hero malgré "TEAM"
-/// qui déborde par-dessus sans compter dans la mise en page (Positioned).
+/// "TEAM" (police Vlavour, légèrement incliné) et "OUSTAD" (Roboto Black)
+/// sur une seule ligne. FittedBox garantit que ça tient sur une ligne même
+/// sur petit écran (réduction proportionnelle plutôt que retour à la ligne).
 class _Wordmark extends StatelessWidget {
   final bool isDesktop;
 
@@ -576,52 +571,36 @@ class _Wordmark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final size = isDesktop ? 108.0 : 64.0;
+    final size = isDesktop ? 72.0 : 46.0;
 
     final oustadStyle = GoogleFonts.roboto(
       fontSize: size,
       fontWeight: FontWeight.w900,
-      height: 0.92,
       color: Colors.white,
       letterSpacing: 1,
     );
-    final oustadPainter = TextPainter(
-      text: TextSpan(text: 'OUSTAD', style: oustadStyle),
-      textDirection: TextDirection.ltr,
-    )..layout();
 
     final teamStyle = TextStyle(
       fontFamily: 'Vlavour',
-      fontSize: size * 1.25,
-      height: 0.85,
+      fontSize: size * 1.15,
       color: AppColors.primary,
       shadows: [
         Shadow(
           color: AppColors.primary.withValues(alpha: 0.55),
-          blurRadius: 34,
+          blurRadius: 28,
         ),
       ],
     );
 
-    return SizedBox(
-      width: oustadPainter.width,
-      height: oustadPainter.height + size * 1.02,
-      child: Stack(
-        clipBehavior: Clip.none,
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Positioned(
-            left: 0,
-            top: size * 1.02,
-            child: Text('OUSTAD', style: oustadStyle),
-          ),
-          Positioned(
-            left: -size * 0.09,
-            top: 0,
-            child: Transform.rotate(
-              angle: -0.052,
-              child: Text('TEAM', style: teamStyle),
-            ),
-          ),
+          Transform.rotate(angle: -0.08, child: Text('TEAM', style: teamStyle)),
+          SizedBox(width: size * 0.22),
+          Text('OUSTAD', style: oustadStyle),
         ],
       ),
     );
