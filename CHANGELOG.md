@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.84](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.83...v1.0.0-beta.84) (2026-10-21)
+
+
+### ✨ New Features
+
+* **kiosk:** replace Sideloadly iOS guide with AltStore private source ([3440fae](https://github.com/TeamFitness/mobile-app/commit/3440fae5367e5126603fe4bce762d9a0e4214058))
+
 ## [1.0.0-beta.83](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.82...v1.0.0-beta.83) (2026-10-21)
 
 
