@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.78](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.77...v1.0.0-beta.78) (2026-10-21)
+
+
+### ✨ New Features
+
+* **gyms:** page vitrine publique des salles (web build dédié) ([9d2c77e](https://github.com/TeamFitness/mobile-app/commit/9d2c77e6f31426fd6117093a718906adc554a722))
+
 ## [1.0.0-beta.77](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.76...v1.0.0-beta.77) (2026-10-21)
 
 
