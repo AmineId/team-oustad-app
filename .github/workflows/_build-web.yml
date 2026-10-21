@@ -83,7 +83,7 @@ jobs:
       - name: 🏗️ Build Flutter Web
         id: meta
         run: |
-          DEFINES="--dart-define=ENVIRONMENT=${{ inputs.dart-env }}"
+          DEFINES="--dart-define=ENVIRONMENT=${{ inputs.dart-env }} --dart-define=KIOSK_MODE=true"
           if [ -n "${{ inputs.api-url }}" ]; then
             DEFINES="$DEFINES --dart-define=API_BASE_URL=${{ inputs.api-url }}"
           fi

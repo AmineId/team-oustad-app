@@ -7,6 +7,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'screens/common/common_screens.dart';
 import 'screens/admin/admin_screens.dart';
+import 'screens/kiosk/kiosk_screens.dart';
 import 'core/services/services.dart';
 import 'core/utils/app_navigator.dart';
 import 'core/theme/theme.dart';
@@ -156,7 +157,11 @@ class _MyAppState extends State<MyApp> {
               ],
               supportedLocales: LocaleService.supportedLocales,
               locale: widget.localeService.currentLocale,
-              home: const SplashScreen(),
+              // Build dédié à la borne d'accueil (kiosk.team-oustad.com) : saute
+              // le splash/login normal et démarre direct sur l'écran de check-in.
+              home: const bool.fromEnvironment('KIOSK_MODE', defaultValue: false)
+                  ? const CheckinTerminalScreen()
+                  : const SplashScreen(),
               routes: {
                 '/admin/members': (context) => const AdminMembersScreen(),
                 '/admin/plannings': (context) => const AdminPlanningsScreen(),

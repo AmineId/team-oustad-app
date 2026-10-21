@@ -67,6 +67,13 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
   final FocusNode _qrFocus = FocusNode();
   final ScrollController _listScroll = ScrollController();
 
+  // Connexion directe depuis la borne (pas de passage par l'app complète)
+  final TextEditingController _loginEmailCtrl = TextEditingController();
+  final TextEditingController _loginPasswordCtrl = TextEditingController();
+  bool _loggingIn = false;
+  bool _obscurePassword = true;
+  String? _loginError;
+
   Timer? _resetTimer;
   Timer? _refreshTimer;
   Timer? _clockTimer;
@@ -128,6 +135,8 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
     _qrCtrl.dispose();
     _qrFocus.dispose();
     _listScroll.dispose();
+    _loginEmailCtrl.dispose();
+    _loginPasswordCtrl.dispose();
     _resetTimer?.cancel();
     _refreshTimer?.cancel();
     _clockTimer?.cancel();
@@ -1132,27 +1141,138 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
 
   // ── No session fallback ──────────────────────────────────────────────────────
 
+  Future<void> _handleKioskLogin() async {
+    final email = _loginEmailCtrl.text.trim();
+    final password = _loginPasswordCtrl.text;
+    if (email.isEmpty || password.isEmpty) {
+      setState(() => _loginError = 'Email et mot de passe requis');
+      return;
+    }
+
+    setState(() {
+      _loggingIn = true;
+      _loginError = null;
+    });
+
+    try {
+      final loginResult = await _api.login(email, password);
+      if (loginResult == null) {
+        setState(() {
+          _loginError = 'Identifiants incorrects';
+          _loggingIn = false;
+        });
+        return;
+      }
+
+      final token = loginResult['token'] as String;
+      await _auth.saveToken(token);
+      await _auth.fetchAndCacheUserProfile(token);
+
+      final profile = await _auth.getCachedUserProfile();
+      final raw = profile?['gymId'];
+
+      if (!mounted) return;
+      setState(() {
+        _token = token;
+        _gymId = raw is int ? raw : null;
+        _loggingIn = false;
+        _loginPasswordCtrl.clear();
+      });
+
+      await _refreshTodayCount();
+      _refreshTimer?.cancel();
+      _refreshTimer = Timer.periodic(const Duration(seconds: 30), (_) => _refreshTodayCount());
+      _refocusQr();
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _loginError = 'Erreur de connexion';
+        _loggingIn = false;
+      });
+    }
+  }
+
   Widget _buildNoSession() {
     return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.lock_outline_rounded, size: 52, color: AppColors.darkTextTertiary),
-          const SizedBox(height: 16),
-          Text('Session expirée', style: GoogleFonts.barlowCondensed(
-            fontSize: 28, fontWeight: FontWeight.w700, color: Colors.white,
-          )),
-          const SizedBox(height: 8),
-          Text('Reconnectez-vous pour accéder à la borne.', style: GoogleFonts.barlow(
-            fontSize: 15, color: AppColors.darkTextTertiary,
-          )),
-          const SizedBox(height: 28),
-          TextButton.icon(
-            icon: const Icon(Icons.arrow_back_rounded),
-            label: const Text('Retour'),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-        ],
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 340),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset('assets/images/logo.png', width: 96, height: 96, fit: BoxFit.contain),
+            const SizedBox(height: 20),
+            Text('Borne d\'accueil', style: GoogleFonts.barlowCondensed(
+              fontSize: 26, fontWeight: FontWeight.w700, color: Colors.white,
+            )),
+            const SizedBox(height: 4),
+            Text('Connexion requise pour activer la borne', style: GoogleFonts.barlow(
+              fontSize: 13, color: AppColors.darkTextTertiary,
+            )),
+            const SizedBox(height: 28),
+            TextField(
+              controller: _loginEmailCtrl,
+              enabled: !_loggingIn,
+              keyboardType: TextInputType.emailAddress,
+              style: GoogleFonts.barlow(color: Colors.white),
+              decoration: InputDecoration(
+                labelText: 'Email',
+                labelStyle: GoogleFonts.barlow(color: AppColors.darkTextTertiary),
+                prefixIcon: const Icon(Icons.person_outline_rounded, color: AppColors.darkTextTertiary),
+                filled: true,
+                fillColor: AppColors.darkCard,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+              ),
+              onSubmitted: (_) => _handleKioskLogin(),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _loginPasswordCtrl,
+              enabled: !_loggingIn,
+              obscureText: _obscurePassword,
+              style: GoogleFonts.barlow(color: Colors.white),
+              decoration: InputDecoration(
+                labelText: 'Mot de passe',
+                labelStyle: GoogleFonts.barlow(color: AppColors.darkTextTertiary),
+                prefixIcon: const Icon(Icons.lock_outline_rounded, color: AppColors.darkTextTertiary),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                    color: AppColors.darkTextTertiary,
+                  ),
+                  onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                ),
+                filled: true,
+                fillColor: AppColors.darkCard,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+              ),
+              onSubmitted: (_) => _handleKioskLogin(),
+            ),
+            if (_loginError != null) ...[
+              const SizedBox(height: 12),
+              Text(_loginError!, style: GoogleFonts.barlow(color: AppColors.error, fontSize: 13)),
+            ],
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _loggingIn ? null : _handleKioskLogin,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+                child: _loggingIn
+                    ? const SizedBox(
+                        width: 20, height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
+                      )
+                    : Text('Activer la borne', style: GoogleFonts.barlow(
+                        fontWeight: FontWeight.w700, color: Colors.white,
+                      )),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
