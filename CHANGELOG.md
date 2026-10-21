@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.83](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.82...v1.0.0-beta.83) (2026-10-21)
+
+
+### ✨ New Features
+
+* **gyms:** category tiles, feature rows and testimonials on the showcase ([f6d0f4d](https://github.com/TeamFitness/mobile-app/commit/f6d0f4d689de23abcfd2db9268303058e94c29b0))
+
+
+### 🐛 Bug Fixes
+
+* don't pop a crash-report email for errors the UI already handled ([0722628](https://github.com/TeamFitness/mobile-app/commit/072262800814e2c73b8403aec6fbdd45bcdb77ea))
+
 ## [1.0.0-beta.82](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.81...v1.0.0-beta.82) (2026-10-21)
 
 
