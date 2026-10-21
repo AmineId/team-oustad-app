@@ -138,18 +138,22 @@ class _GymShowcaseListScreenState extends State<GymShowcaseListScreen>
       );
     }
     if (_hasError) {
-      return _buildMessage(
-        icon: Icons.wifi_off_rounded,
-        title: 'Connexion impossible',
-        message: 'Impossible de charger les salles pour le moment.',
-        onRetry: _loadGyms,
+      return RevealOnVisible(
+        child: _buildMessage(
+          icon: Icons.wifi_off_rounded,
+          title: 'Connexion impossible',
+          message: 'Impossible de charger les salles pour le moment.',
+          onRetry: _loadGyms,
+        ),
       );
     }
     if (_gyms.isEmpty) {
-      return _buildMessage(
-        icon: Icons.fitness_center_rounded,
-        title: 'Bientôt disponible',
-        message: 'Aucune salle à afficher pour le moment.',
+      return RevealOnVisible(
+        child: _buildMessage(
+          icon: Icons.fitness_center_rounded,
+          title: 'Bientôt disponible',
+          message: 'Aucune salle à afficher pour le moment.',
+        ),
       );
     }
 
@@ -560,6 +564,11 @@ class _Eyebrow extends StatelessWidget {
   }
 }
 
+/// "TEAM" (police Vlavour, brush/agressive) posé en diagonal au-dessus de
+/// "OUSTAD" (Roboto Black), en cachant légèrement le haut — effet logo
+/// superposé. La largeur de la boîte est mesurée sur "OUSTAD" (via
+/// TextPainter) pour que le bloc se centre pile dans le hero malgré "TEAM"
+/// qui déborde par-dessus sans compter dans la mise en page (Positioned).
 class _Wordmark extends StatelessWidget {
   final bool isDesktop;
 
@@ -568,56 +577,53 @@ class _Wordmark extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final size = isDesktop ? 108.0 : 64.0;
-    return Stack(
-      alignment: Alignment.center,
-      clipBehavior: Clip.none,
-      children: [
-        Transform.rotate(
-          angle: -0.05,
-          child: Container(
-            width: size * 5.4,
-            height: size * 1.7,
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.07),
-              border: Border.symmetric(
-                horizontal: BorderSide(
-                  color: AppColors.primary.withValues(alpha: 0.35),
-                  width: 2,
-                ),
-              ),
-            ),
-          ),
-        ),
-        Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'TEAM',
-              style: GoogleFonts.anton(
-                fontSize: size,
-                height: 0.92,
-                color: AppColors.primary,
-                letterSpacing: 2,
-                shadows: [
-                  Shadow(
-                    color: AppColors.primary.withValues(alpha: 0.6),
-                    blurRadius: 46,
-                  ),
-                ],
-              ),
-            ),
-            Text(
-              'OUSTAD',
-              style: GoogleFonts.anton(
-                fontSize: size,
-                height: 0.92,
-                color: Colors.white,
-                letterSpacing: 2,
-              ),
-            ),
-          ],
+
+    final oustadStyle = GoogleFonts.roboto(
+      fontSize: size,
+      fontWeight: FontWeight.w900,
+      height: 0.92,
+      color: Colors.white,
+      letterSpacing: 1,
+    );
+    final oustadPainter = TextPainter(
+      text: TextSpan(text: 'OUSTAD', style: oustadStyle),
+      textDirection: TextDirection.ltr,
+    )..layout();
+
+    final teamStyle = TextStyle(
+      fontFamily: 'Vlavour',
+      fontSize: size * 1.25,
+      height: 0.85,
+      color: AppColors.primary,
+      shadows: [
+        Shadow(
+          color: AppColors.primary.withValues(alpha: 0.55),
+          blurRadius: 34,
         ),
       ],
+    );
+
+    return SizedBox(
+      width: oustadPainter.width,
+      height: oustadPainter.height + size * 1.02,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Positioned(
+            left: 0,
+            top: size * 1.02,
+            child: Text('OUSTAD', style: oustadStyle),
+          ),
+          Positioned(
+            left: -size * 0.09,
+            top: 0,
+            child: Transform.rotate(
+              angle: -0.052,
+              child: Text('TEAM', style: teamStyle),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

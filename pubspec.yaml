@@ -143,6 +143,10 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+  fonts:
+    - family: Vlavour
+      fonts:
+        - asset: assets/fonts/Vlavour.ttf
 
 flutter_launcher_icons:
   android: true
