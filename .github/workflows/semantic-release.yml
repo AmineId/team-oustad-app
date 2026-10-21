@@ -15,7 +15,7 @@ jobs:
   # Étape 1: Semantic-release met à jour les versions
   version:
     name: 📝 Version & Changelog
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: write
       issues: write
@@ -150,7 +150,7 @@ jobs:
     name: 🏋 Deploy Kiosk
     needs: [version, build-ios, build-web-kiosk]
     if: needs.version.outputs.released == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: 📥 Download web build
         uses: actions/download-artifact@v6
@@ -189,7 +189,7 @@ jobs:
           "
 
       - name: 🚀 Deploy to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -204,7 +204,7 @@ jobs:
     name: 🏋 Deploy Showcase
     needs: [version, build-web-showcase]
     if: needs.version.outputs.released == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: 📥 Download web build
         uses: actions/download-artifact@v6
@@ -231,7 +231,7 @@ jobs:
           "
 
       - name: 🚀 Deploy to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
