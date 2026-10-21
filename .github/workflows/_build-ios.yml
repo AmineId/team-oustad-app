@@ -18,6 +18,10 @@ on:
         required: false
         type: string
         default: 'TeamOustad.ipa'
+      publish-altstore:
+        required: false
+        type: boolean
+        default: true
     outputs:
       artifact-name:
         description: "Nom de l'artifact IPA uploade"
@@ -47,6 +51,11 @@ on:
         required: false
         type: string
         default: 'TeamOustad.ipa'
+      publish-altstore:
+        description: 'Publier sur la source privée AltStore / SideStore'
+        required: false
+        type: boolean
+        default: true
 
 env:
   FLUTTER_VERSION: '3.35.7'
@@ -100,3 +109,74 @@ jobs:
           name: ${{ steps.meta.outputs.artifact-name }}
           path: build/ipa/${{ inputs.ipa-filename }}
           retention-days: 14
+
+      # ── Source privée AltStore / SideStore ───────────────────────────────
+      # Le repo est privé : AltStore ne peut pas télécharger les releases
+      # GitHub. L'.ipa et source.json sont envoyés sur un bucket Cloudflare R2
+      # exposé publiquement sur un domaine, sous un chemin non devinable.
+      # Secrets : R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET.
+      # Variables (pas des secrets, sinon GitHub masque le lien dans le résumé) :
+      # ALTSTORE_BASE_URL (ex. https://apps.team-oustad.com), ALTSTORE_SECRET_PATH (ex. s/8f3k2q9x).
+      - name: 📲 Publier sur la source AltStore privée
+        if: ${{ inputs.publish-altstore }}
+        env:
+          ENVIRONMENT: ${{ inputs.environment }}
+          IPA: build/ipa/${{ inputs.ipa-filename }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+          R2_ENDPOINT: https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          BASE_URL: ${{ vars.ALTSTORE_BASE_URL }}
+          SECRET_PATH: ${{ vars.ALTSTORE_SECRET_PATH }}
+        run: |
+          set -euo pipefail
+          PLIST=build/ios/iphoneos/Runner.app/Info.plist
+          BUNDLE_ID=$(/usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "$PLIST")
+          VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$PLIST")
+          MIN_OS=$(/usr/libexec/PlistBuddy -c "Print :MinimumOSVersion" "$PLIST" 2>/dev/null || echo "13.0")
+          BUILD="${VERSION}-${ENVIRONMENT}.${GITHUB_RUN_NUMBER}"
+
+          IPA_KEY="${SECRET_PATH}/${ENVIRONMENT}/TeamOustad-${BUILD}.ipa"
+          SOURCE_KEY="${SECRET_PATH}/${ENVIRONMENT}/source.json"
+          SIZE=$(stat -f%z "$IPA")
+          R2="aws s3 --endpoint-url $R2_ENDPOINT"
+
+          $R2 cp "$IPA" "s3://${R2_BUCKET}/${IPA_KEY}" --content-type application/octet-stream
+
+          if ! $R2 cp "s3://${R2_BUCKET}/${SOURCE_KEY}" source.json 2>/dev/null; then
+            jq -n --arg id "$BUNDLE_ID" --arg env "$ENVIRONMENT" '{
+              name: ("Team Oustad (" + $env + ")"),
+              identifier: ("com.teamoustad.source." + $env),
+              apps: [{
+                name: "Team Oustad",
+                bundleIdentifier: $id,
+                developerName: "Team Oustad",
+                localizedDescription: "Builds de test privés.",
+                iconURL: "",
+                versions: []
+              }],
+              news: []
+            }' > source.json
+          fi
+
+          # Ajoute la nouvelle version en tête, garde les 10 plus récentes
+          jq --arg v "$BUILD" --arg d "$(date -u +%FT%TZ)" \
+             --arg u "${BASE_URL}/${IPA_KEY}" --argjson s "$SIZE" \
+             --arg min "$MIN_OS" --arg env "$ENVIRONMENT" --arg id "$BUNDLE_ID" \
+             '.apps[0].bundleIdentifier = $id
+              | .apps[0].versions = ([{version:$v, date:$d, size:$s, downloadURL:$u,
+                  minOSVersion:$min, localizedDescription:("Build " + $env)}]
+                + .apps[0].versions)[:10]' \
+             source.json > source.new.json
+
+          $R2 cp source.new.json "s3://${R2_BUCKET}/${SOURCE_KEY}" \
+            --content-type application/json --cache-control "no-cache"
+
+          SOURCE_URL="${BASE_URL}/${SOURCE_KEY}"
+          {
+            echo "### 📲 Source AltStore mise à jour — ${BUILD}"
+            echo ""
+            echo "- AltStore : \`altstore://source?url=${SOURCE_URL}\`"
+            echo "- SideStore : \`sidestore://source?url=${SOURCE_URL}\`"
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -117,6 +117,7 @@ jobs:
       api-url: ${{ needs.version.outputs.api_url }}
       ref: ${{ github.ref }}
       ipa-filename: TeamOustad-${{ needs.version.outputs.dart_env }}-${{ needs.version.outputs.version }}.ipa
+    secrets: inherit
 
   # Étape 2c: Build Web kiosk (en parallèle avec build-android/build-ios, réutilise _build-web.yml)
   build-web-kiosk:
