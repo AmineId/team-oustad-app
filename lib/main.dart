@@ -93,8 +93,14 @@ void main() async {
 
   // Flutter framework errors
   FlutterError.onError = (details) {
-    // report and also forward to default handler
-    reporter.report(Exception(details.exception), details.stack, context: details.context?.toDescription());
+    // `silent` is how Flutter marks errors that were already handled
+    // elsewhere (e.g. Image.network's errorBuilder already shows a
+    // fallback for a decode failure) — reporting those too just pops an
+    // unwanted crash-report email for something the UI already recovered
+    // from. Still forward to the default handler either way.
+    if (!details.silent) {
+      reporter.report(Exception(details.exception), details.stack, context: details.context?.toDescription());
+    }
     FlutterError.presentError(details);
   };
 
