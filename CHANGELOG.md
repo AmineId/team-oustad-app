@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.82](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.81...v1.0.0-beta.82) (2026-10-21)
+
+
+### ✨ New Features
+
+* **gyms:** gym description + embedded map on the showcase detail page ([51483f1](https://github.com/TeamFitness/mobile-app/commit/51483f10b1d38fd3822cf25ceba1b77bc835b807))
+* **kiosk:** add webcam scanning alongside the hardware QR scanner ([4e43072](https://github.com/TeamFitness/mobile-app/commit/4e43072493d35ed713bce83b3f65e2f850920c05))
+
+
+### 🐛 Bug Fixes
+
+* **gyms:** single-line wordmark, drop broken marquee rotation, shorter hero ([872f7cc](https://github.com/TeamFitness/mobile-app/commit/872f7cc7a2aca8c77e28436d450c2b0727c23421))
+* **kiosk:** show the real logo in the header instead of a "TF" badge ([21e915a](https://github.com/TeamFitness/mobile-app/commit/21e915a540cc7ec829c02499c93448eec05be890))
+
 ## [1.0.0-beta.81](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.80...v1.0.0-beta.81) (2026-10-21)
 
 
