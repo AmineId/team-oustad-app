@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.80](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.79...v1.0.0-beta.80) (2026-10-21)
+
+
+### ✨ New Features
+
+* **gyms:** push the showcase further — Anton display font, marquee, parallax ([5b13436](https://github.com/TeamFitness/mobile-app/commit/5b1343614249ce775bca03bd32e1c90b716b87ca))
+* **kiosk:** show the Sideloadly guide in-app instead of a repo path ([3474684](https://github.com/TeamFitness/mobile-app/commit/347468458ac2dcee9e1dc645d3d9acb3e95a9dc0))
+
 ## [1.0.0-beta.79](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.78...v1.0.0-beta.79) (2026-10-21)
 
 
