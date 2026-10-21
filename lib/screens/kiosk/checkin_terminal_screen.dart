@@ -11,23 +11,7 @@ import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/theme/app_colors.dart';
 import 'kiosk_audio.dart';
-
-// URLs de distribution pprod — à mettre à jour à chaque release
-const _kAndroidTestingUrl = String.fromEnvironment(
-  'ANDROID_TESTING_URL',
-  defaultValue: 'https://play.google.com/apps/internaltest/4700178556172561963',
-);
-const _kIpaDownloadUrl = String.fromEnvironment(
-  'KIOSK_IPA_URL',
-  defaultValue: 'https://kiosk.team-oustad.com/TeamOustad.ipa',
-);
-// Source AltStore / SideStore générée par la CI (deploy-kiosk) à côté de l'IPA
-const _kAltStoreSourceUrl = String.fromEnvironment(
-  'KIOSK_ALTSTORE_SOURCE_URL',
-  defaultValue: 'https://staging.team-fitness-kiosk.pages.dev/altstore.json',
-);
-const _kAltStoreAddSourceUrl = 'altstore://source?url=$_kAltStoreSourceUrl';
-const _kSideStoreAddSourceUrl = 'sidestore://source?url=$_kAltStoreSourceUrl';
+import 'kiosk_links.dart';
 
 enum _ScanStatus { idle, processing, success, denied, error }
 
@@ -457,7 +441,7 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
                     'Lance "Team Oustad" et connecte-toi',
                   ],
                   actionLabel: 'Rejoindre le test Android',
-                  actionUrl: _kAndroidTestingUrl,
+                  actionUrl: kAndroidTestingUrl,
                   note:
                       'Le compte Google doit être ajouté à la liste de testeurs dans Play Console avant d\'accepter.',
                 ),
@@ -482,7 +466,7 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
                     'Les mises à jour arrivent ensuite directement dans AltStore',
                   ],
                   actionLabel: 'Ajouter la source dans AltStore',
-                  actionUrl: _kAltStoreAddSourceUrl,
+                  actionUrl: kAltStoreAddSourceUrl,
                   note:
                       'À ouvrir depuis l\'iPhone. Avec un Apple ID gratuit, AltStore doit rafraîchir l\'app tous les 7 jours.',
                   onGuideTap: _showAltStoreGuide,
@@ -921,15 +905,15 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
                       sectionTitle('Liens utiles'),
                       link(
                         'Ajouter la source Team Oustad (AltStore)',
-                        _kAltStoreAddSourceUrl,
+                        kAltStoreAddSourceUrl,
                       ),
                       link(
                         'Ajouter la source Team Oustad (SideStore)',
-                        _kSideStoreAddSourceUrl,
+                        kSideStoreAddSourceUrl,
                       ),
                       link(
                         'URL de la source (ajout manuel)',
-                        _kAltStoreSourceUrl,
+                        kAltStoreSourceUrl,
                       ),
                       link(
                         'Télécharger AltServer (PC / Mac)',
@@ -945,7 +929,7 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
                       ),
                       link(
                         'Fichier IPA (installation manuelle)',
-                        _kIpaDownloadUrl,
+                        kIpaDownloadUrl,
                       ),
 
                       sectionTitle('Ce qu\'il faut'),
