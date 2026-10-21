@@ -9,7 +9,10 @@ import '../../core/theme/theme.dart';
 import '../../widgets/widgets.dart';
 
 bool get _reduceMotion => SchedulerBinding
-    .instance.platformDispatcher.accessibilityFeatures.disableAnimations;
+    .instance
+    .platformDispatcher
+    .accessibilityFeatures
+    .disableAnimations;
 
 /// Fiche détaillée d'une salle sur la page vitrine publique. Même habillage
 /// "brand" sombre + doré que [GymShowcaseListScreen], fixé indépendamment du
@@ -63,7 +66,15 @@ class _GymShowcaseDetailScreenState extends State<GymShowcaseDetailScreen> {
   }
 
   String _dayName(int dayOfWeek) {
-    const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+    const days = [
+      'Dimanche',
+      'Lundi',
+      'Mardi',
+      'Mercredi',
+      'Jeudi',
+      'Vendredi',
+      'Samedi',
+    ];
     return days[dayOfWeek % 7];
   }
 
@@ -125,10 +136,13 @@ class _GymShowcaseDetailScreenState extends State<GymShowcaseDetailScreen> {
     final photos = ((gym['photos'] as List<dynamic>?) ?? [])
         .map((p) => p as Map<String, dynamic>)
         .toList();
-    final openingHours = ((gym['openingHours'] as List<dynamic>?) ?? [])
-        .map((h) => h as Map<String, dynamic>)
-        .toList()
-      ..sort((a, b) => (a['dayOfWeek'] as int).compareTo(b['dayOfWeek'] as int));
+    final openingHours =
+        ((gym['openingHours'] as List<dynamic>?) ?? [])
+            .map((h) => h as Map<String, dynamic>)
+            .toList()
+          ..sort(
+            (a, b) => (a['dayOfWeek'] as int).compareTo(b['dayOfWeek'] as int),
+          );
     final team = ((gym['team'] as List<dynamic>?) ?? [])
         .map((t) => t as Map<String, dynamic>)
         .toList();
@@ -158,7 +172,11 @@ class _GymShowcaseDetailScreenState extends State<GymShowcaseDetailScreen> {
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [Colors.transparent, Colors.transparent, Colors.black87],
+                      colors: [
+                        Colors.transparent,
+                        Colors.transparent,
+                        Colors.black87,
+                      ],
                       stops: [0, 0.45, 1],
                     ),
                   ),
@@ -179,9 +197,8 @@ class _GymShowcaseDetailScreenState extends State<GymShowcaseDetailScreen> {
                           ),
                         Text(
                           name,
-                          style: GoogleFonts.barlowCondensed(
-                            fontSize: isDesktop ? 44 : 32,
-                            fontWeight: FontWeight.w800,
+                          style: GoogleFonts.anton(
+                            fontSize: isDesktop ? 50 : 36,
                             color: Colors.white,
                             height: 1.0,
                           ),
@@ -203,41 +220,48 @@ class _GymShowcaseDetailScreenState extends State<GymShowcaseDetailScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (address.isNotEmpty || (phone != null && phone.isNotEmpty))
-                    RevealOnLoad(
+                    RevealOnVisible(
                       child: _ActionsCard(
                         address: address,
                         phone: phone,
-                        onMap: address.isNotEmpty ? () => _openMaps(address) : null,
-                        onCall: (phone != null && phone.isNotEmpty) ? () => _call(phone) : null,
+                        onMap: address.isNotEmpty
+                            ? () => _openMaps(address)
+                            : null,
+                        onCall: (phone != null && phone.isNotEmpty)
+                            ? () => _call(phone)
+                            : null,
                       ),
                     ),
                   if (openingHours.isNotEmpty) ...[
                     const SizedBox(height: 24),
-                    RevealOnLoad(
-                      delay: const Duration(milliseconds: 80),
-                      child: _OpeningHoursCard(hours: openingHours, dayName: _dayName),
+                    RevealOnVisible(
+                      child: _OpeningHoursCard(
+                        hours: openingHours,
+                        dayName: _dayName,
+                      ),
                     ),
                   ],
                   if (team.isNotEmpty) ...[
                     const SizedBox(height: 28),
-                    RevealOnLoad(
-                      delay: const Duration(milliseconds: 160),
+                    RevealOnVisible(
                       child: _TeamSection(team: team, roleLabel: _roleLabel),
                     ),
                   ],
                   const SizedBox(height: 28),
-                  RevealOnLoad(
-                    delay: const Duration(milliseconds: 220),
+                  RevealOnVisible(
                     child: Center(
                       child: Column(
                         children: [
-                          Image.asset('assets/images/logo.png', width: 30, height: 30),
+                          Image.asset(
+                            'assets/images/logo.png',
+                            width: 30,
+                            height: 30,
+                          ),
                           const SizedBox(height: 8),
                           Text(
                             'TEAM OUSTAD',
-                            style: GoogleFonts.barlowCondensed(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
+                            style: GoogleFonts.anton(
+                              fontSize: 14,
                               color: AppColors.darkTextTertiary,
                               letterSpacing: 1.2,
                             ),
@@ -348,7 +372,10 @@ class _PhotoCarouselState extends State<_PhotoCarousel> {
               fit: BoxFit.cover,
               errorBuilder: (context, error, stack) => ColoredBox(
                 color: AppColors.darkElevated,
-                child: const Icon(Icons.broken_image_rounded, color: AppColors.primary),
+                child: const Icon(
+                  Icons.broken_image_rounded,
+                  color: AppColors.primary,
+                ),
               ),
             );
           },
@@ -362,7 +389,10 @@ class _PhotoCarouselState extends State<_PhotoCarousel> {
               bottom: false,
               child: Center(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.35),
                     borderRadius: BorderRadius.circular(20),
@@ -377,7 +407,9 @@ class _PhotoCarouselState extends State<_PhotoCarousel> {
                         width: index == _page ? 16 : 6,
                         height: 6,
                         decoration: BoxDecoration(
-                          color: index == _page ? AppColors.primary : Colors.white38,
+                          color: index == _page
+                              ? AppColors.primary
+                              : Colors.white38,
                           borderRadius: BorderRadius.circular(3),
                         ),
                       ),
@@ -413,7 +445,11 @@ class _MemberPill extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.people_alt_rounded, size: 13, color: AppColors.primary),
+              const Icon(
+                Icons.people_alt_rounded,
+                size: 13,
+                color: AppColors.primary,
+              ),
               const SizedBox(width: 5),
               Text(
                 '$display membres',
@@ -467,9 +503,18 @@ class _ActionsCard extends StatelessWidget {
             runSpacing: 12,
             children: [
               if (onMap != null)
-                _GlowButton(icon: Icons.map_rounded, label: 'Itinéraire', onTap: onMap!, filled: true),
+                _GlowButton(
+                  icon: Icons.map_rounded,
+                  label: 'Itinéraire',
+                  onTap: onMap!,
+                  filled: true,
+                ),
               if (onCall != null)
-                _GlowButton(icon: Icons.call_rounded, label: 'Appeler', onTap: onCall!),
+                _GlowButton(
+                  icon: Icons.call_rounded,
+                  label: 'Appeler',
+                  onTap: onCall!,
+                ),
             ],
           ),
         ],
@@ -485,7 +530,10 @@ class _ActionsCard extends StatelessWidget {
         Expanded(
           child: Text(
             text,
-            style: GoogleFonts.barlow(fontSize: 14, color: Colors.white.withValues(alpha: 0.85)),
+            style: GoogleFonts.barlow(
+              fontSize: 14,
+              color: Colors.white.withValues(alpha: 0.85),
+            ),
           ),
         ),
       ],
@@ -522,7 +570,9 @@ class _GlowButton extends StatelessWidget {
           decoration: BoxDecoration(
             color: filled ? AppColors.primary : AppColors.darkCard,
             borderRadius: BorderRadius.circular(28),
-            border: filled ? null : Border.all(color: AppColors.primary.withValues(alpha: 0.4)),
+            border: filled
+                ? null
+                : Border.all(color: AppColors.primary.withValues(alpha: 0.4)),
             boxShadow: filled
                 ? [
                     BoxShadow(
@@ -536,7 +586,11 @@ class _GlowButton extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 18, color: filled ? AppColors.darkBackground : AppColors.primary),
+              Icon(
+                icon,
+                size: 18,
+                color: filled ? AppColors.darkBackground : AppColors.primary,
+              ),
               const SizedBox(width: 8),
               Text(
                 label,
@@ -571,7 +625,10 @@ class _OpeningHoursCardState extends State<_OpeningHoursCard>
   @override
   void initState() {
     super.initState();
-    _pulse = AnimationController(vsync: this, duration: const Duration(seconds: 2));
+    _pulse = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    );
     if (_reduceMotion) {
       _pulse.value = 1;
     } else {
@@ -612,11 +669,7 @@ class _OpeningHoursCardState extends State<_OpeningHoursCard>
               Expanded(
                 child: Text(
                   'Horaires d\'ouverture',
-                  style: GoogleFonts.barlowCondensed(
-                    fontSize: 19,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                  ),
+                  style: GoogleFonts.anton(fontSize: 20, color: Colors.white),
                 ),
               ),
               if (openNow != null) _StatusChip(open: openNow, pulse: _pulse),
@@ -628,7 +681,10 @@ class _OpeningHoursCardState extends State<_OpeningHoursCard>
             final isClosed = hour['isClosed'] == true;
             return Container(
               margin: const EdgeInsets.symmetric(vertical: 2),
-              padding: EdgeInsets.symmetric(horizontal: isToday ? 10 : 0, vertical: 8),
+              padding: EdgeInsets.symmetric(
+                horizontal: isToday ? 10 : 0,
+                vertical: 8,
+              ),
               decoration: isToday
                   ? BoxDecoration(
                       color: AppColors.primary.withValues(alpha: 0.1),
@@ -643,17 +699,23 @@ class _OpeningHoursCardState extends State<_OpeningHoursCard>
                     style: GoogleFonts.barlow(
                       fontSize: 14,
                       fontWeight: isToday ? FontWeight.w700 : FontWeight.w400,
-                      color: isToday ? AppColors.primary : Colors.white.withValues(alpha: 0.85),
+                      color: isToday
+                          ? AppColors.primary
+                          : Colors.white.withValues(alpha: 0.85),
                     ),
                   ),
                   Text(
-                    isClosed ? 'Fermé' : '${hour['openTime']} - ${hour['closeTime']}',
+                    isClosed
+                        ? 'Fermé'
+                        : '${hour['openTime']} - ${hour['closeTime']}',
                     style: GoogleFonts.barlow(
                       fontSize: 14,
                       fontWeight: isToday ? FontWeight.w700 : FontWeight.w400,
                       color: isClosed
                           ? AppColors.errorLight
-                          : (isToday ? AppColors.primary : Colors.white.withValues(alpha: 0.7)),
+                          : (isToday
+                                ? AppColors.primary
+                                : Colors.white.withValues(alpha: 0.7)),
                     ),
                   ),
                 ],
@@ -687,7 +749,8 @@ class _StatusChip extends StatelessWidget {
         children: [
           AnimatedBuilder(
             animation: pulse,
-            builder: (context, child) => Opacity(opacity: 0.5 + 0.5 * pulse.value, child: child),
+            builder: (context, child) =>
+                Opacity(opacity: 0.5 + 0.5 * pulse.value, child: child),
             child: Container(
               width: 7,
               height: 7,
@@ -697,7 +760,11 @@ class _StatusChip extends StatelessWidget {
           const SizedBox(width: 6),
           Text(
             open ? 'Ouvert maintenant' : 'Fermé',
-            style: GoogleFonts.barlow(fontSize: 11, fontWeight: FontWeight.w700, color: color),
+            style: GoogleFonts.barlow(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: color,
+            ),
           ),
         ],
       ),
@@ -718,22 +785,17 @@ class _TeamSection extends StatelessWidget {
       children: [
         Text(
           'La team',
-          style: GoogleFonts.barlowCondensed(
-            fontSize: 19,
-            fontWeight: FontWeight.w700,
-            color: Colors.white,
-          ),
+          style: GoogleFonts.anton(fontSize: 20, color: Colors.white),
         ),
         const SizedBox(height: 14),
         Wrap(
           spacing: 18,
           runSpacing: 18,
           children: [
-            for (var i = 0; i < team.length; i++)
-              RevealOnLoad(
-                delay: Duration(milliseconds: 40 * i.clamp(0, 8)),
+            for (final member in team)
+              RevealOnVisible(
                 beginOffset: const Offset(0, 0.15),
-                child: _TeamMember(member: team[i], roleLabel: roleLabel),
+                child: _TeamMember(member: member, roleLabel: roleLabel),
               ),
           ],
         ),
@@ -775,16 +837,23 @@ class _TeamMemberState extends State<_TeamMember> {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: AppColors.primary.withValues(alpha: _hovered ? 0.9 : 0.4),
+                    color: AppColors.primary.withValues(
+                      alpha: _hovered ? 0.9 : 0.4,
+                    ),
                     width: 2,
                   ),
                 ),
                 child: CircleAvatar(
                   radius: 34,
                   backgroundColor: AppColors.darkElevated,
-                  backgroundImage: photoUrl != null ? NetworkImage(photoUrl) : null,
+                  backgroundImage: photoUrl != null
+                      ? NetworkImage(photoUrl)
+                      : null,
                   child: photoUrl == null
-                      ? const Icon(Icons.person_rounded, color: AppColors.primary)
+                      ? const Icon(
+                          Icons.person_rounded,
+                          color: AppColors.primary,
+                        )
                       : null,
                 ),
               ),
@@ -802,7 +871,10 @@ class _TeamMemberState extends State<_TeamMember> {
               ),
               Text(
                 widget.roleLabel(widget.member['role'] as String?),
-                style: GoogleFonts.barlow(fontSize: 11, color: AppColors.darkTextTertiary),
+                style: GoogleFonts.barlow(
+                  fontSize: 11,
+                  color: AppColors.darkTextTertiary,
+                ),
               ),
             ],
           ),

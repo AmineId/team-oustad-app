@@ -9,7 +9,10 @@ import '../../widgets/widgets.dart';
 import 'gym_showcase_detail_screen.dart';
 
 bool get _reduceMotion => SchedulerBinding
-    .instance.platformDispatcher.accessibilityFeatures.disableAnimations;
+    .instance
+    .platformDispatcher
+    .accessibilityFeatures
+    .disableAnimations;
 
 /// Page vitrine publique — liste des salles publiées. Build web dédié
 /// (team-oustad.com), voir WEB_TARGET dans lib/main.dart. Habillage "brand"
@@ -103,9 +106,11 @@ class _GymShowcaseListScreenState extends State<GymShowcaseListScreen>
                   SliverToBoxAdapter(
                     child: _ShowcaseHero(
                       glowController: _glowController,
+                      scrollController: _scrollController,
                       onDiscoverTap: _scrollToContent,
                     ),
                   ),
+                  const SliverToBoxAdapter(child: _MarqueeBand()),
                   SliverToBoxAdapter(
                     child: KeyedSubtree(
                       key: _contentKey,
@@ -155,17 +160,14 @@ class _GymShowcaseListScreenState extends State<GymShowcaseListScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const RevealOnLoad(child: _SectionHeader()),
+            const RevealOnVisible(child: _SectionHeader()),
             const SizedBox(height: 28),
             ResponsiveGrid(
               spacing: 20,
               runSpacing: 20,
               children: [
-                for (var i = 0; i < _gyms.length; i++)
-                  RevealOnLoad(
-                    delay: Duration(milliseconds: 60 * i.clamp(0, 8)),
-                    child: _GymShowcaseCard(gym: _gyms[i]),
-                  ),
+                for (final gym in _gyms)
+                  RevealOnVisible(child: _GymShowcaseCard(gym: gym)),
               ],
             ),
           ],
@@ -197,10 +199,10 @@ class _GymShowcaseListScreenState extends State<GymShowcaseListScreen>
           const SizedBox(height: 20),
           Text(
             title,
-            style: GoogleFonts.barlowCondensed(
+            style: GoogleFonts.anton(
               fontSize: 22,
-              fontWeight: FontWeight.w700,
               color: Colors.white,
+              letterSpacing: 0.5,
             ),
           ),
           const SizedBox(height: 8),
@@ -219,8 +221,10 @@ class _GymShowcaseListScreenState extends State<GymShowcaseListScreen>
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppColors.primary,
                 side: const BorderSide(color: AppColors.primary),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
               ),
               child: const Text('Réessayer'),
             ),
@@ -250,8 +254,7 @@ class _TopBar extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
             child: LiquidGlass(
               borderRadius: BorderRadius.circular(18),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -264,9 +267,8 @@ class _TopBar extends StatelessWidget {
                   const SizedBox(width: 10),
                   Text(
                     'TEAM OUSTAD',
-                    style: GoogleFonts.barlowCondensed(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
+                    style: GoogleFonts.anton(
+                      fontSize: 15,
                       color: Colors.white,
                       letterSpacing: 1,
                     ),
@@ -283,10 +285,12 @@ class _TopBar extends StatelessWidget {
 
 class _ShowcaseHero extends StatelessWidget {
   final AnimationController glowController;
+  final ScrollController scrollController;
   final VoidCallback onDiscoverTap;
 
   const _ShowcaseHero({
     required this.glowController,
+    required this.scrollController,
     required this.onDiscoverTap,
   });
 
@@ -306,39 +310,42 @@ class _ShowcaseHero extends StatelessWidget {
           children: [
             const ColoredBox(color: AppColors.darkBackground),
             AnimatedBuilder(
-              animation: glowController,
+              animation: Listenable.merge([glowController, scrollController]),
               builder: (context, _) {
                 final t = glowController.value;
+                final parallax = scrollController.hasClients
+                    ? scrollController.offset * 0.35
+                    : 0.0;
                 return Stack(
                   children: [
                     Positioned(
-                      top: -140 + 36 * t,
+                      top: -140 + 36 * t + parallax,
                       left: -120 + 50 * t,
                       child: _glowBlob(AppColors.primary, 420),
                     ),
                     Positioned(
-                      bottom: -160 - 24 * t,
+                      bottom: -160 - 24 * t - parallax,
                       right: -140 - 36 * t,
                       child: _glowBlob(AppColors.primaryDark, 480),
+                    ),
+                    Positioned(
+                      right: -70,
+                      bottom: -30 - parallax * 0.6,
+                      child: Opacity(
+                        opacity: 0.08,
+                        child: Transform.rotate(
+                          angle: -0.06,
+                          child: Image.asset(
+                            'assets/images/logo-1-transparent.png',
+                            width: isDesktop ? 480 : 320,
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 );
               },
-            ),
-            Positioned(
-              right: -70,
-              bottom: -30,
-              child: Opacity(
-                opacity: 0.08,
-                child: Transform.rotate(
-                  angle: -0.06,
-                  child: Image.asset(
-                    'assets/images/logo-1-transparent.png',
-                    width: isDesktop ? 480 : 320,
-                    fit: BoxFit.contain,
-                  ),
-                ),
-              ),
             ),
             Align(
               alignment: Alignment.bottomCenter,
@@ -355,9 +362,7 @@ class _ShowcaseHero extends StatelessWidget {
             ),
             Center(
               child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: isDesktop ? 48 : 24,
-                ),
+                padding: EdgeInsets.symmetric(horizontal: isDesktop ? 48 : 24),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -417,6 +422,112 @@ Widget _glowBlob(Color color, double size) {
   );
 }
 
+/// Bandeau défilant en continu (contenu dupliqué une fois, la boucle se fait
+/// exactement à la largeur d'une copie — pas de saut visible). Pur effet de
+/// marque : pas d'info exclusive, donc pas de lecteur d'écran dédié requis
+/// au-delà du contenu déjà annoncé par les cartes.
+class _MarqueeBand extends StatefulWidget {
+  const _MarqueeBand();
+
+  @override
+  State<_MarqueeBand> createState() => _MarqueeBandState();
+}
+
+class _MarqueeBandState extends State<_MarqueeBand>
+    with SingleTickerProviderStateMixin {
+  static const _words = [
+    'MUSCULATION',
+    'CROSSFIT',
+    'COACHING',
+    'CARDIO',
+    'NUTRITION',
+    'COMMUNAUTÉ',
+  ];
+  static const _speedPxPerSec = 46.0;
+
+  final _scrollController = ScrollController();
+  Ticker? _ticker;
+  Duration? _lastElapsed;
+
+  @override
+  void initState() {
+    super.initState();
+    if (!_reduceMotion) {
+      _ticker = createTicker(_onTick)..start();
+    }
+  }
+
+  void _onTick(Duration elapsed) {
+    if (!_scrollController.hasClients) return;
+    final max = _scrollController.position.maxScrollExtent;
+    if (max <= 0) {
+      _lastElapsed = elapsed;
+      return;
+    }
+    final dtSeconds = _lastElapsed == null
+        ? 0.0
+        : (elapsed - _lastElapsed!).inMicroseconds / 1e6;
+    _lastElapsed = elapsed;
+    var next = _scrollController.offset + _speedPxPerSec * dtSeconds;
+    if (next >= max) next -= max;
+    _scrollController.jumpTo(next);
+  }
+
+  @override
+  void dispose() {
+    _ticker?.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final block = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [for (final w in _words) _wordChip(w)],
+    );
+
+    return Transform.rotate(
+      angle: -0.022,
+      child: Container(
+        color: AppColors.primary,
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        child: SingleChildScrollView(
+          controller: _scrollController,
+          scrollDirection: Axis.horizontal,
+          physics: const NeverScrollableScrollPhysics(),
+          child: Row(mainAxisSize: MainAxisSize.min, children: [block, block]),
+        ),
+      ),
+    );
+  }
+
+  Widget _wordChip(String w) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            w,
+            style: GoogleFonts.anton(
+              fontSize: 21,
+              color: AppColors.darkBackground,
+              letterSpacing: 1.5,
+            ),
+          ),
+          const SizedBox(width: 16),
+          const Icon(
+            Icons.fitness_center_rounded,
+            size: 16,
+            color: AppColors.darkBackground,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _Eyebrow extends StatelessWidget {
   const _Eyebrow();
 
@@ -456,34 +567,55 @@ class _Wordmark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final size = isDesktop ? 96.0 : 58.0;
-    return Column(
+    final size = isDesktop ? 108.0 : 64.0;
+    return Stack(
+      alignment: Alignment.center,
+      clipBehavior: Clip.none,
       children: [
-        Text(
-          'TEAM',
-          style: GoogleFonts.barlowCondensed(
-            fontSize: size,
-            fontWeight: FontWeight.w800,
-            height: 0.95,
-            color: AppColors.primary,
-            letterSpacing: 2,
-            shadows: [
-              Shadow(
-                color: AppColors.primary.withValues(alpha: 0.55),
-                blurRadius: 40,
+        Transform.rotate(
+          angle: -0.05,
+          child: Container(
+            width: size * 5.4,
+            height: size * 1.7,
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.07),
+              border: Border.symmetric(
+                horizontal: BorderSide(
+                  color: AppColors.primary.withValues(alpha: 0.35),
+                  width: 2,
+                ),
               ),
-            ],
+            ),
           ),
         ),
-        Text(
-          'OUSTAD',
-          style: GoogleFonts.barlowCondensed(
-            fontSize: size,
-            fontWeight: FontWeight.w800,
-            height: 0.95,
-            color: Colors.white,
-            letterSpacing: 2,
-          ),
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'TEAM',
+              style: GoogleFonts.anton(
+                fontSize: size,
+                height: 0.92,
+                color: AppColors.primary,
+                letterSpacing: 2,
+                shadows: [
+                  Shadow(
+                    color: AppColors.primary.withValues(alpha: 0.6),
+                    blurRadius: 46,
+                  ),
+                ],
+              ),
+            ),
+            Text(
+              'OUSTAD',
+              style: GoogleFonts.anton(
+                fontSize: size,
+                height: 0.92,
+                color: Colors.white,
+                letterSpacing: 2,
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -594,11 +726,7 @@ class _SectionHeader extends StatelessWidget {
         const SizedBox(height: 6),
         Text(
           'Choisis ta salle',
-          style: GoogleFonts.barlowCondensed(
-            fontSize: 32,
-            fontWeight: FontWeight.w800,
-            color: Colors.white,
-          ),
+          style: GoogleFonts.anton(fontSize: 36, color: Colors.white),
         ),
       ],
     );
@@ -635,147 +763,150 @@ class _GymShowcaseCardState extends State<_GymShowcaseCard> {
           HapticFeedback.selectionClick();
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (context) =>
-                  GymShowcaseDetailScreen(slugOrId: slugOrId),
+              builder: (context) => GymShowcaseDetailScreen(slugOrId: slugOrId),
             ),
           );
         },
         child: Semantics(
           button: true,
           label: '$name${address.isNotEmpty ? ', $address' : ''}',
-          child: AnimatedScale(
-            scale: _hovered ? 1.02 : 1.0,
+          child: AnimatedRotation(
+            turns: _hovered ? -0.006 : 0,
             duration: const Duration(milliseconds: 180),
             curve: Curves.easeOut,
-            child: AnimatedContainer(
+            child: AnimatedScale(
+              scale: _hovered ? 1.03 : 1.0,
               duration: const Duration(milliseconds: 180),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(18),
-                boxShadow: [
-                  BoxShadow(
+              curve: Curves.easeOut,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(18),
+                  boxShadow: [
+                    BoxShadow(
+                      color: _hovered
+                          ? AppColors.primary.withValues(alpha: 0.35)
+                          : Colors.black.withValues(alpha: 0.3),
+                      blurRadius: _hovered ? 28 : 14,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                  border: Border.all(
                     color: _hovered
-                        ? AppColors.primary.withValues(alpha: 0.35)
-                        : Colors.black.withValues(alpha: 0.3),
-                    blurRadius: _hovered ? 28 : 14,
-                    offset: const Offset(0, 10),
+                        ? AppColors.primary.withValues(alpha: 0.6)
+                        : Colors.white.withValues(alpha: 0.08),
                   ),
-                ],
-                border: Border.all(
-                  color: _hovered
-                      ? AppColors.primary.withValues(alpha: 0.6)
-                      : Colors.white.withValues(alpha: 0.08),
                 ),
-              ),
-              clipBehavior: Clip.antiAlias,
-              child: Stack(
-                children: [
-                  AspectRatio(
-                    aspectRatio: 4 / 5,
-                    child: coverPhotoUrl != null
-                        ? Image.network(
-                            coverPhotoUrl,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stack) =>
-                                _placeholder(),
-                          )
-                        : _placeholder(),
-                  ),
-                  Positioned.fill(
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.transparent,
-                            Colors.transparent,
-                            Colors.black.withValues(alpha: 0.88),
-                          ],
-                          stops: const [0, 0.4, 1],
+                clipBehavior: Clip.antiAlias,
+                child: Stack(
+                  children: [
+                    AspectRatio(
+                      aspectRatio: 4 / 5,
+                      child: coverPhotoUrl != null
+                          ? Image.network(
+                              coverPhotoUrl,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stack) =>
+                                  _placeholder(),
+                            )
+                          : _placeholder(),
+                    ),
+                    Positioned.fill(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.transparent,
+                              Colors.transparent,
+                              Colors.black.withValues(alpha: 0.88),
+                            ],
+                            stops: const [0, 0.4, 1],
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  if (memberCountDisplay != null)
+                    if (memberCountDisplay != null)
+                      Positioned(
+                        top: 12,
+                        right: 12,
+                        child: _MemberBadge(display: memberCountDisplay),
+                      ),
                     Positioned(
-                      top: 12,
-                      right: 12,
-                      child: _MemberBadge(display: memberCountDisplay),
-                    ),
-                  Positioned(
-                    left: 16,
-                    right: 16,
-                    bottom: 16,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.barlowCondensed(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
+                      left: 16,
+                      right: 16,
+                      bottom: 16,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.anton(
+                              fontSize: 23,
+                              color: Colors.white,
+                            ),
                           ),
-                        ),
-                        if (address.isNotEmpty) ...[
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.location_on_rounded,
-                                size: 14,
-                                color: Colors.white70,
-                              ),
-                              const SizedBox(width: 4),
-                              Expanded(
-                                child: Text(
-                                  address,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: GoogleFonts.barlow(
-                                    fontSize: 12,
-                                    color: Colors.white70,
+                          if (address.isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.location_on_rounded,
+                                  size: 14,
+                                  color: Colors.white70,
+                                ),
+                                const SizedBox(width: 4),
+                                Expanded(
+                                  child: Text(
+                                    address,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: GoogleFonts.barlow(
+                                      fontSize: 12,
+                                      color: Colors.white70,
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ],
-                        AnimatedSize(
-                          duration: const Duration(milliseconds: 180),
-                          alignment: Alignment.topLeft,
-                          child: _hovered
-                              ? Padding(
-                                  padding: const EdgeInsets.only(top: 10),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        'Voir la salle',
-                                        style: GoogleFonts.barlow(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w700,
+                              ],
+                            ),
+                          ],
+                          AnimatedSize(
+                            duration: const Duration(milliseconds: 180),
+                            alignment: Alignment.topLeft,
+                            child: _hovered
+                                ? Padding(
+                                    padding: const EdgeInsets.only(top: 10),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          'Voir la salle',
+                                          style: GoogleFonts.barlow(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w700,
+                                            color: AppColors.primary,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 4),
+                                        const Icon(
+                                          Icons.arrow_forward_rounded,
+                                          size: 14,
                                           color: AppColors.primary,
                                         ),
-                                      ),
-                                      const SizedBox(width: 4),
-                                      const Icon(
-                                        Icons.arrow_forward_rounded,
-                                        size: 14,
-                                        color: AppColors.primary,
-                                      ),
-                                    ],
-                                  ),
-                                )
-                              : const SizedBox(width: double.infinity),
-                        ),
-                      ],
+                                      ],
+                                    ),
+                                  )
+                                : const SizedBox(width: double.infinity),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -814,9 +945,7 @@ class _MemberBadge extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.black.withValues(alpha: 0.35),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: AppColors.primary.withValues(alpha: 0.5),
-            ),
+            border: Border.all(color: AppColors.primary.withValues(alpha: 0.5)),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -864,9 +993,8 @@ class _ShowcaseFooter extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             'TEAM OUSTAD',
-            style: GoogleFonts.barlowCondensed(
+            style: GoogleFonts.anton(
               fontSize: 16,
-              fontWeight: FontWeight.w700,
               color: Colors.white,
               letterSpacing: 1,
             ),
