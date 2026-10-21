@@ -170,7 +170,7 @@ jobs:
           cd android && bundle exec fastlane supply \
             --aab "$AAB" \
             --track internal \
-            --release_status draft \
+            --release_status completed \
             --json_key fastlane/service-account-key.json \
             --package_name team.fitness.team_fitness_app \
             --skip_upload_metadata \
