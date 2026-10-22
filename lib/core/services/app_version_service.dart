@@ -17,7 +17,7 @@ class AppVersionService {
   AppVersionService._internal();
 
   static const playStoreUrl =
-      'https://play.google.com/store/apps/details?id=team.fitness.team_fitness_app';
+      'https://play.google.com/store/apps/details?id=team.oustad.app';
 
   /// Seul Android a un store où renvoyer l'utilisateur.
   static bool get canOpenStore => !kIsWeb && Platform.isAndroid;

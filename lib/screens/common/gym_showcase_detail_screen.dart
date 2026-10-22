@@ -1,10 +1,13 @@
+import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../core/models/models.dart';
 import '../../core/services/api_service.dart';
+import '../../core/services/banner_service.dart';
 import '../../core/theme/theme.dart';
 import '../../widgets/widgets.dart';
 
@@ -30,6 +33,8 @@ class GymShowcaseDetailScreen extends StatefulWidget {
 class _GymShowcaseDetailScreenState extends State<GymShowcaseDetailScreen> {
   final ApiService _apiService = ApiService.fromEnv();
   Map<String, dynamic>? _gym;
+  List<BannerModel> _banners = [];
+  List<dynamic> _subscriptions = [];
   bool _isLoading = true;
   bool _hasError = false;
 
@@ -51,6 +56,50 @@ class _GymShowcaseDetailScreenState extends State<GymShowcaseDetailScreen> {
       _hasError = gym == null;
       _isLoading = false;
     });
+    final rawId = gym?['id'];
+    if (rawId != null) {
+      final gymId = rawId is int ? rawId : int.tryParse(rawId.toString());
+      if (gymId != null) {
+        _loadBanners(gymId);
+        _loadSubscriptions();
+      }
+    }
+  }
+
+  Future<void> _loadBanners(int gymId) async {
+    final banners = await BannerService(_apiService).getAllBanners(
+      gymId: gymId,
+      activeOnly: true,
+    );
+    if (!mounted) return;
+    setState(() => _banners = banners);
+  }
+
+  Future<void> _loadSubscriptions() async {
+    final subs = await _apiService.getSubscriptionTypes();
+    if (!mounted) return;
+    setState(() => _subscriptions = subs ?? []);
+  }
+
+  Future<void> _share(String name, String slugOrId) async {
+    final text =
+        'Découvrez $name sur Team Oustad : https://team-oustad.com/gyms/$slugOrId';
+    await Clipboard.setData(ClipboardData(text: text));
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('Lien copié dans le presse-papier'),
+        backgroundColor: AppColors.darkCard,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  Future<void> _whatsApp(String number) async {
+    final clean = number.replaceAll(RegExp(r'[^\d+]'), '');
+    final uri = Uri.parse('https://wa.me/$clean');
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
   Future<void> _openMaps(String address) async {
@@ -132,6 +181,11 @@ class _GymShowcaseDetailScreenState extends State<GymShowcaseDetailScreen> {
     final name = gym['name'] as String? ?? 'Salle';
     final address = gym['address'] as String? ?? '';
     final phone = gym['phone'] as String?;
+    final whatsappNumber =
+        (gym['whatsappNumber'] as String?)?.isNotEmpty == true
+        ? gym['whatsappNumber'] as String
+        : phone;
+    final gymSlug = (gym['slug'] as String?) ?? gym['id'].toString();
     final description = gym['description'] as String?;
     final memberCountDisplay = gym['memberCountDisplay'] as String?;
     final photos = ((gym['photos'] as List<dynamic>?) ?? [])
@@ -162,6 +216,22 @@ class _GymShowcaseDetailScreenState extends State<GymShowcaseDetailScreen> {
             padding: EdgeInsets.all(8),
             child: _FloatingBackButton(),
           ),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 8, top: 4, bottom: 4),
+              child: SafeArea(
+                bottom: false,
+                child: LiquidGlass(
+                  borderRadius: BorderRadius.circular(999),
+                  child: IconButton(
+                    icon: const Icon(Icons.share_rounded, color: Colors.white),
+                    tooltip: 'Partager',
+                    onPressed: () => _share(name, gymSlug),
+                  ),
+                ),
+              ),
+            ),
+          ],
           flexibleSpace: FlexibleSpaceBar(
             collapseMode: CollapseMode.pin,
             background: Stack(
@@ -233,16 +303,28 @@ class _GymShowcaseDetailScreenState extends State<GymShowcaseDetailScreen> {
                     ),
                     const SizedBox(height: 24),
                   ],
+                  if (_banners.isNotEmpty) ...[
+                    RevealOnVisible(
+                      child: _PromosSection(banners: _banners),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
                   if (address.isNotEmpty || (phone != null && phone.isNotEmpty))
                     RevealOnVisible(
                       child: _ActionsCard(
                         address: address,
                         phone: phone,
+                        whatsappNumber: whatsappNumber,
                         onMap: address.isNotEmpty
                             ? () => _openMaps(address)
                             : null,
                         onCall: (phone != null && phone.isNotEmpty)
                             ? () => _call(phone)
+                            : null,
+                        onWhatsApp:
+                            (whatsappNumber != null &&
+                                whatsappNumber.isNotEmpty)
+                            ? () => _whatsApp(whatsappNumber)
                             : null,
                       ),
                     ),
@@ -263,6 +345,14 @@ class _GymShowcaseDetailScreenState extends State<GymShowcaseDetailScreen> {
                     const SizedBox(height: 28),
                     RevealOnVisible(
                       child: _TeamSection(team: team, roleLabel: _roleLabel),
+                    ),
+                  ],
+                  if (_subscriptions.isNotEmpty) ...[
+                    const SizedBox(height: 28),
+                    RevealOnVisible(
+                      child: _SubscriptionsSection(
+                        subscriptions: _subscriptions,
+                      ),
                     ),
                   ],
                   const SizedBox(height: 28),
@@ -321,6 +411,112 @@ bool? _isOpenNow(Map<String, dynamic>? todayHours) {
   }
   // Plage à cheval sur minuit (ex: 22:00 - 02:00).
   return nowMinutes >= open || nowMinutes < close;
+}
+
+class _PromosSection extends StatefulWidget {
+  final List<BannerModel> banners;
+
+  const _PromosSection({required this.banners});
+
+  @override
+  State<_PromosSection> createState() => _PromosSectionState();
+}
+
+class _PromosSectionState extends State<_PromosSection> {
+  late final PageController _pageController;
+  int _page = 0;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(viewportFraction: 0.9);
+    if (!_reduceMotion && widget.banners.length > 1) {
+      _timer = Timer.periodic(const Duration(seconds: 5), (_) {
+        if (!mounted) return;
+        final next = (_page + 1) % widget.banners.length;
+        _pageController.animateToPage(
+          next,
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeInOut,
+        );
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              'OFFRES & ÉVÉNEMENTS',
+              style: GoogleFonts.barlow(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 2,
+                color: AppColors.primary,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 14),
+        SizedBox(
+          height: 160,
+          child: PageView.builder(
+            controller: _pageController,
+            itemCount: widget.banners.length,
+            onPageChanged: (i) => setState(() => _page = i),
+            itemBuilder: (context, index) => BannerCard(
+              banner: widget.banners[index],
+              height: 160,
+              margin: const EdgeInsets.only(right: 10),
+              borderRadius: BorderRadius.circular(16),
+            ),
+          ),
+        ),
+        if (widget.banners.length > 1) ...[
+          const SizedBox(height: 10),
+          Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: List.generate(
+                widget.banners.length,
+                (i) => AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                  width: i == _page ? 16 : 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: i == _page ? AppColors.primary : Colors.white24,
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
 }
 
 class _FloatingBackButton extends StatelessWidget {
@@ -385,14 +581,24 @@ class _PhotoCarouselState extends State<_PhotoCarousel> {
           onPageChanged: (page) => setState(() => _page = page),
           itemBuilder: (context, index) {
             final url = widget.photos[index]['url'] as String?;
-            return Image.network(
-              url ?? '',
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stack) => ColoredBox(
-                color: AppColors.darkElevated,
-                child: const Icon(
-                  Icons.broken_image_rounded,
-                  color: AppColors.primary,
+            return GestureDetector(
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => _PhotoFullscreenViewer(
+                    photos: widget.photos,
+                    initialIndex: index,
+                  ),
+                ),
+              ),
+              child: Image.network(
+                url ?? '',
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stack) => ColoredBox(
+                  color: AppColors.darkElevated,
+                  child: const Icon(
+                    Icons.broken_image_rounded,
+                    color: AppColors.primary,
+                  ),
                 ),
               ),
             );
@@ -488,14 +694,18 @@ class _MemberPill extends StatelessWidget {
 class _ActionsCard extends StatelessWidget {
   final String address;
   final String? phone;
+  final String? whatsappNumber;
   final VoidCallback? onMap;
   final VoidCallback? onCall;
+  final VoidCallback? onWhatsApp;
 
   const _ActionsCard({
     required this.address,
     required this.phone,
+    this.whatsappNumber,
     required this.onMap,
     required this.onCall,
+    this.onWhatsApp,
   });
 
   @override
@@ -532,6 +742,12 @@ class _ActionsCard extends StatelessWidget {
                   icon: Icons.call_rounded,
                   label: 'Appeler',
                   onTap: onCall!,
+                ),
+              if (onWhatsApp != null)
+                _GlowButton(
+                  icon: Icons.chat_rounded,
+                  label: 'WhatsApp',
+                  onTap: onWhatsApp!,
                 ),
             ],
           ),
@@ -660,6 +876,28 @@ class _OpeningHoursCardState extends State<_OpeningHoursCard>
     super.dispose();
   }
 
+  String? _nextOpenText(int todayIndex) {
+    const dayNames = [
+      'dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi',
+    ];
+    for (var offset = 1; offset <= 7; offset++) {
+      final dayIndex = (todayIndex + offset) % 7;
+      Map<String, dynamic>? slot;
+      for (final h in widget.hours) {
+        if (h['dayOfWeek'] == dayIndex) {
+          slot = h;
+          break;
+        }
+      }
+      if (slot == null || slot['isClosed'] == true) continue;
+      final openTime = slot['openTime'] as String?;
+      if (openTime == null) continue;
+      final label = offset == 1 ? 'Demain' : 'Le ${dayNames[dayIndex]}';
+      return 'Ouvre $label à $openTime';
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     final todayIndex = DateTime.now().weekday % 7;
@@ -671,6 +909,7 @@ class _OpeningHoursCardState extends State<_OpeningHoursCard>
       }
     }
     final openNow = _isOpenNow(todayHours);
+    final nextOpen = openNow == false ? _nextOpenText(todayIndex) : null;
 
     return Container(
       padding: const EdgeInsets.all(18),
@@ -693,6 +932,16 @@ class _OpeningHoursCardState extends State<_OpeningHoursCard>
               if (openNow != null) _StatusChip(open: openNow, pulse: _pulse),
             ],
           ),
+          if (nextOpen != null) ...[
+            const SizedBox(height: 6),
+            Text(
+              nextOpen,
+              style: GoogleFonts.barlow(
+                fontSize: 12,
+                color: AppColors.darkTextTertiary,
+              ),
+            ),
+          ],
           const SizedBox(height: 14),
           ...widget.hours.map((hour) {
             final isToday = hour['dayOfWeek'] == todayIndex;
@@ -897,6 +1146,267 @@ class _TeamMemberState extends State<_TeamMember> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+// ─── Photo fullscreen viewer ────────────────────────────────────────────────
+
+class _PhotoFullscreenViewer extends StatefulWidget {
+  final List<Map<String, dynamic>> photos;
+  final int initialIndex;
+
+  const _PhotoFullscreenViewer({
+    required this.photos,
+    required this.initialIndex,
+  });
+
+  @override
+  State<_PhotoFullscreenViewer> createState() => _PhotoFullscreenViewerState();
+}
+
+class _PhotoFullscreenViewerState extends State<_PhotoFullscreenViewer> {
+  late final PageController _controller;
+  late int _page;
+
+  @override
+  void initState() {
+    super.initState();
+    _page = widget.initialIndex;
+    _controller = PageController(initialPage: widget.initialIndex);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Stack(
+        children: [
+          PageView.builder(
+            controller: _controller,
+            itemCount: widget.photos.length,
+            onPageChanged: (i) => setState(() => _page = i),
+            itemBuilder: (context, index) {
+              final url = widget.photos[index]['url'] as String?;
+              return InteractiveViewer(
+                child: Center(
+                  child: Image.network(
+                    url ?? '',
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, _, _) => const Icon(
+                      Icons.broken_image_rounded,
+                      color: Colors.white54,
+                      size: 64,
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  LiquidGlass(
+                    borderRadius: BorderRadius.circular(999),
+                    child: IconButton(
+                      icon: const Icon(
+                        Icons.close_rounded,
+                        color: Colors.white,
+                      ),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ),
+                  if (widget.photos.length > 1)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black54,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        '${_page + 1} / ${widget.photos.length}',
+                        style: GoogleFonts.barlow(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Subscriptions section ──────────────────────────────────────────────────
+
+class _SubscriptionsSection extends StatelessWidget {
+  final List<dynamic> subscriptions;
+
+  const _SubscriptionsSection({required this.subscriptions});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              'FORMULES D\'ABONNEMENT',
+              style: GoogleFonts.barlow(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 2,
+                color: AppColors.primary,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 14),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              for (var i = 0; i < subscriptions.length; i++)
+                _SubscriptionCard(
+                  sub: subscriptions[i] as Map<String, dynamic>,
+                  highlighted: i == 0,
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SubscriptionCard extends StatelessWidget {
+  final Map<String, dynamic> sub;
+  final bool highlighted;
+
+  const _SubscriptionCard({
+    required this.sub,
+    this.highlighted = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final name = sub['name'] as String? ?? '';
+    final price = sub['price'];
+    final duration =
+        sub['durationMonths'] ?? sub['duration'] ?? sub['durationDays'];
+    final priceStr = price != null ? '$price€' : '';
+    final durationLabel =
+        sub['durationMonths'] != null
+        ? '${sub['durationMonths']} mois'
+        : (sub['durationDays'] != null ? '${sub['durationDays']} jours' : '');
+
+    return Container(
+      width: 160,
+      margin: const EdgeInsets.only(right: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: highlighted
+            ? AppColors.primary.withValues(alpha: 0.12)
+            : AppColors.darkCard,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: highlighted
+              ? AppColors.primary.withValues(alpha: 0.6)
+              : Colors.white.withValues(alpha: 0.08),
+          width: highlighted ? 1.5 : 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (highlighted)
+            Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                'POPULAIRE',
+                style: GoogleFonts.barlow(
+                  fontSize: 9,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1,
+                  color: AppColors.darkBackground,
+                ),
+              ),
+            ),
+          Text(
+            name,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.barlow(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+            ),
+          ),
+          if (priceStr.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Text(
+              priceStr,
+              style: GoogleFonts.anton(
+                fontSize: 22,
+                color: AppColors.primary,
+                height: 1.0,
+              ),
+            ),
+          ],
+          if (durationLabel.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              durationLabel,
+              style: GoogleFonts.barlow(
+                fontSize: 12,
+                color: AppColors.darkTextTertiary,
+              ),
+            ),
+          ],
+          if (duration == null && priceStr.isEmpty) ...[
+            const SizedBox(height: 6),
+            Text(
+              'Voir en salle',
+              style: GoogleFonts.barlow(
+                fontSize: 12,
+                color: AppColors.darkTextTertiary,
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }

@@ -33,7 +33,7 @@ void main() async {
     bool canInitFirebase = true;
     if (!kIsWeb && Platform.isIOS) {
       try {
-        const securityChannel = MethodChannel('team.fitness.security');
+        const securityChannel = MethodChannel('team.oustad.security');
         canInitFirebase = await securityChannel.invokeMethod<bool>('checkFirebasePlistBundle') ?? false;
         if (!canInitFirebase) {
           debugPrint('⚠️ Firebase: bundle ID mismatch (xtool signing), skipping init');

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:team_fitness_app/core/utils/platform_utils.dart';
+import 'package:team_oustad_app/core/utils/platform_utils.dart';
 import '../../core/theme/theme.dart';
 
 /// A card widget that adapts its styling based on device type

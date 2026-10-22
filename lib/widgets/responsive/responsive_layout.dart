@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:team_fitness_app/core/utils/platform_utils.dart';
+import 'package:team_oustad_app/core/utils/platform_utils.dart';
 import '../../core/theme/theme.dart';
 import '../common/glass.dart';
 import '../common/native_glass_tab_bar.dart';

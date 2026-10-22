@@ -4,6 +4,7 @@ import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/theme/theme.dart';
 import '../../core/utils/user_utils.dart';
+import '../../widgets/common/app_snackbar.dart';
 import 'admin_subscription_details_screen.dart';
 import 'admin_create_subscription_screen.dart';
 import 'admin_create_planning_screen.dart';
@@ -523,6 +524,15 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
           if (phone != null) ...[
             const SizedBox(height: 12),
             _buildInfoRow(Icons.phone, phone),
+          ],
+
+          if (email.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            _SendSetupEmailButton(
+              email: email,
+              apiService: _apiService,
+              authService: _authService,
+            ),
           ],
         ],
       ),
@@ -1292,5 +1302,66 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
     } catch (e) {
       return dateString;
     }
+  }
+}
+
+class _SendSetupEmailButton extends StatefulWidget {
+  final String email;
+  final ApiService apiService;
+  final AuthService authService;
+
+  const _SendSetupEmailButton({
+    required this.email,
+    required this.apiService,
+    required this.authService,
+  });
+
+  @override
+  State<_SendSetupEmailButton> createState() => _SendSetupEmailButtonState();
+}
+
+class _SendSetupEmailButtonState extends State<_SendSetupEmailButton> {
+  bool _isSending = false;
+  bool _sent = false;
+
+  Future<void> _send() async {
+    setState(() => _isSending = true);
+    try {
+      final token = await widget.authService.loadToken();
+      if (token == null) throw Exception('Non authentifié');
+      final ok = await widget.apiService.sendSetupEmail(widget.email, token);
+      if (!mounted) return;
+      if (ok) {
+        setState(() => _sent = true);
+        AppSnackBar.success(context, 'Email de configuration envoyé');
+      } else {
+        AppSnackBar.error(context, 'Échec de l\'envoi');
+      }
+    } catch (_) {
+      if (mounted) AppSnackBar.error(context, 'Erreur lors de l\'envoi');
+    } finally {
+      if (mounted) setState(() => _isSending = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton.icon(
+      onPressed: (_isSending || _sent) ? null : _send,
+      icon: _isSending
+          ? const SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : Icon(_sent ? Icons.check_circle_outline : Icons.mark_email_unread_outlined),
+      label: Text(_sent ? 'Email envoyé' : 'Envoyer email de configuration'),
+      style: OutlinedButton.styleFrom(
+        foregroundColor: AppColors.primary,
+        side: const BorderSide(color: AppColors.primary),
+        minimumSize: const Size(double.infinity, 44),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
   }
 }

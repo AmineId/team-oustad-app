@@ -1,4 +1,4 @@
-name: team_fitness_app
+name: team_oustad_app
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -82,6 +82,9 @@ dependencies:
   
   # QR code scanner for admin check-in
   mobile_scanner: ^7.1.4
+
+  # Wear OS support (WatchShape, AmbientMode) — entry point: lib/main_wear.dart
+  wear: ^1.1.0
 
   # Google Fonts for Barlow Condensed (headings) and Barlow (body)
   google_fonts: ^6.2.1

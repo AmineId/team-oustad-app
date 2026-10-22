@@ -22,6 +22,8 @@ class BannerCarousel extends StatefulWidget {
   final void Function(BannerModel)? onBannerTap;
   final EdgeInsets? margin;
   final BorderRadius? borderRadius;
+  final int? gymId;
+  final bool activeOnly;
 
   const BannerCarousel({
     super.key,
@@ -31,6 +33,8 @@ class BannerCarousel extends StatefulWidget {
     this.onBannerTap,
     this.margin,
     this.borderRadius,
+    this.gymId,
+    this.activeOnly = true,
   });
 
   @override
@@ -63,8 +67,10 @@ class _BannerCarouselState extends State<BannerCarousel> {
     setState(() => _isLoading = true);
 
     try {
-      // Load all banners (not just active ones) for testing
-      final banners = await _bannerService.getAllBanners(activeOnly: false);
+      final banners = await _bannerService.getAllBanners(
+        gymId: widget.gymId,
+        activeOnly: widget.activeOnly,
+      );
       if (mounted) {
         setState(() {
           _banners = banners;

@@ -2,11 +2,13 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/services/api_service.dart';
+import '../../core/services/watch_sync_service.dart';
 import '../../core/theme/theme.dart';
 import '../../core/l10n/app_localizations.dart';
 import '../../core/services/notification_router.dart';
@@ -98,6 +100,21 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
   Future<void> _loadData() async {
     await _loadSubscription();
     await _loadQuota();
+    _syncToWatch();
+  }
+
+  Future<void> _syncToWatch() async {
+    try {
+      final profile = _profileData ?? await AuthService(ApiService.fromEnv()).getCachedUserProfile();
+      if (profile == null) return;
+      final userName = getUserFullName(profile);
+      final memberId = profile['id'] as int? ?? 0;
+      await WatchSyncService.syncMemberData(
+        userName: userName,
+        memberId: memberId,
+        subscriptionData: _subscriptionData,
+      );
+    } catch (_) {}
   }
 
   Future<void> _loadProfileData() async {
@@ -2966,6 +2983,34 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
   bool _isLoading = true;
   bool _isRefreshing = false;
   String? _errorMessage;
+  DateTime _selectedDay = DateTime.now();
+  String _statusFilter = 'all';
+
+  List<DateTime> _getWeekDays() {
+    final monday =
+        _selectedDay.subtract(Duration(days: _selectedDay.weekday - 1));
+    return List.generate(7, (i) => monday.add(Duration(days: i)));
+  }
+
+  List<dynamic> get _filteredPlannings {
+    if (_plannings == null) return [];
+    if (_statusFilter == 'all') return _plannings!;
+    return _plannings!.where((p) {
+      final planning = p as Map<String, dynamic>;
+      final status = planning['status'] as String? ?? 'active';
+      final startDate = planning['startDate'] as String? ?? '';
+      switch (_statusFilter) {
+        case 'active':
+          return status == 'active' && !_isPlanningUpcoming(startDate);
+        case 'upcoming':
+          return _isPlanningUpcoming(startDate);
+        case 'completed':
+          return status == 'completed';
+        default:
+          return true;
+      }
+    }).toList();
+  }
 
   void _showErrorWithRetry(String message, VoidCallback onRetry) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -3118,123 +3163,140 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
     final day = data['day'] as Map<String, dynamic>?;
     final exercises = day?['exercises'] as List<dynamic>? ?? [];
 
-    return Card(
-      color: Theme.of(context).cardTheme.color,
-      elevation: 4,
-      margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(
-          color: Theme.of(context).colorScheme.primary,
-          width: 2,
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [AppColors.primary, AppColors.accent],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.35),
+            blurRadius: 20,
+            offset: const Offset(0, 6),
+            spreadRadius: -2,
+          ),
+        ],
       ),
-      child: Padding(
-        padding: EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Stack(
           children: [
-            Row(
-              children: [
-                Container(
-                  padding: EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.green.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    Icons.play_circle_outline,
-                    color: AppColors.success,
-                    size: 28,
-                  ),
+            Positioned(
+              top: -30,
+              right: -30,
+              child: Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.08),
+                  shape: BoxShape.circle,
                 ),
-                SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+              ),
+            ),
+            Positioned(
+              bottom: -20,
+              left: -20,
+              child: Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.06),
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
                     children: [
-                      Text(
-                        planning?['title'] ??
-                            AppLocalizations.of(context).myWorkout,
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color:
-                              (Theme.of(context).brightness == Brightness.dark
-                              ? AppColors.darkTextPrimary
-                              : AppColors.lightTextPrimary),
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.play_circle_outline,
+                          color: Colors.white,
+                          size: 26,
                         ),
                       ),
-                      SizedBox(height: 4),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              planning?['title'] ??
+                                  AppLocalizations.of(context).myWorkout,
+                              style: GoogleFonts.barlow(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              '${exercises.length} exercice${exercises.length > 1 ? 's' : ''} prévu${exercises.length > 1 ? 's' : ''}',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.white70,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                       Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 8,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.green.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(6),
-                          border: Border.all(
-                            color: Colors.green.withValues(alpha: 0.5),
-                            width: 1,
-                          ),
+                          color: Colors.white.withValues(alpha: 0.25),
+                          borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
                           AppLocalizations.of(context).today,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: AppColors.success,
-                            fontWeight: FontWeight.w600,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
                           ),
                         ),
                       ),
                     ],
                   ),
-                ),
-              ],
-            ),
-            SizedBox(height: 16),
-            Divider(color: Theme.of(context).dividerColor),
-            SizedBox(height: 12),
-            Row(
-              children: [
-                Icon(
-                  Icons.fitness_center,
-                  size: 18,
-                  color: (Theme.of(context).brightness == Brightness.dark
-                      ? AppColors.darkTextSecondary
-                      : AppColors.lightTextSecondary),
-                ),
-                SizedBox(width: 8),
-                Text(
-                  '${exercises.length} exercice${exercises.length > 1 ? 's' : ''} prévu${exercises.length > 1 ? 's' : ''}',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: (Theme.of(context).brightness == Brightness.dark
-                        ? AppColors.darkTextSecondary
-                        : AppColors.lightTextSecondary),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () => _showTodayWorkoutPopup(data),
+                      icon: const Icon(Icons.visibility_outlined, size: 18),
+                      label: const Text('Voir les détails'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: AppColors.primary,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        textStyle: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-              ],
-            ),
-            SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () => _showTodayWorkoutPopup(data),
-                icon: Icon(Icons.visibility, size: 18),
-                label: Text('Voir les détails'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                  foregroundColor:
-                      (Theme.of(context).brightness == Brightness.dark
-                      ? AppColors.darkTextPrimary
-                      : AppColors.lightTextPrimary),
-                  padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
+                ],
               ),
             ),
           ],
@@ -3574,170 +3636,385 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(color: AppColors.primary),
+      );
+    }
+
+    if (_errorMessage != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 60, color: AppColors.error),
+            const SizedBox(height: 16),
+            Text(
+              _errorMessage!,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: isDark
+                    ? AppColors.darkTextPrimary
+                    : AppColors.lightTextPrimary,
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _loadPlannings,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+              ),
+              child: Text(AppLocalizations.of(context).retry),
+            ),
+          ],
+        ),
+      );
+    }
+
     return RefreshIndicator(
       onRefresh: _loadPlannings,
-      color: Theme.of(context).colorScheme.primary,
-      notificationPredicate: (notification) => !_isRefreshing,
-      child: _isLoading
-          ? Center(
-              child: CircularProgressIndicator(
-                color: Theme.of(context).colorScheme.primary,
-              ),
-            )
-          : _errorMessage != null
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.error_outline,
-                    size: 60,
-                    color: Colors.red.shade300,
-                  ),
-                  SizedBox(height: 16),
-                  Text(
-                    _errorMessage!,
-                    style: TextStyle(
-                      color: (Theme.of(context).brightness == Brightness.dark
-                          ? AppColors.darkTextPrimary
-                          : AppColors.lightTextPrimary),
-                      fontSize: 16,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: _loadPlannings,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                    ),
-                    child: Text(AppLocalizations.of(context).retry),
-                  ),
-                ],
-              ),
-            )
-          : ListView(
-              padding: EdgeInsets.fromLTRB(
-                16,
-                MediaQuery.of(context).padding.top + 16,
-                16,
-                MediaQuery.of(context).padding.bottom + 16,
-              ),
-              children: [
-                // Goals carousel section
-                if (_goals != null && _goals!.isNotEmpty) ...[
-                  _memberSectionTitle(
-                    context,
-                    AppLocalizations.of(context).myGoals,
-                  ),
-                  SizedBox(height: 12),
-                  SizedBox(
-                    height: 160,
-                    child: Center(
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        // padding: EdgeInsets.symmetric(horizontal: 8),
-                        shrinkWrap: true,
-                        itemCount: _goals!.length,
-                        itemBuilder: (context, index) {
-                          final goal = _goals![index] as Map<String, dynamic>;
-                          return Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 0),
-                            child: _buildGoalCard(goal, index),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 24),
-                ],
-                // Today's workout section
-                FutureBuilder<Map<String, dynamic>?>(
-                  future: _loadTodayWorkout(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return SizedBox.shrink();
-                    }
-
-                    if (snapshot.data != null) {
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _memberSectionTitle(context, 'Entraînement du jour'),
-                          SizedBox(height: 12),
-                          _buildTodayWorkoutCard(snapshot.data!),
-                          SizedBox(height: 24),
-                          _memberSectionTitle(
-                            context,
-                            AppLocalizations.of(context).myPlannings,
-                          ),
-                          SizedBox(height: 12),
-                        ],
-                      );
-                    }
-
-                    return SizedBox.shrink();
-                  },
-                ),
-                // All plannings or empty state
-                if (_plannings != null && _plannings!.isNotEmpty)
-                  ..._plannings!.map((planning) {
-                    final planningData = planning as Map<String, dynamic>;
-                    return _buildPlanningCard(planningData);
-                  })
-                else
-                  // Empty state when no plannings
-                  Center(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 40),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.fitness_center,
-                            size: 80,
-                            color:
-                                (Theme.of(context).brightness == Brightness.dark
-                                        ? AppColors.darkTextSecondary
-                                        : AppColors.lightTextSecondary)
-                                    .withValues(alpha: 0.5),
-                          ),
-                          SizedBox(height: 16),
-                          Text(
-                            'Aucun planning disponible',
-                            style: TextStyle(
-                              color:
-                                  (Theme.of(context).brightness ==
-                                      Brightness.dark
-                                  ? AppColors.darkTextSecondary
-                                  : AppColors.lightTextSecondary),
-                              fontSize: 18,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          SizedBox(height: 8),
-                          Text(
-                            'Votre coach vous assignera bientôt\nun programme d\'entraînement',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color:
-                                  (Theme.of(context).brightness ==
-                                      Brightness.dark
-                                  ? AppColors.darkTextSecondary
-                                  : AppColors.lightTextSecondary),
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-              ],
+      color: AppColors.primary,
+      notificationPredicate: (n) => !_isRefreshing,
+      child: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        slivers: [
+          SliverToBoxAdapter(
+            child: _buildScheduleHeader(isDark, context),
+          ),
+          SliverToBoxAdapter(
+            child: _buildStatusFilter(isDark),
+          ),
+          SliverToBoxAdapter(
+            child: _buildScheduleContent(isDark, context),
+          ),
+          SliverToBoxAdapter(
+            child: SizedBox(
+              height: MediaQuery.of(context).padding.bottom + 24,
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildScheduleHeader(bool isDark, BuildContext context) {
+    final weekDays = _getWeekDays();
+    final now = DateTime.now();
+    const months = [
+      'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+      'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre',
+    ];
+    const dayLabels = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
+
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [AppColors.primary, AppColors.accent],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    AppLocalizations.of(context).myPlanning,
+                    style: GoogleFonts.barlow(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  Text(
+                    '${months[_selectedDay.month - 1]} ${_selectedDay.year}',
+                    style: GoogleFonts.barlow(
+                      fontSize: 13,
+                      color: Colors.white70,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: List.generate(7, (i) {
+                  final day = weekDays[i];
+                  final isToday = day.year == now.year &&
+                      day.month == now.month &&
+                      day.day == now.day;
+                  final isSelected = day.year == _selectedDay.year &&
+                      day.month == _selectedDay.month &&
+                      day.day == _selectedDay.day;
+                  final hasPlan = _plannings?.any((p) {
+                    final pl = p as Map<String, dynamic>;
+                    final startStr = pl['startDate'] as String? ?? '';
+                    final endStr = pl['endDate'] as String? ?? '';
+                    try {
+                      final start = DateTime.parse(startStr);
+                      final end = DateTime.parse(endStr);
+                      final d = DateTime(day.year, day.month, day.day);
+                      return !d.isBefore(
+                            DateTime(start.year, start.month, start.day),
+                          ) &&
+                          !d.isAfter(DateTime(end.year, end.month, end.day));
+                    } catch (_) {
+                      return false;
+                    }
+                  }) ??
+                  false;
+
+                  return GestureDetector(
+                    onTap: () => setState(() => _selectedDay = day),
+                    child: Column(
+                      children: [
+                        Text(
+                          dayLabels[i],
+                          style: TextStyle(
+                            fontSize: 11,
+                            color:
+                                isSelected ? Colors.white : Colors.white54,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? Colors.white
+                                : isToday
+                                ? Colors.white.withValues(alpha: 0.2)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Center(
+                            child: Text(
+                              '${day.day}',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: isSelected
+                                    ? AppColors.primary
+                                    : Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          width: 4,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: hasPlan
+                                ? Colors.white.withValues(
+                                    alpha: isSelected ? 1.0 : 0.6,
+                                  )
+                                : Colors.transparent,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusFilter(bool isDark) {
+    final filters = [
+      ('all', 'Tous'),
+      ('active', 'Actif'),
+      ('upcoming', 'Prévu'),
+      ('completed', 'Terminé'),
+    ];
+
+    return Container(
+      height: 52,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        children: filters.map((f) {
+          final isSelected = _statusFilter == f.$1;
+          return GestureDetector(
+            onTap: () => setState(() => _statusFilter = f.$1),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              margin: const EdgeInsets.only(right: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? AppColors.primary
+                    : (isDark ? AppColors.darkCard : AppColors.lightCard),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: isSelected
+                      ? AppColors.primary
+                      : (isDark
+                            ? AppColors.darkBorder
+                            : AppColors.lightBorder),
+                ),
+              ),
+              child: Text(
+                f.$2,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight:
+                      isSelected ? FontWeight.w600 : FontWeight.w500,
+                  color: isSelected
+                      ? Colors.white
+                      : (isDark
+                            ? AppColors.darkTextSecondary
+                            : AppColors.lightTextSecondary),
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildScheduleContent(bool isDark, BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (_goals != null && _goals!.isNotEmpty) ...[
+            _memberSectionTitle(
+              context,
+              AppLocalizations.of(context).myGoals,
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 160,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: _goals!.length,
+                itemBuilder: (context, index) {
+                  final goal = _goals![index] as Map<String, dynamic>;
+                  return _buildGoalCard(goal, index);
+                },
+              ),
+            ),
+            const SizedBox(height: 24),
+          ],
+          FutureBuilder<Map<String, dynamic>?>(
+            future: _loadTodayWorkout(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const SizedBox.shrink();
+              }
+              if (snapshot.data != null) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _memberSectionTitle(context, 'Entraînement du jour'),
+                    const SizedBox(height: 12),
+                    _buildTodayWorkoutCard(snapshot.data!),
+                    const SizedBox(height: 24),
+                  ],
+                );
+              }
+              return const SizedBox.shrink();
+            },
+          ),
+          if (_filteredPlannings.isNotEmpty) ...[
+            _memberSectionTitle(
+              context,
+              AppLocalizations.of(context).myPlannings,
+            ),
+            const SizedBox(height: 12),
+            ..._filteredPlannings.map(
+              (p) => _buildPlanningCard(p as Map<String, dynamic>),
+            ),
+          ] else
+            _buildEmptyPlannings(isDark),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyPlannings(bool isDark) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 48),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [AppColors.primary, AppColors.accent],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Icon(
+                Icons.fitness_center,
+                color: Colors.white,
+                size: 36,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              _statusFilter == 'all'
+                  ? 'Aucun planning disponible'
+                  : _statusFilter == 'active'
+                  ? 'Aucun planning actif'
+                  : _statusFilter == 'upcoming'
+                  ? 'Aucun planning prévu'
+                  : 'Aucun planning terminé',
+              style: TextStyle(
+                color: isDark
+                    ? AppColors.darkTextPrimary
+                    : AppColors.lightTextPrimary,
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Votre coach vous assignera bientôt\nun programme d\'entraînement',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: isDark
+                    ? AppColors.darkTextSecondary
+                    : AppColors.lightTextSecondary,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
   Widget _buildPlanningCard(Map<String, dynamic> planning) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final title = planning['title'] as String? ?? 'Planning';
     final description = planning['description'] as String?;
     final status = planning['status'] as String? ?? 'active';
@@ -3745,183 +4022,265 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
     final endDate = planning['endDate'] as String? ?? '';
     final coach = planning['coach'] as Map<String, dynamic>?;
     final days = planning['days'] as List<dynamic>? ?? [];
+    final isUpcoming = _isPlanningUpcoming(startDate);
 
-    // Check if planning is in the future (prévu)
-    final bool isUpcoming = _isPlanningUpcoming(startDate);
+    final coachName = coach != null ? getUserFullName(coach) : null;
+    final coachInitials = coachName != null && coachName.isNotEmpty
+        ? coachName
+              .split(' ')
+              .where((w) => w.isNotEmpty)
+              .take(2)
+              .map((w) => w[0])
+              .join()
+              .toUpperCase()
+        : '?';
 
-    return Card(
-      color: Theme.of(context).cardTheme.color,
-      elevation: 4,
-      margin: EdgeInsets.only(bottom: 16),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header
-            Row(
+    final statusColor =
+        isUpcoming ? AppColors.warning : _getStatusColor(status);
+    final statusLabel = isUpcoming
+        ? AppLocalizations.of(context).upcoming
+        : _getStatusText(status);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkCard : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.10),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Gradient top accent strip
+          Container(
+            height: 4,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [AppColors.primary, AppColors.accent],
+              ),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: (Theme.of(context).brightness == Brightness.dark
-                          ? AppColors.darkTextPrimary
-                          : AppColors.lightTextPrimary),
+                // Header row: avatar + title + status
+                Row(
+                  children: [
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [AppColors.primary, AppColors.accent],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Center(
+                        child: Text(
+                          coachInitials,
+                          style: GoogleFonts.barlow(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            style: GoogleFonts.barlow(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: isDark
+                                  ? AppColors.darkTextPrimary
+                                  : AppColors.lightTextPrimary,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          if (coachName != null) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              'Coach · $coachName',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: isDark
+                                    ? AppColors.darkTextTertiary
+                                    : AppColors.lightTextTertiary,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: statusColor.withValues(alpha: 0.14),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        statusLabel,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: statusColor,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                if (isUpcoming)
-                  Container(
-                    margin: EdgeInsets.only(right: 8),
-                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: Colors.orange.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.warning, width: 1),
+
+                if (description != null && description.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    description,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: isDark
+                          ? AppColors.darkTextSecondary
+                          : AppColors.lightTextSecondary,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+
+                const SizedBox(height: 16),
+                Divider(
+                  height: 1,
+                  color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                ),
+                const SizedBox(height: 12),
+
+                // Dates + days count
+                Row(
+                  children: [
+                    Icon(
+                      Icons.calendar_today_outlined,
+                      size: 13,
+                      color: isDark
+                          ? AppColors.darkTextTertiary
+                          : AppColors.lightTextTertiary,
+                    ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        AppLocalizations.of(context).fromToDates(
+                          _formatDateSimple(startDate),
+                          _formatDateSimple(endDate),
+                        ),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isDark
+                              ? AppColors.darkTextSecondary
+                              : AppColors.lightTextSecondary,
+                        ),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.fitness_center,
+                            size: 11,
+                            color: AppColors.primary,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            AppLocalizations.of(context).trainingDays(
+                              days.length,
+                            ),
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 12),
+
+                // CTA button
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () {
+                      final firstDay = days.isNotEmpty
+                          ? days.first as Map<String, dynamic>
+                          : <String, dynamic>{'exercises': []};
+                      _showTodayWorkoutPopup({
+                        'planning': planning,
+                        'day': firstDay,
+                      });
+                    },
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.primary,
+                      side: const BorderSide(
+                        color: AppColors.primary,
+                        width: 1.5,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
                     ),
                     child: Row(
-                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
-                          Icons.schedule,
-                          size: 14,
-                          color: AppColors.warning,
-                        ),
-                        SizedBox(width: 4),
                         Text(
-                          AppLocalizations.of(context).upcoming,
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.warning,
+                          'Voir les détails',
+                          style: GoogleFonts.barlow(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.primary,
                           ),
+                        ),
+                        const SizedBox(width: 6),
+                        const Icon(
+                          Icons.arrow_forward_rounded,
+                          size: 15,
+                          color: AppColors.primary,
                         ),
                       ],
                     ),
                   ),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: _getStatusColor(status).withValues(alpha: 0.7),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: _getStatusColor(status),
-                      width: 1,
-                    ),
-                  ),
-                  child: Text(
-                    _getStatusText(status),
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: _getStatusColor(status),
-                    ),
-                  ),
                 ),
               ],
             ),
-            if (description != null) ...[
-              SizedBox(height: 8),
-              Text(
-                description,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: (Theme.of(context).brightness == Brightness.dark
-                      ? AppColors.darkTextSecondary
-                      : AppColors.lightTextSecondary),
-                ),
-              ),
-            ],
-            SizedBox(height: 12),
-
-            // Dates
-            Row(
-              children: [
-                Icon(
-                  Icons.calendar_today,
-                  size: 16,
-                  color: (Theme.of(context).brightness == Brightness.dark
-                      ? AppColors.darkTextSecondary
-                      : AppColors.lightTextSecondary),
-                ),
-                SizedBox(width: 8),
-                Text(
-                  AppLocalizations.of(context).fromToDates(
-                    _formatDateSimple(startDate),
-                    _formatDateSimple(endDate),
-                  ),
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: (Theme.of(context).brightness == Brightness.dark
-                        ? AppColors.darkTextSecondary
-                        : AppColors.lightTextSecondary),
-                  ),
-                ),
-              ],
-            ),
-
-            if (coach != null) ...[
-              SizedBox(height: 8),
-              Row(
-                children: [
-                  Icon(
-                    Icons.person,
-                    size: 16,
-                    color: (Theme.of(context).brightness == Brightness.dark
-                        ? AppColors.darkTextSecondary
-                        : AppColors.lightTextSecondary),
-                  ),
-                  SizedBox(width: 8),
-                  Text(
-                    '${AppLocalizations.of(context).coach}: ${getUserFullName(coach)}',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: (Theme.of(context).brightness == Brightness.dark
-                          ? AppColors.darkTextSecondary
-                          : AppColors.lightTextSecondary),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-
-            SizedBox(height: 12),
-
-            // Days summary
-            Row(
-              children: [
-                Icon(
-                  Icons.fitness_center,
-                  size: 16,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                SizedBox(width: 8),
-                Text(
-                  AppLocalizations.of(context).trainingDays(days.length),
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Theme.of(context).colorScheme.primary,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                Spacer(),
-                Icon(
-                  Icons.arrow_forward_ios,
-                  color:
-                      (Theme.of(context).brightness == Brightness.dark
-                              ? AppColors.darkTextSecondary
-                              : AppColors.lightTextSecondary)
-                          .withValues(alpha: 0.8),
-                  size: 16,
-                ),
-              ],
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -5812,7 +6171,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                 context,
                 AppLocalizations.of(context).helpSupport,
                 Icons.help_outline,
-                () {},
+                () => SupportBottomSheet.show(context),
               ),
               SizedBox(height: 16),
 

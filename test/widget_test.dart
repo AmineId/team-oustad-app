@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:team_fitness_app/screens/kiosk/kiosk_links.dart';
+import 'package:team_oustad_app/screens/kiosk/kiosk_links.dart';
 
 void main() {
   group('Liens de distribution kiosk', () {

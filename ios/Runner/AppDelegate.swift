@@ -12,10 +12,13 @@ import UIKit
     // Bloquer les screenshots et l'enregistrement d'écran
     disableScreenCapture()
 
+    // Apple Watch — activer WatchConnectivity dès le démarrage
+    WatchConnectivityService.shared.activate()
+
     // Channel utilitaire iOS
     if let controller = window?.rootViewController as? FlutterViewController {
       let channel = FlutterMethodChannel(
-        name: "team.fitness.security",
+        name: "team.oustad.security",
         binaryMessenger: controller.binaryMessenger
       )
       channel.setMethodCallHandler { call, result in
@@ -33,6 +36,29 @@ import UIKit
         case "setScreenCaptureBlocked":
           self.setScreenCaptureBlocked(call.arguments as? Bool ?? false)
           result(true)
+        default:
+          result(FlutterMethodNotImplemented)
+        }
+      }
+
+      // Apple Watch sync channel
+      let watchChannel = FlutterMethodChannel(
+        name: "team.oustad.watch",
+        binaryMessenger: controller.binaryMessenger
+      )
+      watchChannel.setMethodCallHandler { call, result in
+        switch call.method {
+        case "syncMemberData":
+          if let data = call.arguments as? [String: Any] {
+            WatchConnectivityService.shared.sendMemberData(data)
+            result(true)
+          } else {
+            result(FlutterError(code: "INVALID_ARGS", message: "Expected Map", details: nil))
+          }
+        case "getLastSyncData":
+          result(WatchConnectivityService.shared.lastData.isEmpty
+            ? nil
+            : WatchConnectivityService.shared.lastData)
         default:
           result(FlutterMethodNotImplemented)
         }

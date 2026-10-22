@@ -165,13 +165,13 @@ class AppTheme {
       elevation: 8,
     ),
 
-    pageTransitionsTheme: const PageTransitionsTheme(
+    pageTransitionsTheme: PageTransitionsTheme(
       builders: {
-        TargetPlatform.android: PredictiveBackPageTransitionsBuilder(),
-        TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
-        TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
-        TargetPlatform.windows: FadeUpwardsPageTransitionsBuilder(),
-        TargetPlatform.linux: FadeUpwardsPageTransitionsBuilder(),
+        TargetPlatform.android: const PredictiveBackPageTransitionsBuilder(),
+        TargetPlatform.iOS: const ZoomPageTransitionsBuilder(),
+        TargetPlatform.macOS: const ZoomPageTransitionsBuilder(),
+        TargetPlatform.windows: const FadeUpwardsPageTransitionsBuilder(),
+        TargetPlatform.linux: const FadeUpwardsPageTransitionsBuilder(),
       },
     ),
   );
@@ -342,17 +342,14 @@ class AppTheme {
       elevation: 12,
     ),
 
-    pageTransitionsTheme: const PageTransitionsTheme(
+    pageTransitionsTheme: PageTransitionsTheme(
       builders: {
-        TargetPlatform.android: PredictiveBackPageTransitionsBuilder(),
-        TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
-        TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
-        TargetPlatform.windows: FadeUpwardsPageTransitionsBuilder(),
-        TargetPlatform.linux: FadeUpwardsPageTransitionsBuilder(),
+        TargetPlatform.android: const PredictiveBackPageTransitionsBuilder(),
+        TargetPlatform.iOS: const ZoomPageTransitionsBuilder(),
+        TargetPlatform.macOS: const ZoomPageTransitionsBuilder(),
+        TargetPlatform.windows: const FadeUpwardsPageTransitionsBuilder(),
+        TargetPlatform.linux: const FadeUpwardsPageTransitionsBuilder(),
       },
     ),
   );
 }
-
-
-

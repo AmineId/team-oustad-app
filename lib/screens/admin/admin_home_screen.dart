@@ -20,6 +20,7 @@ import 'admin_create_planning_screen.dart';
 import '../common/security_settings_screen.dart';
 import '../common/about_screen.dart';
 import 'admin_banners_screen.dart';
+import 'admin_edit_profile_screen.dart';
 import 'admin_products_screen.dart';
 import 'admin_qr_scanner_screen.dart';
 import '../kiosk/checkin_terminal_screen.dart';
@@ -1000,50 +1001,59 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                     child: Column(
                       children: [
-                        Stack(
-                          children: [
-                            CircleAvatar(
-                              radius: 50,
-                              backgroundColor: Theme.of(
-                                context,
-                              ).colorScheme.primary,
-                              child: Icon(
-                                Icons.person,
-                                size: 50,
-                                color:
-                                    (Theme.of(context).brightness ==
-                                        Brightness.dark
-                                    ? AppColors.darkTextPrimary
-                                    : AppColors.lightTextPrimary),
+                        GestureDetector(
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => AdminEditProfileScreen(
+                                profileData: _profileData,
+                                onProfileUpdated: _refreshProfileDataSilently,
                               ),
                             ),
-                            Positioned(
-                              bottom: 0,
-                              right: 0,
-                              child: Container(
-                                padding: const EdgeInsets.all(6),
-                                decoration: BoxDecoration(
-                                  color: Theme.of(
-                                    context,
-                                  ).scaffoldBackgroundColor,
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
+                          ),
+                          child: Stack(
+                            children: [
+                              CircleAvatar(
+                                radius: 50,
+                                backgroundColor: Theme.of(
+                                  context,
+                                ).colorScheme.primary,
+                                child: Icon(
+                                  Icons.person,
+                                  size: 50,
+                                  color:
+                                      (Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? AppColors.darkTextPrimary
+                                      : AppColors.lightTextPrimary),
+                                ),
+                              ),
+                              Positioned(
+                                bottom: 0,
+                                right: 0,
+                                child: Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
                                     color: Theme.of(
                                       context,
-                                    ).colorScheme.primary,
-                                    width: 2,
+                                    ).scaffoldBackgroundColor,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.primary,
+                                      width: 2,
+                                    ),
+                                  ),
+                                  child: Icon(
+                                    Icons.edit,
+                                    size: 16,
+                                    color: Theme.of(context).colorScheme.primary,
                                   ),
                                 ),
-                                child: Icon(
-                                  role == 'owner'
-                                      ? Icons.verified
-                                      : Icons.admin_panel_settings,
-                                  size: 16,
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                         const SizedBox(height: 16),
                         Text(
@@ -1210,7 +1220,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   context,
                   l10n.helpSupport,
                   Icons.help_outline,
-                  () {},
+                  () => SupportBottomSheet.show(context),
                 ),
                 const SizedBox(height: 16),
 
@@ -4050,10 +4060,9 @@ class _GymGalleryViewState extends State<_GymGalleryView> {
     }
   }
 
-  Future<void> _onReorder(int oldIndex, int newIndex) async {
+  Future<void> _onReorderItem(int oldIndex, int newIndex) async {
     if (_token == null) return;
     setState(() {
-      if (newIndex > oldIndex) newIndex -= 1;
       final item = _photos.removeAt(oldIndex);
       _photos.insert(newIndex, item);
     });
@@ -4143,7 +4152,7 @@ class _GymGalleryViewState extends State<_GymGalleryView> {
                             24 + MediaQuery.of(context).padding.bottom,
                           ),
                           itemCount: _photos.length,
-                          onReorder: _onReorder,
+                          onReorderItem: _onReorderItem,
                           itemBuilder: (context, index) {
                             final photo = _photos[index];
                             final photoId = photo['id'] as int;

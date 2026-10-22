@@ -9,6 +9,7 @@ export 'notification_service.dart';
 export 'notification_router.dart';
 export 'app_version_service.dart';
 export 'screen_security_service.dart';
+export 'watch_sync_service.dart';
 
 
 

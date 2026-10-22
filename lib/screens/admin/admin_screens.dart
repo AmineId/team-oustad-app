@@ -5,6 +5,7 @@ export 'admin_create_member_screen.dart';
 export 'admin_create_planning_screen.dart';
 export 'admin_create_subscription_screen.dart';
 export 'admin_edit_admin_screen.dart';
+export 'admin_edit_profile_screen.dart';
 export 'admin_edit_gym_screen.dart';
 export 'admin_gym_opening_hours_screen.dart';
 export 'admin_home_screen.dart';

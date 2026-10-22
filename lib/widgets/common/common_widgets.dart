@@ -15,3 +15,4 @@ export 'native_glass_tab_bar.dart';
 export 'swipe_back.dart';
 export 'secure_screen.dart';
 export 'update_available_dialog.dart';
+export 'support_bottom_sheet.dart';

@@ -11,7 +11,7 @@ import 'package:flutter/services.dart';
 class ScreenSecurityService {
   ScreenSecurityService._();
 
-  static const _channel = MethodChannel('team.fitness.security');
+  static const _channel = MethodChannel('team.oustad.security');
   static int _activeCount = 0;
 
   static bool get _isSupported =>

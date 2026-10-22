@@ -1,9 +1,13 @@
+import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../core/models/models.dart';
 import '../../core/services/api_service.dart';
+import '../../core/services/banner_service.dart';
 import '../../core/theme/theme.dart';
 import '../../widgets/widgets.dart';
 import 'gym_showcase_detail_screen.dart';
@@ -112,6 +116,7 @@ class _GymShowcaseListScreenState extends State<GymShowcaseListScreen>
                   ),
                   const SliverToBoxAdapter(child: _MarqueeBand()),
                   const SliverToBoxAdapter(child: _CategoryTiles()),
+                  const SliverToBoxAdapter(child: _GlobalPromoBannerSection()),
                   SliverToBoxAdapter(
                     child: KeyedSubtree(
                       key: _contentKey,
@@ -120,6 +125,7 @@ class _GymShowcaseListScreenState extends State<GymShowcaseListScreen>
                   ),
                   const SliverToBoxAdapter(child: _FeatureShowcase()),
                   const SliverToBoxAdapter(child: _TestimonialsSection()),
+                  const SliverToBoxAdapter(child: _AppDownloadCTA()),
                   const SliverToBoxAdapter(child: _ShowcaseFooter()),
                 ],
               ),
@@ -237,6 +243,132 @@ class _GymShowcaseListScreenState extends State<GymShowcaseListScreen>
             ),
           ],
         ],
+      ),
+    );
+  }
+}
+
+class _GlobalPromoBannerSection extends StatefulWidget {
+  const _GlobalPromoBannerSection();
+
+  @override
+  State<_GlobalPromoBannerSection> createState() =>
+      _GlobalPromoBannerSectionState();
+}
+
+class _GlobalPromoBannerSectionState extends State<_GlobalPromoBannerSection> {
+  final _bannerService = BannerService(ApiService.fromEnv());
+  List<BannerModel> _banners = [];
+  int _page = 0;
+  late final PageController _pageController;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(viewportFraction: 0.88);
+    _load();
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _load() async {
+    final banners = await _bannerService.getAllBanners(activeOnly: true);
+    if (!mounted) return;
+    setState(() => _banners = banners);
+    if (banners.length > 1 && !_reduceMotion) {
+      _timer = Timer.periodic(const Duration(seconds: 5), (_) {
+        if (!mounted) return;
+        final next = (_page + 1) % _banners.length;
+        _pageController.animateToPage(
+          next,
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeInOut,
+        );
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_banners.isEmpty) return const SizedBox.shrink();
+
+    return RevealOnVisible(
+      child: ResponsiveContainer(
+        maxWidth: 1200,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 36, 20, 0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'PROMOTIONS DU RÉSEAU',
+                    style: GoogleFonts.barlow(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 2,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              SizedBox(
+                height: 150,
+                child: PageView.builder(
+                  controller: _pageController,
+                  itemCount: _banners.length,
+                  onPageChanged: (i) => setState(() => _page = i),
+                  itemBuilder: (context, index) => BannerCard(
+                    banner: _banners[index],
+                    height: 150,
+                    margin: const EdgeInsets.only(right: 12),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+              ),
+              if (_banners.length > 1) ...[
+                const SizedBox(height: 10),
+                Center(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: List.generate(
+                      _banners.length,
+                      (i) => AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        margin: const EdgeInsets.symmetric(horizontal: 3),
+                        width: i == _page ? 16 : 6,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: i == _page
+                              ? AppColors.primary
+                              : Colors.white24,
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -1535,6 +1667,112 @@ class _TestimonialCard extends StatelessWidget {
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _AppDownloadCTA extends StatelessWidget {
+  const _AppDownloadCTA();
+
+  static const _storeUrl =
+      'https://play.google.com/store/apps/details?id=team.oustad.app';
+
+  @override
+  Widget build(BuildContext context) {
+    return RevealOnVisible(
+      child: ResponsiveContainer(
+        maxWidth: 1200,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 48, 20, 0),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            decoration: BoxDecoration(
+              color: AppColors.primary,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.4),
+                  blurRadius: 32,
+                  offset: const Offset(0, 12),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'L\'APP TEAM OUSTAD',
+                        style: GoogleFonts.barlow(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 2,
+                          color: AppColors.darkBackground.withValues(alpha: 0.7),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Gérez vos séances, vos abonnements et vos objectifs.',
+                        style: GoogleFonts.barlow(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.darkBackground,
+                          height: 1.3,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Material(
+                  color: AppColors.darkBackground,
+                  borderRadius: BorderRadius.circular(14),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(14),
+                    onTap: () async {
+                      final uri = Uri.parse(_storeUrl);
+                      if (await canLaunchUrl(uri)) {
+                        await launchUrl(
+                          uri,
+                          mode: LaunchMode.externalApplication,
+                        );
+                      }
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.download_rounded,
+                            size: 16,
+                            color: AppColors.primary,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Télécharger',
+                            style: GoogleFonts.barlow(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

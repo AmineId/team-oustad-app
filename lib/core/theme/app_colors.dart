@@ -6,6 +6,10 @@ class AppColors {
   static const Color primary = Color(0xFFe89547);
   static const Color primaryLight = Color(0xFFf4a261);
   static const Color primaryDark = Color(0xFFd97706);
+
+  // Couleur d'accent (violet — troisième couleur)
+  static const Color accent = Color(0xFF7C3AED);
+  static const Color accentLight = Color(0xFF9F67F5);
   
   // Couleurs de fond - Mode sombre (tons harmonieux)
   static const Color darkBackground = Color(0xFF1a202c);  // Bleu-gris profond

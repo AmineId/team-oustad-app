@@ -26,9 +26,9 @@
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1056504785579:android:9ccdd64c4d390ac7ebe5ee",
+        "mobilesdk_app_id": "1:1056504785579:android:4e65865206110e40ebe5ee",
         "android_client_info": {
-          "package_name": "team.fitness.team_fitness_app"
+          "package_name": "team.oustad.app"
         }
       },
       "oauth_client": [],
