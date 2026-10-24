@@ -105,20 +105,27 @@ jobs:
           # subosito/flutter-action met en cache tout $FLUTTER_ROOT, y compris
           # packages/flutter_tools/gradle/build/ (classes compilées). On purge ce
           # répertoire pour forcer Gradle à recompiler depuis les sources patchées.
+          GRADLE_SRC="$FLUTTER_ROOT/packages/flutter_tools/gradle/src/main/kotlin"
+          PLUGIN_FILE="$GRADLE_SRC/FlutterPlugin.kt"
+          HANDLER_FILE="$GRADLE_SRC/plugins/PluginHandler.kt"
+
+          # Restaure les .kt originaux si le cache a sauvegardé des versions patchées
+          git -C "$FLUTTER_ROOT" restore \
+            packages/flutter_tools/gradle/src/main/kotlin/FlutterPlugin.kt \
+            packages/flutter_tools/gradle/src/main/kotlin/plugins/PluginHandler.kt \
+            2>/dev/null || echo "ℹ️  restore git flutter ignoré (git non dispo)"
+
+          # Purge les classes compilées pour forcer la recompilation depuis les sources patchées
           GRADLE_CACHE="$FLUTTER_ROOT/packages/flutter_tools/gradle/build"
           if [ -d "$GRADLE_CACHE" ]; then
             rm -rf "$GRADLE_CACHE"
             echo "✅ Cache Gradle plugin Flutter purgé ($GRADLE_CACHE)"
           fi
 
-          GRADLE_SRC="$FLUTTER_ROOT/packages/flutter_tools/gradle/src/main/kotlin"
-          PLUGIN_FILE="$GRADLE_SRC/FlutterPlugin.kt"
-          HANDLER_FILE="$GRADLE_SRC/plugins/PluginHandler.kt"
-
-          echo "--- lignes clés de FlutterPlugin.kt (debug) ---"
-          grep -n "extensions\.create\|tasks\.register.*generateLock" "$PLUGIN_FILE" 2>/dev/null || echo "(fichier introuvable)"
-          echo "--- lignes clés de PluginHandler.kt (debug) ---"
-          grep -n "extensions\.create" "$HANDLER_FILE" 2>/dev/null || echo "(fichier introuvable)"
+          echo "--- lignes clés FlutterPlugin.kt AVANT patch ---"
+          grep -n "extensions\.create\|tasks\.register.*generateLock\|findByName\|state\.executed\|findProject.*pluginName" "$PLUGIN_FILE" 2>/dev/null | head -10 || echo "(fichier introuvable)"
+          echo "--- lignes clés PluginHandler.kt AVANT patch ---"
+          grep -n "extensions\.create\|afterEvaluate\|findProject.*pluginName\|findByName\|state\.executed" "$HANDLER_FILE" 2>/dev/null | head -15 || echo "(fichier introuvable)"
           echo "------------------------------------------------"
 
           python3 - "$PLUGIN_FILE" "$HANDLER_FILE" <<'PYEOF'
@@ -175,6 +182,10 @@ jobs:
               ),
           ])
           PYEOF
+
+          echo "--- PluginHandler.kt APRÈS patch (lignes autour de findProject) ---"
+          grep -n "findProject.*pluginName\|findByName.*flutter\|state\.executed\|afterEvaluate" "$HANDLER_FILE" 2>/dev/null | head -20
+          echo "-------------------------------------------------------------------"
 
       - name: 🔧 Configure Firebase
         run: |
