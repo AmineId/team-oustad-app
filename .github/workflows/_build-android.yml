@@ -217,7 +217,8 @@ jobs:
         run: |
           flutter build appbundle --release \
             --dart-define=ENVIRONMENT=${{ inputs.dart-env }} \
-            --dart-define=API_BASE_URL=${{ inputs.api-url }}
+            --dart-define=API_BASE_URL=${{ inputs.api-url }} \
+            -- --stacktrace
 
       - name: 🔧 Setup Ruby + Fastlane
         if: inputs.deploy-to-play
