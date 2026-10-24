@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.97](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.96...v1.0.0-beta.97) (2026-10-24)
+
+
+### ✨ New Features
+
+* **showcase:** éditeur CMS vitrine + toggle watch sync ([4f10829](https://github.com/TeamFitness/mobile-app/commit/4f108293cc7676a744fa81846dba44fcf77d7cb1))
+
 ## [1.0.0-beta.96](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.95...v1.0.0-beta.96) (2026-10-24)
 
 
