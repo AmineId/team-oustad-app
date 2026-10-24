@@ -122,11 +122,24 @@ jobs:
             echo "⚠️  Pas de keystore, debug signing"
           fi
 
-      - name: 🏗️ Build AAB
+      - name: 🏗️ Build AAB (téléphone)
         run: |
           flutter build appbundle --release \
             --dart-define=ENVIRONMENT=${{ inputs.dart-env }} \
             --dart-define=API_BASE_URL=${{ inputs.api-url }}
+
+      - name: ⌚ Build Wear OS APK
+        run: |
+          D1=$(echo -n "ENVIRONMENT=${{ inputs.dart-env }}" | base64 -w 0)
+          D2=$(echo -n "API_BASE_URL=${{ inputs.api-url }}" | base64 -w 0)
+          cd android && ./gradlew :wear:assembleRelease -Pdart-defines="${D1},${D2}"
+
+      - name: 📤 Upload Wear APK
+        uses: actions/upload-artifact@v6
+        with:
+          name: wear-apk-${{ inputs.dart-env }}
+          path: build/wear/outputs/apk/release/wear-release.apk
+          retention-days: 14
 
       - name: 🔧 Setup Ruby + Fastlane
         if: inputs.deploy-to-play
@@ -172,7 +185,7 @@ jobs:
             --track internal \
             --release_status completed \
             --json_key fastlane/service-account-key.json \
-            --package_name team.fitness.team_fitness_app \
+            --package_name team.oustad.app \
             --skip_upload_metadata \
             --skip_upload_images \
             --skip_upload_screenshots
@@ -182,7 +195,7 @@ jobs:
         run: |
           JSON_PAYLOAD=$(jq -n \
             --slurpfile meta version-metadata.json \
-            --arg url "https://play.google.com/store/apps/details?id=team.fitness.team_fitness_app" \
+            --arg url "https://play.google.com/store/apps/details?id=team.oustad.app" \
             '$meta[0] | {version_code, version_name, changelog, force_update,
               min_supported_version, download_url: $url, channel: "production"}')
           echo "$JSON_PAYLOAD" | jq '.'

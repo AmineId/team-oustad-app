@@ -3,6 +3,7 @@ import 'package:wear/wear.dart';
 import 'core/theme/theme.dart';
 import 'screens/wear/wear_home_screen.dart';
 
+@pragma('vm:entry-point')
 void main() => runApp(const WearApp());
 
 class WearApp extends StatelessWidget {
