@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.89](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.88...v1.0.0-beta.89) (2026-10-24)
+
+
+### 🐛 Bug Fixes
+
+* **build:** corriger generateLockfiles Android et cycle Xcode watchOS ([694c717](https://github.com/TeamFitness/mobile-app/commit/694c717e0590e8ff70e43214be5298de01cc68ca))
+
 ## [1.0.0-beta.88](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.87...v1.0.0-beta.88) (2026-10-24)
 
 
