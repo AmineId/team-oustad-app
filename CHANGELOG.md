@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.92](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.91...v1.0.0-beta.92) (2026-10-24)
+
+
+### 🐛 Bug Fixes
+
+* **ios:** ajouter WKCompanionAppBundleIdentifier dans le plist Watch ([25c1250](https://github.com/TeamFitness/mobile-app/commit/25c1250199bf044c12d77129f54d6cc226029213))
+
 ## [1.0.0-beta.91](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.90...v1.0.0-beta.91) (2026-10-24)
 
 
