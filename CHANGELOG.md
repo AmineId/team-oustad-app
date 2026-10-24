@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.104](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.103...v1.0.0-beta.104) (2026-10-24)
+
+
+### 🐛 Bug Fixes
+
+* **build:** activer GRADLE_OPTS stacktrace pour diagnostiquer NPE ([26722c7](https://github.com/TeamFitness/mobile-app/commit/26722c76616000a9cd433cd2ddd4d9d1301e8d0c))
+
 ## [1.0.0-beta.103](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.102...v1.0.0-beta.103) (2026-10-24)
 
 
