@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.95](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.94...v1.0.0-beta.95) (2026-10-24)
+
+
+### 🐛 Bug Fixes
+
+* **ios:** ajouter UIDeviceFamily = [4] dans le plist Watch avant install ([68f0da9](https://github.com/TeamFitness/mobile-app/commit/68f0da9e5f40991e727c38e57799cff1dbfc096b))
+
 ## [1.0.0-beta.94](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.93...v1.0.0-beta.94) (2026-10-24)
 
 
