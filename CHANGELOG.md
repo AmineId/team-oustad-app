@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.90](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.89...v1.0.0-beta.90) (2026-10-24)
+
+
+### 🐛 Bug Fixes
+
+* **build:** étendre le patch FlutterPlugin (extension flutter + debug dump) ([8783f1d](https://github.com/TeamFitness/mobile-app/commit/8783f1df34b8b11982e2b4b41697f12057c609fd))
+
 ## [1.0.0-beta.89](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.88...v1.0.0-beta.89) (2026-10-24)
 
 
