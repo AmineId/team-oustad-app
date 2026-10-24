@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.107](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.106...v1.0.0-beta.107) (2026-10-24)
+
+
+### ✨ New Features
+
+* **wear:** ajouter l'icône ronde ic_launcher_round pour Wear OS ([e3bcc66](https://github.com/TeamFitness/mobile-app/commit/e3bcc6641996abb065d13a9f995d371126faf503))
+
+
+### 🐛 Bug Fixes
+
+* **wear:** ajouter les icônes mipmap/ic_launcher au module Wear OS ([5dcb42f](https://github.com/TeamFitness/mobile-app/commit/5dcb42f933e5acd778c3d9db4adb16f38a45bd46))
+
 ## [1.0.0-beta.106](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.105...v1.0.0-beta.106) (2026-10-24)
 
 
