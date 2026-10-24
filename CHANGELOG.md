@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.106](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.105...v1.0.0-beta.106) (2026-10-24)
+
+
+### 🐛 Bug Fixes
+
+* **build:** afterEvaluateOrNow dans FlutterPluginUtils pour :wear_app ([fdcea54](https://github.com/TeamFitness/mobile-app/commit/fdcea549098f813a1dfc678e8003382b1b491438))
+
 ## [1.0.0-beta.105](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.104...v1.0.0-beta.105) (2026-10-24)
 
 
