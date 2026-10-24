@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.105](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.104...v1.0.0-beta.105) (2026-10-24)
+
+
+### 🐛 Bug Fixes
+
+* **build:** corriger NPE dans PluginHandler — garder pluginProject.afterEvaluate ([41f79eb](https://github.com/TeamFitness/mobile-app/commit/41f79eb4e836ab32e2b4fb87b1f865f752f51f21))
+
 ## [1.0.0-beta.104](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.103...v1.0.0-beta.104) (2026-10-24)
 
 
