@@ -101,6 +101,16 @@ jobs:
           # Flutter 3.35.x enregistre 'generateLockfiles' et l'extension 'flutter'
           # sur rootProject sans garde d'idempotence ; quand :app et :wear_app
           # appliquent tous deux le plugin, le 2e enregistrement échoue.
+          #
+          # subosito/flutter-action met en cache tout $FLUTTER_ROOT, y compris
+          # packages/flutter_tools/gradle/build/ (classes compilées). On purge ce
+          # répertoire pour forcer Gradle à recompiler depuis les sources patchées.
+          GRADLE_CACHE="$FLUTTER_ROOT/packages/flutter_tools/gradle/build"
+          if [ -d "$GRADLE_CACHE" ]; then
+            rm -rf "$GRADLE_CACHE"
+            echo "✅ Cache Gradle plugin Flutter purgé ($GRADLE_CACHE)"
+          fi
+
           PLUGIN_FILE="$FLUTTER_ROOT/packages/flutter_tools/gradle/src/main/kotlin/FlutterPlugin.kt"
           echo "--- lignes clés de FlutterPlugin.kt (debug) ---"
           grep -n "extensions\.create\|tasks\.register.*generateLock" "$PLUGIN_FILE" 2>/dev/null || echo "(fichier introuvable)"
