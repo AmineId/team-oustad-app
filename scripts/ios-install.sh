@@ -147,6 +147,7 @@ import plistlib
 with open('$plist','rb') as f: pl=plistlib.load(f)
 pl['WKCompanionAppBundleIdentifier'] = '$companion_id'
 pl['CFBundleIdentifier'] = '$watch_bundle_id'
+pl['UIDeviceFamily'] = [4]
 with open('$plist','wb') as f: plistlib.dump(pl, f)
 "
   (cd "$work" && zip -qr patched.ipa Payload)
