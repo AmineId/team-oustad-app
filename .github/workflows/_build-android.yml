@@ -96,17 +96,51 @@ jobs:
           channel: stable
           cache: true
 
-      - name: 🔧 Patch Flutter Gradle plugin (generateLockfiles dedup)
+      - name: 🔧 Patch Flutter Gradle plugin (multi-module dedup)
         run: |
-          # Flutter enregistre 'generateLockfiles' sur rootProject sans garde ;
-          # quand :app et :wear_app appliquent tous deux le plugin, le 2ème échoue.
+          # Flutter 3.35.x enregistre 'generateLockfiles' et l'extension 'flutter'
+          # sur rootProject sans garde d'idempotence ; quand :app et :wear_app
+          # appliquent tous deux le plugin, le 2e enregistrement échoue.
           PLUGIN_FILE="$FLUTTER_ROOT/packages/flutter_tools/gradle/src/main/kotlin/FlutterPlugin.kt"
-          if grep -q 'rootProject\.tasks\.register("generateLockfiles")' "$PLUGIN_FILE" 2>/dev/null; then
-            sed -i 's/rootProject\.tasks\.register("generateLockfiles") {/if (rootProject.tasks.findByName("generateLockfiles") == null) rootProject.tasks.register("generateLockfiles") {/' "$PLUGIN_FILE"
-            echo "✅ Patch generateLockfiles appliqué"
-          else
-            echo "⚠️  Déjà corrigé ou pattern non trouvé — aucun patch nécessaire"
-          fi
+          echo "--- lignes clés de FlutterPlugin.kt (debug) ---"
+          grep -n "extensions\.create\|tasks\.register.*generateLock" "$PLUGIN_FILE" 2>/dev/null || echo "(fichier introuvable)"
+          echo "------------------------------------------------"
+          python3 - "$PLUGIN_FILE" <<'PYEOF'
+          import sys, pathlib
+          path = pathlib.Path(sys.argv[1])
+          if not path.exists():
+              print("⚠️  FlutterPlugin.kt non trouvé, patch ignoré")
+              sys.exit(0)
+          content = path.read_text()
+          changes = []
+
+          PATCHES = [
+              # generateLockfiles sur rootProject (toutes versions)
+              (
+                  'rootProject.tasks.register("generateLockfiles") {',
+                  'if (rootProject.tasks.findByName("generateLockfiles") == null) rootProject.tasks.register("generateLockfiles") {',
+              ),
+              # extension flutter sur rootProject (Flutter ≤ 3.36)
+              (
+                  'rootProject.extensions.create("flutter", FlutterExtension::class.java)',
+                  '(rootProject.extensions.findByName("flutter") as? FlutterExtension) ?: rootProject.extensions.create("flutter", FlutterExtension::class.java)',
+              ),
+              # extension flutter sur project (Flutter ≥ 3.37, par précaution)
+              (
+                  'project.extensions.create("flutter", FlutterExtension::class.java)',
+                  '(project.extensions.findByName("flutter") as? FlutterExtension) ?: project.extensions.create("flutter", FlutterExtension::class.java)',
+              ),
+          ]
+          for old, new in PATCHES:
+              if old in content:
+                  content = content.replace(old, new)
+                  changes.append(old[:50])
+          if changes:
+              path.write_text(content)
+              for c in changes: print(f"✅ Patché : {c}…")
+          else:
+              print("ℹ️  Aucun patch nécessaire (déjà corrigé)")
+          PYEOF
 
       - name: 🔧 Configure Firebase
         run: |
