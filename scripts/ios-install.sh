@@ -140,15 +140,19 @@ print(pl.get('WKCompanionAppBundleIdentifier',''))
     return 0
   fi
 
+  # Patch du bundle ID de la Watch app + du companion ID
+  local watch_bundle_id="${prefix}.team.oustad.app.watchkitapp"
   python3 -c "
 import plistlib
 with open('$plist','rb') as f: pl=plistlib.load(f)
 pl['WKCompanionAppBundleIdentifier'] = '$companion_id'
+pl['CFBundleIdentifier'] = '$watch_bundle_id'
 with open('$plist','wb') as f: plistlib.dump(pl, f)
 "
   (cd "$work" && zip -qr patched.ipa Payload)
   cp "$work/patched.ipa" "$src_ipa"
   echo "✅ WKCompanionAppBundleIdentifier → $companion_id"
+  echo "✅ CFBundleIdentifier Watch       → $watch_bundle_id"
 }
 
 IPA_TO_INSTALL="$ipa"
