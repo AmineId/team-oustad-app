@@ -77,4 +77,12 @@ class WatchDataStore: NSObject, ObservableObject, WCSessionDelegate {
     ) {
         apply(applicationContext)
     }
+
+    // Required on iOS SDK; no-op on watchOS (handled by the system).
+    #if os(iOS)
+    func sessionDidBecomeInactive(_ session: WCSession) {}
+    func sessionDidDeactivate(_ session: WCSession) {
+        WCSession.default.activate()
+    }
+    #endif
 }

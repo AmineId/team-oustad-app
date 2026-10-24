@@ -41,6 +41,7 @@ watch_target.build_configurations.each do |cfg|
   s['GENERATE_INFOPLIST_FILE']               = 'YES'
   s['INFOPLIST_KEY_WKApplication']           = 'YES'
   s['INFOPLIST_KEY_UISupportedInterfaceOrientations'] = 'UIInterfaceOrientationPortrait'
+  s['SDKROOT']                               = 'watchos'
   s['CODE_SIGN_STYLE']                       = 'Automatic'
   s['SWIFT_OPTIMIZATION_LEVEL']              = cfg.name == 'Debug' ? '-Onone' : '-O'
 end

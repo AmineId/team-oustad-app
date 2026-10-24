@@ -19,11 +19,13 @@ subprojects {
     project.evaluationDependsOn(":app")
 }
 
-// Patch AGP 8: add missing namespace for Flutter plugins that still use the old `package` attribute
+// Patch AGP 8: add missing namespace for Flutter plugins that still use the old `package` attribute.
+// Uses plugins.withId (not afterEvaluate) to avoid the "already evaluated" error caused by
+// the evaluationDependsOn(":app") above.
 subprojects {
-    afterEvaluate {
-        val androidLib = extensions.findByType(com.android.build.gradle.LibraryExtension::class.java)
-        if (androidLib != null && androidLib.namespace == null) {
+    plugins.withId("com.android.library") {
+        val androidLib = extensions.getByType(com.android.build.gradle.LibraryExtension::class.java)
+        if (androidLib.namespace == null) {
             val manifest = file("src/main/AndroidManifest.xml")
             if (manifest.exists()) {
                 val factory = javax.xml.parsers.DocumentBuilderFactory.newInstance()
