@@ -167,18 +167,34 @@ jobs:
               ),
           ])
 
-          # PluginHandler.kt — configurePluginProject est appelé pour chaque plugin
-          # Flutter. Avec :app + :wear_app, chaque plugin est traité deux fois.
-          # Au 2e passage (:wear_app) : extensions.create échoue, afterEvaluate
-          # échoue (plugin déjà évalué), dépendances dupliquées.
+          # PluginHandler.kt — configurePlugins() est appelé depuis
+          # applicationVariants.configureEach, qui se déclenche en lazy (résolution
+          # du task graph), APRÈS l'évaluation de tous les projets. À ce stade :
+          #   - project.state.executed == true  → project.afterEvaluate { } lance
+          #     "Cannot run afterEvaluate when already evaluated"
+          #   - pluginProject.state.executed == true → idem
           #
-          # Fix : sortir immédiatement si le pluginProject a déjà l'extension
-          # 'flutter' — ça couvre tous les cas en un seul point.
-          # Les deux fonctions qui appellent findProject partagent le même pattern.
+          # Fix 1 : early-return si le pluginProject a déjà l'extension 'flutter'
+          #         (empêche la double exécution pour :wear_app).
+          # Fix 2 : remplacer les trois afterEvaluate par run { } (exécution
+          #         inline immédiate) — les extensions AGP des plugins sont
+          #         disponibles car tous les projets sont déjà évalués.
           patch_file(pathlib.Path(sys.argv[2]), [
+              # Fix 1 : early-return pour dédupliquer (appliqué aux 2 fonctions
+              #         qui appellent findProject — Python replace() remplace les 2)
               (
                   'val pluginProject: Project = project.rootProject.findProject(":$pluginName") ?: return',
                   'val pluginProject: Project = project.rootProject.findProject(":$pluginName") ?: return\n            if (pluginProject.extensions.findByName("flutter") != null) return',
+              ),
+              # Fix 2a : project.afterEvaluate dans configurePluginProject → inline
+              (
+                  'project.afterEvaluate {',
+                  'run {',
+              ),
+              # Fix 2b : pluginProject.afterEvaluate (2 occurrences) → inline
+              (
+                  'pluginProject.afterEvaluate {',
+                  'run {',
               ),
           ])
           PYEOF
@@ -217,8 +233,7 @@ jobs:
         run: |
           flutter build appbundle --release \
             --dart-define=ENVIRONMENT=${{ inputs.dart-env }} \
-            --dart-define=API_BASE_URL=${{ inputs.api-url }} \
-            -- --stacktrace
+            --dart-define=API_BASE_URL=${{ inputs.api-url }}
 
       - name: 🔧 Setup Ruby + Fastlane
         if: inputs.deploy-to-play
