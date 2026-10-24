@@ -81,6 +81,12 @@ jobs:
           PLIST_B64: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST }}
         run: echo "$PLIST_B64" | base64 --decode > ios/Runner/GoogleService-Info.plist
 
+      - name: 💎 Install xcodeproj gem
+        run: gem install xcodeproj --no-document
+
+      - name: ⌚ Ajouter le target watchOS au .xcodeproj
+        run: ruby scripts/add-watch-target.rb
+
       - name: 🏗️ Build iOS (no codesign)
         run: |
           DEFINES="--dart-define=ENVIRONMENT=${{ inputs.environment }}"

@@ -1,0 +1,81 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+#
+# Ajoute le target watchOS "TeamFitnessWatch" au Runner.xcodeproj
+# et l'embarque dans le target "Runner" (app iPhone).
+#
+# Requis en CI macOS : pas de Xcode local en dev (WSL/Windows).
+# Idempotent : ne fait rien si le target existe déjà.
+#
+# Usage : ruby scripts/add-watch-target.rb
+#
+require 'xcodeproj'
+
+PROJECT_PATH = 'ios/Runner.xcodeproj'
+WATCH_NAME   = 'TeamFitnessWatch'
+WATCH_BUNDLE = 'team.oustad.app.watchkitapp'
+WATCH_DIR    = 'TeamFitnessWatch'   # relatif à ios/
+WATCHOS_MIN  = '7.0'
+
+project = Xcodeproj::Project.open(PROJECT_PATH)
+
+# Idempotent
+if project.targets.any? { |t| t.name == WATCH_NAME }
+  puts "✅ Target #{WATCH_NAME} existe déjà — rien à faire."
+  exit 0
+end
+
+# ── 1. Créer le target watchOS app ───────────────────────────────────────────
+watch_target = project.new_target(:watch2_app, WATCH_NAME, :watchos, WATCHOS_MIN)
+
+# ── 2. Build settings ────────────────────────────────────────────────────────
+watch_target.build_configurations.each do |cfg|
+  s = cfg.build_settings
+  s['PRODUCT_BUNDLE_IDENTIFIER']             = WATCH_BUNDLE
+  s['WATCHOS_DEPLOYMENT_TARGET']             = WATCHOS_MIN
+  s['SWIFT_VERSION']                         = '5.0'
+  s['TARGETED_DEVICE_FAMILY']                = '4'
+  s['PRODUCT_NAME']                          = WATCH_NAME
+  s['ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES'] = 'YES'
+  s['ENABLE_BITCODE']                        = 'NO'
+  s['GENERATE_INFOPLIST_FILE']               = 'YES'
+  s['INFOPLIST_KEY_WKApplication']           = 'YES'
+  s['INFOPLIST_KEY_UISupportedInterfaceOrientations'] = 'UIInterfaceOrientationPortrait'
+  s['CODE_SIGN_STYLE']                       = 'Automatic'
+  s['SWIFT_OPTIMIZATION_LEVEL']              = cfg.name == 'Debug' ? '-Onone' : '-O'
+end
+
+# ── 3. Groupes Xcode + fichiers source ───────────────────────────────────────
+watch_group = project.main_group.new_group(WATCH_NAME, WATCH_DIR)
+views_group = watch_group.new_group('Views', 'Views')
+
+Dir.glob("ios/#{WATCH_DIR}/*.swift").sort.each do |path|
+  ref = watch_group.new_reference(File.basename(path))
+  watch_target.source_build_phase.add_file_reference(ref)
+  puts "  + #{File.basename(path)}"
+end
+
+Dir.glob("ios/#{WATCH_DIR}/Views/*.swift").sort.each do |path|
+  ref = views_group.new_reference(File.basename(path))
+  watch_target.source_build_phase.add_file_reference(ref)
+  puts "  + Views/#{File.basename(path)}"
+end
+
+# ── 4. Embarquer le Watch app dans Runner ────────────────────────────────────
+runner = project.targets.find { |t| t.name == 'Runner' }
+abort("❌ Target 'Runner' non trouvé") unless runner
+
+embed_phase = project.new(Xcodeproj::Project::Object::PBXCopyFilesBuildPhase)
+embed_phase.name               = 'Embed Watch Content'
+embed_phase.dst_subfolder_spec = '16'
+embed_phase.dst_path           = '$(CONTENTS_FOLDER_PATH)/Watch'
+
+build_file            = project.new(Xcodeproj::Project::Object::PBXBuildFile)
+build_file.file_ref   = watch_target.product_reference
+build_file.settings   = { 'ATTRIBUTES' => ['RemoveHeadersOnCopy'] }
+embed_phase.files    << build_file
+
+runner.build_phases << embed_phase
+
+project.save
+puts "✅ #{WATCH_NAME} ajouté et embarqué dans Runner → #{PROJECT_PATH}"
