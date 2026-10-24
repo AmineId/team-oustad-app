@@ -160,21 +160,18 @@ jobs:
               ),
           ])
 
-          # PluginHandler.kt — configurePluginProject crée aussi l'extension flutter
-          # sur chaque projet de plugin ET enregistre des afterEvaluate. Avec
-          # :app + :wear_app, chaque plugin est configuré deux fois :
-          #   1. extensions.create échoue au 2e passage (patchée ci-dessus)
-          #   2. pluginProject.afterEvaluate échoue si le plugin est déjà évalué
+          # PluginHandler.kt — configurePluginProject est appelé pour chaque plugin
+          # Flutter. Avec :app + :wear_app, chaque plugin est traité deux fois.
+          # Au 2e passage (:wear_app) : extensions.create échoue, afterEvaluate
+          # échoue (plugin déjà évalué), dépendances dupliquées.
+          #
+          # Fix : sortir immédiatement si le pluginProject a déjà l'extension
+          # 'flutter' — ça couvre tous les cas en un seul point.
+          # Les deux fonctions qui appellent findProject partagent le même pattern.
           patch_file(pathlib.Path(sys.argv[2]), [
-              # idempotence de l'extension flutter
               (
-                  'pluginProject.extensions.create("flutter", FlutterExtension::class.java)',
-                  '(pluginProject.extensions.findByName("flutter") as? FlutterExtension) ?: pluginProject.extensions.create("flutter", FlutterExtension::class.java)',
-              ),
-              # guard afterEvaluate sur pluginProject (déjà évalué au 2e passage)
-              (
-                  'pluginProject.afterEvaluate {',
-                  'if (!pluginProject.state.executed) pluginProject.afterEvaluate {',
+                  'val pluginProject: Project = project.rootProject.findProject(":$pluginName") ?: return',
+                  'val pluginProject: Project = project.rootProject.findProject(":$pluginName") ?: return\n            if (pluginProject.extensions.findByName("flutter") != null) return',
               ),
           ])
           PYEOF
