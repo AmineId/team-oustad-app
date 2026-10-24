@@ -47,6 +47,21 @@ class WatchSyncService {
     }
   }
 
+  /// Met à jour uniquement le QR sur la montre sans écraser les autres champs.
+  /// Si aucune sync précédente n'existe, ne fait rien.
+  static Future<void> updateQr(List<int> qrImageBytes) async {
+    try {
+      final existing = await getLastSyncData();
+      if (existing == null) return;
+      await _channel.invokeMethod('syncMemberData', {
+        ...existing,
+        'qrBase64': base64Encode(qrImageBytes),
+      });
+    } catch (e) {
+      debugPrint('WatchSyncService: error updating QR — $e');
+    }
+  }
+
   static Future<Map<String, dynamic>?> getLastSyncData() async {
     try {
       final result = await _channel.invokeMethod<Map>('getLastSyncData');

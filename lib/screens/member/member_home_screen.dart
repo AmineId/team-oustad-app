@@ -2444,6 +2444,9 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
         // Save QR code to cache for offline use
         await _authService.saveQrCodeCache(qrImageBytes);
 
+        // Pré-charger le QR sur la montre (fire & forget)
+        WatchSyncService.updateQr(qrImageBytes);
+
         setState(() {
           _qrImageBytes = qrImageBytes;
           _isFromCache = false;
