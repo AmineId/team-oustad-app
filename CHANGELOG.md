@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.86](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.85...v1.0.0-beta.86) (2026-10-24)
+
+
+### ✨ New Features
+
+* **ios:** push notifications + Firebase iOS setup ([aa9de08](https://github.com/TeamFitness/mobile-app/commit/aa9de083b300a0fd4e36792f58bff38e7fc449a3))
+* **ios:** script Ruby pour ajouter le target watchOS en CI ([4db59ce](https://github.com/TeamFitness/mobile-app/commit/4db59ce17d8d34ac54b49b479943d9a8c3db015f))
+* rename package to team.oustad.app + Apple Watch & Wear OS modules ([b8b9acd](https://github.com/TeamFitness/mobile-app/commit/b8b9acd42656e9beceb386bd0d3867939ad6e726)), closes [#7C3](https://github.com/TeamFitness/mobile-app/issues/7C3)
+* **watch:** pré-charger le QR code sur la montre au chargement ([c4dda41](https://github.com/TeamFitness/mobile-app/commit/c4dda41afb958a1df1fc55b6157a6848e7ab11d9))
+* **wear:** Android Wear OS module complet ([61c5181](https://github.com/TeamFitness/mobile-app/commit/61c51814c80992cf4564844f58781c249c98204c))
+
+
+### 🐛 Bug Fixes
+
+* **ci:** corriger l'accès aux secrets dans le workflow iOS réutilisable ([73b3263](https://github.com/TeamFitness/mobile-app/commit/73b32636924c2ae838b7710740c0c192af26fc49))
+* **wear:** intégrer le module wear dans l'AAB téléphone via wearApp() ([7c0f6bd](https://github.com/TeamFitness/mobile-app/commit/7c0f6bdcffffe47128e7c6e356915ef6b3e4c449))
+
 ## [1.0.0-beta.85](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.84...v1.0.0-beta.85) (2026-10-21)
 
 
