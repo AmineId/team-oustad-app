@@ -111,20 +111,38 @@ jobs:
             echo "✅ Cache Gradle plugin Flutter purgé ($GRADLE_CACHE)"
           fi
 
-          PLUGIN_FILE="$FLUTTER_ROOT/packages/flutter_tools/gradle/src/main/kotlin/FlutterPlugin.kt"
+          GRADLE_SRC="$FLUTTER_ROOT/packages/flutter_tools/gradle/src/main/kotlin"
+          PLUGIN_FILE="$GRADLE_SRC/FlutterPlugin.kt"
+          HANDLER_FILE="$GRADLE_SRC/plugins/PluginHandler.kt"
+
           echo "--- lignes clés de FlutterPlugin.kt (debug) ---"
           grep -n "extensions\.create\|tasks\.register.*generateLock" "$PLUGIN_FILE" 2>/dev/null || echo "(fichier introuvable)"
+          echo "--- lignes clés de PluginHandler.kt (debug) ---"
+          grep -n "extensions\.create" "$HANDLER_FILE" 2>/dev/null || echo "(fichier introuvable)"
           echo "------------------------------------------------"
-          python3 - "$PLUGIN_FILE" <<'PYEOF'
-          import sys, pathlib
-          path = pathlib.Path(sys.argv[1])
-          if not path.exists():
-              print("⚠️  FlutterPlugin.kt non trouvé, patch ignoré")
-              sys.exit(0)
-          content = path.read_text()
-          changes = []
 
-          PATCHES = [
+          python3 - "$PLUGIN_FILE" "$HANDLER_FILE" <<'PYEOF'
+          import sys, pathlib
+
+          def patch_file(path, patches):
+              if not path.exists():
+                  print(f"⚠️  {path.name} non trouvé, patch ignoré")
+                  return
+              content = path.read_text()
+              changes = []
+              for old, new in patches:
+                  if old in content:
+                      content = content.replace(old, new)
+                      changes.append(old[:60])
+              if changes:
+                  path.write_text(content)
+                  for c in changes:
+                      print(f"✅ {path.name} — Patché : {c}…")
+              else:
+                  print(f"ℹ️  {path.name} — Aucun patch nécessaire (déjà corrigé ou pattern non trouvé)")
+
+          # FlutterPlugin.kt
+          patch_file(pathlib.Path(sys.argv[1]), [
               # generateLockfiles sur rootProject (toutes versions)
               (
                   'rootProject.tasks.register("generateLockfiles") {',
@@ -135,21 +153,22 @@ jobs:
                   'rootProject.extensions.create("flutter", FlutterExtension::class.java)',
                   '(rootProject.extensions.findByName("flutter") as? FlutterExtension) ?: rootProject.extensions.create("flutter", FlutterExtension::class.java)',
               ),
-              # extension flutter sur project (Flutter ≥ 3.37, par précaution)
+              # extension flutter sur project (Flutter ≥ 3.37 et 3.35.x inside allprojects)
               (
                   'project.extensions.create("flutter", FlutterExtension::class.java)',
                   '(project.extensions.findByName("flutter") as? FlutterExtension) ?: project.extensions.create("flutter", FlutterExtension::class.java)',
               ),
-          ]
-          for old, new in PATCHES:
-              if old in content:
-                  content = content.replace(old, new)
-                  changes.append(old[:50])
-          if changes:
-              path.write_text(content)
-              for c in changes: print(f"✅ Patché : {c}…")
-          else:
-              print("ℹ️  Aucun patch nécessaire (déjà corrigé)")
+          ])
+
+          # PluginHandler.kt — configurePluginProject crée aussi l'extension flutter
+          # sur chaque projet de plugin. Avec :app + :wear_app, chaque plugin est
+          # configuré deux fois → extensions.create échoue au 2e passage.
+          patch_file(pathlib.Path(sys.argv[2]), [
+              (
+                  'pluginProject.extensions.create("flutter", FlutterExtension::class.java)',
+                  '(pluginProject.extensions.findByName("flutter") as? FlutterExtension) ?: pluginProject.extensions.create("flutter", FlutterExtension::class.java)',
+              ),
+          ])
           PYEOF
 
       - name: 🔧 Configure Firebase
