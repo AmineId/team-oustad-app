@@ -75,6 +75,12 @@ jobs:
       - name: 📦 Get dependencies
         run: flutter pub get
 
+      - name: 🔥 Inject GoogleService-Info.plist
+        if: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST != '' }}
+        env:
+          PLIST_B64: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST }}
+        run: echo "$PLIST_B64" | base64 --decode > ios/Runner/GoogleService-Info.plist
+
       - name: 🏗️ Build iOS (no codesign)
         run: |
           DEFINES="--dart-define=ENVIRONMENT=${{ inputs.environment }}"

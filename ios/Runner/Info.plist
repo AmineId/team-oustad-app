@@ -57,5 +57,10 @@
 	<string>Cette app utilise votre localisation pour afficher votre position sur la carte.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>Cette app utilise votre localisation pour afficher votre position sur la carte.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>remote-notification</string>
+	</array>
 </dict>
 </plist>
