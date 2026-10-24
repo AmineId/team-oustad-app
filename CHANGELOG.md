@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.96](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.95...v1.0.0-beta.96) (2026-10-24)
+
+
+### ✨ New Features
+
+* **theme:** palette Midnight Gold + 3 couleurs identité + widgets animés ([9c595d0](https://github.com/TeamFitness/mobile-app/commit/9c595d0ff1927cb1c09f62c666aa1dbf70b646c6)), closes [#E8961](https://github.com/TeamFitness/mobile-app/issues/E8961) [#10B981](https://github.com/TeamFitness/mobile-app/issues/10B981) [#8B5CF6](https://github.com/TeamFitness/mobile-app/issues/8B5CF6) [#07111](https://github.com/TeamFitness/mobile-app/issues/07111) [#0F1E30](https://github.com/TeamFitness/mobile-app/issues/0F1E30) [#172840](https://github.com/TeamFitness/mobile-app/issues/172840) [#EFF3F8](https://github.com/TeamFitness/mobile-app/issues/EFF3F8) [#F7](https://github.com/TeamFitness/mobile-app/issues/F7)
+
 ## [1.0.0-beta.95](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.94...v1.0.0-beta.95) (2026-10-24)
 
 
