@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../core/theme/theme.dart';
 
-/// Bouton primaire moderne avec style cohérent
-class ModernButton extends StatelessWidget {
+/// Bouton primaire moderne — scale on press + haptic + variants thématisés
+class ModernButton extends StatefulWidget {
   final String text;
   final VoidCallback? onPressed;
   final IconData? icon;
@@ -21,61 +21,82 @@ class ModernButton extends StatelessWidget {
     this.variant = ModernButtonVariant.primary,
   });
 
-  VoidCallback? get _onPressed {
-    if (onPressed == null || isLoading) return null;
-    return () {
-      HapticFeedback.mediumImpact();
-      onPressed!();
-    };
+  @override
+  State<ModernButton> createState() => _ModernButtonState();
+}
+
+class _ModernButtonState extends State<ModernButton>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _scale;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 80),
+      reverseDuration: const Duration(milliseconds: 180),
+    );
+    _scale = Tween<double>(begin: 1.0, end: 0.96).animate(
+      CurvedAnimation(parent: _ctrl, curve: Curves.easeIn),
+    );
   }
 
   @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  VoidCallback? get _onPressed {
+    if (widget.onPressed == null || widget.isLoading) return null;
+    return () {
+      HapticFeedback.lightImpact();
+      widget.onPressed!();
+    };
+  }
+
+  void _down(_) { if (_onPressed != null) _ctrl.forward(); }
+  void _up(_)   => _ctrl.reverse();
+  void _cancel() => _ctrl.reverse();
+
+  @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     final buttonChild = Row(
-      mainAxisSize: fullWidth ? MainAxisSize.max : MainAxisSize.min,
+      mainAxisSize: widget.fullWidth ? MainAxisSize.max : MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        if (isLoading)
+        if (widget.isLoading)
           SizedBox(
-            width: 20,
-            height: 20,
+            width: 18,
+            height: 18,
             child: CircularProgressIndicator(
               strokeWidth: 2,
               valueColor: AlwaysStoppedAnimation<Color>(
-                (variant == ModernButtonVariant.primary ||
-                        variant == ModernButtonVariant.danger ||
-                        variant == ModernButtonVariant.success)
-                    ? Colors.white
-                    : Theme.of(context).colorScheme.primary,
+                _spinnerColor(colorScheme),
               ),
             ),
           )
-        else if (icon != null)
-          Icon(icon, size: 20),
-        if (isLoading || icon != null) const SizedBox(width: 8),
-        Text(text),
+        else if (widget.icon != null)
+          Icon(widget.icon, size: 20),
+        if (widget.isLoading || widget.icon != null) const SizedBox(width: 8),
+        Text(widget.text),
       ],
     );
 
     Widget button;
-    switch (variant) {
+    switch (widget.variant) {
       case ModernButtonVariant.primary:
-        button = ElevatedButton(
-          onPressed: _onPressed,
-          child: buttonChild,
-        );
+        button = ElevatedButton(onPressed: _onPressed, child: buttonChild);
         break;
       case ModernButtonVariant.secondary:
-        button = OutlinedButton(
-          onPressed: _onPressed,
-          child: buttonChild,
-        );
+        button = OutlinedButton(onPressed: _onPressed, child: buttonChild);
         break;
       case ModernButtonVariant.text:
-        button = TextButton(
-          onPressed: _onPressed,
-          child: buttonChild,
-        );
+        button = TextButton(onPressed: _onPressed, child: buttonChild);
         break;
       case ModernButtonVariant.danger:
         button = ElevatedButton(
@@ -88,10 +109,21 @@ class ModernButton extends StatelessWidget {
         );
         break;
       case ModernButtonVariant.success:
+      case ModernButtonVariant.accent:
         button = ElevatedButton(
           onPressed: _onPressed,
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.success,
+            backgroundColor: AppColors.accentGreen,
+            foregroundColor: Colors.white,
+          ),
+          child: buttonChild,
+        );
+        break;
+      case ModernButtonVariant.premium:
+        button = ElevatedButton(
+          onPressed: _onPressed,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.accentViolet,
             foregroundColor: Colors.white,
           ),
           child: buttonChild,
@@ -99,7 +131,24 @@ class ModernButton extends StatelessWidget {
         break;
     }
 
-    return fullWidth ? SizedBox(width: double.infinity, child: button) : button;
+    if (widget.fullWidth) button = SizedBox(width: double.infinity, child: button);
+
+    return GestureDetector(
+      onTapDown: _down,
+      onTapUp: _up,
+      onTapCancel: _cancel,
+      child: ScaleTransition(scale: _scale, child: button),
+    );
+  }
+
+  Color _spinnerColor(ColorScheme cs) {
+    switch (widget.variant) {
+      case ModernButtonVariant.secondary:
+      case ModernButtonVariant.text:
+        return cs.primary;
+      default:
+        return Colors.white;
+    }
   }
 }
 
@@ -109,4 +158,6 @@ enum ModernButtonVariant {
   text,
   danger,
   success,
+  accent,
+  premium,
 }

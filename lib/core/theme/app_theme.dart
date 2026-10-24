@@ -12,18 +12,22 @@ class AppTheme {
     // Couleurs
     colorScheme: ColorScheme.dark(
       primary: AppColors.primary,
+      onPrimary: Colors.white,            // blanc passe 4.5:1 sur #E07B2A sombre
       secondary: AppColors.primaryLight,
-      surface: AppColors.darkSurface,
-      surfaceContainerHighest: AppColors.darkCard,
+      onSecondary: AppColors.darkBackground,
+      tertiary: AppColors.accentViolet,   // 3ème couleur identité — premium
+      onTertiary: Colors.white,
       error: AppColors.error,
-      onPrimary: Colors.white,
-      onSecondary: Colors.white,
-      onSurface: AppColors.darkTextPrimary,
       onError: Colors.white,
+      surface: AppColors.darkSurface,
+      onSurface: AppColors.darkTextPrimary,
+      surfaceContainerHighest: AppColors.darkCard,
+      outline: AppColors.darkBorder,
+      outlineVariant: AppColors.darkElevated,
     ),
     
     scaffoldBackgroundColor: AppColors.darkBackground,
-    
+
     // AppBar
     appBarTheme: AppBarTheme(
       backgroundColor: AppColors.darkSurface,
@@ -35,14 +39,15 @@ class AppTheme {
       titleTextStyle: AppTextStyles.h3.copyWith(color: AppColors.darkTextPrimary),
     ),
     
-    // Cards
+    // Cards — bordure subtile pour séparer card (#172840) du surface (#0F1E30)
     cardTheme: CardThemeData(
       color: AppColors.darkCard,
-      elevation: 4,
-      shadowColor: AppColors.darkShadow,
+      elevation: 0,
+      shadowColor: Colors.transparent,
       surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: AppColors.darkBorder, width: 1),
       ),
       margin: const EdgeInsets.all(8),
     ),
@@ -184,14 +189,18 @@ class AppTheme {
     // Couleurs
     colorScheme: ColorScheme.light(
       primary: AppColors.primary,
-      secondary: AppColors.primaryLight,
-      surface: AppColors.lightSurface,
-      surfaceContainerHighest: AppColors.lightCard,
-      error: AppColors.error,
-      onPrimary: Colors.white,
+      onPrimary: Colors.white,             // blanc passe sur #E07B2A (4.5:1 ok)
+      secondary: AppColors.primaryDark,
       onSecondary: Colors.white,
-      onSurface: AppColors.lightTextPrimary,
+      tertiary: AppColors.accentViolet,    // 3ème couleur identité — premium
+      onTertiary: Colors.white,
+      error: AppColors.error,
       onError: Colors.white,
+      surface: AppColors.lightSurface,
+      onSurface: AppColors.lightTextPrimary,
+      surfaceContainerHighest: AppColors.lightCard,
+      outline: AppColors.lightBorder,
+      outlineVariant: AppColors.lightElevated,
     ),
     
     scaffoldBackgroundColor: AppColors.lightBackground,
@@ -208,15 +217,15 @@ class AppTheme {
       shadowColor: AppColors.lightShadow,
     ),
     
-    // Cards (design Material 3 avec meilleur contraste)
+    // Cards — lightCard (#F8F9FB) sur fond lightBackground (#ECEFF3) = séparation visible
     cardTheme: CardThemeData(
-      color: AppColors.lightCard,
-      elevation: 2,  // Élévation augmentée pour meilleure visibilité
+      color: AppColors.lightSurface,
+      elevation: 1,
       shadowColor: AppColors.lightShadow,
       surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: AppColors.lightBorder.withValues(alpha: 0.5)),  // Bordure plus visible
+        side: const BorderSide(color: AppColors.lightBorder, width: 1),
       ),
       margin: const EdgeInsets.all(8),
     ),
@@ -255,10 +264,10 @@ class AppTheme {
       ),
     ),
     
-    // Input fields
+    // Input fields — fond légèrement off-white pour se distinguer du fond blanc
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: AppColors.lightSurface,  // Blanc pour meilleur contraste
+      fillColor: AppColors.lightCard,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),

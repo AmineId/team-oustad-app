@@ -42,19 +42,23 @@ class StatusBadge extends StatelessWidget {
         backgroundColor = AppColors.primary.withValues(alpha: 0.15);
         textColor = AppColors.primary;
         break;
+      case StatusBadgeType.premium:
+        backgroundColor = AppColors.accentViolet.withValues(alpha: 0.15);
+        textColor = isDark ? AppColors.accentVioletLight : AppColors.accentViolet;
+        break;
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(6),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (icon != null) ...[
-            Icon(icon, size: 14, color: textColor),
+            Icon(icon, size: 13, color: textColor),
             const SizedBox(width: 4),
           ],
           Text(
@@ -62,6 +66,8 @@ class StatusBadge extends StatelessWidget {
             style: AppTextStyles.caption.copyWith(
               color: textColor,
               fontWeight: FontWeight.w600,
+              fontSize: 11,
+              letterSpacing: 0.3,
             ),
           ),
         ],
@@ -76,4 +82,5 @@ enum StatusBadgeType {
   warning,
   info,
   primary,
+  premium,
 }
