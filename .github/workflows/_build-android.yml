@@ -108,11 +108,13 @@ jobs:
           GRADLE_SRC="$FLUTTER_ROOT/packages/flutter_tools/gradle/src/main/kotlin"
           PLUGIN_FILE="$GRADLE_SRC/FlutterPlugin.kt"
           HANDLER_FILE="$GRADLE_SRC/plugins/PluginHandler.kt"
+          UTILS_FILE="$GRADLE_SRC/FlutterPluginUtils.kt"
 
           # Restaure les .kt originaux si le cache a sauvegardé des versions patchées
           git -C "$FLUTTER_ROOT" restore \
             packages/flutter_tools/gradle/src/main/kotlin/FlutterPlugin.kt \
             packages/flutter_tools/gradle/src/main/kotlin/plugins/PluginHandler.kt \
+            packages/flutter_tools/gradle/src/main/kotlin/FlutterPluginUtils.kt \
             2>/dev/null || echo "ℹ️  restore git flutter ignoré (git non dispo)"
 
           # Purge les classes compilées pour forcer la recompilation depuis les sources patchées
@@ -128,7 +130,7 @@ jobs:
           grep -n "extensions\.create\|afterEvaluate\|findProject.*pluginName\|findByName\|state\.executed" "$HANDLER_FILE" 2>/dev/null | head -15 || echo "(fichier introuvable)"
           echo "------------------------------------------------"
 
-          python3 - "$PLUGIN_FILE" "$HANDLER_FILE" <<'PYEOF'
+          python3 - "$PLUGIN_FILE" "$HANDLER_FILE" "$UTILS_FILE" <<'PYEOF'
           import sys, pathlib
 
           def patch_file(path, patches):
@@ -199,10 +201,32 @@ jobs:
                   'run {',
               ),
           ])
+
+          # FlutterPluginUtils.kt
+          # detectLowCompileSdkVersionOrNdkVersion() appelle pluginProject.afterEvaluate{}
+          # pour chaque plugin. Pour :app c'est OK (plugins pas encore évalués), mais
+          # pour :wear_app (évalué après :app via evaluationDependsOn) les plugins sont
+          # déjà évalués → "Cannot run afterEvaluate when the project is already evaluated".
+          # Fix : helper afterEvaluateOrNow — exécute tout de suite si déjà évalué.
+          patch_file(pathlib.Path(sys.argv[3]), [
+              (
+                  'pluginProject.afterEvaluate {',
+                  'pluginProject.afterEvaluateOrNow {',
+              ),
+              (
+                  'private data class PluginVersionPair(',
+                  'internal fun Project.afterEvaluateOrNow(action: Project.() -> Unit) {\n'
+                  '    if (state.executed) action() else afterEvaluate { action() }\n'
+                  '}\n\n'
+                  'private data class PluginVersionPair(',
+              ),
+          ])
           PYEOF
 
           echo "--- PluginHandler.kt APRÈS patch (lignes autour de findProject) ---"
           grep -n "findProject.*pluginName\|findByName.*flutter\|state\.executed\|afterEvaluate" "$HANDLER_FILE" 2>/dev/null | head -20
+          echo "--- FlutterPluginUtils.kt APRÈS patch ---"
+          grep -n "afterEvaluate" "$UTILS_FILE" 2>/dev/null | head -20
           echo "-------------------------------------------------------------------"
 
       - name: 🔧 Configure Firebase
