@@ -40,6 +40,7 @@ watch_target.build_configurations.each do |cfg|
   s['ENABLE_BITCODE']                        = 'NO'
   s['GENERATE_INFOPLIST_FILE']               = 'YES'
   s['INFOPLIST_KEY_WKApplication']           = 'YES'
+  s['INFOPLIST_KEY_WKCompanionAppBundleIdentifier'] = 'team.oustad.app'
   s['INFOPLIST_KEY_UISupportedInterfaceOrientations'] = 'UIInterfaceOrientationPortrait'
   s['SDKROOT']                               = 'watchos'
   s['CODE_SIGN_STYLE']                       = 'Automatic'
