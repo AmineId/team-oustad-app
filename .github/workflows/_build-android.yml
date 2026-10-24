@@ -230,6 +230,8 @@ jobs:
           fi
 
       - name: 🏗️ Build AAB (téléphone + Wear OS intégré)
+        env:
+          GRADLE_OPTS: "-Dorg.gradle.logging.stacktrace=all"
         run: |
           flutter build appbundle --release \
             --dart-define=ENVIRONMENT=${{ inputs.dart-env }} \
