@@ -4152,7 +4152,7 @@ class _GymGalleryViewState extends State<_GymGalleryView> {
                             24 + MediaQuery.of(context).padding.bottom,
                           ),
                           itemCount: _photos.length,
-                          onReorderItem: _onReorderItem,
+                          onReorder: _onReorderItem,
                           itemBuilder: (context, index) {
                             final photo = _photos[index];
                             final photoId = photo['id'] as int;

@@ -26,7 +26,7 @@ if project.targets.any? { |t| t.name == WATCH_NAME }
 end
 
 # ── 1. Créer le target watchOS app ───────────────────────────────────────────
-watch_target = project.new_target(:watch2_app, WATCH_NAME, :watchos, WATCHOS_MIN)
+watch_target = project.new_target(:application, WATCH_NAME, :watchos, WATCHOS_MIN)
 
 # ── 2. Build settings ────────────────────────────────────────────────────────
 watch_target.build_configurations.each do |cfg|

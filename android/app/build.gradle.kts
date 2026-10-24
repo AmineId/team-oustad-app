@@ -76,5 +76,5 @@ flutter {
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
     // Intègre l'APK Wear OS dans l'AAB téléphone → distribué automatiquement à la montre jumelée
-    wearApp(project(":wear"))
+    wearApp(project(":wear_app"))
 }

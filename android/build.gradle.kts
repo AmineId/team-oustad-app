@@ -19,6 +19,22 @@ subprojects {
     project.evaluationDependsOn(":app")
 }
 
+// Patch AGP 8: add missing namespace for Flutter plugins that still use the old `package` attribute
+subprojects {
+    afterEvaluate {
+        val androidLib = extensions.findByType(com.android.build.gradle.LibraryExtension::class.java)
+        if (androidLib != null && androidLib.namespace == null) {
+            val manifest = file("src/main/AndroidManifest.xml")
+            if (manifest.exists()) {
+                val factory = javax.xml.parsers.DocumentBuilderFactory.newInstance()
+                val doc = factory.newDocumentBuilder().parse(manifest)
+                val pkg = doc.documentElement.getAttribute("package")
+                if (pkg.isNotBlank()) androidLib.namespace = pkg
+            }
+        }
+    }
+}
+
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }
