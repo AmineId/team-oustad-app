@@ -76,10 +76,15 @@ jobs:
         run: flutter pub get
 
       - name: 🔥 Inject GoogleService-Info.plist
-        if: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST != '' }}
         env:
           PLIST_B64: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST }}
-        run: echo "$PLIST_B64" | base64 --decode > ios/Runner/GoogleService-Info.plist
+        run: |
+          if [ -n "$PLIST_B64" ]; then
+            echo "$PLIST_B64" | base64 --decode > ios/Runner/GoogleService-Info.plist
+            echo "✅ GoogleService-Info.plist injecté depuis le secret"
+          else
+            echo "⚠️  Secret GOOGLE_SERVICE_INFO_PLIST non défini — placeholder utilisé"
+          fi
 
       - name: 💎 Install xcodeproj gem
         run: gem install xcodeproj --no-document
