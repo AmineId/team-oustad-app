@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.94](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.93...v1.0.0-beta.94) (2026-10-24)
+
+
+### 🐛 Bug Fixes
+
+* **ios:** patcher aussi CFBundleIdentifier de la Watch app avant install ([9ca925e](https://github.com/TeamFitness/mobile-app/commit/9ca925e5f085c6f28580c50d830808d994e7b8ad))
+
 ## [1.0.0-beta.93](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.92...v1.0.0-beta.93) (2026-10-24)
 
 
