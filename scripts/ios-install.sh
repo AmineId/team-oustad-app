@@ -95,4 +95,66 @@ else
 fi
 
 xtool devices
-xtool install ${XTOOL_UDID:+-u "$XTOOL_UDID"} "$ipa"
+
+# ── Patch WKCompanionAppBundleIdentifier ─────────────────────────────────────
+# xtool re-signe avec le préfixe XTL-<teamID>. Le WKCompanionAppBundleIdentifier
+# dans le plist de la Watch app doit correspondre au bundle ID effectif du
+# compagnon iPhone après re-signature, sinon iOS refuse l'installation.
+_patch_watch_companion_id() {
+  local src_ipa="$1"
+
+  # Récupère le team ID actif depuis xtool (ex. "Mohammed AMINE IDRISSI [active]: D79Q935LUX")
+  local team_id
+  team_id=$(xtool ds teams 2>/dev/null | awk '/\[active\]/{gsub(/.*: /,""); print; exit}')
+  if [[ -z "$team_id" ]]; then
+    echo "⚠️  Team ID xtool introuvable — WKCompanionAppBundleIdentifier non patché"
+    echo "   Définir XTOOL_TEAM_PREFIX=XTL-<teamID> pour forcer la valeur"
+    return 0
+  fi
+  local prefix="${XTOOL_TEAM_PREFIX:-XTL-${team_id}}"
+  local companion_id="${prefix}.team.oustad.app"
+
+  local work
+  work=$(mktemp -d)
+  trap 'rm -rf "$work"' RETURN
+
+  cp "$src_ipa" "$work/orig.ipa"
+  (cd "$work" && unzip -q orig.ipa)
+
+  local plist
+  plist=$(find "$work/Payload" -path "*/Watch/*.app/Info.plist" | head -1)
+  if [[ -z "$plist" ]]; then
+    echo "ℹ️  Pas de Watch app dans l'IPA — aucun patch nécessaire"
+    return 0
+  fi
+
+  local current
+  current=$(python3 -c "
+import plistlib, sys
+with open('$plist','rb') as f: pl=plistlib.load(f)
+print(pl.get('WKCompanionAppBundleIdentifier',''))
+" 2>/dev/null || true)
+
+  if [[ "$current" == "$companion_id" ]]; then
+    echo "✅ WKCompanionAppBundleIdentifier déjà correct ($companion_id)"
+    return 0
+  fi
+
+  python3 -c "
+import plistlib
+with open('$plist','rb') as f: pl=plistlib.load(f)
+pl['WKCompanionAppBundleIdentifier'] = '$companion_id'
+with open('$plist','wb') as f: plistlib.dump(pl, f)
+"
+  (cd "$work" && zip -qr patched.ipa Payload)
+  cp "$work/patched.ipa" "$src_ipa"
+  echo "✅ WKCompanionAppBundleIdentifier → $companion_id"
+}
+
+IPA_TO_INSTALL="$ipa"
+PATCHED=$(mktemp --suffix=.ipa)
+cp "$IPA_TO_INSTALL" "$PATCHED"
+_patch_watch_companion_id "$PATCHED"
+
+xtool install ${XTOOL_UDID:+-u "$XTOOL_UDID"} "$PATCHED"
+rm -f "$PATCHED"
