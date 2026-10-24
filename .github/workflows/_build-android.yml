@@ -96,6 +96,18 @@ jobs:
           channel: stable
           cache: true
 
+      - name: 🔧 Patch Flutter Gradle plugin (generateLockfiles dedup)
+        run: |
+          # Flutter enregistre 'generateLockfiles' sur rootProject sans garde ;
+          # quand :app et :wear_app appliquent tous deux le plugin, le 2ème échoue.
+          PLUGIN_FILE="$FLUTTER_ROOT/packages/flutter_tools/gradle/src/main/kotlin/FlutterPlugin.kt"
+          if grep -q 'rootProject\.tasks\.register("generateLockfiles")' "$PLUGIN_FILE" 2>/dev/null; then
+            sed -i 's/rootProject\.tasks\.register("generateLockfiles") {/if (rootProject.tasks.findByName("generateLockfiles") == null) rootProject.tasks.register("generateLockfiles") {/' "$PLUGIN_FILE"
+            echo "✅ Patch generateLockfiles appliqué"
+          else
+            echo "⚠️  Déjà corrigé ou pattern non trouvé — aucun patch nécessaire"
+          fi
+
       - name: 🔧 Configure Firebase
         run: |
           if [ "${{ inputs.dart-env }}" = "prod" ]; then

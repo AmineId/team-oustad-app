@@ -76,7 +76,14 @@ build_file.file_ref   = watch_target.product_reference
 build_file.settings   = { 'ATTRIBUTES' => ['RemoveHeadersOnCopy'] }
 embed_phase.files    << build_file
 
-runner.build_phases << embed_phase
+# Insérer AVANT "Thin Binary" (phase Flutter) pour éviter le cycle de build Xcode 15/16 :
+# copy → dépend de Thin Binary → dépend de Info.plist → dépend de copy (cycle)
+thin_idx = runner.build_phases.index { |p| p.respond_to?(:name) && p.name == 'Thin Binary' }
+if thin_idx
+  runner.build_phases.insert(thin_idx, embed_phase)
+else
+  runner.build_phases << embed_phase
+end
 
 project.save
 puts "✅ #{WATCH_NAME} ajouté et embarqué dans Runner → #{PROJECT_PATH}"
