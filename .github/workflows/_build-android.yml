@@ -167,18 +167,19 @@ jobs:
               ),
           ])
 
-          # PluginHandler.kt — configurePlugins() est appelé depuis
-          # applicationVariants.configureEach, qui se déclenche en lazy (résolution
-          # du task graph), APRÈS l'évaluation de tous les projets. À ce stade :
-          #   - project.state.executed == true  → project.afterEvaluate { } lance
-          #     "Cannot run afterEvaluate when already evaluated"
-          #   - pluginProject.state.executed == true → idem
+          # PluginHandler.kt
+          # configurePlugins() est déclenché depuis applicationVariants.configureEach,
+          # qui s'exécute dans l'afterEvaluate d'AGP (création des variants).
+          # Gradle 8 interdit d'appeler project.afterEvaluate{} depuis l'intérieur
+          # d'un afterEvaluate déjà en cours → "Cannot run afterEvaluate when already
+          # evaluated". Les plugin projects, eux, ne sont PAS encore évalués à ce stade.
           #
           # Fix 1 : early-return si le pluginProject a déjà l'extension 'flutter'
-          #         (empêche la double exécution pour :wear_app).
-          # Fix 2 : remplacer les trois afterEvaluate par run { } (exécution
-          #         inline immédiate) — les extensions AGP des plugins sont
-          #         disponibles car tous les projets sont déjà évalués.
+          #         (empêche :wear_app de re-configurer les plugins déjà traités par :app).
+          # Fix 2 : project.afterEvaluate{} → run{} pour exécuter inline
+          #         (project = :app est configuré, ses buildTypes sont disponibles).
+          #         pluginProject.afterEvaluate{} est intentionnellement conservé
+          #         (plugins pas encore évalués : il faut différer leur configuration).
           patch_file(pathlib.Path(sys.argv[2]), [
               # Fix 1 : early-return pour dédupliquer (appliqué aux 2 fonctions
               #         qui appellent findProject — Python replace() remplace les 2)
@@ -186,14 +187,15 @@ jobs:
                   'val pluginProject: Project = project.rootProject.findProject(":$pluginName") ?: return',
                   'val pluginProject: Project = project.rootProject.findProject(":$pluginName") ?: return\n            if (pluginProject.extensions.findByName("flutter") != null) return',
               ),
-              # Fix 2a : project.afterEvaluate dans configurePluginProject → inline
+              # Fix 2 : project.afterEvaluate{} dans configurePluginProject → run{}
+              # Raison : appelé depuis l'intérieur d'un afterEvaluate (AGP crée
+              # les variants dans son afterEvaluate). Gradle 8 interdit les appels
+              # afterEvaluate imbriqués → on exécute inline (project est déjà
+              # configuré, ses buildTypes sont disponibles).
+              # Note : pluginProject.afterEvaluate{} est intentionnellement gardé —
+              # les plugins ne sont pas encore évalués à ce stade, il faut différer.
               (
                   'project.afterEvaluate {',
-                  'run {',
-              ),
-              # Fix 2b : pluginProject.afterEvaluate (2 occurrences) → inline
-              (
-                  'pluginProject.afterEvaluate {',
                   'run {',
               ),
           ])
