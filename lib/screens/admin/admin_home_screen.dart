@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/services/api_service.dart';
+import '../../core/services/watch_sync_service.dart';
 import '../../core/theme/theme.dart';
 import '../../core/utils/user_utils.dart';
 import '../../core/l10n/app_localizations.dart';
@@ -879,11 +880,18 @@ class _ProfilePageState extends State<ProfilePage> {
   Map<String, dynamic>? _profileData;
   bool _isLoading = true;
   bool _isRefreshing = false;
+  bool _watchEnabled = true;
 
   @override
   void initState() {
     super.initState();
     _loadProfileData();
+    _loadWatchSetting();
+  }
+
+  Future<void> _loadWatchSetting() async {
+    final enabled = await WatchSyncService.isEnabled();
+    if (mounted) setState(() => _watchEnabled = enabled);
   }
 
   Future<void> _loadProfileData() async {
@@ -1222,6 +1230,8 @@ class _ProfilePageState extends State<ProfilePage> {
                   Icons.help_outline,
                   () => SupportBottomSheet.show(context),
                 ),
+                const SizedBox(height: 8),
+                _buildWatchToggle(context),
                 const SizedBox(height: 16),
 
                 // Logout button
@@ -1324,6 +1334,66 @@ class _ProfilePageState extends State<ProfilePage> {
           size: 16,
         ),
         onTap: onTap,
+      ),
+    );
+  }
+
+  Widget _buildWatchToggle(BuildContext context) {
+    return Card(
+      color: Theme.of(context).cardTheme.color,
+      elevation: 0,
+      margin: const EdgeInsets.only(bottom: 12),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? AppColors.darkBorder
+              : AppColors.lightBorder,
+        ),
+      ),
+      child: ListTile(
+        leading: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: AppColors.accentViolet.withValues(alpha: 0.12),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            Icons.watch_outlined,
+            color: AppColors.accentViolet,
+            size: 22,
+          ),
+        ),
+        title: Text(
+          'Synchronisation montre',
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppColors.darkTextPrimary
+                : AppColors.lightTextPrimary,
+          ),
+        ),
+        subtitle: Text(
+          _watchEnabled
+              ? 'Les données sont envoyées à la montre'
+              : 'Synchronisation désactivée',
+          style: TextStyle(
+            fontSize: 12,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppColors.darkTextTertiary
+                : AppColors.lightTextTertiary,
+          ),
+        ),
+        trailing: Switch.adaptive(
+          value: _watchEnabled,
+          activeThumbColor: AppColors.accentGreen,
+          activeTrackColor: AppColors.accentGreen.withValues(alpha: 0.4),
+          onChanged: (val) async {
+            setState(() => _watchEnabled = val);
+            await WatchSyncService.setEnabled(val);
+          },
+        ),
       ),
     );
   }

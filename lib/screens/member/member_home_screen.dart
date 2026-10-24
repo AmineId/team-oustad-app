@@ -5346,12 +5346,19 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
   bool _isLoading = true;
   bool _isRefreshing = false;
   bool _isLoadingSubscription = true;
+  bool _watchEnabled = true;
 
   @override
   void initState() {
     super.initState();
     _loadProfileData();
     _loadSubscription();
+    _loadWatchSetting();
+  }
+
+  Future<void> _loadWatchSetting() async {
+    final enabled = await WatchSyncService.isEnabled();
+    if (mounted) setState(() => _watchEnabled = enabled);
   }
 
   Future<void> _loadProfileData() async {
@@ -6176,6 +6183,8 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                 Icons.help_outline,
                 () => SupportBottomSheet.show(context),
               ),
+              SizedBox(height: 8),
+              _buildWatchToggle(context),
               SizedBox(height: 16),
 
               // Logout button
@@ -6385,6 +6394,66 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
           size: 16,
         ),
         onTap: onTap,
+      ),
+    );
+  }
+
+  Widget _buildWatchToggle(BuildContext context) {
+    return Card(
+      color: Theme.of(context).cardTheme.color,
+      elevation: 0,
+      margin: const EdgeInsets.only(bottom: 12),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? AppColors.darkBorder
+              : AppColors.lightBorder,
+        ),
+      ),
+      child: ListTile(
+        leading: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: AppColors.accentViolet.withValues(alpha: 0.12),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            Icons.watch_outlined,
+            color: AppColors.accentViolet,
+            size: 22,
+          ),
+        ),
+        title: Text(
+          'Synchronisation montre',
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppColors.darkTextPrimary
+                : AppColors.lightTextPrimary,
+          ),
+        ),
+        subtitle: Text(
+          _watchEnabled
+              ? 'Données envoyées à la montre connectée'
+              : 'Synchronisation désactivée',
+          style: TextStyle(
+            fontSize: 12,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppColors.darkTextTertiary
+                : AppColors.lightTextTertiary,
+          ),
+        ),
+        trailing: Switch.adaptive(
+          value: _watchEnabled,
+          activeThumbColor: AppColors.accentGreen,
+          activeTrackColor: AppColors.accentGreen.withValues(alpha: 0.4),
+          onChanged: (val) async {
+            setState(() => _watchEnabled = val);
+            await WatchSyncService.setEnabled(val);
+          },
+        ),
       ),
     );
   }

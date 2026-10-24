@@ -7,9 +7,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/models/models.dart';
 import '../../core/services/api_service.dart';
+import '../../core/services/auth_service.dart';
 import '../../core/services/banner_service.dart';
 import '../../core/theme/theme.dart';
 import '../../widgets/widgets.dart';
+import '../admin/showcase_editor_screen.dart';
 
 bool get _reduceMotion => SchedulerBinding
     .instance
@@ -32,16 +34,25 @@ class GymShowcaseDetailScreen extends StatefulWidget {
 
 class _GymShowcaseDetailScreenState extends State<GymShowcaseDetailScreen> {
   final ApiService _apiService = ApiService.fromEnv();
+  late final AuthService _authService = AuthService(_apiService);
   Map<String, dynamic>? _gym;
   List<BannerModel> _banners = [];
   List<dynamic> _subscriptions = [];
   bool _isLoading = true;
   bool _hasError = false;
+  bool _canEdit = false; // owner ou admin autorisé
 
   @override
   void initState() {
     super.initState();
     _loadGym();
+    _checkEditPermission();
+  }
+
+  Future<void> _checkEditPermission() async {
+    final isAdmin = await _authService.isAdmin();
+    if (!mounted) return;
+    setState(() => _canEdit = isAdmin);
   }
 
   Future<void> _loadGym() async {
@@ -140,11 +151,36 @@ class _GymShowcaseDetailScreenState extends State<GymShowcaseDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final gymId = _gym != null
+        ? (_gym!['id'] is int ? _gym!['id'] as int : int.tryParse(_gym!['id'].toString()))
+        : null;
+    final gymName = _gym?['name'] as String? ?? 'Salle';
+
     return Theme(
       data: AppTheme.darkTheme,
       child: Scaffold(
         backgroundColor: AppColors.darkBackground,
         body: _buildBody(context),
+        floatingActionButton: (_canEdit && gymId != null)
+            ? FloatingActionButton.extended(
+                onPressed: () async {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ShowcaseEditorScreen(
+                        gymId: gymId,
+                        gymName: gymName,
+                      ),
+                    ),
+                  );
+                  _loadGym(); // rafraîchit après édition
+                },
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                icon: const Icon(Icons.edit_outlined),
+                label: const Text('Modifier'),
+              )
+            : null,
       ),
     );
   }

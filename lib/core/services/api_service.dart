@@ -3348,6 +3348,54 @@ class ApiService {
     }
   }
 
+  // ==================== SHOWCASE CMS ====================
+
+  /// GET /gyms/{gymId}/showcase
+  /// Retourne le contenu markdown de la fiche vitrine (champs description, amenities, etc.)
+  Future<Map<String, dynamic>?> getShowcaseContent(
+    int gymId,
+    String token, {
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
+    final uri = baseUri.resolve('/gyms/$gymId/showcase');
+    try {
+      final resp = await http.get(
+        uri,
+        headers: {'Authorization': 'Bearer $token'},
+      ).timeout(timeout);
+      if (resp.statusCode == 200) {
+        return jsonDecode(resp.body) as Map<String, dynamic>?;
+      }
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// PUT /gyms/{gymId}/showcase
+  /// Enregistre le contenu markdown de la fiche vitrine.
+  Future<bool> updateShowcaseContent(
+    int gymId,
+    String token,
+    Map<String, String> content, {
+    Duration timeout = const Duration(seconds: 10),
+  }) async {
+    final uri = baseUri.resolve('/gyms/$gymId/showcase');
+    try {
+      final resp = await http.put(
+        uri,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(content),
+      ).timeout(timeout);
+      return resp.statusCode == 200 || resp.statusCode == 204;
+    } catch (_) {
+      return false;
+    }
+  }
+
   // ==================== PLANNINGS — EXERCISE REMOVAL ====================
 
   /// Remove a specific exercise from a planning day.

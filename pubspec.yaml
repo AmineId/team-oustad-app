@@ -94,6 +94,9 @@ dependencies:
   # public gym showcase (lib/widgets/common/gym_map_embed_web.dart).
   web: ^1.1.0
 
+  # Markdown rendering — utilisé par le Showcase CMS (éditeur owner/admin)
+  flutter_markdown: ^0.7.4
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
