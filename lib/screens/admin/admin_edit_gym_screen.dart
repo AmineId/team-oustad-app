@@ -319,7 +319,7 @@ class _AdminEditGymScreenState extends State<AdminEditGymScreen> {
                   ElevatedButton(
                     onPressed: _isLoading ? null : _updateGym,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
+                      backgroundColor: context.palette.primaryFill,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),

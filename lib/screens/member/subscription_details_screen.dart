@@ -321,7 +321,7 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
                     children: [
                       // Subscription details card
                       Card(
-                        color: theme.colorScheme.primary,
+                        color: context.palette.primaryFill,
                         elevation: 4,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
@@ -433,7 +433,7 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
                             icon: const Icon(Icons.autorenew, size: 20),
                             label: const Text('Renouveler l\'abonnement'),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
+                              backgroundColor: context.palette.primaryFill,
                               foregroundColor: context.palette.onPrimary,
                               padding: const EdgeInsets.symmetric(vertical: 14),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

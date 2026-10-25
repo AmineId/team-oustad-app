@@ -278,7 +278,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen>
             ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _navigateToCreate,
-        backgroundColor: AppColors.primary,
+        backgroundColor: context.palette.primaryFill,
         foregroundColor: context.palette.onPrimary,
         icon: const Icon(Icons.add_rounded),
         label: const Text('Nouveau produit'),

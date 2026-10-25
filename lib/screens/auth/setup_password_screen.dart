@@ -73,12 +73,12 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
 
         // Afficher un message d'information
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
+          SnackBar(
+            content: const Text(
               'Ce numéro a déjà un mot de passe. Redirection vers la réinitialisation...',
             ),
-            backgroundColor: AppColors.primary,
-            duration: Duration(seconds: 2),
+            backgroundColor: context.palette.primaryFill,
+            duration: const Duration(seconds: 2),
           ),
         );
 

@@ -242,7 +242,7 @@ class _GymShowcaseDetailScreenState extends State<GymShowcaseDetailScreen> {
                   );
                   _loadGym(); // rafraîchit après édition
                 },
-                backgroundColor: AppColors.primary,
+                backgroundColor: context.palette.primaryFill,
                 foregroundColor: context.palette.onPrimary,
                 icon: const Icon(Icons.edit_outlined),
                 label: const Text('Modifier'),

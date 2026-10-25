@@ -289,7 +289,7 @@ class _AdminCreateSubscriptionScreenState extends State<AdminCreateSubscriptionS
                           child: ElevatedButton(
                             onPressed: _isCreating ? null : _createSubscription,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
+                              backgroundColor: context.palette.primaryFill,
                               foregroundColor: context.palette.onPrimary,
                               padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
                               disabledBackgroundColor: Colors.grey,

@@ -445,6 +445,7 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
 
     final titles = [l10n.home, l10n.myCard, l10n.myPlanning, l10n.myProfile];
 
@@ -486,21 +487,26 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
         });
       },
       actions: [
-        // Bouton Store stylé
+        // Bouton Store — aplat or clair en mode clair, verre teinté en sombre
         Container(
           margin: const EdgeInsets.only(right: 8),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                AppColors.primary.withValues(alpha: 0.2),
-                AppColors.primaryLight.withValues(alpha: 0.1),
-              ],
-            ),
+            color: isDarkTheme ? null : context.palette.primaryFill,
+            gradient: isDarkTheme
+                ? LinearGradient(
+                    colors: [
+                      AppColors.primary.withValues(alpha: 0.2),
+                      AppColors.primaryLight.withValues(alpha: 0.1),
+                    ],
+                  )
+                : null,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: AppColors.primary.withValues(alpha: 0.3),
-              width: 1,
-            ),
+            border: isDarkTheme
+                ? Border.all(
+                    color: AppColors.primary.withValues(alpha: 0.3),
+                    width: 1,
+                  )
+                : null,
           ),
           child: Material(
             color: Colors.transparent,
@@ -522,14 +528,18 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
                   children: [
                     Icon(
                       Icons.storefront_rounded,
-                      color: context.palette.primary,
+                      color: isDarkTheme
+                          ? context.palette.primary
+                          : context.palette.onPrimary,
                       size: 20,
                     ),
                     const SizedBox(width: 6),
                     Text(
                       'Store',
                       style: TextStyle(
-                        color: context.palette.primary,
+                        color: isDarkTheme
+                            ? context.palette.primary
+                            : context.palette.onPrimary,
                         fontWeight: FontWeight.w600,
                         fontSize: 14,
                       ),
@@ -681,7 +691,6 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
             FutureBuilder<Map<String, dynamic>?>(
               future: _authService.getCachedUserProfile(),
               builder: (context, snapshot) {
-                final theme = Theme.of(context);
                 final profileData = snapshot.data;
                 final fullName = profileData != null
                     ? getUserFullName(profileData)
@@ -716,7 +725,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
 
                 if (status == 'active') {
                   statusText = l10n.subscriptionActive;
-                  statusColor = theme.colorScheme.onPrimary;
+                  statusColor = context.palette.onPrimary;
                   statusIcon = Icons.check_circle;
                 } else if (status == 'expired') {
                   statusText = l10n.subscriptionExpired;
@@ -724,20 +733,20 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                   statusIcon = Icons.cancel;
                 } else if (status == 'cancelled') {
                   statusText = l10n.subscriptionCancelled;
-                  statusColor = Colors.orange.shade200;
+                  statusColor = context.palette.onPrimary;
                   statusIcon = Icons.warning;
                 } else {
                   // No active subscription - new member
                   final l10n = AppLocalizations.of(context);
                   statusText = l10n.welcomeCommunity;
-                  statusColor = theme.colorScheme.onPrimary;
+                  statusColor = context.palette.onPrimary;
                   statusIcon = Icons.waving_hand;
                 }
 
                 return ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: double.infinity),
                   child: Card(
-                    color: theme.colorScheme.primary,
+                    color: context.palette.primaryFill,
                     elevation: 4,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -757,7 +766,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                                   style: TextStyle(
                                     fontSize: 24,
                                     fontWeight: FontWeight.bold,
-                                    color: theme.colorScheme.onPrimary,
+                                    color: context.palette.onPrimary,
                                   ),
                                 ),
                               ),
@@ -798,7 +807,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                               children: [
                                 Icon(
                                   Icons.calendar_today,
-                                  color: theme.colorScheme.onPrimary,
+                                  color: context.palette.onPrimary,
                                   size: 18,
                                 ),
                                 const SizedBox(width: 8),
@@ -806,7 +815,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                                   '${AppLocalizations.of(context).expiresOn} ${_formatDate(expiresAt)}',
                                   style: TextStyle(
                                     fontSize: 14,
-                                    color: theme.colorScheme.onPrimary,
+                                    color: context.palette.onPrimary,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
@@ -819,7 +828,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                               AppLocalizations.of(context).visitReception,
                               style: TextStyle(
                                 fontSize: 14,
-                                color: theme.colorScheme.onPrimary.withValues(
+                                color: context.palette.onPrimary.withValues(
                                   alpha: 0.9,
                                 ),
                               ),
@@ -934,7 +943,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                         l10n.visitsThisMonth,
                         '12',
                         Icons.calendar_today,
-                        context.palette.info,
+                        context.palette.primary,
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -943,7 +952,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                         l10n.totalVisits,
                         '148',
                         Icons.fitness_center,
-                        context.palette.success,
+                        context.palette.primary,
                       ),
                     ),
                   ],
@@ -1077,9 +1086,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                                     ).contactReceptionSubscription,
                                     textAlign: TextAlign.center,
                                   ),
-                                  backgroundColor: Theme.of(
-                                    context,
-                                  ).colorScheme.primary,
+                                  backgroundColor: context.palette.primaryFill,
                                   duration: const Duration(seconds: 3),
                                 ),
                               );
@@ -1091,9 +1098,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                               ).getSubscriptionButton,
                             ),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Theme.of(
-                                context,
-                              ).colorScheme.primary,
+                              backgroundColor: context.palette.primaryFill,
                               foregroundColor:
                                   (Theme.of(context).brightness ==
                                       Brightness.dark
@@ -1303,9 +1308,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                         icon: const Icon(Icons.visibility, size: 18),
                         label: Text(AppLocalizations.of(context).viewDetails),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Theme.of(
-                            context,
-                          ).colorScheme.primary,
+                          backgroundColor: context.palette.primaryFill,
                           foregroundColor:
                               (Theme.of(context).brightness == Brightness.dark
                               ? AppColors.darkTextPrimary
@@ -1779,7 +1782,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
             ElevatedButton(
               onPressed: () => Navigator.pop(context, true),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.primary,
+                backgroundColor: context.palette.primaryFill,
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
               child: const Text('Confirmer'),
@@ -1863,13 +1866,8 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: theme.cardTheme.color,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(4),
-          bottomLeft: Radius.circular(4),
-          topRight: Radius.circular(14),
-          bottomRight: Radius.circular(14),
-        ),
-        border: Border(left: BorderSide(color: color, width: 4)),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: theme.colorScheme.outline),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1878,7 +1876,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.15),
+              color: color.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(9),
             ),
             child: Icon(icon, color: color, size: 18),
@@ -1949,17 +1947,17 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                 colors: [
                   Theme.of(context).brightness == Brightness.dark
                       ? const Color(0xFF2A2D3A)
-                      : const Color(0xFFF5F5F7),
+                      : AppColors.lightSurface,
                   Theme.of(context).brightness == Brightness.dark
                       ? const Color(0xFF1F2128)
-                      : const Color(0xFFFFFFFF),
+                      : AppColors.lightSurface,
                 ],
               ),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
                 color: Theme.of(context).brightness == Brightness.dark
                     ? const Color(0xFF3A3D4A).withValues(alpha: 0.5)
-                    : const Color(0xFFE0E0E0),
+                    : AppColors.lightBorder,
                 width: 1,
               ),
               boxShadow: [
@@ -1991,8 +1989,9 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                                 colors: [
-                                  context.palette.primary,
-                                  AppColors.primary.withValues(alpha: 0.7),
+                                  context.palette.primaryFill,
+                                  context.palette.primaryFill
+                                      .withValues(alpha: 0.7),
                                 ],
                               ),
                               borderRadius: BorderRadius.circular(14),
@@ -2006,9 +2005,9 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                                 ),
                               ],
                             ),
-                            child: const Icon(
+                            child: Icon(
                               Icons.fitness_center,
-                              color: Colors.white,
+                              color: context.palette.onPrimary,
                               size: 28,
                             ),
                           ),
@@ -2167,28 +2166,32 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
     VoidCallback? onTap,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    // Mode clair : action secondaire neutre (contour + icône or) — bleu/vert
+    // sont réservés aux statuts, pas à la décoration
+    final iconColor = isDark ? color : context.palette.primary;
+    final textColor = isDark ? color : AppColors.lightTextPrimary;
 
     final chip = Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: isDark ? 0.2 : 0.15),
+        color: isDark ? color.withValues(alpha: 0.2) : AppColors.lightSurface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: color.withValues(alpha: isDark ? 0.4 : 0.3),
+          color: isDark ? color.withValues(alpha: 0.4) : AppColors.lightBorder,
           width: 1.5,
         ),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: 18, color: color),
+          Icon(icon, size: 18, color: iconColor),
           const SizedBox(width: 8),
           Text(
             label,
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: color,
+              color: textColor,
               letterSpacing: 0.2,
             ),
           ),
@@ -2746,7 +2749,7 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  backgroundColor: context.palette.primaryFill,
                   foregroundColor:
                       (Theme.of(context).brightness == Brightness.dark
                       ? AppColors.darkTextPrimary
@@ -2797,7 +2800,7 @@ class MemberSubscriptionPage extends StatelessWidget {
         children: [
           // Current subscription card
           Card(
-            color: Theme.of(context).colorScheme.primary,
+            color: context.palette.primaryFill,
             elevation: 4,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
@@ -3668,7 +3671,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
             ElevatedButton(
               onPressed: _loadPlannings,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
+                backgroundColor: context.palette.primaryFill,
               ),
               child: Text(AppLocalizations.of(context).retry),
             ),
@@ -5245,7 +5248,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
             ElevatedButton(
               onPressed: () => Navigator.of(context).pop(true),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.primary,
+                backgroundColor: context.palette.primaryFill,
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
               child: const Text('Confirmer'),
@@ -5606,9 +5609,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                           children: [
                             CircleAvatar(
                               radius: 50,
-                              backgroundColor: Theme.of(
-                                context,
-                              ).colorScheme.primary,
+                              backgroundColor: context.palette.primaryFill,
                               backgroundImage:
                                   profileImageBase64 != null &&
                                       profileImageBase64.isNotEmpty
@@ -5886,7 +5887,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                         );
                       },
                       child: Card(
-                        color: Theme.of(context).colorScheme.primary,
+                        color: context.palette.primaryFill,
                         elevation: 4,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
@@ -6415,12 +6416,12 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
         leading: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: AppColors.accentViolet.withValues(alpha: 0.12),
+            color: AppColors.primary.withValues(alpha: 0.12),
             shape: BoxShape.circle,
           ),
           child: Icon(
             Icons.watch_outlined,
-            color: context.palette.premium,
+            color: context.palette.primary,
             size: 22,
           ),
         ),

@@ -298,7 +298,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       children: [
                         CircleAvatar(
                           radius: 60,
-                          backgroundColor: AppColors.primary,
+                          backgroundColor: context.palette.primaryFill,
                           backgroundImage: _newProfileImage != null
                               ? FileImage(_newProfileImage!)
                               : (_currentProfileImageBase64 != null && _currentProfileImageBase64!.isNotEmpty
@@ -526,7 +526,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _saveProfile,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
+                      backgroundColor: context.palette.primaryFill,
                       foregroundColor: Theme.of(context).brightness == Brightness.dark ? (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary) : AppColors.primaryDark,
                       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
                       shape: RoundedRectangleBorder(

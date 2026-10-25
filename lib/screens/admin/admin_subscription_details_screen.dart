@@ -592,7 +592,7 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
                 icon: const Icon(Icons.autorenew, size: 20),
                 label: const Text('Renouveler l\'abonnement'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: context.palette.primaryFill,
                   foregroundColor: context.palette.onPrimary,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

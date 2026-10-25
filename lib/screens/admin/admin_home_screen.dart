@@ -1068,9 +1068,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             children: [
                               CircleAvatar(
                                 radius: 50,
-                                backgroundColor: Theme.of(
-                                  context,
-                                ).colorScheme.primary,
+                                backgroundColor: context.palette.primaryFill,
                                 child: Icon(
                                   Icons.person,
                                   size: 50,
@@ -1200,14 +1198,14 @@ class _ProfilePageState extends State<ProfilePage> {
                             vertical: 8,
                           ),
                           decoration: BoxDecoration(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.primary.withValues(alpha: 0.2),
+                            color: (role == 'owner'
+                                ? context.palette.premium
+                                : context.palette.primary).withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.primary.withValues(alpha: 0.5),
+                              color: (role == 'owner'
+                                ? context.palette.premium
+                                : context.palette.primary).withValues(alpha: 0.5),
                               width: 1,
                             ),
                           ),
@@ -1219,7 +1217,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                     ? Icons.verified
                                     : Icons.admin_panel_settings,
                                 size: 16,
-                                color: Theme.of(context).colorScheme.primary,
+                                color: (role == 'owner'
+                                ? context.palette.premium
+                                : context.palette.primary),
                               ),
                               const SizedBox(width: 6),
                               Text(
@@ -1228,7 +1228,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                     : l10n.adminRole,
                                 style: TextStyle(
                                   fontSize: 13,
-                                  color: Theme.of(context).colorScheme.primary,
+                                  color: (role == 'owner'
+                                ? context.palette.premium
+                                : context.palette.primary),
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -1400,12 +1402,12 @@ class _ProfilePageState extends State<ProfilePage> {
         leading: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: AppColors.accentViolet.withValues(alpha: 0.12),
+            color: AppColors.primary.withValues(alpha: 0.12),
             shape: BoxShape.circle,
           ),
           child: Icon(
             Icons.watch_outlined,
-            color: context.palette.premium,
+            color: context.palette.primary,
             size: 22,
           ),
         ),
@@ -2041,7 +2043,7 @@ class _AdminsListViewState extends State<_AdminsListView> {
         ),
         child: FloatingActionButton(
           onPressed: widget.onCreate,
-          backgroundColor: theme.colorScheme.primary,
+          backgroundColor: context.palette.primaryFill,
           child: Icon(
             Icons.add,
             color: (Theme.of(context).brightness == Brightness.dark
@@ -2432,7 +2434,7 @@ class _GymsListViewState extends State<_GymsListView> {
         ),
         child: FloatingActionButton(
           onPressed: widget.onCreate,
-          backgroundColor: AppColors.primary,
+          backgroundColor: context.palette.primaryFill,
           child: Icon(Icons.add, color: context.palette.onPrimary),
         ),
       ),
@@ -3069,7 +3071,7 @@ class _GymDetailsViewState extends State<_GymDetailsView> {
                             icon: const Icon(Icons.schedule),
                             label: const Text('Horaires'),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
+                              backgroundColor: context.palette.primaryFill,
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -3092,7 +3094,7 @@ class _GymDetailsViewState extends State<_GymDetailsView> {
                             icon: const Icon(Icons.group),
                             label: const Text('Membres'),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
+                              backgroundColor: context.palette.primaryFill,
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -3112,7 +3114,7 @@ class _GymDetailsViewState extends State<_GymDetailsView> {
                         icon: const Icon(Icons.photo_library_outlined),
                         label: const Text('Galerie photos (site vitrine)'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
+                          backgroundColor: context.palette.primaryFill,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -3640,7 +3642,7 @@ class _AdminEditViewState extends State<_AdminEditView> {
                       ElevatedButton(
                         onPressed: _isLoading ? null : _updateAdmin,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
+                          backgroundColor: context.palette.primaryFill,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -3996,7 +3998,7 @@ class _GymEditViewState extends State<_GymEditView> {
                       ElevatedButton(
                         onPressed: _isLoading ? null : _updateGym,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
+                          backgroundColor: context.palette.primaryFill,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -4786,7 +4788,7 @@ class _GymOpeningHoursViewState extends State<_GymOpeningHoursView> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _saveOpeningHours,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: context.palette.primaryFill,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -5249,7 +5251,7 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
                       ElevatedButton(
                         onPressed: _isLoading ? null : _createAdmin,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
+                          backgroundColor: context.palette.primaryFill,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -5519,7 +5521,7 @@ class _GymCreateViewState extends State<_GymCreateView> {
                       ElevatedButton(
                         onPressed: _isLoading ? null : _createGym,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
+                          backgroundColor: context.palette.primaryFill,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),

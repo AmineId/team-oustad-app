@@ -191,10 +191,10 @@ class AppTheme {
     // Couleurs
     colorScheme: const ColorScheme.light(
       // primary = encre bronze (texte/icônes/focus sur blanc, 5,2:1).
-      // Les aplats or utilisent AppColors.primary + AppColors.onPrimary.
+      // Les aplats or utilisent AppPalette.primaryFill + onPrimary.
       primary: AppColors.primaryInk,
       onPrimary: Colors.white,             // blanc sur bronze = 5,2:1
-      primaryContainer: AppColors.primary, // aplat or vif
+      primaryContainer: AppColors.primaryLight, // aplat or clair
       onPrimaryContainer: AppColors.onPrimary,
       secondary: AppColors.primaryInk,
       onSecondary: Colors.white,
@@ -237,10 +237,10 @@ class AppTheme {
       margin: const EdgeInsets.all(8),
     ),
     
-    // Buttons — aplat or vif + texte midnight (8:1 ; le blanc ne faisait que 2,4:1)
+    // Buttons — aplat or clair + texte charbon (10:1 ; le blanc sur l'or ne faisait que 2,4:1)
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.primary,
+        backgroundColor: AppColors.primaryLight,
         foregroundColor: AppColors.onPrimary,
         elevation: 0,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),

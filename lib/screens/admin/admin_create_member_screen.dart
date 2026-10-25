@@ -742,7 +742,7 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                               child: ElevatedButton(
                                 onPressed: _createMember,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.primary,
+                                  backgroundColor: context.palette.primaryFill,
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 24,
                                     vertical: 16,

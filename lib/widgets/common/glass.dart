@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../core/theme/app_colors.dart';
 
 /// Hauteur de la capsule de navigation flottante (style Liquid Glass iOS 26).
 const double glassTabBarHeight = 64;
@@ -32,10 +33,14 @@ const List<double> _saturate = <double>[
   0, 0, 0, 1, 0, //
 ];
 
-ImageFilter _glassFilter(double sigma) => ImageFilter.compose(
-  outer: ImageFilter.blur(sigmaX: sigma, sigmaY: sigma),
-  inner: const ColorFilter.matrix(_saturate),
-);
+// Saturation réservée au mode sombre : en clair, sous un voile peu opaque,
+// elle amplifiait la couleur du contenu (bandeau or, bouton rouge…) dans la barre
+ImageFilter _glassFilter(double sigma, {bool saturate = true}) => saturate
+    ? ImageFilter.compose(
+        outer: ImageFilter.blur(sigmaX: sigma, sigmaY: sigma),
+        inner: const ColorFilter.matrix(_saturate),
+      )
+    : ImageFilter.blur(sigmaX: sigma, sigmaY: sigma);
 
 /// Surface "Liquid Glass" : flou saturé, voile dégradé, bord réfléchissant.
 class LiquidGlass extends StatelessWidget {
@@ -70,7 +75,7 @@ class LiquidGlass extends StatelessWidget {
       child: ClipRRect(
         borderRadius: borderRadius,
         child: BackdropFilter(
-          filter: _glassFilter(sigma),
+          filter: _glassFilter(sigma, saturate: isDark),
           child: Container(
             padding: padding,
             decoration: BoxDecoration(
@@ -79,12 +84,14 @@ class LiquidGlass extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  tint.withValues(alpha: isDark ? 0.16 : 0.55),
-                  tint.withValues(alpha: isDark ? 0.05 : 0.30),
+                  tint.withValues(alpha: isDark ? 0.16 : 0.88),
+                  tint.withValues(alpha: isDark ? 0.05 : 0.78),
                 ],
               ),
               border: Border.all(
-                color: Colors.white.withValues(alpha: isDark ? 0.22 : 0.7),
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.22)
+                    : AppColors.lightBorder,
                 width: 0.8,
               ),
             ),
@@ -268,7 +275,11 @@ class GlassTabBar extends StatelessWidget {
                           (glassTabBarHeight - 10) / 2,
                         ),
                         color: i == currentIndex
-                            ? Colors.white.withValues(alpha: 0.14)
+                            ? (theme.brightness == Brightness.dark
+                                  ? Colors.white.withValues(alpha: 0.14)
+                                  : AppColors.primaryLight.withValues(
+                                      alpha: 0.22,
+                                    ))
                             : Colors.transparent,
                       ),
                       child: Column(

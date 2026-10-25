@@ -252,14 +252,14 @@ class LanguageSwitcherButton extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const Icon(
+                    Icon(
                       Icons.check_circle,
-                      color: Colors.white,
+                      color: context.palette.onPrimary,
                       size: 20,
                     ),
                   ],
                 ),
-                backgroundColor: Theme.of(context).colorScheme.primary,
+                backgroundColor: context.palette.primaryFill,
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),

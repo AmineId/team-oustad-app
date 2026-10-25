@@ -320,7 +320,7 @@ class NotificationTestScreen extends StatelessWidget {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: AppColors.primary,
+        backgroundColor: context.palette.primaryFill,
         behavior: SnackBarBehavior.floating,
       ),
     );

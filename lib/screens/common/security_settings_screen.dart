@@ -606,7 +606,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage>
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: context.palette.primaryFill,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 24,
                       vertical: 12,

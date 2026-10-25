@@ -256,7 +256,7 @@ class _StoreScreenState extends State<StoreScreen>
                                       begin: Alignment.topLeft,
                                       end: Alignment.bottomRight,
                                       colors: [
-                                        context.palette.primary,
+                                        context.palette.primaryFill,
                                         AppColors.primaryLight,
                                         AppColors.primaryDark,
                                       ],
@@ -272,10 +272,10 @@ class _StoreScreenState extends State<StoreScreen>
                                       ),
                                     ],
                                   ),
-                                  child: const Icon(
+                                  child: Icon(
                                     Icons.storefront_rounded,
                                     size: 80,
-                                    color: Colors.white,
+                                    color: context.palette.onPrimary,
                                   ),
                                 ),
                               ),
@@ -293,7 +293,7 @@ class _StoreScreenState extends State<StoreScreen>
                                   decoration: BoxDecoration(
                                     gradient: LinearGradient(
                                       colors: [
-                                        context.palette.primary,
+                                        context.palette.primaryFill,
                                         AppColors.primaryLight,
                                       ],
                                     ),
@@ -311,16 +311,16 @@ class _StoreScreenState extends State<StoreScreen>
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      const Icon(
+                                      Icon(
                                         Icons.rocket_launch_rounded,
-                                        color: Colors.white,
+                                        color: context.palette.onPrimary,
                                         size: 24,
                                       ),
                                       const SizedBox(width: 12),
                                       Text(
                                         'Coming Soon',
                                         style: AppTextStyles.h3.copyWith(
-                                          color: Colors.white,
+                                          color: context.palette.onPrimary,
                                           fontWeight: FontWeight.bold,
                                           letterSpacing: 1.5,
                                         ),
@@ -812,7 +812,7 @@ class _StoreScreenState extends State<StoreScreen>
                               }
                             : null,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
+                          backgroundColor: context.palette.primaryFill,
                           foregroundColor: context.palette.onPrimary,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
@@ -824,7 +824,9 @@ class _StoreScreenState extends State<StoreScreen>
                               ? 'Réserver'
                               : 'Indisponible',
                           style: AppTextStyles.h3.copyWith(
-                            color: Colors.white,
+                            color: product.availableStock > 0
+                                ? context.palette.onPrimary
+                                : null,
                             fontWeight: FontWeight.bold,
                           ),
                         ),

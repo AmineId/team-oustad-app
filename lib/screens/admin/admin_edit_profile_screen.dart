@@ -185,7 +185,7 @@ class _AdminEditProfileScreenState extends State<AdminEditProfileScreen> {
                     children: [
                       CircleAvatar(
                         radius: 52,
-                        backgroundColor: theme.colorScheme.primary,
+                        backgroundColor: context.palette.primaryFill,
                         backgroundImage: _avatarImage,
                         child: _avatarImage == null
                             ? Icon(

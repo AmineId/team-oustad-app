@@ -350,7 +350,7 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
                   ElevatedButton(
                     onPressed: _isLoading ? null : details.onStepContinue,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
+                      backgroundColor: context.palette.primaryFill,
                       foregroundColor: context.palette.onPrimary,
                     ),
                     child: _isLoading && _currentStep == 2

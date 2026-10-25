@@ -8,8 +8,8 @@ import 'app_colors.dart';
 /// 2,1–2,5:1 sur blanc. En mode clair on utilise donc une version « encre »
 /// foncée (≥ 4,5:1 sur blanc) ; en mode sombre les teintes vives restent.
 ///
-/// Les APLATS (fond de bouton, FAB, puce sélectionnée) gardent les constantes
-/// vives de [AppColors] avec [onPrimary] pour le texte posé dessus.
+/// Les APLATS or (fond de bouton, FAB, bandeau, avatar) utilisent [primaryFill]
+/// avec [onPrimary] pour le contenu posé dessus — en clair l'or clair #F5B040.
 ///
 /// Usage : `context.palette.primary`.
 ///
@@ -27,6 +27,7 @@ import 'app_colors.dart';
 @immutable
 class AppPalette extends ThemeExtension<AppPalette> {
   final Color primary;
+  final Color primaryFill;
   final Color onPrimary;
   final Color success;
   final Color warning;
@@ -36,6 +37,7 @@ class AppPalette extends ThemeExtension<AppPalette> {
 
   const AppPalette({
     required this.primary,
+    required this.primaryFill,
     required this.onPrimary,
     required this.success,
     required this.warning,
@@ -46,6 +48,7 @@ class AppPalette extends ThemeExtension<AppPalette> {
 
   static const AppPalette light = AppPalette(
     primary: AppColors.primaryInk,
+    primaryFill: AppColors.primaryLight, // or clair + texte charbon = 10:1
     onPrimary: AppColors.onPrimary,
     success: AppColors.successInk,
     warning: AppColors.warningInk,
@@ -57,6 +60,7 @@ class AppPalette extends ThemeExtension<AppPalette> {
   // Mode sombre : inchangé pour l'instant (sera revu après validation du clair)
   static const AppPalette dark = AppPalette(
     primary: AppColors.primary,
+    primaryFill: AppColors.primary,
     onPrimary: Colors.white,
     success: AppColors.success,
     warning: AppColors.warning,
@@ -68,6 +72,7 @@ class AppPalette extends ThemeExtension<AppPalette> {
   @override
   AppPalette copyWith({
     Color? primary,
+    Color? primaryFill,
     Color? onPrimary,
     Color? success,
     Color? warning,
@@ -77,6 +82,7 @@ class AppPalette extends ThemeExtension<AppPalette> {
   }) {
     return AppPalette(
       primary: primary ?? this.primary,
+      primaryFill: primaryFill ?? this.primaryFill,
       onPrimary: onPrimary ?? this.onPrimary,
       success: success ?? this.success,
       warning: warning ?? this.warning,
@@ -91,6 +97,7 @@ class AppPalette extends ThemeExtension<AppPalette> {
     if (other == null) return this;
     return AppPalette(
       primary: Color.lerp(primary, other.primary, t)!,
+      primaryFill: Color.lerp(primaryFill, other.primaryFill, t)!,
       onPrimary: Color.lerp(onPrimary, other.onPrimary, t)!,
       success: Color.lerp(success, other.success, t)!,
       warning: Color.lerp(warning, other.warning, t)!,

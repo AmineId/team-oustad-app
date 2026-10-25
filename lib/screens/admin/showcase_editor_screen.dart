@@ -338,7 +338,7 @@ class _ShowcaseEditorScreenState extends State<ShowcaseEditorScreen>
                 builder: (context, _) => _tabs.index == 0
                     ? FloatingActionButton.extended(
                         onPressed: _addSection,
-                        backgroundColor: AppColors.primary,
+                        backgroundColor: context.palette.primaryFill,
                         foregroundColor: context.palette.onPrimary,
                         icon: const Icon(Icons.add),
                         label: const Text('Section'),

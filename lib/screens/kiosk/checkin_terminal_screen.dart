@@ -1998,7 +1998,7 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
               child: ElevatedButton(
                 onPressed: _loggingIn ? null : _handleKioskLogin,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: context.palette.primaryFill,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),

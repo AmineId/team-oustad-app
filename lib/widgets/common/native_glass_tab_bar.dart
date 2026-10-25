@@ -27,16 +27,18 @@ class NativeGlassTabBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final safeBottom = MediaQuery.of(context).padding.bottom;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        const Positioned(
+        Positioned(
           left: 0,
           right: 0,
           bottom: 0,
           top: -56,
           child: IgnorePointer(
-            child: GlassBar(top: false, opacity: 0.45),
+            // Plus opaque en clair : le contenu coloré ne teinte plus la barre
+            child: GlassBar(top: false, opacity: isDark ? 0.45 : 0.8),
           ),
         ),
         Padding(

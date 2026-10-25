@@ -313,7 +313,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                   child: ElevatedButton(
                     onPressed: () => Navigator.of(context).pop(),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
+                      backgroundColor: context.palette.primaryFill,
                       foregroundColor:
                           (Theme.of(context).brightness == Brightness.dark
                           ? AppColors.darkTextPrimary
@@ -493,7 +493,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                 child: ElevatedButton(
                   onPressed: () => Navigator.of(context).pop(),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: context.palette.primaryFill,
                     foregroundColor:
                         (Theme.of(context).brightness == Brightness.dark
                         ? AppColors.darkTextPrimary
@@ -847,7 +847,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                 if (context.mounted) Navigator.of(context).pop();
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
+                backgroundColor: context.palette.primaryFill,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
                   vertical: 12,
@@ -1165,7 +1165,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                             ),
                           ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
+                            backgroundColor: context.palette.primaryFill,
                             foregroundColor:
                                 (Theme.of(context).brightness == Brightness.dark
                                 ? AppColors.darkTextPrimary
@@ -1277,7 +1277,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                           ),
                         ),
                         Text(
-                          'FITNESS',
+                          'OUSTAD',
                           style: AppTextStyles.h1.copyWith(
                             color: Theme.of(context).colorScheme.primary,
                             height: 1.0,

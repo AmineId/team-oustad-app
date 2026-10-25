@@ -886,7 +886,7 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
                     _pairingLoading ? 'Demande en cours…' : 'Obtenir le code',
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: context.palette.primaryFill,
                     foregroundColor: context.palette.onPrimary,
                     disabledBackgroundColor: AppColors.primary.withValues(
                       alpha: 0.4,

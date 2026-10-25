@@ -184,7 +184,7 @@ class _AdminMembersScreenState extends State<AdminMembersScreen> {
               }
             }
           },
-          backgroundColor: AppColors.primary,
+          backgroundColor: context.palette.primaryFill,
           child: Icon(Icons.add, color: context.palette.onPrimary),
         ),
       ),
