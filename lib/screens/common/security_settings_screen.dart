@@ -322,6 +322,9 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage>
     if (identifier == null || identifier.isEmpty) return false;
     final result = await _apiService.login(identifier, password);
     if (result == null) return false;
+    // Un login ouvre une nouvelle session et invalide la précédente
+    // (session unique côté serveur) : garder le nouveau token.
+    await _authService.saveToken(result['token'] as String);
     await _authService.saveCredentials(identifier, password);
     return true;
   }
