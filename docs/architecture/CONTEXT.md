@@ -1,4 +1,4 @@
-# Team Fitness App - Context Documentation
+# Team Oustad App - Context Documentation
 
 ## 📋 Vue d'ensemble
 

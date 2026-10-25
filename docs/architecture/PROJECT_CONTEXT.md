@@ -1,10 +1,10 @@
-# Project Context: Team Fitness App
+# Project Context: Team Oustad App
 
-This document provides a comprehensive overview of the Team Fitness App project, summarizing its purpose, technical stack, architecture, and current development practices. It is intended to serve as a central reference for maintaining context and ensuring precision in future interactions and development efforts.
+This document provides a comprehensive overview of the Team Oustad App project, summarizing its purpose, technical stack, architecture, and current development practices. It is intended to serve as a central reference for maintaining context and ensuring precision in future interactions and development efforts.
 
 ## 1. Project Overview
 
-**Purpose:** The Team Fitness App is a multi-platform Flutter application designed for gym management. It aims to provide comprehensive support for various platforms and offer a responsive user experience.
+**Purpose:** The Team Oustad App is a multi-platform Flutter application designed for gym management. It aims to provide comprehensive support for various platforms and offer a responsive user experience.
 
 **Key Features:**
 *   **Authentication:** Biometric (Fingerprint/Face ID) and password-based login.

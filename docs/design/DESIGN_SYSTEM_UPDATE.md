@@ -1,4 +1,4 @@
-# 🎨 Mise à Jour du Design System - Team Fitness App
+# 🎨 Mise à Jour du Design System - Team Oustad App
 
 ## ✨ Nouveautés
 

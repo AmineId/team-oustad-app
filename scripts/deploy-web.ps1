@@ -1,5 +1,5 @@
 # deploy-web.ps1
-# Script de déploiement automatique pour Team Fitness Web
+# Script de déploiement automatique pour Team Oustad Web
 
 # ========================================
 # CONFIGURATION - Modifiez ces valeurs
@@ -15,7 +15,7 @@ $ENVIRONMENT = "pprod"  # pprod ou prod
 
 Write-Host ""
 Write-Host "╔════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║   🚀 Déploiement Team Fitness Web                          ║" -ForegroundColor Cyan
+Write-Host "║   🚀 Déploiement Team Oustad Web                          ║" -ForegroundColor Cyan
 Write-Host "║   📍 Destination: app.team-oustad.com                      ║" -ForegroundColor Cyan
 Write-Host "╚════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 Write-Host ""

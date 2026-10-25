@@ -1,7 +1,7 @@
 # 📦 Suppression des Artifacts GitHub Actions
 
 **Date**: 2025-12-31  
-**Référence**: [GitHub Actions Run #20618818925](https://github.com/TeamFitness/mobile-app/actions/runs/20618818925/job/59216687700)
+**Référence**: [GitHub Actions Run #20618818925](https://github.com/AmineId/team-oustad-app/actions/runs/20618818925/job/59216687700)
 
 ---
 
@@ -203,7 +203,7 @@ Plus besoin de :
    ```
 
 2. **Vérifier le workflow** :
-   - Aller sur https://github.com/TeamFitness/mobile-app/actions
+   - Aller sur https://github.com/AmineId/team-oustad-app/actions
    - Observer que seuls 2 jobs s'exécutent :
      - ✅ Version & Changelog
      - ✅ Build & Deploy

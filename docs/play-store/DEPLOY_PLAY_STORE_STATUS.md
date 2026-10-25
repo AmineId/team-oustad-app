@@ -100,7 +100,7 @@ Sauvegardez précieusement :
 cd android
 .\setup-github-secrets.ps1
 ```
-À ajouter sur : https://github.com/TeamFitness/mobile-app/settings/secrets/actions
+À ajouter sur : https://github.com/AmineId/team-oustad-app/settings/secrets/actions
 - `KEYSTORE_BASE64`
 - `KEYSTORE_PASSWORD`
 - `KEY_PASSWORD`
@@ -131,7 +131,7 @@ cd android
 #### 5. GitHub Secret Play Store
 1. Ouvrir le JSON du service account
 2. Copier tout le contenu
-3. https://github.com/TeamFitness/mobile-app/settings/secrets/actions
+3. https://github.com/AmineId/team-oustad-app/settings/secrets/actions
 4. New repository secret
 5. Nom : `PLAY_STORE_SERVICE_ACCOUNT_JSON`
 6. Valeur : Contenu JSON complet
@@ -171,7 +171,7 @@ cd android
 keytool -printcert -jarfile ..\build\app\outputs\bundle\release\app-release.aab
 ```
 
-Doit afficher votre certificat avec CN=Team Fitness
+Doit afficher votre certificat avec CN=Team Oustad
 
 ### 4. Tester le déploiement automatique
 
@@ -183,7 +183,7 @@ Doit afficher votre certificat avec CN=Team Fitness
    ```
 
 2. Vérifier GitHub Actions :
-   https://github.com/TeamFitness/mobile-app/actions
+   https://github.com/AmineId/team-oustad-app/actions
 
 3. Vérifier Play Console :
    https://play.google.com/console → Testing → Internal testing
@@ -254,7 +254,7 @@ Le CI/CD s'occupe automatiquement de :
 ## 📊 Monitoring
 
 ### GitHub Actions
-https://github.com/TeamFitness/mobile-app/actions
+https://github.com/AmineId/team-oustad-app/actions
 
 Vérifiez que les jobs passent :
 - ✅ Version & Changelog

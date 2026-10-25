@@ -1,4 +1,4 @@
-# 🤝 Contributing to Team Fitness
+# 🤝 Contributing to Team Oustad
 
 ## 📋 Conventional Commits
 

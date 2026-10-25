@@ -18,7 +18,7 @@ Si vous ne l'avez pas encore fait :
 
 **Option A : Via l'interface web** (le plus simple)
 
-1. Allez sur : https://github.com/TeamFitness/mobile-app/settings/secrets/actions
+1. Allez sur : https://github.com/AmineId/team-oustad-app/settings/secrets/actions
 2. Cliquez **New repository secret**
 3. Name: `PLAY_STORE_SERVICE_ACCOUNT_JSON`
 4. Value: Ouvrez le fichier JSON et **copiez-collez tout le contenu**
@@ -84,7 +84,7 @@ git commit -m "feat: configuration Play Store déploiement automatique"
 git push origin staging
 ```
 
-Regardez les logs : https://github.com/TeamFitness/mobile-app/actions
+Regardez les logs : https://github.com/AmineId/team-oustad-app/actions
 
 ---
 

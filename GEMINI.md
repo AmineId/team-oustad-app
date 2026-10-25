@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This is a Flutter project for a gym management application called "Team Fitness App". It is a multi-platform application with a responsive design, supporting Android, iOS, Windows, macOS, Linux, Web, and even smartwatches.
+This is a Flutter project for a gym management application called "Team Oustad App". It is a multi-platform application with a responsive design, supporting Android, iOS, Windows, macOS, Linux, Web, and even smartwatches.
 
 The application features:
 - Biometric and password authentication.

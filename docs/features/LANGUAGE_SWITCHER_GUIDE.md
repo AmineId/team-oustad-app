@@ -2,9 +2,9 @@
 
 ## Vue d'ensemble / Overview
 
-Ce guide explique comment utiliser et personnaliser le système de changement de langue dans l'application Team Fitness.
+Ce guide explique comment utiliser et personnaliser le système de changement de langue dans l'application Team Oustad.
 
-This guide explains how to use and customize the language switching system in the Team Fitness app.
+This guide explains how to use and customize the language switching system in the Team Oustad app.
 
 ---
 
@@ -333,7 +333,7 @@ Pour contribuer au système de localisation:
 
 ## 📄 Licence
 
-Ce système de localisation fait partie de l'application Team Fitness.
+Ce système de localisation fait partie de l'application Team Oustad.
 
 ---
 

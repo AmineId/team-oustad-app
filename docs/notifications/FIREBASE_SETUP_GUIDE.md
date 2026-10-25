@@ -12,7 +12,7 @@
 ### 2. Ajouter une application Android
 
 1. Dans votre projet Firebase, cliquez sur l'icône Android
-2. Entrez le nom du package: `com.teamfitness.app` (ou celui dans `android/app/build.gradle`)
+2. Entrez le nom du package: `team.oustad.app` (ou celui dans `android/app/build.gradle.kts`)
 3. Téléchargez le fichier `google-services.json`
 4. Placez-le dans `android/app/`
 

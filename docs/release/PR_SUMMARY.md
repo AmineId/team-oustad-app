@@ -2,7 +2,7 @@
 
 ## Overview
 
-This PR completely eliminates the use of GitHub Actions artifacts in the CI/CD workflow by consolidating multiple jobs into a single streamlined job. This addresses the artifact upload failure in [run #20618818925](https://github.com/TeamFitness/mobile-app/actions/runs/20618818925/job/59216687700#step:12:1).
+This PR completely eliminates the use of GitHub Actions artifacts in the CI/CD workflow by consolidating multiple jobs into a single streamlined job. This addresses the artifact upload failure in [run #20618818925](https://github.com/AmineId/team-oustad-app/actions/runs/20618818925/job/59216687700#step:12:1).
 
 ## Problem Statement
 
@@ -105,7 +105,7 @@ jobs:
 1. **Merge this PR** to staging or main branch
 
 2. **Observe the workflow run** at:
-   https://github.com/TeamFitness/mobile-app/actions
+   https://github.com/AmineId/team-oustad-app/actions
 
 3. **Verify the following:**
    - ✓ Only 2 jobs execute: "Version & Changelog" + "Build & Deploy"

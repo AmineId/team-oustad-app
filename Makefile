@@ -1,4 +1,4 @@
-# Team Fitness App - Makefile
+# Team Oustad App - Makefile
 # Usage: make <command>
 
 .PHONY: help install run run-android run-windows emulators launch devices clean build-apk build-appbundle analyze format test upgrade doctor

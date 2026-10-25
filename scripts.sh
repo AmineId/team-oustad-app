@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Flutter Team Fitness App - Bash Scripts (WSL)
+# Flutter Team Oustad App - Bash Scripts (WSL)
 # Usage: ./scripts.sh <command> [--url <url>]
 
 set -euo pipefail
@@ -38,7 +38,7 @@ run_cmd() {
 show_help() {
   echo -e ""
   echo -e "${CY}╔════════════════════════════════════════════════════════════════════════╗${NC}"
-  echo -e "${CY}║         Flutter Team Fitness App - Bash Scripts (WSL)                ║${NC}"
+  echo -e "${CY}║         Flutter Team Oustad App - Bash Scripts (WSL)                ║${NC}"
   echo -e "${CY}╚════════════════════════════════════════════════════════════════════════╝${NC}"
   echo -e ""
   echo -e "${YE}Environments:${NC}"

@@ -155,7 +155,7 @@ dependencies {
 # Script pour créer un keystore de production Android
 # Ce keystore sera utilisé pour signer l'application en production
 
-Write-Host "🔐 Création du keystore de production pour Team Fitness App" -ForegroundColor Cyan
+Write-Host "🔐 Création du keystore de production pour Team Oustad App" -ForegroundColor Cyan
 Write-Host ""
 
 # Vérifier que keytool est disponible
@@ -182,14 +182,14 @@ $keyPasswordText = [Runtime.InteropServices.Marshal]::PtrToStringAuto(
     [Runtime.InteropServices.Marshal]::SecureStringToBSTR($keyPassword)
 )
 
-$commonName = Read-Host "Nom (CN) [par défaut: Team Fitness]"
-if ([string]::IsNullOrWhiteSpace($commonName)) { $commonName = "Team Fitness" }
+$commonName = Read-Host "Nom (CN) [par défaut: Team Oustad]"
+if ([string]::IsNullOrWhiteSpace($commonName)) { $commonName = "Team Oustad" }
 
 $orgUnit = Read-Host "Unité organisationnelle (OU) [par défaut: Development]"
 if ([string]::IsNullOrWhiteSpace($orgUnit)) { $orgUnit = "Development" }
 
-$org = Read-Host "Organisation (O) [par défaut: Team Fitness]"
-if ([string]::IsNullOrWhiteSpace($org)) { $org = "Team Fitness" }
+$org = Read-Host "Organisation (O) [par défaut: Team Oustad]"
+if ([string]::IsNullOrWhiteSpace($org)) { $org = "Team Oustad" }
 
 $city = Read-Host "Ville (L) [par défaut: Paris]"
 if ([string]::IsNullOrWhiteSpace($city)) { $city = "Paris" }
@@ -308,7 +308,7 @@ Write-Host "━━━━━━━━━━━━━━━━━━━━━━�
 Write-Host ""
 Write-Host "📋 SECRETS À AJOUTER DANS GITHUB" -ForegroundColor Yellow
 Write-Host ""
-Write-Host "Allez sur: https://github.com/TeamFitness/mobile-app/settings/secrets/actions" -ForegroundColor Cyan
+Write-Host "Allez sur: https://github.com/AmineId/team-oustad-app/settings/secrets/actions" -ForegroundColor Cyan
 Write-Host "Cliquez sur 'New repository secret' pour chaque secret ci-dessous:" -ForegroundColor Gray
 Write-Host ""
 Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Gray
@@ -363,10 +363,10 @@ Write-Host ""
 # Sauvegarder les instructions dans un fichier
 $instructionsPath = Join-Path $PSScriptRoot "github-secrets-instructions.txt"
 $instructions = @"
-SECRETS GITHUB ACTIONS - Team Fitness App
+SECRETS GITHUB ACTIONS - Team Oustad App
 ========================================
 
-Repository: https://github.com/TeamFitness/mobile-app/settings/secrets/actions
+Repository: https://github.com/AmineId/team-oustad-app/settings/secrets/actions
 
 Secrets à ajouter:
 ------------------
@@ -484,4 +484,4 @@ Fichiers à référencer plus tard :
 - Les scripts PowerShell sont prêts à l'emploi
 - Les fichiers `.gitignore` protègent déjà les secrets
 - Le keystore doit être sauvegardé de manière sécurisée
-- GitHub Secrets : https://github.com/TeamFitness/mobile-app/settings/secrets/actions
+- GitHub Secrets : https://github.com/AmineId/team-oustad-app/settings/secrets/actions

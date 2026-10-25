@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-Flutter gym-management client ("Team Fitness") for Android, iOS, Web, Windows, macOS, Linux and smartwatch screen sizes. It talks to a separate Express + Prisma/PostgreSQL backend (not in this repo); the REST contract is documented in `swagger.yml`. Docs and code comments are largely in French.
+Flutter gym-management client ("Team Oustad") for Android, iOS, Web, Windows, macOS, Linux and smartwatch screen sizes. It talks to a separate Express + Prisma/PostgreSQL backend (not in this repo); the REST contract is documented in `swagger.yml`. Docs and code comments are largely in French.
 
 ## Commands
 
@@ -19,7 +19,7 @@ flutter run -d windows|chrome|emulator-5554 [--dart-define=ENVIRONMENT=pprod|pro
 flutter build apk --release --dart-define=ENVIRONMENT=prod
 ```
 
-iOS can't be built from this (WSL/Windows) machine: `.github/workflows/ios-build.yml` (manual dispatch) builds an unsigned `.ipa` on macOS, and `scripts/ios-install.sh` signs + installs it on a USB iPhone with xtool — see `docs/ios/IOS_XTOOL.md`.
+iOS can't be built from this (WSL/Windows) machine: `.github/workflows/_build-ios.yml` (called by every release, or manual dispatch) builds an unsigned `.ipa` on macOS, and `scripts/ios-install.sh` signs + installs it on a USB iPhone with xtool — see `docs/ios/IOS_XTOOL.md`.
 
 `scripts.ps1` (PowerShell) and `Makefile` wrap the same commands (`.\scripts.ps1 run-android-pprod`, `.\scripts.ps1 run-windows -Url http://192.168.1.50:3000`, etc.).
 

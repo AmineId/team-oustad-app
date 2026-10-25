@@ -1,4 +1,4 @@
-# start-kiosk.ps1 — Borne d'accueil Team Fitness
+# start-kiosk.ps1 — Borne d'accueil Team Oustad
 # Usage :
 #   Première fois  →  .\scripts\start-kiosk.ps1 -Setup
 #   Quotidien      →  .\scripts\start-kiosk.ps1
@@ -10,7 +10,7 @@ param(
     [string]$Environment  = "prod",          # prod | pprod
     [int]   $Port         = 8088,            # Port HTTP local
     [string]$TunnelName   = "kiosk-salle",   # Nom du tunnel cloudflared
-    [string]$Hostname     = "kiosk.teamfitness.com"
+    [string]$Hostname     = "kiosk.team-oustad.com"
 )
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
@@ -30,7 +30,7 @@ function Assert-Command ([string]$cmd) {
 
 Write-Host ""
 Write-Host "╔══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║   🏋  Team Fitness — Borne d'accueil                    ║" -ForegroundColor Cyan
+Write-Host "║   🏋  Team Oustad — Borne d'accueil                    ║" -ForegroundColor Cyan
 Write-Host "╚══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 Write-Host ""
 
@@ -58,7 +58,7 @@ if ($Setup) {
     if ($LASTEXITCODE -ne 0) { Write-Fail "Impossible de créer le tunnel" }
     Write-Ok "Tunnel créé"
 
-    # 2. Entrée DNS : CNAME kiosk.teamfitness.com → <uuid>.cfargotunnel.com
+    # 2. Entrée DNS : CNAME kiosk.team-oustad.com → <uuid>.cfargotunnel.com
     Write-Step "Route DNS : $Hostname → $TunnelName..."
     cloudflared tunnel route dns $TunnelName $Hostname
     if ($LASTEXITCODE -ne 0) { Write-Fail "Impossible de créer l'entrée DNS" }
@@ -69,7 +69,7 @@ if ($Setup) {
     $cfgPath = "$cfDir\kiosk.yml"
 
     $cfgContent = @"
-# Config tunnel borne d'accueil — kiosk.teamfitness.com
+# Config tunnel borne d'accueil — kiosk.team-oustad.com
 tunnel: $TunnelName
 credentials-file: $cfDir\$(cloudflared tunnel list --output json 2>$null | ConvertFrom-Json | Where-Object { $_.name -eq $TunnelName } | Select-Object -ExpandProperty id).json
 

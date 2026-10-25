@@ -1,4 +1,4 @@
-# mobile-app# Team Fitness App 🏋️
+# mobile-app# Team Oustad App 🏋️
 
 A Flutter application for gym management with comprehensive multi-platform support and responsive design.
 

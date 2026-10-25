@@ -1,4 +1,4 @@
-# Fastfile pour Team Fitness App
+# Fastfile pour Team Oustad App
 # Documentation: https://docs.fastlane.tools
 
 default_platform(:android)

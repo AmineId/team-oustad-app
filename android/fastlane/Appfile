@@ -1,4 +1,4 @@
-# Appfile pour Team Fitness App
+# Appfile pour Team Oustad App
 
 # ID de l'application Android
 json_key_file("service-account-key.json") # Chemin vers le fichier JSON de service account

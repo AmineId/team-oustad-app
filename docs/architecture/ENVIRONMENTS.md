@@ -1,6 +1,6 @@
 # Configuration des Environnements
 
-Ce guide explique comment utiliser les différents environnements de l'application Team Fitness.
+Ce guide explique comment utiliser les différents environnements de l'application Team Oustad.
 
 ## 🌍 Environnements Disponibles
 

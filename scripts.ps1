@@ -1,4 +1,4 @@
-# Flutter Team Fitness App - PowerShell Scripts
+# Flutter Team Oustad App - PowerShell Scripts
 # Usage: .\scripts.ps1 <command> [options]
 
 param(
@@ -12,7 +12,7 @@ param(
 function Show-Help {
     Write-Host ""
     Write-Host "╔════════════════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-    Write-Host "║         Flutter Team Fitness App - PowerShell Scripts                 ║" -ForegroundColor Cyan
+    Write-Host "║         Flutter Team Oustad App - PowerShell Scripts                 ║" -ForegroundColor Cyan
     Write-Host "╚════════════════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
     Write-Host ""
     Write-Host "🌍 Environments:" -ForegroundColor Yellow

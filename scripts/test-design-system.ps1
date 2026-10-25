@@ -1,7 +1,7 @@
 #!/usr/bin/env pwsh
 # Script de test rapide de l'application avec le nouveau design system
 
-Write-Host "🎨 Test du nouveau Design System - Team Fitness App" -ForegroundColor Cyan
+Write-Host "🎨 Test du nouveau Design System - Team Oustad App" -ForegroundColor Cyan
 Write-Host ""
 
 # Vérifier que nous sommes dans le bon répertoire

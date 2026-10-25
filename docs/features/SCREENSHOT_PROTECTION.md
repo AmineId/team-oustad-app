@@ -2,7 +2,7 @@
 
 ## Vue d'ensemble
 
-L'application Team Fitness est protégée contre :
+L'application Team Oustad est protégée contre :
 - ✅ **Screenshots** (captures d'écran)
 - ✅ **Screen Recording** (enregistrement d'écran)
 - ✅ **Affichage dans le task switcher** (aperçu des apps récentes)
@@ -99,7 +99,7 @@ NotificationCenter.default.addObserver(
 
 - **Screenshot** : L'utilisateur peut prendre un screenshot, mais c'est détecté et loggé
 - **Screen Recording** : Détecté et peut être bloqué ou signalé
-- **Task Switcher** : Affiche "Team Fitness" sur fond sombre au lieu du contenu
+- **Task Switcher** : Affiche "Team Oustad" sur fond sombre au lieu du contenu
 
 ### Limitations iOS
 
@@ -116,7 +116,7 @@ Les options disponibles :
 1. Lancer l'application
 2. Essayer de prendre un screenshot (Power + Volume Up)
 3. Vérifier les logs : devrait afficher "⚠️ Screenshot détecté!"
-4. Mettre l'app en arrière-plan et vérifier le task switcher : devrait afficher "Team Fitness" au lieu du contenu
+4. Mettre l'app en arrière-plan et vérifier le task switcher : devrait afficher "Team Oustad" au lieu du contenu
 
 ---
 
@@ -185,7 +185,7 @@ flutter run
 # Résultat attendu : Log "⚠️ Screenshot détecté!"
 
 # Mettre l'app en background et vérifier le task switcher
-# Résultat attendu : "Team Fitness" affiché au lieu du contenu
+# Résultat attendu : "Team Oustad" affiché au lieu du contenu
 ```
 
 ---

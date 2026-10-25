@@ -49,7 +49,7 @@
 #### 1.2 Configurer l'Application Android
 1. Dans Firebase Console, cliquer sur l'icône Android
 2. **Package name**: `com.example.team_fitness_app` (vérifier dans `android/app/build.gradle.kts`)
-3. **App nickname**: Team Fitness (optionnel)
+3. **App nickname**: Team Oustad (optionnel)
 4. **Debug signing certificate SHA-1**: Obtenir avec:
    ```bash
    cd android

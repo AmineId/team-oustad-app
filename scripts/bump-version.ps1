@@ -15,7 +15,7 @@ param(
 
 Write-Host ""
 Write-Host "╔════════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║              Incrémentation de version - Team Fitness           ║" -ForegroundColor Cyan
+Write-Host "║              Incrémentation de version - Team Oustad           ║" -ForegroundColor Cyan
 Write-Host "╚════════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 Write-Host ""
 

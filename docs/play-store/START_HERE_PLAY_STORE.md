@@ -66,7 +66,7 @@ Le script va vous demander :
 ```
 
 Le script copiera automatiquement chaque secret dans votre presse-papier.  
-Ajoutez-les sur : https://github.com/TeamFitness/mobile-app/settings/secrets/actions
+Ajoutez-les sur : https://github.com/AmineId/team-oustad-app/settings/secrets/actions
 
 Secrets à ajouter :
 - ✅ `KEYSTORE_BASE64`
@@ -173,14 +173,14 @@ git add .
 git commit -m "feat: test déploiement automatique Play Store"
 git push origin staging
 ```
-Vérifier sur : https://github.com/TeamFitness/mobile-app/actions
+Vérifier sur : https://github.com/AmineId/team-oustad-app/actions
 
 ---
 
 ## 📊 Monitoring
 
 ### GitHub Actions
-https://github.com/TeamFitness/mobile-app/actions
+https://github.com/AmineId/team-oustad-app/actions
 
 Jobs à vérifier :
 - ✅ Version & Changelog

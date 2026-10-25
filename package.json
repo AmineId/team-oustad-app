@@ -1,11 +1,11 @@
 {
   "name": "team-fitness-app",
   "version": "1.0.0",
-  "description": "Team Fitness Mobile Application",
+  "description": "Team Oustad Mobile Application",
   "private": true,
   "repository": {
     "type": "git",
-    "url": "https://github.com/TeamFitness/mobile-app.git"
+    "url": "https://github.com/AmineId/team-oustad-app.git"
   },
   "scripts": {
     "release": "semantic-release",

@@ -4,7 +4,7 @@ This document explains the responsive design system implemented for multi-platfo
 
 ## Overview
 
-The Team Fitness app now supports multiple platforms with optimized UI/UX for each:
+The Team Oustad app now supports multiple platforms with optimized UI/UX for each:
 
 - **Mobile** (300px - 600px): Original bottom navigation, optimized for phone screens
 - **Desktop** (>600px): Side navigation, multi-column layouts, enhanced spacing

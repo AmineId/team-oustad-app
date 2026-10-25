@@ -2,7 +2,7 @@
 
 ## 📝 Overview
 
-Team Fitness uses **Semantic Release** with **Conventional Commits** for automatic versioning and deployment.
+Team Oustad uses **Semantic Release** with **Conventional Commits** for automatic versioning and deployment.
 
 ### Key Benefits
 - ✅ **Automatic version bumping** based on commit messages

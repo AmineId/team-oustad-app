@@ -2,7 +2,7 @@
 
 ## 📱 Vue d'ensemble
 
-L'application Team Fitness dispose maintenant d'un système de thème moderne et cohérent avec support du mode clair et sombre. Ce guide explique comment utiliser le nouveau design system.
+L'application Team Oustad dispose maintenant d'un système de thème moderne et cohérent avec support du mode clair et sombre. Ce guide explique comment utiliser le nouveau design system.
 
 ## 🎨 Structure du Thème
 

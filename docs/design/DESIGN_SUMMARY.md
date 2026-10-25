@@ -1,4 +1,4 @@
-# 🎨 Résumé de la Modernisation UI - Team Fitness App
+# 🎨 Résumé de la Modernisation UI - Team Oustad App
 
 ## ✅ Ce qui a été réalisé
 

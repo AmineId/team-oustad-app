@@ -1,4 +1,4 @@
-# ✨ Design System Moderne - Team Fitness App
+# ✨ Design System Moderne - Team Oustad App
 
 ## 🎯 Vue d'Ensemble
 
@@ -120,7 +120,7 @@ Le nouveau design system apporte une **interface moderne, minimaliste et cohére
 
 ```
 ╔════════════════════════════════════════╗
-║  Team Fitness          🌙/☀️  🔔  ⚙️  ║  ← AppBar avec toggle thème
+║  Team Oustad          🌙/☀️  🔔  ⚙️  ║  ← AppBar avec toggle thème
 ╠════════════════════════════════════════╣
 ║                                        ║
 ║  Bienvenue, Admin! 👋                  ║  ← H2

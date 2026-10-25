@@ -1,7 +1,7 @@
 # Script pour configurer les secrets GitHub Actions pour la signature Android
 # Ce script encode le keystore en base64 et affiche les commandes pour ajouter les secrets
 
-Write-Host "🔐 Configuration des secrets GitHub Actions pour Team Fitness App" -ForegroundColor Cyan
+Write-Host "🔐 Configuration des secrets GitHub Actions pour Team Oustad App" -ForegroundColor Cyan
 Write-Host ""
 
 # Vérifier que le keystore existe
@@ -42,7 +42,7 @@ Write-Host "━━━━━━━━━━━━━━━━━━━━━━�
 Write-Host ""
 Write-Host "📋 SECRETS À AJOUTER DANS GITHUB" -ForegroundColor Yellow
 Write-Host ""
-Write-Host "Allez sur: https://github.com/TeamFitness/mobile-app/settings/secrets/actions" -ForegroundColor Cyan
+Write-Host "Allez sur: https://github.com/AmineId/team-oustad-app/settings/secrets/actions" -ForegroundColor Cyan
 Write-Host "Cliquez sur 'New repository secret' pour chaque secret ci-dessous:" -ForegroundColor Gray
 Write-Host ""
 Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Gray
@@ -105,10 +105,10 @@ Write-Host ""
 # Sauvegarder les instructions dans un fichier
 $instructionsPath = Join-Path $PSScriptRoot "github-secrets-instructions.txt"
 $instructions = @"
-SECRETS GITHUB ACTIONS - Team Fitness App
+SECRETS GITHUB ACTIONS - Team Oustad App
 ========================================
 
-Repository: https://github.com/TeamFitness/mobile-app/settings/secrets/actions
+Repository: https://github.com/AmineId/team-oustad-app/settings/secrets/actions
 
 Secrets de signature Android:
 -----------------------------

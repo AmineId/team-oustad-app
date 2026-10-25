@@ -4,7 +4,7 @@
 
 **Limite importante :** xtool ne sait compiler que des projets SwiftPM, pas une app Flutter, et `flutter build ios` ne fonctionne que sur macOS. Le flux est donc :
 
-1. **GitHub Actions (macOS)** compile un `.ipa` **non signé** → workflow `ios-build.yml`
+1. **GitHub Actions (macOS)** compile un `.ipa` **non signé** → workflow `_build-ios.yml` (lancé seul, ou par chaque release `staging`/`main`)
 2. **WSL** : xtool **signe** ce `.ipa` avec ton Apple ID et l'**installe** sur l'iPhone via USB → `scripts/ios-install.sh`
 
 ## 1. Installation unique (WSL)
@@ -46,14 +46,14 @@ GitHub → Actions → **🍎 iOS Build** → *Run workflow* → choisir l'envir
 Ou avec `gh` :
 
 ```bash
-gh workflow run ios-build.yml -f environment=pprod
+gh workflow run _build-ios.yml -f environment=pprod
 ```
 
 ## 3. Installer sur l'iPhone
 
 ```bash
 scripts/ios-install.sh --download pprod        # télécharge le dernier build pprod réussi (gh requis)
-scripts/ios-install.sh ~/TeamFitness-pprod.ipa # ou un .ipa déjà téléchargé
+scripts/ios-install.sh ~/TeamOustad-pprod.ipa # ou un .ipa déjà téléchargé
 ```
 
 `XTOOL_UDID=<udid>` permet de cibler un appareil précis si plusieurs sont branchés.

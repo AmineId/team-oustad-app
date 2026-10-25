@@ -1,18 +1,18 @@
 openapi: 3.0.0
 info:
-  title: Team Fitness API
+  title: Team Oustad API
   version: 1.0.0
-  description: API pour la gestion des salles de sport Team Fitness
+  description: API pour la gestion des salles de sport Team Oustad
   contact:
-    name: Team Fitness Support
-    email: support@teamfitness.com
+    name: Team Oustad Support
+    email: support@team-oustad.com
 
 servers:
   - url: https://api-pprod.team-oustad.com
     description: Serveur de pré-production
   - url: http://localhost:3001
     description: Serveur de développement local
-  - url: https://api.teamfitness.com
+  - url: https://api.team-oustad.com
     description: Serveur de production
 
 components:
@@ -1667,7 +1667,7 @@ paths:
                         example: "2025-12-31T10:30:00.000Z"
                       gymName:
                         type: string
-                        example: "Team Fitness Downtown"
+                        example: "Team Oustad Downtown"
         '400':
           description: Invalid QR code or access denied
           content:
@@ -3979,7 +3979,7 @@ paths:
                           properties:
                             fullName:
                               type: string
-                              example: "Admin TeamFitness"
+                              example: "Admin Team Oustad"
                         days:
                           type: array
                           items:
@@ -7608,7 +7608,7 @@ paths:
                     type: string
                     nullable: true
                     description: Nom d'affichage personnalisé, null si non défini
-                    example: "Team Fitness"
+                    example: "Team Oustad"
         '403':
           description: Accès réservé aux propriétaires
 
@@ -7724,7 +7724,7 @@ paths:
                 displayName:
                   type: string
                   nullable: true
-                  example: "Team Fitness"
+                  example: "Team Oustad"
       responses:
         '200':
           description: Nom mis à jour
@@ -7736,7 +7736,7 @@ paths:
                   displayName:
                     type: string
                     nullable: true
-                    example: "Team Fitness"
+                    example: "Team Oustad"
                   applied:
                     type: boolean
                     description: true si appliqué immédiatement, false si sera appliqué à la prochaine connexion

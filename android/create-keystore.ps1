@@ -1,7 +1,7 @@
 # Script pour créer un keystore de production Android
 # Ce keystore sera utilisé pour signer l'application en production
 
-Write-Host "🔐 Création du keystore de production pour Team Fitness App" -ForegroundColor Cyan
+Write-Host "🔐 Création du keystore de production pour Team Oustad App" -ForegroundColor Cyan
 Write-Host ""
 
 # Vérifier que keytool est disponible
@@ -28,14 +28,14 @@ $keyPasswordText = [Runtime.InteropServices.Marshal]::PtrToStringAuto(
     [Runtime.InteropServices.Marshal]::SecureStringToBSTR($keyPassword)
 )
 
-$commonName = Read-Host "Nom (CN) [par défaut: Team Fitness]"
-if ([string]::IsNullOrWhiteSpace($commonName)) { $commonName = "Team Fitness" }
+$commonName = Read-Host "Nom (CN) [par défaut: Team Oustad]"
+if ([string]::IsNullOrWhiteSpace($commonName)) { $commonName = "Team Oustad" }
 
 $orgUnit = Read-Host "Unité organisationnelle (OU) [par défaut: Development]"
 if ([string]::IsNullOrWhiteSpace($orgUnit)) { $orgUnit = "Development" }
 
-$org = Read-Host "Organisation (O) [par défaut: Team Fitness]"
-if ([string]::IsNullOrWhiteSpace($org)) { $org = "Team Fitness" }
+$org = Read-Host "Organisation (O) [par défaut: Team Oustad]"
+if ([string]::IsNullOrWhiteSpace($org)) { $org = "Team Oustad" }
 
 $city = Read-Host "Ville (L) [par défaut: Paris]"
 if ([string]::IsNullOrWhiteSpace($city)) { $city = "Paris" }

@@ -67,7 +67,7 @@ Ce guide explique comment configurer le déploiement automatique vers Google Pla
 
 1. Ouvrez le fichier JSON téléchargé à l'étape 1.2
 2. Copiez **tout le contenu** du fichier JSON
-3. Allez sur [Secrets GitHub](https://github.com/TeamFitness/mobile-app/settings/secrets/actions)
+3. Allez sur [Secrets GitHub](https://github.com/AmineId/team-oustad-app/settings/secrets/actions)
 4. Cliquez **New repository secret**
 5. Nom : `PLAY_STORE_SERVICE_ACCOUNT_JSON`
 6. Valeur : Collez le contenu JSON complet
@@ -153,7 +153,7 @@ git push origin staging
 
 ### 6.2 Vérifier le Workflow
 
-1. Allez sur [GitHub Actions](https://github.com/TeamFitness/mobile-app/actions)
+1. Allez sur [GitHub Actions](https://github.com/AmineId/team-oustad-app/actions)
 2. Sélectionnez le workflow **🚀 Release & Deploy**
 3. Vérifiez que toutes les étapes passent :
    - ✅ Version & Changelog
@@ -234,7 +234,7 @@ android/fastlane/service-account-key.json
 ### Logs GitHub Actions
 
 Vérifiez les logs pour chaque déploiement :
-- https://github.com/TeamFitness/mobile-app/actions
+- https://github.com/AmineId/team-oustad-app/actions
 
 ### Statut Play Console
 

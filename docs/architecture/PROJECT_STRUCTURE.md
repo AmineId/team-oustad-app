@@ -1,4 +1,4 @@
-# Structure du Projet - Team Fitness App
+# Structure du Projet - Team Oustad App
 
 ## 📁 Organisation des Dossiers
 

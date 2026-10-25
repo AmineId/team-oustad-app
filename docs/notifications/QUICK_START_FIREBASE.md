@@ -32,7 +32,7 @@ A valid Firebase App ID is required...
 2. **Remplir les champs**:
    - **Android package name**: `team.fitness.team_fitness_app`
      *(Copier depuis `android/app/build.gradle.kts` - ligne `applicationId`)*
-   - **App nickname**: `Team Fitness` (optionnel)
+   - **App nickname**: `Team Oustad` (optionnel)
    - **Debug SHA-1**: Laisser vide pour l'instant (ou générer avec la commande ci-dessous)
 
 3. **Télécharger `google-services.json`**:

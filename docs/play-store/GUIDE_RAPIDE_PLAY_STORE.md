@@ -28,7 +28,7 @@ Suivez les instructions à l'écran. Le script va créer :
 ```
 
 Le script va copier automatiquement chaque secret dans votre presse-papier.
-Ajoutez-les sur : https://github.com/TeamFitness/mobile-app/settings/secrets/actions
+Ajoutez-les sur : https://github.com/AmineId/team-oustad-app/settings/secrets/actions
 
 Secrets à ajouter :
 - `KEYSTORE_BASE64`
@@ -74,7 +74,7 @@ Secrets à ajouter :
 
 1. Ouvrez le fichier JSON téléchargé à l'étape 3
 2. Copiez **tout le contenu** du fichier
-3. Allez sur https://github.com/TeamFitness/mobile-app/settings/secrets/actions
+3. Allez sur https://github.com/AmineId/team-oustad-app/settings/secrets/actions
 4. **New repository secret**
 5. Nom : `PLAY_STORE_SERVICE_ACCOUNT_JSON`
 6. Valeur : Collez le contenu JSON complet
@@ -130,7 +130,7 @@ Le CI/CD va automatiquement :
 
 ### GitHub Actions
 
-https://github.com/TeamFitness/mobile-app/actions
+https://github.com/AmineId/team-oustad-app/actions
 
 Vérifiez que toutes les étapes passent :
 - ✅ Version & Changelog

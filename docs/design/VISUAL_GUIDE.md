@@ -1,6 +1,6 @@
 # Visual Guide: Responsive Design Across Platforms
 
-This guide illustrates how the Team Fitness app adapts across different devices.
+This guide illustrates how the Team Oustad app adapts across different devices.
 
 ## 🖥️ Desktop Layout (>600px)
 

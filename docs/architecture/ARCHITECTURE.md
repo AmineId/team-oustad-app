@@ -1,4 +1,4 @@
-# Architecture du Projet Team Fitness App
+# Architecture du Projet Team Oustad App
 
 ```
 team_fitness_app/
