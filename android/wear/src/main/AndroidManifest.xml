@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-feature android:name="android.hardware.type.watch" />
 
@@ -41,7 +42,8 @@
         <!-- Métadonnées Wearable pour l'association avec l'app téléphone -->
         <meta-data
             android:name="com.google.android.wearable.standalone"
-            android:value="false" />
+            android:value="false"
+            tools:replace="android:value" />
 
     </application>
 

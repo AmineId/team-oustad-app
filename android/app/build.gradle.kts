@@ -75,6 +75,8 @@ flutter {
 
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
-    // Intègre l'APK Wear OS dans l'AAB téléphone → distribué automatiquement à la montre jumelée
-    wearApp(project(":wear_app"))
+    // Data Layer API utilisée par WearSyncService (sync téléphone → montre)
+    implementation("com.google.android.gms:play-services-wearable:18.2.0")
+    // Pas de wearApp(project(":wear_app")) : Wear OS 2+ ignore les APK embarqués (et AGP exige le
+    // même applicationId). L'app montre doit être publiée en AAB séparé sur la piste Wear OS.
 }
