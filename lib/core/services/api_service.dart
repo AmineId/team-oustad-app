@@ -3436,6 +3436,57 @@ class ApiService {
     }
   }
 
+  // ==================== REQUÊTE JSON GÉNÉRIQUE ====================
+
+  /// Requête JSON authentifiée pour les services de domaine (coachs,
+  /// programmes, séances, incidents) : renvoie le code HTTP et le corps
+  /// décodé (null si vide ou illisible). `status == 0` = erreur réseau.
+  Future<({int status, dynamic body})> sendJson(
+    String method,
+    String path,
+    String token, {
+    Object? body,
+    Map<String, String>? query,
+    Duration timeout = const Duration(seconds: 10),
+  }) async {
+    var uri = baseUri.resolve(path);
+    if (query != null && query.isNotEmpty) {
+      uri = uri.replace(queryParameters: query);
+    }
+    final headers = {
+      'Authorization': 'Bearer $token',
+      if (body != null) 'Content-Type': 'application/json',
+    };
+    final encoded = body == null ? null : jsonEncode(body);
+    try {
+      final resp = await switch (method) {
+        'GET' => http.get(uri, headers: headers),
+        'POST' => http.post(uri, headers: headers, body: encoded),
+        'PUT' => http.put(uri, headers: headers, body: encoded),
+        'PATCH' => http.patch(uri, headers: headers, body: encoded),
+        'DELETE' => http.delete(uri, headers: headers, body: encoded),
+        _ => throw ArgumentError.value(method, 'method'),
+      }.timeout(timeout);
+      dynamic decoded;
+      if (resp.body.isNotEmpty) {
+        try {
+          decoded = jsonDecode(resp.body);
+        } catch (_) {}
+      }
+      return (status: resp.statusCode, body: decoded);
+    } catch (e) {
+      debugPrint('ApiService.sendJson $method $path error: $e');
+      return (status: 0, body: null);
+    }
+  }
+
+  /// Extrait une liste d'une réponse : tableau brut ou `{key: [...]}`.
+  static List<Map<String, dynamic>> listFrom(dynamic body, String key) {
+    final raw = body is List ? body : (body is Map ? body[key] : null);
+    if (raw is! List) return [];
+    return raw.whereType<Map<String, dynamic>>().toList();
+  }
+
   // ==================== PLANNINGS — EXERCISE REMOVAL ====================
 
   /// Remove a specific exercise from a planning day.

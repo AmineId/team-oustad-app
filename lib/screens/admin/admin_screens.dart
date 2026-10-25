@@ -1,4 +1,5 @@
 // Admin Screens Barrel File
+export 'admin_coaches_screen.dart';
 export 'admin_create_admin_screen.dart';
 export 'admin_create_gym_screen.dart';
 export 'admin_create_member_screen.dart';

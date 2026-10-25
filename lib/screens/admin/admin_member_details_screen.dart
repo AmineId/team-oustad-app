@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'admin_chrome.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
+import '../../core/services/coach_service.dart';
 import '../../core/theme/theme.dart';
 import '../../core/utils/user_utils.dart';
 import '../../widgets/common/app_snackbar.dart';
@@ -27,6 +28,7 @@ class AdminMemberDetailsScreen extends StatefulWidget {
 class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
   final ApiService _apiService = ApiService.fromEnv();
   final AuthService _authService = AuthService(ApiService.fromEnv());
+  late final CoachService _coachService = CoachService(_apiService);
 
   Map<String, dynamic>? _member;
   List<Map<String, dynamic>> _subscriptions = [];
@@ -526,6 +528,9 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
             _buildInfoRow(Icons.phone, phone),
           ],
 
+          const SizedBox(height: 12),
+          _buildCoachRow(),
+
           if (email.isNotEmpty) ...[
             const SizedBox(height: 16),
             _SendSetupEmailButton(
@@ -537,6 +542,87 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
         ],
       ),
     );
+  }
+
+  /// Coach affecté au membre (`coach` détaillé, sinon seulement `coachId`).
+  String _coachLabel() {
+    final coach = _member?['coach'];
+    if (coach is Map<String, dynamic>) return getUserFullName(coach);
+    return _member?['coachId'] != null ? 'Coach affecté' : 'Aucun coach';
+  }
+
+  Widget _buildCoachRow() {
+    return Row(
+      children: [
+        Expanded(child: _buildInfoRow(Icons.sports, _coachLabel())),
+        TextButton(
+          onPressed: _pickCoach,
+          child: const Text('Modifier'),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _pickCoach() async {
+    final token = await _authService.loadToken();
+    final gymId = _member?['gymId'];
+    if (token == null || gymId is! int) return;
+    final coaches = await _coachService.getCoaches(token, gymId: gymId);
+    if (!mounted) return;
+    if (coaches == null) {
+      AppSnackBar.error(context, 'Impossible de charger les coachs');
+      return;
+    }
+    final currentId = _member?['coachId'];
+    // -1 = retirer le coach ; null = annulé.
+    final picked = await showModalBottomSheet<int>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: ListView(
+          shrinkWrap: true,
+          children: [
+            const ListTile(
+              title: Text(
+                'Coach du membre',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+            if (coaches.isEmpty)
+              const ListTile(title: Text('Aucun coach dans cette salle')),
+            for (final coach in coaches)
+              if (coach['id'] is int)
+                ListTile(
+                  leading: const Icon(Icons.sports),
+                  title: Text(getUserFullName(coach)),
+                  trailing: coach['id'] == currentId
+                      ? const Icon(Icons.check)
+                      : null,
+                  onTap: () => Navigator.pop(context, coach['id'] as int),
+                ),
+            if (currentId != null)
+              ListTile(
+                leading: const Icon(Icons.person_off_outlined),
+                title: const Text('Retirer le coach'),
+                onTap: () => Navigator.pop(context, -1),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (picked == null || !mounted) return;
+    final coachId = picked == -1 ? null : picked;
+    final ok = await _coachService.setMemberCoach(
+      token,
+      widget.memberId,
+      coachId,
+    );
+    if (!mounted) return;
+    if (ok) {
+      AppSnackBar.success(context, 'Coach mis à jour');
+      _loadMemberDetails();
+    } else {
+      AppSnackBar.error(context, 'Échec de l\'affectation du coach');
+    }
   }
 
   Widget _buildInfoRow(IconData icon, String text) {

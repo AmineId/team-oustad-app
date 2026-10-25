@@ -13,6 +13,7 @@ import '../../core/services/notification_router.dart';
 import '../../widgets/common/common_widgets.dart';
 import '../../widgets/responsive/responsive_layout.dart';
 import '../auth/login_screen.dart';
+import 'admin_coaches_screen.dart';
 import 'admin_create_member_screen.dart';
 import 'admin_members_screen.dart';
 import 'admin_plannings_screen.dart';
@@ -1565,6 +1566,23 @@ class _GestionGlobalePageState extends State<GestionGlobalePage> {
                   description:
                       'Ajouter, modifier ou supprimer des managers',
                   onTap: () => setState(() => _currentView = 'admins'),
+                ),
+                const SizedBox(height: 16),
+              ],
+
+              // Gestion des coachs (créés uniquement par l'owner)
+              if (_canManageAdmins) ...[
+                _buildGlobalOption(
+                  context,
+                  icon: Icons.sports,
+                  title: 'Gestion des coachs',
+                  description: 'Créer des coachs et choisir leurs salles',
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const AdminCoachesScreen(),
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 16),
               ],

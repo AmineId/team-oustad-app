@@ -187,7 +187,8 @@ class AppLocalizations {
       'owner_role': 'Propriétaire',
       'manager_role': 'Manager',
       'coach_role': 'Coach',
-      'coach_space_soon': 'Votre espace coach arrive bientôt.',
+      'coach_my_members': 'Mes membres',
+      'coach_no_members': 'Aucun membre ne vous est encore affecté.',
     },
     'en': {
       'home': 'Home',
@@ -354,7 +355,8 @@ class AppLocalizations {
       'owner_role': 'Owner',
       'manager_role': 'Manager',
       'coach_role': 'Coach',
-      'coach_space_soon': 'Your coach space is coming soon.',
+      'coach_my_members': 'My members',
+      'coach_no_members': 'No members are assigned to you yet.',
     },
     'ar': {
       'home': 'الرئيسية',
@@ -518,7 +520,8 @@ class AppLocalizations {
       'owner_role': 'المالك',
       'manager_role': 'مدير',
       'coach_role': 'مدرب',
-      'coach_space_soon': 'مساحة المدرب قادمة قريبًا.',
+      'coach_my_members': 'أعضائي',
+      'coach_no_members': 'لم يتم تعيين أي عضو لك بعد.',
     },
   };
 
@@ -713,7 +716,8 @@ class AppLocalizations {
   String get ownerRole => translate('owner_role');
   String get managerRole => translate('manager_role');
   String get coachRole => translate('coach_role');
-  String get coachSpaceSoon => translate('coach_space_soon');
+  String get coachMyMembers => translate('coach_my_members');
+  String get coachNoMembers => translate('coach_no_members');
 }
 
 class _AppLocalizationsDelegate
