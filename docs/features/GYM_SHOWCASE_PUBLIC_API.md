@@ -192,16 +192,16 @@ L'app ignore les types inconnus et rajoute en fin de page un type intégré abse
 
 ```prisma
 model ShowcasePage {
-  id        Int      @id @default(autoincrement())
-  gymId     Int?     @unique              // null = page d'accueil
+  key       String   @id                // "home" ou "gym:<id>"
+  gymId     Int?     @unique
   gym       Gym?     @relation(fields: [gymId], references: [id], onDelete: Cascade)
-  content   Json                          // { hero?, sections } tel que reçu
+  content   Json                        // { hero?, sections } validé puis stocké tel quel
   updatedAt DateTime @updatedAt
-  updatedBy Int?                          // user id, pour l'audit
+  updatedBy Int?                        // user id, pour l'audit
 }
 ```
 
-Postgres autorise plusieurs `NULL` sur un `@unique` : garantir l'unicité de la page d'accueil applicativement (upsert sur `gymId IS NULL`) ou avec un index partiel.
+La clé texte garantit une seule page d'accueil sans dépendre d'un `NULL` unique.
 
 La description de salle reste `Gym.description` (éditée dans la fiche salle). Le CMS ne la duplique pas : la section `gymAbout` l'affiche.
 
@@ -233,11 +233,12 @@ La description de salle reste `Gym.description` (éditée dans la fiche salle). 
 
 Avant les sections, `GET /gyms/{gymId}/showcase` était un objet plat (`description`, `amenities`, `schedule`, `pricing`, `team`). L'app sait encore le lire (converti en sections `markdown`), mais le serveur doit implémenter directement le format ci-dessus.
 
-### Checklist pour claude serveur
+### Côté serveur (fait, `team_fitness_server`)
 
-- [ ] Migration Prisma : table `ShowcasePage` (unicité de la page d'accueil garantie)
-- [ ] `GET/PUT /showcase/home` (owner) et `GET/PUT /gyms/{gymId}/showcase` (owner, admin de la salle), 403 sinon
-- [ ] `GET` renvoie `{}` (200) tant que rien n'est enregistré
-- [ ] Validation du body `PUT` (tailles, `url` en http(s), `hero` seulement pour l'accueil)
-- [ ] `GET /public/showcase/home` + champ `gym.showcase` dans `GET /public/gyms/{slugOrId}`, avec le `Cache-Control` existant
-- [ ] Mettre à jour `swagger.yml` (4 routes authentifiées, 1 route publique, schéma `ShowcasePage`)
+- [x] Migration `20261025000000_add_showcase_pages` : table `ShowcasePage` + colonne `Gym.description`
+- [x] `GET/PUT /showcase/home` (owner) et `GET/PUT /gyms/{gymId}/showcase` (owner avec `canManageGyms`, admin de la salle), 403 sinon
+- [x] `GET` renvoie `{}` (200) tant que rien n'est enregistré
+- [x] Validation du body `PUT` (`utils/showcasePages.js`)
+- [x] `GET /public/showcase/home` + `gym.description` et `gym.showcase` dans `GET /public/gyms/{slugOrId}` (sections masquées exclues)
+- [x] `PUT /gyms/{id}` accepte `description`
+- [x] `swagger.yml` serveur mis à jour
