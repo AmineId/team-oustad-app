@@ -34,8 +34,6 @@ on:
         required: false
       OTA_BEARER_TOKEN:
         required: false
-      ANTHROPIC_API_KEY:
-        required: false
 
   # Permet de lancer ce build Android seul, sans passer par Release & Deploy.
   # deploy-to-play / publish-version à false par défaut : un run manuel ne
@@ -319,13 +317,13 @@ jobs:
           EOFJSON
           jq empty android/fastlane/service-account-key.json || exit 1
 
-      # Notes Play (fr-FR, ≤ 500 car.) rédigées par Claude depuis les commits ;
-      # le résumé technique va dans le résumé du run, jamais dans les notes Play.
+      # Notes Play (fr-FR, ≤ 500 car.) = variable de dépôt PLAY_RELEASE_NOTES, ou
+      # texte par défaut ; rien n'est tiré des commits (liste dans le résumé du run).
       - name: 📝 Generate release notes
         if: inputs.deploy-to-play
         continue-on-error: true
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          PLAY_RELEASE_NOTES: ${{ vars.PLAY_RELEASE_NOTES }}
         run: |
           scripts/release-notes.sh \
             android/fastlane/metadata/android/fr-FR/changelogs/default.txt \

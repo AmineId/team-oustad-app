@@ -55,6 +55,7 @@ State management is plain `ChangeNotifier` + `InheritedWidget` scopes (`ThemePro
 Versioning is fully automated by semantic-release (`.releaserc.json`, `.github/workflows/semantic-release.yml`) — do not hand-edit the version in `pubspec.yaml` or `version-metadata.json`.
 
 - Commits must follow Conventional Commits (`feat:` → minor, `fix:`/`perf:`/`refactor:` → patch, `!`/BREAKING → major; `docs/chore/style/test/ci/build` → no release).
+- Play Store release notes = GitHub repo variable `PLAY_RELEASE_NOTES` (French, ≤ 500 chars, set by the user in Settings → Variables), else « Corrections et améliorations de stabilité. » (`scripts/release-notes.sh`). Never derive them from commits, never use a paid/AI service.
 - Push to `staging` → `x.y.z-beta.N` prerelease built with `ENVIRONMENT=pprod`; push to `main` → production release built with `ENVIRONMENT=prod`.
 - `scripts/update-version-metadata.js` rewrites `pubspec.yaml` and `version-metadata.json` during release; the single build-and-deploy job then signs the AAB, uploads it via Fastlane (`android/fastlane`), and publishes the version metadata to `POST <api>/android/update-version` (staging → `api-pprod.team-oustad.com`, main → `api.team-oustad.com`; no beta channel) — the only source of the server's `version.json`, which the in-app version check reads. No APK is built or distributed outside the Play Store.
 - PRs into `main`/`staging` run `pr-validation.yml`: analyze (`--fatal-infos`), test, debug APK build. CI pins Flutter 3.35.7 and Java 17.
