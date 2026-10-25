@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.108](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.107...v1.0.0-beta.108) (2026-10-25)
+
+
+### 🐛 Bug Fixes
+
+* **build:** ne plus sauter configurePluginProject pour :wear_app ([6c8d838](https://github.com/TeamFitness/mobile-app/commit/6c8d838c1d5c4cd082909374efb964e565c58ea2))
+
 ## [1.0.0-beta.107](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.106...v1.0.0-beta.107) (2026-10-24)
 
 
