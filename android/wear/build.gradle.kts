@@ -34,7 +34,8 @@ android {
     defaultConfig {
         applicationId = "team.oustad.app"
         minSdk = 26   // Wear OS 2.0 minimum
-        targetSdk = 34
+        // Comme le téléphone : Play refuse l'AAB montre en 34 (« Target SDK of artifact is too low »).
+        targetSdk = flutter.targetSdkVersion
         // Play exige un versionCode unique par artefact d'un même package : la montre
         // (canal Wear OS dédié) prend celui du téléphone + 1 000 000.
         versionCode = flutter.versionCode + 1_000_000
