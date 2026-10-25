@@ -6,6 +6,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.109](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.108...v1.0.0-beta.109) (2026-10-25)
+
+
+### ✨ New Features
+
+* **showcase:** pages vitrine éditables par sections ([c2f6884](https://github.com/TeamFitness/mobile-app/commit/c2f6884f8b9c88d7d35874d8039223de15728245))
+
+
+### 🐛 Bug Fixes
+
+* **build:** build Android vérifié en local — retirer wearApp, aligner :wear_app ([ed6d3a4](https://github.com/TeamFitness/mobile-app/commit/ed6d3a4a67ae412d46e1a77baf296e7ddd191f9b))
+* **build:** sauter la config plugin déjà évaluée au lieu de l'exécuter ([030b2d5](https://github.com/TeamFitness/mobile-app/commit/030b2d5204ca03bb4de76a461ab96f0b7be39727))
+* **security:** garder le nouveau token après vérification du mot de passe ([87dd1bd](https://github.com/TeamFitness/mobile-app/commit/87dd1bd5a6d5e73dfd17bcf02aaaa4b4c2242213))
+* **security:** rôles, permissions owner, mot de passe stocké et logs ([2984063](https://github.com/TeamFitness/mobile-app/commit/298406347da9ae4d15ff34e1a90a2a2baae80952))
+* **wear:** même applicationId et même signature que le téléphone ([1a579c4](https://github.com/TeamFitness/mobile-app/commit/1a579c421834f23af337e32ec8a180967d9c0931))
+
+
+### 📚 Documentation
+
+* **showcase:** aligner le §8 sur l'implémentation serveur ([7c69d82](https://github.com/TeamFitness/mobile-app/commit/7c69d82d8aa0275f4fbd7c32bd3d256c159bfe52))
+
 ## [1.0.0-beta.108](https://github.com/TeamFitness/mobile-app/compare/v1.0.0-beta.107...v1.0.0-beta.108) (2026-10-25)
 
 
