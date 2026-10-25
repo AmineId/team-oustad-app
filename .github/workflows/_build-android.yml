@@ -337,15 +337,7 @@ jobs:
         run: |
           AAB="$(pwd)/build/app/outputs/bundle/release/app-release.aab"
           [ -f "$AAB" ] || { echo "❌ AAB introuvable"; exit 1; }
-          cd android && bundle exec fastlane supply \
-            --aab "$AAB" \
-            --track internal \
-            --release_status completed \
-            --json_key fastlane/service-account-key.json \
-            --package_name team.oustad.app \
-            --skip_upload_metadata \
-            --skip_upload_images \
-            --skip_upload_screenshots
+          cd android && ../scripts/play-upload.sh "$AAB" internal
 
       # L'app montre a son propre canal Wear OS (facteur de forme ajouté dans la
       # Play Console) : même package, versionCode du téléphone + 1 000 000.
@@ -357,15 +349,7 @@ jobs:
         run: |
           AAB="$(pwd)/build/wear_app/outputs/bundle/release/wear_app-release.aab"
           [ -f "$AAB" ] || { echo "❌ AAB Wear OS introuvable"; exit 1; }
-          cd android && bundle exec fastlane supply \
-            --aab "$AAB" \
-            --track wear:internal \
-            --release_status completed \
-            --json_key fastlane/service-account-key.json \
-            --package_name team.oustad.app \
-            --skip_upload_metadata \
-            --skip_upload_images \
-            --skip_upload_screenshots
+          cd android && ../scripts/play-upload.sh "$AAB" wear:internal
 
       - name: 📤 Publish version to server
         id: publish_version
@@ -397,6 +381,8 @@ jobs:
           BUILD: ${{ steps.build_aab.outcome }}
           DEPLOY: ${{ steps.deploy_play.outcome }}
           DEPLOY_WEAR: ${{ steps.deploy_wear.outcome }}
+          DEPLOY_STATUS: ${{ steps.deploy_play.outputs.status }}
+          DEPLOY_WEAR_STATUS: ${{ steps.deploy_wear.outputs.status }}
           PUBLISH: ${{ steps.publish_version.outcome }}
         run: |
           icon() { case "$1" in success) echo "✅";; failure) echo "❌";; cancelled) echo "⏹️";; *) echo "⏭️";; esac; }
@@ -413,8 +399,8 @@ jobs:
             echo "| Build AAB | $(icon "$BUILD") | signature : $SIGNING |"
             echo "| AAB téléphone | $([ -f "$PHONE" ] && echo ✅ || echo —) | $(size "$PHONE") |"
             echo "| AAB Wear OS | $([ -f "$WEAR" ] && echo ✅ || echo —) | $(size "$WEAR") |"
-            echo "| Play Store téléphone (internal) | $(icon "$DEPLOY") | \`team.oustad.app\` |"
-            echo "| Play Store Wear OS (wear:internal) | $(icon "$DEPLOY_WEAR") | \`team.oustad.app\` |"
+            echo "| Play Store téléphone (internal) | $(icon "$DEPLOY") | ${DEPLOY_STATUS:-—} |"
+            echo "| Play Store Wear OS (wear:internal) | $(icon "$DEPLOY_WEAR") | ${DEPLOY_WEAR_STATUS:-—} |"
             echo "| Version serveur | $(icon "$PUBLISH") | \`$API_URL/android/update-version\` |"
           } >> "$GITHUB_STEP_SUMMARY"
 
