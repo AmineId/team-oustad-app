@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.112](https://github.com/AmineId/team-oustad-app/compare/v1.0.0-beta.111...v1.0.0-beta.112) (2026-10-25)
+
+
+### 🐛 Bug Fixes
+
+* **firebase:** vraie config iOS pprod dans firebase_options.dart ([34e1d63](https://github.com/AmineId/team-oustad-app/commit/34e1d637792f49c2ee6e22746962455622ffe29c))
+
 ## [1.0.0-beta.111](https://github.com/AmineId/team-oustad-app/compare/v1.0.0-beta.110...v1.0.0-beta.111) (2026-10-25)
 
 
