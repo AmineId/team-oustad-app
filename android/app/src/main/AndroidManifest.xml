@@ -1,4 +1,10 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <!-- Le plugin Dart `wear` (utilisé par l'app montre :wear_app) injecte ces
+         déclarations dans tout module qui l'embarque : sans ce retrait, l'app
+         téléphone est vue comme une app Wear OS (refusée sur la piste mobile du
+         Play Store et non installable sur un téléphone). -->
+    <uses-feature android:name="android.hardware.type.watch" tools:node="remove" />
     <!-- Location permissions for future features -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
@@ -21,6 +27,9 @@
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:enableOnBackInvokedCallback="true">
+        <meta-data
+            android:name="com.google.android.wearable.standalone"
+            tools:node="remove" />
         <activity
             android:name=".MainActivity"
             android:exported="true"
