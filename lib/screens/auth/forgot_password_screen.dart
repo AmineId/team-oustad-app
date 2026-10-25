@@ -168,7 +168,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             decoration: InputDecoration(
                               labelText: 'Email',
                               labelStyle: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)),
-                              prefixIcon: const Icon(Icons.email, color: AppColors.primary),
+                              prefixIcon: Icon(Icons.email, color: context.palette.primary),
                               filled: true,
                               fillColor: Theme.of(context).brightness == Brightness.dark ? (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary).withValues(alpha: 0.1) : (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
                               border: OutlineInputBorder(
@@ -181,7 +181,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                                borderSide: BorderSide(color: context.palette.primary, width: 2),
                               ),
                             ),
                             validator: (value) {

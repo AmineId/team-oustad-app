@@ -71,9 +71,9 @@ class _UpdateAvailableDialog extends StatelessWidget {
               color: AppColors.info.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.system_update,
-              color: AppColors.info,
+              color: context.palette.info,
               size: 28,
             ),
           ),
@@ -118,7 +118,7 @@ class _UpdateAvailableDialog extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.warning, color: AppColors.error, size: 20),
+                    Icon(Icons.warning, color: context.palette.error, size: 20),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(

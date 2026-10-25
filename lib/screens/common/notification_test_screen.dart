@@ -274,7 +274,7 @@ class NotificationTestScreen extends StatelessWidget {
                     ),
                     child: Icon(
                       icon,
-                      color: AppColors.primary,
+                      color: context.palette.primary,
                       size: iconSize,
                     ),
                   ),
@@ -304,7 +304,7 @@ class NotificationTestScreen extends StatelessWidget {
                   ),
                   Icon(
                     Icons.arrow_forward_ios,
-                    color: AppColors.primary,
+                    color: context.palette.primary,
                     size: isWatch ? 12 : 16,
                   ),
                 ],
@@ -345,9 +345,9 @@ class NotificationTestScreen extends StatelessWidget {
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             ),
-            child: const Text(
+            child: Text(
               'OK',
-              style: TextStyle(color: AppColors.primary),
+              style: TextStyle(color: context.palette.primary),
             ),
           ),
         ],

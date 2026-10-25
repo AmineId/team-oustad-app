@@ -30,12 +30,12 @@ class NativeGlassTabBar extends StatelessWidget {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        Positioned(
+        const Positioned(
           left: 0,
           right: 0,
           bottom: 0,
           top: -56,
-          child: const IgnorePointer(
+          child: IgnorePointer(
             child: GlassBar(top: false, opacity: 0.45),
           ),
         ),

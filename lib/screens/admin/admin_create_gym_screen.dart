@@ -103,9 +103,9 @@ class _AdminCreateGymScreenState extends State<AdminCreateGymScreen> {
                       shape: BoxShape.circle,
                       color: AppColors.primary.withValues(alpha: 0.2),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.fitness_center,
-                      color: AppColors.primary,
+                      color: context.palette.primary,
                       size: 40,
                     ),
                   ),
@@ -118,7 +118,7 @@ class _AdminCreateGymScreenState extends State<AdminCreateGymScreen> {
                     decoration: InputDecoration(
                       labelText: 'Nom de la salle',
                       labelStyle: const TextStyle(color: Colors.white60),
-                      prefixIcon: const Icon(Icons.business, color: AppColors.primary),
+                      prefixIcon: Icon(Icons.business, color: context.palette.primary),
                       filled: true,
                       fillColor: Theme.of(context).cardTheme.color,
                       border: OutlineInputBorder(
@@ -143,7 +143,7 @@ class _AdminCreateGymScreenState extends State<AdminCreateGymScreen> {
                     decoration: InputDecoration(
                       labelText: 'Adresse',
                       labelStyle: const TextStyle(color: Colors.white60),
-                      prefixIcon: const Icon(Icons.location_on, color: AppColors.primary),
+                      prefixIcon: Icon(Icons.location_on, color: context.palette.primary),
                       filled: true,
                       fillColor: Theme.of(context).cardTheme.color,
                       border: OutlineInputBorder(
@@ -168,7 +168,7 @@ class _AdminCreateGymScreenState extends State<AdminCreateGymScreen> {
                     decoration: InputDecoration(
                       labelText: 'Téléphone (optionnel)',
                       labelStyle: const TextStyle(color: Colors.white60),
-                      prefixIcon: const Icon(Icons.phone, color: AppColors.primary),
+                      prefixIcon: Icon(Icons.phone, color: context.palette.primary),
                       filled: true,
                       fillColor: Theme.of(context).cardTheme.color,
                       border: OutlineInputBorder(

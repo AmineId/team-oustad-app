@@ -250,9 +250,9 @@ class _GymRulesScreenState extends State<GymRulesScreen> {
                             color: AppColors.primary.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.gavel,
-                            color: AppColors.primary,
+                            color: context.palette.primary,
                             size: 32,
                           ),
                         ),
@@ -368,7 +368,7 @@ class _GymRulesScreenState extends State<GymRulesScreen> {
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           child: Icon(
                             Icons.fitness_center,
-                            color: AppColors.primary,
+                            color: context.palette.primary,
                             size: 24,
                           ),
                         ),
@@ -410,7 +410,7 @@ class _GymRulesScreenState extends State<GymRulesScreen> {
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                           color: _isAccepted 
-                            ? AppColors.primary 
+                            ? context.palette.primary 
                             : Theme.of(context).dividerColor,
                           width: 2,
                         ),
@@ -435,7 +435,7 @@ class _GymRulesScreenState extends State<GymRulesScreen> {
                                   _isAccepted = value ?? false;
                                 });
                               },
-                              activeColor: AppColors.primary,
+                              activeColor: context.palette.primary,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(4),
                               ),
@@ -495,12 +495,12 @@ class _GymRulesScreenState extends State<GymRulesScreen> {
                                   strokeWidth: 2,
                                 ),
                               )
-                            : Row(
+                            : const Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Icon(Icons.check_circle, size: 24),
-                                  const SizedBox(width: 12),
-                                  const Text(
+                                  Icon(Icons.check_circle, size: 24),
+                                  SizedBox(width: 12),
+                                  Text(
                                     'Commencer',
                                     style: TextStyle(
                                       fontSize: 18,
@@ -564,7 +564,7 @@ class _GymRulesScreenState extends State<GymRulesScreen> {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.primary,
+                  color: context.palette.primary,
                 ),
                 textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
               ),

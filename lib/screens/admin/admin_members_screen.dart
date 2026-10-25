@@ -185,7 +185,7 @@ class _AdminMembersScreenState extends State<AdminMembersScreen> {
             }
           },
           backgroundColor: AppColors.primary,
-          child: const Icon(Icons.add, color: Colors.white),
+          child: Icon(Icons.add, color: context.palette.onPrimary),
         ),
       ),
       body: Container(
@@ -205,9 +205,9 @@ class _AdminMembersScreenState extends State<AdminMembersScreen> {
                   decoration: InputDecoration(
                     hintText: 'Rechercher un membre...',
                     hintStyle: const TextStyle(color: Colors.white60),
-                    prefixIcon: const Icon(
+                    prefixIcon: Icon(
                       Icons.search,
-                      color: AppColors.primary,
+                      color: context.palette.primary,
                     ),
                     suffixIcon: _searchController.text.isNotEmpty
                         ? IconButton(
@@ -233,9 +233,9 @@ class _AdminMembersScreenState extends State<AdminMembersScreen> {
               // Liste des membres
               Expanded(
                 child: _isLoading
-                    ? const Center(
+                    ? Center(
                         child: CircularProgressIndicator(
-                          color: AppColors.primary,
+                          color: context.palette.primary,
                         ),
                       )
                     : _errorMessage.isNotEmpty
@@ -243,9 +243,9 @@ class _AdminMembersScreenState extends State<AdminMembersScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.error_outline,
-                              color: AppColors.error,
+                              color: context.palette.error,
                               size: 48,
                             ),
                             const SizedBox(height: 16),
@@ -276,7 +276,7 @@ class _AdminMembersScreenState extends State<AdminMembersScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(
+                            const Icon(
                               Icons.person_off_outlined,
                               color: Colors.white60,
                               size: 48,
@@ -296,7 +296,7 @@ class _AdminMembersScreenState extends State<AdminMembersScreen> {
                       )
                     : RefreshIndicator(
                         onRefresh: _loadMembers,
-                        color: AppColors.primary,
+                        color: context.palette.primary,
                         child: ListView.builder(
                           padding: EdgeInsets.fromLTRB(16, 0, 16, 16 + MediaQuery.of(context).padding.bottom),
                           itemCount: _filteredMembers.length,
@@ -376,13 +376,13 @@ class _MemberCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: AppColors.primary.withValues(alpha: 0.2),
-                  border: Border.all(color: AppColors.primary, width: 2),
+                  border: Border.all(color: context.palette.primary, width: 2),
                 ),
                 child: Center(
                   child: Text(
                     initials,
-                    style: const TextStyle(
-                      color: AppColors.primary,
+                    style: TextStyle(
+                      color: context.palette.primary,
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
@@ -431,7 +431,7 @@ class _MemberCard extends StatelessWidget {
                         uniqueCode,
                         style: TextStyle(
                           color: Theme.of(context).brightness == Brightness.dark
-                              ? AppColors.primary
+                              ? context.palette.primary
                               : AppColors.primaryDark,
                           fontSize: 12,
                           fontWeight: FontWeight.w600,

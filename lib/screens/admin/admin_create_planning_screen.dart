@@ -177,15 +177,15 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
           backgroundColor: Theme.of(context).cardTheme.color,
           title: Row(
             children: [
-              Icon(Icons.check_circle, color: AppColors.success),
-              SizedBox(width: 8),
-              Text(
+              Icon(Icons.check_circle, color: context.palette.success),
+              const SizedBox(width: 8),
+              const Text(
                 'Succès',
                 style: TextStyle(color: Colors.white),
               ),
             ],
           ),
-          content: Text(
+          content: const Text(
             'Le planning a été créé avec succès',
             style: TextStyle(color: Colors.white),
           ),
@@ -195,9 +195,9 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
               style: TextButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               ),
-              child: const Text(
+              child: Text(
                 'OK',
-                style: TextStyle(color: AppColors.primary),
+                style: TextStyle(color: context.palette.primary),
               ),
             ),
           ],
@@ -229,9 +229,9 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
         backgroundColor: Theme.of(context).cardTheme.color,
         title: Row(
           children: [
-            Icon(Icons.error, color: AppColors.error),
-            SizedBox(width: 8),
-            Text(
+            Icon(Icons.error, color: context.palette.error),
+            const SizedBox(width: 8),
+            const Text(
               'Erreur',
               style: TextStyle(color: Colors.white),
             ),
@@ -247,9 +247,9 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             ),
-            child: const Text(
+            child: Text(
               'OK',
-              style: TextStyle(color: AppColors.primary),
+              style: TextStyle(color: context.palette.primary),
             ),
           ),
         ],
@@ -351,10 +351,10 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
                     onPressed: _isLoading ? null : details.onStepContinue,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
+                      foregroundColor: context.palette.onPrimary,
                     ),
                     child: _isLoading && _currentStep == 2
-                        ? SizedBox(
+                        ? const SizedBox(
                             height: 16,
                             width: 16,
                             child: CircularProgressIndicator(
@@ -425,7 +425,7 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
               borderSide: BorderSide(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.24)),
             ),
             focusedBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: AppColors.primary),
+              borderSide: BorderSide(color: context.palette.primary),
             ),
           ),
         ),
@@ -444,7 +444,7 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
               borderSide: BorderSide(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.24)),
             ),
             focusedBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: AppColors.primary),
+              borderSide: BorderSide(color: context.palette.primary),
             ),
           ),
         ),
@@ -500,7 +500,7 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
                 : 'Sélectionner une date',
             style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
           ),
-          trailing: const Icon(Icons.calendar_today, color: AppColors.primary),
+          trailing: Icon(Icons.calendar_today, color: context.palette.primary),
           onTap: () async {
             final date = await showDatePicker(
               context: context,
@@ -510,7 +510,7 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
               builder: (context, child) {
                 return Theme(
                   data: ThemeData.dark().copyWith(
-                    colorScheme: ColorScheme.dark(primary: AppColors.primary, surface: Theme.of(context).cardTheme.color ?? Colors.grey[900]!,
+                    colorScheme: ColorScheme.dark(primary: context.palette.primary, surface: Theme.of(context).cardTheme.color ?? Colors.grey[900]!,
                     ),
                   ),
                   child: child!,
@@ -542,7 +542,7 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
                 : 'Sélectionner une date',
             style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
           ),
-          trailing: const Icon(Icons.calendar_today, color: AppColors.primary),
+          trailing: Icon(Icons.calendar_today, color: context.palette.primary),
           onTap: () async {
             if (_startDate == null) {
               _showError('Veuillez d\'abord sélectionner une date de début');
@@ -557,7 +557,7 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
               builder: (context, child) {
                 return Theme(
                   data: ThemeData.dark().copyWith(
-                    colorScheme: ColorScheme.dark(primary: AppColors.primary, surface: Theme.of(context).cardTheme.color ?? Colors.grey[900]!,
+                    colorScheme: ColorScheme.dark(primary: context.palette.primary, surface: Theme.of(context).cardTheme.color ?? Colors.grey[900]!,
                     ),
                   ),
                   child: child!,
@@ -608,12 +608,12 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
                 });
               },
               selectedColor: AppColors.primary.withValues(alpha: 0.3),
-              checkmarkColor: AppColors.primary,
+              checkmarkColor: context.palette.primary,
               labelStyle: TextStyle(
-                color: isSelected ? AppColors.primary : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                color: isSelected ? context.palette.primary : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
               ),
               side: BorderSide(
-                color: isSelected ? AppColors.primary : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.24),
+                color: isSelected ? context.palette.primary : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.24),
               ),
             );
           }),
@@ -655,7 +655,7 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
                 '${selectedExercises.length} exercice(s) sélectionné(s)',
                 style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
               ),
-              iconColor: AppColors.primary,
+              iconColor: context.palette.primary,
               collapsedIconColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
               children: _allExercises.map((exercise) {
                 final exerciseId = exercise['id'] as int;
@@ -716,8 +716,8 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Text(
                 dayNames[dayOfWeek],
-                style: const TextStyle(
-                  color: AppColors.primary,
+                style: TextStyle(
+                  color: context.palette.primary,
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),

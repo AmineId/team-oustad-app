@@ -58,11 +58,11 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
   Map<String, dynamic>? _subscriptionData;
 
   final List<Widget> _pages = [
-    MemberDashboardPage(),
-    MemberQrCodePage(),
+    const MemberDashboardPage(),
+    const MemberQrCodePage(),
     // Programme d'entraînement + planning : captures d'écran bloquées
-    SecureScreen(child: MemberPlanningPage()),
-    MemberProfilePage(),
+    const SecureScreen(child: MemberPlanningPage()),
+    const MemberProfilePage(),
   ];
 
   @override
@@ -351,8 +351,8 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
                 Icon(
                   isUnlimited ? Icons.all_inclusive : Icons.fitness_center,
                   color: (isUnlimited || (sessionsRemaining ?? 0) > 5)
-                      ? AppColors.success
-                      : AppColors.warning,
+                      ? context.palette.success
+                      : context.palette.warning,
                   size: 20,
                 ),
                 const SizedBox(width: 6),
@@ -361,8 +361,8 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
                     isUnlimited ? '∞' : '$sessionsRemaining',
                     style: TextStyle(
                       color: (isUnlimited || (sessionsRemaining ?? 0) > 5)
-                          ? AppColors.success
-                          : AppColors.warning,
+                          ? context.palette.success
+                          : context.palette.warning,
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
                     ),
@@ -406,7 +406,7 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(
-          color: isActive ? AppColors.primary : Colors.transparent,
+          color: isActive ? context.palette.primary : Colors.transparent,
           width: 2,
         ),
       ),
@@ -424,7 +424,7 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
                     color: AppColors.primary.withValues(alpha: 0.2),
                     child: Icon(
                       Icons.person,
-                      color: isActive ? AppColors.primary : Colors.grey,
+                      color: isActive ? context.palette.primary : Colors.grey,
                       size: 24,
                     ),
                   );
@@ -434,7 +434,7 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
                 color: AppColors.primary.withValues(alpha: 0.2),
                 child: Icon(
                   Icons.person,
-                  color: isActive ? AppColors.primary : Colors.grey,
+                  color: isActive ? context.palette.primary : Colors.grey,
                   size: 24,
                 ),
               ),
@@ -522,14 +522,14 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
                   children: [
                     Icon(
                       Icons.storefront_rounded,
-                      color: AppColors.primary,
+                      color: context.palette.primary,
                       size: 20,
                     ),
                     const SizedBox(width: 6),
                     Text(
                       'Store',
                       style: TextStyle(
-                        color: AppColors.primary,
+                        color: context.palette.primary,
                         fontWeight: FontWeight.w600,
                         fontSize: 14,
                       ),
@@ -636,7 +636,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
               ),
             ),
             backgroundColor: AppColors.success,
-            duration: Duration(seconds: 2),
+            duration: const Duration(seconds: 2),
           ),
         );
       }
@@ -720,7 +720,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                   statusIcon = Icons.check_circle;
                 } else if (status == 'expired') {
                   statusText = l10n.subscriptionExpired;
-                  statusColor = AppColors.error;
+                  statusColor = context.palette.error;
                   statusIcon = Icons.cancel;
                 } else if (status == 'cancelled') {
                   statusText = l10n.subscriptionCancelled;
@@ -735,7 +735,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                 }
 
                 return ConstrainedBox(
-                  constraints: BoxConstraints(maxWidth: double.infinity),
+                  constraints: const BoxConstraints(maxWidth: double.infinity),
                   child: Card(
                     color: theme.colorScheme.primary,
                     elevation: 4,
@@ -743,7 +743,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Padding(
-                      padding: EdgeInsets.all(20.0),
+                      padding: const EdgeInsets.all(20.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -765,7 +765,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                                 Icon(statusIcon, color: statusColor, size: 28),
                             ],
                           ),
-                          SizedBox(height: 8),
+                          const SizedBox(height: 8),
                           Row(
                             children: [
                               if (status == 'unknown')
@@ -777,7 +777,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                                   size: 20,
                                 ),
                               if (status == 'unknown' || status == 'active')
-                                SizedBox(width: 8),
+                                const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
                                   statusText,
@@ -793,7 +793,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                             ],
                           ),
                           if (status == 'active' && expiresAt != null) ...[
-                            SizedBox(height: 12),
+                            const SizedBox(height: 12),
                             Row(
                               children: [
                                 Icon(
@@ -801,7 +801,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                                   color: theme.colorScheme.onPrimary,
                                   size: 18,
                                 ),
-                                SizedBox(width: 8),
+                                const SizedBox(width: 8),
                                 Text(
                                   '${AppLocalizations.of(context).expiresOn} ${_formatDate(expiresAt)}',
                                   style: TextStyle(
@@ -814,7 +814,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                             ),
                           ],
                           if (status == 'unknown') ...[
-                            SizedBox(height: 12),
+                            const SizedBox(height: 12),
                             Text(
                               AppLocalizations.of(context).visitReception,
                               style: TextStyle(
@@ -832,23 +832,23 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                 );
               },
             ),
-            SizedBox(height: 24),
+            const SizedBox(height: 24),
 
             // Gym information
             _buildSectionTitle(l10n.myGym),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             _buildGymCard(context),
-            SizedBox(height: 24),
+            const SizedBox(height: 24),
 
             // Next workout section
             _buildSectionTitle(l10n.myNextWorkout),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             _buildNextWorkoutCard(),
-            SizedBox(height: 24),
+            const SizedBox(height: 24),
 
             // Stats cards
             _buildSectionTitle(l10n.myStats),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             FutureBuilder<Map<String, dynamic>?>(
               future: _authService.getCachedUserProfile(),
               builder: (context, snapshot) {
@@ -876,7 +876,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                 if (!hasActiveSubscription) {
                   // Show motivational message for new members
                   return ConstrainedBox(
-                    constraints: BoxConstraints(maxWidth: double.infinity),
+                    constraints: const BoxConstraints(maxWidth: double.infinity),
                     child: Card(
                       color: Theme.of(context).cardTheme.color,
                       elevation: 4,
@@ -884,7 +884,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Padding(
-                        padding: EdgeInsets.all(24.0),
+                        padding: const EdgeInsets.all(24.0),
                         child: Column(
                           children: [
                             Icon(
@@ -892,7 +892,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                               size: 48,
                               color: Theme.of(context).colorScheme.primary,
                             ),
-                            SizedBox(height: 16),
+                            const SizedBox(height: 16),
                             Text(
                               l10n.yourJourneyStarts,
                               textAlign: TextAlign.center,
@@ -906,7 +906,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                                     : AppColors.lightTextPrimary),
                               ),
                             ),
-                            SizedBox(height: 8),
+                            const SizedBox(height: 8),
                             Text(
                               l10n.statsAppearWhenTraining,
                               textAlign: TextAlign.center,
@@ -934,16 +934,16 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                         l10n.visitsThisMonth,
                         '12',
                         Icons.calendar_today,
-                        AppColors.info,
+                        context.palette.info,
                       ),
                     ),
-                    SizedBox(width: 12),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: _buildStatCard(
                         l10n.totalVisits,
                         '148',
                         Icons.fitness_center,
-                        AppColors.success,
+                        context.palette.success,
                       ),
                     ),
                   ],
@@ -962,7 +962,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: double.infinity),
+            constraints: const BoxConstraints(maxWidth: double.infinity),
             child: Card(
               color: Theme.of(context).cardTheme.color,
               elevation: 4,
@@ -970,7 +970,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Padding(
-                padding: EdgeInsets.all(20.0),
+                padding: const EdgeInsets.all(20.0),
                 child: Center(
                   child: CircularProgressIndicator(
                     color: Theme.of(context).colorScheme.primary,
@@ -1007,7 +1007,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
               final hasActiveSubscription = subscription?['status'] == 'active';
 
               return ConstrainedBox(
-                constraints: BoxConstraints(maxWidth: double.infinity),
+                constraints: const BoxConstraints(maxWidth: double.infinity),
                 child: Card(
                   color: Theme.of(context).cardTheme.color,
                   elevation: 4,
@@ -1015,7 +1015,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Padding(
-                    padding: EdgeInsets.all(20.0),
+                    padding: const EdgeInsets.all(20.0),
                     child: Column(
                       children: [
                         Icon(
@@ -1029,7 +1029,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                                     : AppColors.lightTextSecondary)
                               : Theme.of(context).colorScheme.primary,
                         ),
-                        SizedBox(height: 12),
+                        const SizedBox(height: 12),
                         Text(
                           hasActiveSubscription
                               ? AppLocalizations.of(context).noWorkoutPlanned
@@ -1050,7 +1050,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                        SizedBox(height: 4),
+                        const SizedBox(height: 4),
                         Text(
                           hasActiveSubscription
                               ? AppLocalizations.of(context).coachWillAssign
@@ -1065,7 +1065,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                           ),
                         ),
                         if (!hasActiveSubscription) ...[
-                          SizedBox(height: 16),
+                          const SizedBox(height: 16),
                           ElevatedButton.icon(
                             onPressed: () {
                               // Navigate to subscription page or show contact message
@@ -1080,11 +1080,11 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                                   backgroundColor: Theme.of(
                                     context,
                                   ).colorScheme.primary,
-                                  duration: Duration(seconds: 3),
+                                  duration: const Duration(seconds: 3),
                                 ),
                               );
                             },
-                            icon: Icon(Icons.arrow_forward, size: 18),
+                            icon: const Icon(Icons.arrow_forward, size: 18),
                             label: Text(
                               AppLocalizations.of(
                                 context,
@@ -1099,7 +1099,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                                       Brightness.dark
                                   ? AppColors.darkTextPrimary
                                   : AppColors.lightTextPrimary),
-                              padding: EdgeInsets.symmetric(
+                              padding: const EdgeInsets.symmetric(
                                 vertical: 12,
                                 horizontal: 24,
                               ),
@@ -1132,7 +1132,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
 
         if (isToday) {
           workoutStatus = AppLocalizations.of(context).today;
-          statusColor = AppColors.success;
+          statusColor = context.palette.success;
           statusIcon = Icons.play_circle_outline;
         } else {
           // Formater la date pour afficher "Prochain : DD/MM"
@@ -1153,7 +1153,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
         }
 
         return ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: double.infinity),
+          constraints: const BoxConstraints(maxWidth: double.infinity),
           child: Card(
             color: Theme.of(context).cardTheme.color,
             elevation: 4,
@@ -1161,7 +1161,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
               borderRadius: BorderRadius.circular(16),
             ),
             child: Padding(
-              padding: EdgeInsets.all(20.0),
+              padding: const EdgeInsets.all(20.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -1169,14 +1169,14 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                   Row(
                     children: [
                       Container(
-                        padding: EdgeInsets.all(12),
+                        padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: statusColor.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Icon(statusIcon, color: statusColor, size: 28),
                       ),
-                      SizedBox(width: 16),
+                      const SizedBox(width: 16),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1194,11 +1194,11 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                                     : AppColors.lightTextPrimary),
                               ),
                             ),
-                            SizedBox(height: 4),
+                            const SizedBox(height: 4),
                             Row(
                               children: [
                                 Container(
-                                  padding: EdgeInsets.symmetric(
+                                  padding: const EdgeInsets.symmetric(
                                     horizontal: 8,
                                     vertical: 4,
                                   ),
@@ -1228,9 +1228,9 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                   ),
 
                   if (exercises.isNotEmpty) ...[
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     Divider(color: Theme.of(context).dividerColor),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
 
                     // Exercises preview (show first 3)
                     ...exercises.take(3).map((ex) {
@@ -1241,7 +1241,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                       final reps = exerciseData['reps'] as int?;
 
                       return Padding(
-                        padding: EdgeInsets.only(bottom: 12.0),
+                        padding: const EdgeInsets.only(bottom: 12.0),
                         child: Row(
                           children: [
                             Container(
@@ -1252,7 +1252,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                                 shape: BoxShape.circle,
                               ),
                             ),
-                            SizedBox(width: 12),
+                            const SizedBox(width: 12),
                             Expanded(
                               child: Text(
                                 exercise?['name'] ?? 'Exercice',
@@ -1285,7 +1285,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                     }),
 
                     if (exercises.length > 3) ...[
-                      SizedBox(height: 4),
+                      const SizedBox(height: 4),
                       Text(
                         '+${exercises.length - 3} autres exercices',
                         style: TextStyle(
@@ -1295,12 +1295,12 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                         ),
                       ),
                     ],
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
                         onPressed: () => _showNextWorkoutPopup(data),
-                        icon: Icon(Icons.visibility, size: 18),
+                        icon: const Icon(Icons.visibility, size: 18),
                         label: Text(AppLocalizations.of(context).viewDetails),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Theme.of(
@@ -1310,7 +1310,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                               (Theme.of(context).brightness == Brightness.dark
                               ? AppColors.darkTextPrimary
                               : AppColors.lightTextPrimary),
-                          padding: EdgeInsets.symmetric(
+                          padding: const EdgeInsets.symmetric(
                             vertical: 12,
                             horizontal: 24,
                           ),
@@ -1396,7 +1396,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
           child: Dialog(
             backgroundColor: Colors.transparent,
             child: Container(
-              constraints: BoxConstraints(maxHeight: 600),
+              constraints: const BoxConstraints(maxHeight: 600),
               decoration: BoxDecoration(
                 color: Theme.of(context).cardTheme.color,
                 borderRadius: BorderRadius.circular(20),
@@ -1406,10 +1406,10 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                 children: [
                   // Header
                   Container(
-                    padding: EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
                       color: Theme.of(context).cardTheme.color!,
-                      borderRadius: BorderRadius.only(
+                      borderRadius: const BorderRadius.only(
                         topLeft: Radius.circular(20),
                         topRight: Radius.circular(20),
                       ),
@@ -1417,7 +1417,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                     child: Row(
                       children: [
                         Container(
-                          padding: EdgeInsets.all(10),
+                          padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
                             color: Theme.of(
                               context,
@@ -1430,7 +1430,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                             size: 24,
                           ),
                         ),
-                        SizedBox(width: 12),
+                        const SizedBox(width: 12),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1448,7 +1448,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                                       : AppColors.lightTextPrimary),
                                 ),
                               ),
-                              SizedBox(height: 4),
+                              const SizedBox(height: 4),
                               Text(
                                 '${exercises.length} exercice${exercises.length > 1 ? 's' : ''} • $workoutStatus',
                                 style: TextStyle(
@@ -1482,7 +1482,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                     child: exercises.isEmpty
                         ? Center(
                             child: Padding(
-                              padding: EdgeInsets.all(32.0),
+                              padding: const EdgeInsets.all(32.0),
                               child: Text(
                                 'Aucun exercice prévu',
                                 style: TextStyle(
@@ -1499,7 +1499,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                           )
                         : ListView.builder(
                             shrinkWrap: true,
-                            padding: EdgeInsets.all(20),
+                            padding: const EdgeInsets.all(20),
                             itemCount: exercises.length,
                             itemBuilder: (context, index) {
                               final exerciseData =
@@ -1519,12 +1519,12 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
 
                               return Card(
                                 color: Theme.of(context).cardTheme.color,
-                                margin: EdgeInsets.only(bottom: 12),
+                                margin: const EdgeInsets.only(bottom: 12),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Padding(
-                                  padding: EdgeInsets.all(16.0),
+                                  padding: const EdgeInsets.all(16.0),
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
@@ -1555,7 +1555,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                                               ),
                                             ),
                                           ),
-                                          SizedBox(width: 12),
+                                          const SizedBox(width: 12),
                                           Expanded(
                                             child: Text(
                                               exercise?['name'] ?? 'Exercice',
@@ -1577,7 +1577,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                                       if (sets != null ||
                                           reps != null ||
                                           weight != null) ...[
-                                        SizedBox(height: 12),
+                                        const SizedBox(height: 12),
                                         Wrap(
                                           spacing: 12,
                                           runSpacing: 8,
@@ -1604,9 +1604,9 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                                         ),
                                       ],
                                       if (notes != null && notes.isNotEmpty) ...[
-                                        SizedBox(height: 12),
+                                        const SizedBox(height: 12),
                                         Container(
-                                          padding: EdgeInsets.all(12),
+                                          padding: const EdgeInsets.all(12),
                                           decoration: BoxDecoration(
                                             color: Theme.of(context)
                                                 .colorScheme
@@ -1630,7 +1630,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                                                     : AppColors
                                                           .lightTextSecondary),
                                               ),
-                                              SizedBox(width: 8),
+                                              const SizedBox(width: 8),
                                               Expanded(
                                                 child: Text(
                                                   notes,
@@ -1652,7 +1652,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                                           ),
                                         ),
                                       ],
-                                      SizedBox(height: 12),
+                                      const SizedBox(height: 12),
                                       SizedBox(
                                         width: double.infinity,
                                         child: OutlinedButton.icon(
@@ -1662,7 +1662,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                                               exercise?['name'] ?? 'Exercice',
                                             );
                                           },
-                                          icon: Icon(
+                                          icon: const Icon(
                                             Icons.help_outline,
                                             size: 18,
                                           ),
@@ -1680,7 +1680,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                                                 context,
                                               ).colorScheme.primary,
                                             ),
-                                            padding: EdgeInsets.symmetric(
+                                            padding: const EdgeInsets.symmetric(
                                               vertical: 10,
                                               horizontal: 20,
                                             ),
@@ -1710,7 +1710,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
 
   Widget _buildInfoChip(String label, String value, IconData icon) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
@@ -1719,7 +1719,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, size: 16, color: Theme.of(context).colorScheme.primary),
-          SizedBox(width: 6),
+          const SizedBox(width: 6),
           Text(
             '$label: ',
             style: TextStyle(
@@ -1772,17 +1772,17 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
             TextButton(
               onPressed: () => Navigator.pop(context, false),
               style: TextButton.styleFrom(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
-              child: Text('Annuler'),
+              child: const Text('Annuler'),
             ),
             ElevatedButton(
               onPressed: () => Navigator.pop(context, true),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).colorScheme.primary,
-                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
-              child: Text('Confirmer'),
+              child: const Text('Confirmer'),
             ),
           ],
         );
@@ -1796,7 +1796,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
       if (token == null) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
+            const SnackBar(
               content: Text('Erreur: Non authentifié'),
               backgroundColor: AppColors.error,
             ),
@@ -1847,7 +1847,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
           textColor: Theme.of(context).colorScheme.primary,
           onPressed: onRetry,
         ),
-        duration: Duration(seconds: 4),
+        duration: const Duration(seconds: 4),
       ),
     );
   }
@@ -1911,7 +1911,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
           return Card(
             color: Theme.of(context).cardTheme.color,
             child: Padding(
-              padding: EdgeInsets.all(20.0),
+              padding: const EdgeInsets.all(20.0),
               child: Center(
                 child: CircularProgressIndicator(
                   color: Theme.of(context).colorScheme.primary,
@@ -1926,7 +1926,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
           return Card(
             color: Theme.of(context).cardTheme.color,
             child: Padding(
-              padding: EdgeInsets.all(20.0),
+              padding: const EdgeInsets.all(20.0),
               child: Text(
                 AppLocalizations.of(context).noGymAssigned,
                 style: TextStyle(
@@ -1948,18 +1948,18 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                 end: Alignment.bottomRight,
                 colors: [
                   Theme.of(context).brightness == Brightness.dark
-                      ? Color(0xFF2A2D3A)
-                      : Color(0xFFF5F5F7),
+                      ? const Color(0xFF2A2D3A)
+                      : const Color(0xFFF5F5F7),
                   Theme.of(context).brightness == Brightness.dark
-                      ? Color(0xFF1F2128)
-                      : Color(0xFFFFFFFF),
+                      ? const Color(0xFF1F2128)
+                      : const Color(0xFFFFFFFF),
                 ],
               ),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
                 color: Theme.of(context).brightness == Brightness.dark
-                    ? Color(0xFF3A3D4A).withValues(alpha: 0.5)
-                    : Color(0xFFE0E0E0),
+                    ? const Color(0xFF3A3D4A).withValues(alpha: 0.5)
+                    : const Color(0xFFE0E0E0),
                 width: 1,
               ),
               boxShadow: [
@@ -1968,7 +1968,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                       ? Colors.black.withValues(alpha: 0.3)
                       : Colors.black.withValues(alpha: 0.08),
                   blurRadius: 12,
-                  offset: Offset(0, 4),
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
@@ -1978,20 +1978,20 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                 onTap: () => _showGymDetails(context, gym),
                 borderRadius: BorderRadius.circular(20),
                 child: Padding(
-                  padding: EdgeInsets.all(20.0),
+                  padding: const EdgeInsets.all(20.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
                           Container(
-                            padding: EdgeInsets.all(14),
+                            padding: const EdgeInsets.all(14),
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                                 colors: [
-                                  AppColors.primary,
+                                  context.palette.primary,
                                   AppColors.primary.withValues(alpha: 0.7),
                                 ],
                               ),
@@ -2002,17 +2002,17 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                                     alpha: 0.3,
                                   ),
                                   blurRadius: 8,
-                                  offset: Offset(0, 2),
+                                  offset: const Offset(0, 2),
                                 ),
                               ],
                             ),
-                            child: Icon(
+                            child: const Icon(
                               Icons.fitness_center,
                               color: Colors.white,
                               size: 28,
                             ),
                           ),
-                          SizedBox(width: 16),
+                          const SizedBox(width: 16),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -2031,7 +2031,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                                     letterSpacing: 0.3,
                                   ),
                                 ),
-                                SizedBox(height: 6),
+                                const SizedBox(height: 6),
                                 Row(
                                   children: [
                                     Icon(
@@ -2043,7 +2043,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                                           ? AppColors.darkTextSecondary
                                           : AppColors.lightTextSecondary),
                                     ),
-                                    SizedBox(width: 6),
+                                    const SizedBox(width: 6),
                                     Expanded(
                                       child: Text(
                                         gym['address'] ??
@@ -2079,7 +2079,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                           ),
                         ],
                       ),
-                      SizedBox(height: 18),
+                      const SizedBox(height: 18),
 
                       Row(
                         children: [
@@ -2088,19 +2088,19 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
                               Icons.access_time,
                               'Horaires',
                               Theme.of(context).brightness == Brightness.dark
-                                  ? Color(0xFF3A8BFF)
-                                  : Color(0xFF2196F3),
+                                  ? const Color(0xFF3A8BFF)
+                                  : const Color(0xFF2196F3),
                               onTap: null,
                             ),
                           ),
-                          SizedBox(width: 12),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: _buildGymInfoChip(
                               Icons.navigation,
                               'Navigation',
                               Theme.of(context).brightness == Brightness.dark
-                                  ? Color(0xFF4CAF50)
-                                  : Color(0xFF2E7D32),
+                                  ? const Color(0xFF4CAF50)
+                                  : const Color(0xFF2E7D32),
                               onTap: () => _openInGoogleMaps(
                                 gym['address'] ?? '',
                                 gym['name'],
@@ -2169,7 +2169,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final chip = Container(
-      padding: EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
       decoration: BoxDecoration(
         color: color.withValues(alpha: isDark ? 0.2 : 0.15),
         borderRadius: BorderRadius.circular(12),
@@ -2182,7 +2182,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(icon, size: 18, color: color),
-          SizedBox(width: 8),
+          const SizedBox(width: 8),
           Text(
             label,
             style: TextStyle(
@@ -2214,7 +2214,7 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Theme.of(context).cardTheme.color,
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) => GymDetailsBottomSheet(gym: gym),
@@ -2355,7 +2355,7 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
         // No cache and no connectivity
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Pas de connexion et aucun QR code en cache'),
             backgroundColor: AppColors.warning,
           ),
@@ -2501,7 +2501,7 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
                     : AppColors.lightTextPrimary),
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Text(
               AppLocalizations.of(context).scanAtEntrance,
               style: TextStyle(
@@ -2514,18 +2514,18 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
 
             // Connectivity status indicator
             if (!_isCheckingConnectivity) ...[
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
                   color:
-                      (_hasConnectivity ? AppColors.success : AppColors.warning)
+                      (_hasConnectivity ? context.palette.success : context.palette.warning)
                           .withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
                     color: _hasConnectivity
-                        ? AppColors.success
-                        : AppColors.warning,
+                        ? context.palette.success
+                        : context.palette.warning,
                     width: 1,
                   ),
                 ),
@@ -2535,17 +2535,17 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
                     Icon(
                       _hasConnectivity ? Icons.wifi : Icons.wifi_off,
                       color: _hasConnectivity
-                          ? AppColors.success
-                          : AppColors.warning,
+                          ? context.palette.success
+                          : context.palette.warning,
                       size: 16,
                     ),
-                    SizedBox(width: 8),
+                    const SizedBox(width: 8),
                     Text(
                       _hasConnectivity ? 'En ligne' : 'Hors ligne',
                       style: TextStyle(
                         color: _hasConnectivity
-                            ? AppColors.success
-                            : AppColors.warning,
+                            ? context.palette.success
+                            : context.palette.warning,
                         fontWeight: FontWeight.w600,
                         fontSize: 13,
                       ),
@@ -2555,18 +2555,18 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
               ),
             ],
 
-            SizedBox(height: 40),
+            const SizedBox(height: 40),
 
             // Show QR Code or Button
             if (_isLoading)
               Container(
-                padding: EdgeInsets.all(40),
+                padding: const EdgeInsets.all(40),
                 child: Column(
                   children: [
                     CircularProgressIndicator(
                       color: Theme.of(context).colorScheme.primary,
                     ),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     Text(
                       AppLocalizations.of(context).loadingQrCode,
                       style: TextStyle(
@@ -2585,30 +2585,30 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
                   // Offline indicator on QR card if applicable
                   if (_isFromCache)
                     Container(
-                      margin: EdgeInsets.only(bottom: 12),
-                      padding: EdgeInsets.symmetric(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.symmetric(
                         horizontal: 16,
                         vertical: 10,
                       ),
                       decoration: BoxDecoration(
                         color: AppColors.info.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.info, width: 1),
+                        border: Border.all(color: context.palette.info, width: 1),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
                             Icons.info_outline,
-                            color: AppColors.info,
+                            color: context.palette.info,
                             size: 18,
                           ),
-                          SizedBox(width: 8),
+                          const SizedBox(width: 8),
                           Flexible(
                             child: Text(
                               'QR code chargé depuis le cache',
                               style: TextStyle(
-                                color: AppColors.info,
+                                color: context.palette.info,
                                 fontSize: 13,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -2625,11 +2625,11 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Padding(
-                      padding: EdgeInsets.all(24.0),
+                      padding: const EdgeInsets.all(24.0),
                       child: Column(
                         children: [
                           Container(
-                            padding: EdgeInsets.all(20),
+                            padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(
                               color:
                                   (Theme.of(context).brightness ==
@@ -2645,7 +2645,7 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
                               fit: BoxFit.contain,
                             ),
                           ),
-                          SizedBox(height: 24),
+                          const SizedBox(height: 24),
                           Text(
                             _profileData != null
                                 ? getUserFullName(_profileData!)
@@ -2661,9 +2661,9 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
                             ),
                             textAlign: TextAlign.center,
                           ),
-                          SizedBox(height: 12),
+                          const SizedBox(height: 12),
                           Container(
-                            padding: EdgeInsets.symmetric(
+                            padding: const EdgeInsets.symmetric(
                               horizontal: 20,
                               vertical: 10,
                             ),
@@ -2691,7 +2691,7 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
                               ),
                             ),
                           ),
-                          SizedBox(height: 16),
+                          const SizedBox(height: 16),
                           Text(
                             AppLocalizations.of(context).presentThisCode,
                             style: TextStyle(
@@ -2709,13 +2709,13 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
                       ),
                     ),
                   ),
-                  SizedBox(height: 24),
+                  const SizedBox(height: 24),
                   OutlinedButton.icon(
                     onPressed: _toggleQrCode,
-                    icon: Icon(Icons.visibility_off, size: 24),
+                    icon: const Icon(Icons.visibility_off, size: 24),
                     label: Text(
                       AppLocalizations.of(context).hideQrCode,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
@@ -2726,7 +2726,7 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
                         color: Theme.of(context).colorScheme.primary,
                         width: 2,
                       ),
-                      padding: EdgeInsets.symmetric(
+                      padding: const EdgeInsets.symmetric(
                         horizontal: 32,
                         vertical: 16,
                       ),
@@ -2740,10 +2740,10 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
             else
               ElevatedButton.icon(
                 onPressed: _toggleQrCode,
-                icon: Icon(Icons.qr_code_2, size: 32),
+                icon: const Icon(Icons.qr_code_2, size: 32),
                 label: Text(
                   AppLocalizations.of(context).showMyQrCode,
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).colorScheme.primary,
@@ -2751,7 +2751,7 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
                       (Theme.of(context).brightness == Brightness.dark
                       ? AppColors.darkTextPrimary
                       : AppColors.lightTextPrimary),
-                  padding: EdgeInsets.symmetric(horizontal: 32, vertical: 20),
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
@@ -2763,7 +2763,7 @@ class _MemberQrCodePageState extends State<MemberQrCodePage> {
               ),
 
             if (!_showQrCode && !_isLoading) ...[
-              SizedBox(height: 40),
+              const SizedBox(height: 40),
               Text(
                 AppLocalizations.of(context).presentQrToStaff,
                 textAlign: TextAlign.center,
@@ -2803,7 +2803,7 @@ class MemberSubscriptionPage extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
             ),
             child: Padding(
-              padding: EdgeInsets.all(20.0),
+              padding: const EdgeInsets.all(20.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -2822,7 +2822,7 @@ class MemberSubscriptionPage extends StatelessWidget {
                         ),
                       ),
                       Container(
-                        padding: EdgeInsets.symmetric(
+                        padding: const EdgeInsets.symmetric(
                           horizontal: 12,
                           vertical: 6,
                         ),
@@ -2844,7 +2844,7 @@ class MemberSubscriptionPage extends StatelessWidget {
                       ),
                     ],
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   _buildSubscriptionDetail(context, 'Type', 'Mensuel'),
                   _buildSubscriptionDetail(context, 'Prix', '50 MAD / mois'),
                   _buildSubscriptionDetail(
@@ -2861,14 +2861,14 @@ class MemberSubscriptionPage extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(height: 24),
+          const SizedBox(height: 24),
 
           // Payment history
           _memberSectionTitle(
             context,
             AppLocalizations.of(context).paymentHistory,
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           _buildPaymentItem(context, 'Nov 2025', '50 MAD', '1 Nov 2025', true),
           _buildPaymentItem(context, 'Oct 2025', '50 MAD', '1 Oct 2025', true),
           _buildPaymentItem(context, 'Sep 2025', '50 MAD', '1 Sep 2025', true),
@@ -2883,7 +2883,7 @@ class MemberSubscriptionPage extends StatelessWidget {
     String value,
   ) {
     return Padding(
-      padding: EdgeInsets.only(bottom: 8.0),
+      padding: const EdgeInsets.only(bottom: 8.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -2921,11 +2921,11 @@ class MemberSubscriptionPage extends StatelessWidget {
     return Card(
       color: Theme.of(context).cardTheme.color,
       elevation: 2,
-      margin: EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ListTile(
         leading: Container(
-          padding: EdgeInsets.all(8),
+          padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             color: paid
                 ? Colors.green.withValues(alpha: 0.7)
@@ -2934,7 +2934,7 @@ class MemberSubscriptionPage extends StatelessWidget {
           ),
           child: Icon(
             paid ? Icons.check_circle : Icons.pending,
-            color: paid ? AppColors.success : AppColors.error,
+            color: paid ? context.palette.success : context.palette.error,
             size: 24,
           ),
         ),
@@ -3025,7 +3025,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
           textColor: Theme.of(context).colorScheme.primary,
           onPressed: onRetry,
         ),
-        duration: Duration(seconds: 4),
+        duration: const Duration(seconds: 4),
       ),
     );
   }
@@ -3286,7 +3286,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                       label: const Text('Voir les détails'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
-                        foregroundColor: AppColors.primary,
+                        foregroundColor: context.palette.primary,
                         elevation: 0,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(
@@ -3319,7 +3319,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
         return Dialog(
           backgroundColor: Colors.transparent,
           child: Container(
-            constraints: BoxConstraints(maxHeight: 600),
+            constraints: const BoxConstraints(maxHeight: 600),
             decoration: BoxDecoration(
               color: Theme.of(context).cardTheme.color,
               borderRadius: BorderRadius.circular(20),
@@ -3329,10 +3329,10 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
               children: [
                 // Header
                 Container(
-                  padding: EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     color: Theme.of(context).cardTheme.color!,
-                    borderRadius: BorderRadius.only(
+                    borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(20),
                       topRight: Radius.circular(20),
                     ),
@@ -3340,18 +3340,18 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                   child: Row(
                     children: [
                       Container(
-                        padding: EdgeInsets.all(10),
+                        padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
                           color: Colors.green.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Icon(
                           Icons.fitness_center,
-                          color: AppColors.success,
+                          color: context.palette.success,
                           size: 24,
                         ),
                       ),
-                      SizedBox(width: 12),
+                      const SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -3369,7 +3369,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                     : AppColors.lightTextPrimary),
                               ),
                             ),
-                            SizedBox(height: 4),
+                            const SizedBox(height: 4),
                             Text(
                               '${exercises.length} exercice${exercises.length > 1 ? 's' : ''} • Aujourd\'hui',
                               style: TextStyle(
@@ -3403,7 +3403,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                   child: exercises.isEmpty
                       ? Center(
                           child: Padding(
-                            padding: EdgeInsets.all(32.0),
+                            padding: const EdgeInsets.all(32.0),
                             child: Text(
                               AppLocalizations.of(context).noExercisePlanned,
                               style: TextStyle(
@@ -3420,7 +3420,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                         )
                       : ListView.builder(
                           shrinkWrap: true,
-                          padding: EdgeInsets.all(16),
+                          padding: const EdgeInsets.all(16),
                           itemCount: exercises.length,
                           itemBuilder: (context, index) {
                             final exerciseData =
@@ -3434,8 +3434,8 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                             final notes = exerciseData['notes'] as String?;
 
                             return Container(
-                              margin: EdgeInsets.only(bottom: 12),
-                              padding: EdgeInsets.all(16),
+                              margin: const EdgeInsets.only(bottom: 12),
+                              padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
                                 color: Theme.of(context).cardTheme.color,
                                 borderRadius: BorderRadius.circular(12),
@@ -3446,7 +3446,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                   Row(
                                     children: [
                                       Container(
-                                        padding: EdgeInsets.all(8),
+                                        padding: const EdgeInsets.all(8),
                                         decoration: BoxDecoration(
                                           color: Theme.of(context)
                                               .colorScheme
@@ -3467,7 +3467,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                           ),
                                         ),
                                       ),
-                                      SizedBox(width: 12),
+                                      const SizedBox(width: 12),
                                       Expanded(
                                         child: Text(
                                           exercise?['name'] ?? 'Exercice',
@@ -3484,7 +3484,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                       ),
                                     ],
                                   ),
-                                  SizedBox(height: 12),
+                                  const SizedBox(height: 12),
                                   Wrap(
                                     spacing: 12,
                                     runSpacing: 8,
@@ -3507,9 +3507,9 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                     ],
                                   ),
                                   if (notes != null && notes.isNotEmpty) ...[
-                                    SizedBox(height: 12),
+                                    const SizedBox(height: 12),
                                     Container(
-                                      padding: EdgeInsets.all(10),
+                                      padding: const EdgeInsets.all(10),
                                       decoration: BoxDecoration(
                                         color: Theme.of(
                                           context,
@@ -3523,7 +3523,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                             size: 16,
                                             color: Colors.blue.shade300,
                                           ),
-                                          SizedBox(width: 8),
+                                          const SizedBox(width: 8),
                                           Expanded(
                                             child: Text(
                                               notes,
@@ -3546,7 +3546,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                       ),
                                     ),
                                   ],
-                                  SizedBox(height: 12),
+                                  const SizedBox(height: 12),
                                   SizedBox(
                                     width: double.infinity,
                                     child: OutlinedButton.icon(
@@ -3556,7 +3556,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                           exercise?['name'] ?? 'Exercice',
                                         );
                                       },
-                                      icon: Icon(Icons.help_outline, size: 18),
+                                      icon: const Icon(Icons.help_outline, size: 18),
                                       label: Text(
                                         AppLocalizations.of(
                                           context,
@@ -3576,7 +3576,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                             8,
                                           ),
                                         ),
-                                        padding: EdgeInsets.symmetric(
+                                        padding: const EdgeInsets.symmetric(
                                           vertical: 10,
                                           horizontal: 20,
                                         ),
@@ -3614,11 +3614,11 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
   Color _getStatusColor(String status) {
     switch (status) {
       case 'active':
-        return AppColors.success;
+        return context.palette.success;
       case 'completed':
-        return AppColors.info;
+        return context.palette.info;
       case 'cancelled':
-        return AppColors.error;
+        return context.palette.error;
       default:
         return Colors.grey;
     }
@@ -3642,8 +3642,8 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: AppColors.primary),
+      return Center(
+        child: CircularProgressIndicator(color: context.palette.primary),
       );
     }
 
@@ -3652,7 +3652,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline, size: 60, color: AppColors.error),
+            Icon(Icons.error_outline, size: 60, color: context.palette.error),
             const SizedBox(height: 16),
             Text(
               _errorMessage!,
@@ -3679,7 +3679,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
 
     return RefreshIndicator(
       onRefresh: _loadPlannings,
-      color: AppColors.primary,
+      color: context.palette.primary,
       notificationPredicate: (n) => !_isRefreshing,
       child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -3811,7 +3811,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold,
                                 color: isSelected
-                                    ? AppColors.primary
+                                    ? context.palette.primary
                                     : Colors.white,
                               ),
                             ),
@@ -3866,12 +3866,12 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? AppColors.primary
+                    ? context.palette.primary
                     : (isDark ? AppColors.darkCard : AppColors.lightCard),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
                   color: isSelected
-                      ? AppColors.primary
+                      ? context.palette.primary
                       : (isDark
                             ? AppColors.darkBorder
                             : AppColors.lightBorder),
@@ -4039,7 +4039,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
         : '?';
 
     final statusColor =
-        isUpcoming ? AppColors.warning : _getStatusColor(status);
+        isUpcoming ? context.palette.warning : _getStatusColor(status);
     final statusLabel = isUpcoming
         ? AppLocalizations.of(context).upcoming
         : _getStatusText(status);
@@ -4211,19 +4211,19 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.fitness_center,
                             size: 11,
-                            color: AppColors.primary,
+                            color: context.palette.primary,
                           ),
                           const SizedBox(width: 4),
                           Text(
                             AppLocalizations.of(context).trainingDays(
                               days.length,
                             ),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 11,
-                              color: AppColors.primary,
+                              color: context.palette.primary,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -4249,9 +4249,9 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                       });
                     },
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.primary,
-                      side: const BorderSide(
-                        color: AppColors.primary,
+                      foregroundColor: context.palette.primary,
+                      side: BorderSide(
+                        color: context.palette.primary,
                         width: 1.5,
                       ),
                       shape: RoundedRectangleBorder(
@@ -4267,14 +4267,14 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                           style: GoogleFonts.barlow(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
-                            color: AppColors.primary,
+                            color: context.palette.primary,
                           ),
                         ),
                         const SizedBox(width: 6),
-                        const Icon(
+                        Icon(
                           Icons.arrow_forward_rounded,
                           size: 15,
-                          color: AppColors.primary,
+                          color: context.palette.primary,
                         ),
                       ],
                     ),
@@ -4293,7 +4293,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Icon(icon, size: 16, color: Theme.of(context).colorScheme.primary),
-        SizedBox(width: 6),
+        const SizedBox(width: 6),
         Text(
           text,
           style: TextStyle(
@@ -4320,11 +4320,11 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
 
     // Define ultra-modern gradient colors based on index
     final List<List<Color>> gradients = [
-      [Color(0xFF8B5CF6), Color(0xFFEC4899)], // Purple to Pink - Vibrant
-      [Color(0xFF06B6D4), Color(0xFF3B82F6)], // Cyan to Blue - Fresh
-      [Color(0xFFF59E0B), Color(0xFFEF4444)], // Amber to Red - Energy
-      [Color(0xFF10B981), Color(0xFF059669)], // Emerald to Green - Growth
-      [Color(0xFFEC4899), Color(0xFF8B5CF6)], // Pink to Purple - Dynamic
+      [const Color(0xFF8B5CF6), const Color(0xFFEC4899)], // Purple to Pink - Vibrant
+      [const Color(0xFF06B6D4), const Color(0xFF3B82F6)], // Cyan to Blue - Fresh
+      [const Color(0xFFF59E0B), const Color(0xFFEF4444)], // Amber to Red - Energy
+      [const Color(0xFF10B981), const Color(0xFF059669)], // Emerald to Green - Growth
+      [const Color(0xFFEC4899), const Color(0xFF8B5CF6)], // Pink to Purple - Dynamic
     ];
 
     final gradientColors = gradients[index % gradients.length];
@@ -4338,18 +4338,18 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
       case 'achieved':
         statusIcon = Icons.stars_rounded;
         statusText = 'Atteint';
-        statusBgColor = Color(0xFF10B981);
+        statusBgColor = const Color(0xFF10B981);
         break;
       case 'in_progress':
         statusIcon = Icons.trending_up_rounded;
         statusText = 'En cours';
-        statusBgColor = Color(0xFFF59E0B);
+        statusBgColor = const Color(0xFFF59E0B);
         break;
       case 'active':
       default:
         statusIcon = Icons.flag_rounded;
         statusText = 'Actif';
-        statusBgColor = Color(0xFF3B82F6);
+        statusBgColor = const Color(0xFF3B82F6);
         break;
     }
 
@@ -4379,7 +4379,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                 BoxShadow(
                   color: gradientColors[0].withValues(alpha: 0.4),
                   blurRadius: 12,
-                  offset: Offset(0, 4),
+                  offset: const Offset(0, 4),
                   spreadRadius: -2,
                 ),
               ],
@@ -4426,7 +4426,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                     ),
                     // Content
                     Padding(
-                      padding: EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -4435,7 +4435,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                             children: [
                               // Status badge compact
                               Container(
-                                padding: EdgeInsets.symmetric(
+                                padding: const EdgeInsets.symmetric(
                                   horizontal: 10,
                                   vertical: 6,
                                 ),
@@ -4455,7 +4455,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                       size: 14,
                                       color: Theme.of(context).colorScheme.onSurface,
                                     ),
-                                    SizedBox(width: 4),
+                                    const SizedBox(width: 4),
                                     Text(
                                       statusText,
                                       style: TextStyle(
@@ -4467,7 +4467,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                   ],
                                 ),
                               ),
-                              SizedBox(width: 12),
+                              const SizedBox(width: 12),
                               // Title
                               Expanded(
                                 child: Text(
@@ -4482,10 +4482,10 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                              SizedBox(width: 8),
+                              const SizedBox(width: 8),
                               // Icon
                               Container(
-                                padding: EdgeInsets.all(8),
+                                padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
                                   color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2),
                                   shape: BoxShape.circle,
@@ -4498,7 +4498,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                               ),
                             ],
                           ),
-                          SizedBox(height: 8),
+                          const SizedBox(height: 8),
                           // Description
                           if (goalDescription.isNotEmpty)
                             Text(
@@ -4511,11 +4511,11 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
-                          SizedBox(height: 12),
+                          const SizedBox(height: 12),
                           // Measurements compact horizontal
                           if (startWeight != null || startWaist != null)
                             Container(
-                              padding: EdgeInsets.symmetric(
+                              padding: const EdgeInsets.symmetric(
                                 horizontal: 12,
                                 vertical: 10,
                               ),
@@ -4543,7 +4543,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                               color: Theme.of(context).colorScheme.onSurface,
                                               size: 16,
                                             ),
-                                            SizedBox(width: 4),
+                                            const SizedBox(width: 4),
                                             Text(
                                               '$startWeight',
                                               style: TextStyle(
@@ -4552,7 +4552,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                                 color: Theme.of(context).colorScheme.onSurface,
                                               ),
                                             ),
-                                            SizedBox(width: 2),
+                                            const SizedBox(width: 2),
                                             Text(
                                               'kg',
                                               style: TextStyle(
@@ -4587,7 +4587,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                               color: Theme.of(context).colorScheme.onSurface,
                                               size: 16,
                                             ),
-                                            SizedBox(width: 4),
+                                            const SizedBox(width: 4),
                                             Text(
                                               '$startWaist',
                                               style: TextStyle(
@@ -4596,7 +4596,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                                 color: Theme.of(context).colorScheme.onSurface,
                                               ),
                                             ),
-                                            SizedBox(width: 2),
+                                            const SizedBox(width: 2),
                                             Text(
                                               'cm',
                                               style: TextStyle(
@@ -4616,9 +4616,9 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                             ),
                           // Target measurements
                           if (targetWeight != null || targetWaist != null) ...[
-                            SizedBox(height: 8),
+                            const SizedBox(height: 8),
                             Container(
-                              padding: EdgeInsets.symmetric(
+                              padding: const EdgeInsets.symmetric(
                                 horizontal: 12,
                                 vertical: 10,
                               ),
@@ -4642,7 +4642,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                           color: Theme.of(context).colorScheme.onSurface,
                                           size: 16,
                                         ),
-                                        SizedBox(width: 6),
+                                        const SizedBox(width: 6),
                                         Text(
                                           '$targetWeight',
                                           style: TextStyle(
@@ -4651,7 +4651,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                             color: Theme.of(context).colorScheme.onSurface,
                                           ),
                                         ),
-                                        SizedBox(width: 2),
+                                        const SizedBox(width: 2),
                                         Text(
                                           'kg',
                                           style: TextStyle(
@@ -4681,7 +4681,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                           color: Theme.of(context).colorScheme.onSurface,
                                           size: 16,
                                         ),
-                                        SizedBox(width: 6),
+                                        const SizedBox(width: 6),
                                         Text(
                                           '$targetWaist',
                                           style: TextStyle(
@@ -4690,7 +4690,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                             color: Theme.of(context).colorScheme.onSurface,
                                           ),
                                         ),
-                                        SizedBox(width: 2),
+                                        const SizedBox(width: 2),
                                         Text(
                                           'cm',
                                           style: TextStyle(
@@ -4709,7 +4709,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                           ],
                           // Dates (sans createdAt)
                           if (achievedAt != null || targetDate != null) ...[
-                            SizedBox(height: 8),
+                            const SizedBox(height: 8),
                             Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
@@ -4718,7 +4718,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                   color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.9),
                                   size: 14,
                                 ),
-                                SizedBox(width: 6),
+                                const SizedBox(width: 6),
                                 Expanded(
                                   child: Text(
                                     achievedAt != null
@@ -4788,7 +4788,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
-          borderRadius: BorderRadius.only(
+          borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(24),
             topRight: Radius.circular(24),
           ),
@@ -4825,11 +4825,11 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
               children: [
                 // Header
                 Padding(
-                  padding: EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(20),
                   child: Row(
                     children: [
                       Container(
-                        padding: EdgeInsets.symmetric(
+                        padding: const EdgeInsets.symmetric(
                           horizontal: 12,
                           vertical: 8,
                         ),
@@ -4845,7 +4845,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(statusIcon, size: 16, color: Theme.of(context).colorScheme.onSurface),
-                            SizedBox(width: 6),
+                            const SizedBox(width: 6),
                             Text(
                               statusText,
                               style: TextStyle(
@@ -4857,7 +4857,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                           ],
                         ),
                       ),
-                      Spacer(),
+                      const Spacer(),
                       IconButton(
                         tooltip: 'Fermer',
                         onPressed: () => Navigator.pop(context),
@@ -4873,13 +4873,13 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                 // Scrollable content
                 Expanded(
                   child: SingleChildScrollView(
-                    padding: EdgeInsets.symmetric(horizontal: 24),
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Icon
                         Container(
-                          padding: EdgeInsets.all(16),
+                          padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
                             color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2),
                             shape: BoxShape.circle,
@@ -4890,7 +4890,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                             size: 32,
                           ),
                         ),
-                        SizedBox(height: 20),
+                        const SizedBox(height: 20),
                         // Title
                         Text(
                           goalTitle,
@@ -4901,7 +4901,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                             height: 1.2,
                           ),
                         ),
-                        SizedBox(height: 16),
+                        const SizedBox(height: 16),
                         // Description
                         if (goalDescription.isNotEmpty) ...[
                           Text(
@@ -4912,14 +4912,14 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                               height: 1.6,
                             ),
                           ),
-                          SizedBox(height: 20),
+                          const SizedBox(height: 20),
                         ],
                         // Dates
                         if (createdAt != null ||
                             targetDate != null ||
                             achievedAt != null) ...[
                           Container(
-                            padding: EdgeInsets.all(16),
+                            padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
                               color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(12),
@@ -4939,7 +4939,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                         color: Theme.of(context).colorScheme.onSurface,
                                         size: 20,
                                       ),
-                                      SizedBox(width: 12),
+                                      const SizedBox(width: 12),
                                       Text(
                                         'Créé le ${_formatDate(createdAt)}',
                                         style: TextStyle(
@@ -4951,7 +4951,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                     ],
                                   ),
                                 if (createdAt != null && targetDate != null)
-                                  SizedBox(height: 8),
+                                  const SizedBox(height: 8),
                                 if (targetDate != null)
                                   Row(
                                     children: [
@@ -4960,7 +4960,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                         color: Theme.of(context).colorScheme.onSurface,
                                         size: 20,
                                       ),
-                                      SizedBox(width: 12),
+                                      const SizedBox(width: 12),
                                       Text(
                                         'Objectif: ${_formatDate(targetDate)}',
                                         style: TextStyle(
@@ -4973,7 +4973,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                   ),
                                 if ((createdAt != null || targetDate != null) &&
                                     achievedAt != null)
-                                  SizedBox(height: 8),
+                                  const SizedBox(height: 8),
                                 if (achievedAt != null)
                                   Row(
                                     children: [
@@ -4982,7 +4982,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                         color: Theme.of(context).colorScheme.onSurface,
                                         size: 20,
                                       ),
-                                      SizedBox(width: 12),
+                                      const SizedBox(width: 12),
                                       Text(
                                         'Atteint le ${_formatDate(achievedAt)}',
                                         style: TextStyle(
@@ -4996,7 +4996,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                               ],
                             ),
                           ),
-                          SizedBox(height: 20),
+                          const SizedBox(height: 20),
                         ],
                         // Measurements section
                         if (startWeight != null ||
@@ -5004,12 +5004,12 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                             targetWeight != null ||
                             targetWaist != null) ...[
                           _memberSectionTitle(context, 'Mesures'),
-                          SizedBox(height: 12),
+                          const SizedBox(height: 12),
                         ],
                         // Start measurements
                         if (startWeight != null || startWaist != null)
                           Container(
-                            padding: EdgeInsets.all(16),
+                            padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
                               color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(12),
@@ -5032,7 +5032,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                     letterSpacing: 0.5,
                                   ),
                                 ),
-                                SizedBox(height: 12),
+                                const SizedBox(height: 12),
                                 Row(
                                   children: [
                                     if (startWeight != null)
@@ -5044,7 +5044,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                               color: Theme.of(context).colorScheme.onSurface,
                                               size: 20,
                                             ),
-                                            SizedBox(width: 8),
+                                            const SizedBox(width: 8),
                                             Text(
                                               '$startWeight kg',
                                               style: TextStyle(
@@ -5065,7 +5065,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                               color: Theme.of(context).colorScheme.onSurface,
                                               size: 20,
                                             ),
-                                            SizedBox(width: 8),
+                                            const SizedBox(width: 8),
                                             Text(
                                               '$startWaist cm',
                                               style: TextStyle(
@@ -5082,11 +5082,11 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                               ],
                             ),
                           ),
-                        SizedBox(height: 12),
+                        const SizedBox(height: 12),
                         // Target measurements
                         if (targetWeight != null || targetWaist != null)
                           Container(
-                            padding: EdgeInsets.all(16),
+                            padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
                               color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(12),
@@ -5107,7 +5107,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                     letterSpacing: 0.5,
                                   ),
                                 ),
-                                SizedBox(height: 12),
+                                const SizedBox(height: 12),
                                 Row(
                                   children: [
                                     if (targetWeight != null)
@@ -5119,7 +5119,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                               color: Theme.of(context).colorScheme.onSurface,
                                               size: 20,
                                             ),
-                                            SizedBox(width: 8),
+                                            const SizedBox(width: 8),
                                             Text(
                                               '$targetWeight kg',
                                               style: TextStyle(
@@ -5140,7 +5140,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                                               color: Theme.of(context).colorScheme.onSurface,
                                               size: 20,
                                             ),
-                                            SizedBox(width: 8),
+                                            const SizedBox(width: 8),
                                             Text(
                                               '$targetWaist cm',
                                               style: TextStyle(
@@ -5157,7 +5157,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                               ],
                             ),
                           ),
-                        SizedBox(height: 24),
+                        const SizedBox(height: 24),
                       ],
                     ),
                   ),
@@ -5238,17 +5238,17 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
               style: TextButton.styleFrom(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
-              child: Text('Annuler'),
+              child: const Text('Annuler'),
             ),
             ElevatedButton(
               onPressed: () => Navigator.of(context).pop(true),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).colorScheme.primary,
-                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
-              child: Text('Confirmer'),
+              child: const Text('Confirmer'),
             ),
           ],
         ),
@@ -5272,11 +5272,11 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                   ),
                 ),
               ),
-              SizedBox(width: 16),
-              Text('Envoi de la demande...'),
+              const SizedBox(width: 16),
+              const Text('Envoi de la demande...'),
             ],
           ),
-          duration: Duration(seconds: 2),
+          duration: const Duration(seconds: 2),
         ),
       );
 
@@ -5300,8 +5300,8 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
                       ? AppColors.darkTextPrimary
                       : AppColors.lightTextPrimary),
                 ),
-                SizedBox(width: 12),
-                Expanded(
+                const SizedBox(width: 12),
+                const Expanded(
                   child: Text(
                     'Les coachs ont été notifiés ! Ils viendront vous aider.',
                   ),
@@ -5309,7 +5309,7 @@ class _MemberPlanningPageState extends State<MemberPlanningPage> {
               ],
             ),
             backgroundColor: AppColors.success,
-            duration: Duration(seconds: 4),
+            duration: const Duration(seconds: 4),
           ),
         );
       } else {
@@ -5586,7 +5586,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                   onTap: () => _navigateToEditProfile(context),
                   child: Container(
                     width: double.infinity,
-                    padding: EdgeInsets.all(24.0),
+                    padding: const EdgeInsets.all(24.0),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topLeft,
@@ -5640,7 +5640,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                               bottom: 0,
                               right: 0,
                               child: Container(
-                                padding: EdgeInsets.all(6),
+                                padding: const EdgeInsets.all(6),
                                 decoration: BoxDecoration(
                                   color: Theme.of(
                                     context,
@@ -5662,7 +5662,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                             ),
                           ],
                         ),
-                        SizedBox(height: 16),
+                        const SizedBox(height: 16),
                         Text(
                           '$firstName $lastName'.trim().isNotEmpty
                               ? '$firstName $lastName'
@@ -5676,10 +5676,10 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                                 : AppColors.lightTextPrimary),
                           ),
                         ),
-                        SizedBox(height: 8),
+                        const SizedBox(height: 8),
                         if (email.isNotEmpty && email != 'email@exemple.com')
                           Padding(
-                            padding: EdgeInsets.only(bottom: 4),
+                            padding: const EdgeInsets.only(bottom: 4),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
@@ -5692,7 +5692,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                                       ? AppColors.darkTextSecondary
                                       : AppColors.lightTextSecondary),
                                 ),
-                                SizedBox(width: 6),
+                                const SizedBox(width: 6),
                                 Text(
                                   email,
                                   style: TextStyle(
@@ -5709,7 +5709,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                           ),
                         if (phoneNumber.isNotEmpty)
                           Padding(
-                            padding: EdgeInsets.only(bottom: 4),
+                            padding: const EdgeInsets.only(bottom: 4),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
@@ -5722,7 +5722,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                                       ? AppColors.darkTextSecondary
                                       : AppColors.lightTextSecondary),
                                 ),
-                                SizedBox(width: 6),
+                                const SizedBox(width: 6),
                                 Text(
                                   phoneNumber,
                                   style: TextStyle(
@@ -5737,7 +5737,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                               ],
                             ),
                           ),
-                        SizedBox(height: 8),
+                        const SizedBox(height: 8),
                         Text(
                           AppLocalizations.of(context).memberSince(joinedAt),
                           style: TextStyle(
@@ -5749,9 +5749,9 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                                     .withValues(alpha: 0.7),
                           ),
                         ),
-                        SizedBox(height: 12),
+                        const SizedBox(height: 12),
                         Container(
-                          padding: EdgeInsets.symmetric(
+                          padding: const EdgeInsets.symmetric(
                             horizontal: 16,
                             vertical: 8,
                           ),
@@ -5775,7 +5775,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                                 size: 16,
                                 color: Theme.of(context).colorScheme.primary,
                               ),
-                              SizedBox(width: 6),
+                              const SizedBox(width: 6),
                               Text(
                                 AppLocalizations.of(context).editProfile,
                                 style: TextStyle(
@@ -5792,7 +5792,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                   ),
                 ),
               ),
-              SizedBox(height: 24),
+              const SizedBox(height: 24),
 
               // Subscription section
               Text(
@@ -5805,7 +5805,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                       : AppColors.lightTextPrimary),
                 ),
               ),
-              SizedBox(height: 12),
+              const SizedBox(height: 12),
 
               // Check if user has a subscription
               if (_isLoadingSubscription)
@@ -5892,7 +5892,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Padding(
-                          padding: EdgeInsets.all(20.0),
+                          padding: const EdgeInsets.all(20.0),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -5915,14 +5915,14 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                                     ),
                                   ),
                                   Container(
-                                    padding: EdgeInsets.symmetric(
+                                    padding: const EdgeInsets.symmetric(
                                       horizontal: 12,
                                       vertical: 6,
                                     ),
                                     decoration: BoxDecoration(
                                       color: subscriptionStatus == 'active'
-                                          ? AppColors.success
-                                          : AppColors.error,
+                                          ? context.palette.success
+                                          : context.palette.error,
                                       borderRadius: BorderRadius.circular(20),
                                     ),
                                     child: Text(
@@ -5940,7 +5940,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                                   ),
                                 ],
                               ),
-                              SizedBox(height: 16),
+                              const SizedBox(height: 16),
                               _buildSubscriptionDetail(
                                 context,
                                 'Type',
@@ -5961,7 +5961,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                                 'Expire le',
                                 formatDate(expiresAt),
                               ),
-                              SizedBox(height: 12),
+                              const SizedBox(height: 12),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.end,
                                 children: [
@@ -5979,7 +5979,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),
-                                  SizedBox(width: 4),
+                                  const SizedBox(width: 4),
                                   Icon(
                                     Icons.arrow_forward_ios,
                                     size: 14,
@@ -6007,7 +6007,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Padding(
-                    padding: EdgeInsets.all(24.0),
+                    padding: const EdgeInsets.all(24.0),
                     child: Column(
                       children: [
                         Icon(
@@ -6019,7 +6019,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                                       : AppColors.lightTextSecondary)
                                   .withValues(alpha: 0.5),
                         ),
-                        SizedBox(height: 16),
+                        const SizedBox(height: 16),
                         Text(
                           AppLocalizations.of(context).noActiveSubscription,
                           style: TextStyle(
@@ -6031,7 +6031,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                                 : AppColors.lightTextPrimary),
                           ),
                         ),
-                        SizedBox(height: 8),
+                        const SizedBox(height: 8),
                         Text(
                           AppLocalizations.of(context).subscribeForFeatures,
                           textAlign: TextAlign.center,
@@ -6047,7 +6047,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                     ),
                   ),
                 ),
-              SizedBox(height: 24),
+              const SizedBox(height: 24),
 
               // Personal Information Section
               Text(
@@ -6060,7 +6060,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                       : AppColors.lightTextPrimary),
                 ),
               ),
-              SizedBox(height: 12),
+              const SizedBox(height: 12),
               Card(
                 color: Theme.of(context).cardTheme.color,
                 elevation: 2,
@@ -6068,7 +6068,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Padding(
-                  padding: EdgeInsets.all(20.0),
+                  padding: const EdgeInsets.all(20.0),
                   child: Column(
                     children: [
                       if (formattedBirthDate !=
@@ -6105,7 +6105,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                           formattedFitnessLevel.isEmpty)
                         Center(
                           child: Padding(
-                            padding: EdgeInsets.symmetric(vertical: 12),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
                             child: Column(
                               children: [
                                 Icon(
@@ -6118,7 +6118,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                                               : AppColors.lightTextSecondary)
                                           .withValues(alpha: 0.5),
                                 ),
-                                SizedBox(height: 12),
+                                const SizedBox(height: 12),
                                 Text(
                                   'Aucune information personnelle renseignée',
                                   textAlign: TextAlign.center,
@@ -6139,7 +6139,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                   ),
                 ),
               ),
-              SizedBox(height: 24),
+              const SizedBox(height: 24),
 
               // Settings options
               Text(
@@ -6152,7 +6152,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                       : AppColors.lightTextPrimary),
                 ),
               ),
-              SizedBox(height: 12),
+              const SizedBox(height: 12),
               _buildSettingsItem(
                 context,
                 AppLocalizations.of(context).parameters,
@@ -6161,7 +6161,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => SecuritySettingsPage(),
+                      builder: (context) => const SecuritySettingsPage(),
                     ),
                   );
                 },
@@ -6173,7 +6173,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                 () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => AboutScreen()),
+                    MaterialPageRoute(builder: (context) => const AboutScreen()),
                   );
                 },
               ),
@@ -6183,13 +6183,13 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                 Icons.help_outline,
                 () => SupportBottomSheet.show(context),
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               _buildWatchToggle(context),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
 
               // Logout button
               Card(
-                color: AppColors.error,
+                color: context.palette.error,
                 elevation: 2,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -6234,7 +6234,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                   },
                 ),
               ),
-              SizedBox(height: 24),
+              const SizedBox(height: 24),
             ],
           ),
         ),
@@ -6248,7 +6248,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
     String value,
   ) {
     return Padding(
-      padding: EdgeInsets.only(bottom: 8.0),
+      padding: const EdgeInsets.only(bottom: 8.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -6286,7 +6286,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
     return Column(
       children: [
         Padding(
-          padding: EdgeInsets.symmetric(vertical: 12.0),
+          padding: const EdgeInsets.symmetric(vertical: 12.0),
           child: Row(
             children: [
               Container(
@@ -6306,7 +6306,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                       : AppColors.lightTextPrimary),
                 ),
               ),
-              SizedBox(width: 12),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -6320,7 +6320,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                             : AppColors.lightTextSecondary),
                       ),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
                       value,
                       style: TextStyle(
@@ -6359,11 +6359,11 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
     return Card(
       color: Theme.of(context).cardTheme.color,
       elevation: 2,
-      margin: EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ListTile(
         leading: Container(
-          padding: EdgeInsets.all(10),
+          padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
             shape: BoxShape.circle,
@@ -6420,7 +6420,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
           ),
           child: Icon(
             Icons.watch_outlined,
-            color: AppColors.accentViolet,
+            color: context.palette.premium,
             size: 22,
           ),
         ),
@@ -6447,7 +6447,7 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
         ),
         trailing: Switch.adaptive(
           value: _watchEnabled,
-          activeThumbColor: AppColors.accentGreen,
+          activeThumbColor: context.palette.success,
           activeTrackColor: AppColors.accentGreen.withValues(alpha: 0.4),
           onChanged: (val) async {
             setState(() => _watchEnabled = val);

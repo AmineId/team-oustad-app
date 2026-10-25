@@ -119,11 +119,11 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen>
   Color _getStatusColor(String status) {
     switch (status) {
       case 'active':
-        return AppColors.success;
+        return context.palette.success;
       case 'completed':
-        return AppColors.info;
+        return context.palette.info;
       case 'cancelled':
-        return AppColors.error;
+        return context.palette.error;
       default:
         return Colors.grey;
     }
@@ -155,8 +155,8 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen>
         ),
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: AppColors.primary,
-          labelColor: AppColors.primary,
+          indicatorColor: context.palette.primary,
+          labelColor: context.palette.primary,
           unselectedLabelColor: Colors.white60,
           tabs: [
             Tab(
@@ -178,7 +178,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen>
                       ),
                       child: Text(
                         '${_activePlannings.length}',
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
@@ -209,7 +209,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen>
                       ),
                       child: Text(
                         '${_completedPlannings.length}',
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
@@ -240,7 +240,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen>
                       ),
                       child: Text(
                         '${_cancelledPlannings.length}',
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
@@ -260,17 +260,17 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen>
           color: Theme.of(context).scaffoldBackgroundColor,
         ),
         child: _isLoading
-            ? const Center(
-                child: CircularProgressIndicator(color: AppColors.primary),
+            ? Center(
+                child: CircularProgressIndicator(color: context.palette.primary),
               )
             : _errorMessage.isNotEmpty
             ? Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.error_outline,
-                      color: AppColors.error,
+                      color: context.palette.error,
                       size: 48,
                     ),
                     const SizedBox(height: 16),
@@ -320,7 +320,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen>
             }
           },
           backgroundColor: AppColors.primary,
-          child: const Icon(Icons.add, color: Colors.white),
+          child: Icon(Icons.add, color: context.palette.onPrimary),
         ),
       ),
     ),
@@ -329,7 +329,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen>
 
   Widget _buildPlanningsList(List<Map<String, dynamic>> plannings) {
     if (plannings.isEmpty) {
-      return Center(
+      return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -338,7 +338,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen>
               color: Colors.white60,
               size: 48,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             Text(
               'Aucun planning',
               style: TextStyle(color: Colors.white60, fontSize: 16),
@@ -350,7 +350,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen>
 
     return RefreshIndicator(
       onRefresh: _loadPlannings,
-      color: AppColors.primary,
+      color: context.palette.primary,
       child: ListView.builder(
         padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + MediaQuery.of(context).padding.bottom),
         itemCount: plannings.length,
@@ -449,9 +449,9 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen>
               if (member != null)
                 Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.person,
-                      color: AppColors.primary,
+                      color: context.palette.primary,
                       size: 16,
                     ),
                     const SizedBox(width: 8),
@@ -473,9 +473,9 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen>
               if (coach != null)
                 Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.fitness_center,
-                      color: AppColors.primary,
+                      color: context.palette.primary,
                       size: 16,
                     ),
                     const SizedBox(width: 8),
@@ -586,7 +586,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen>
                   decoration: BoxDecoration(
                     color: Theme.of(context).cardTheme.color,
                     borderRadius:
-                        BorderRadius.vertical(top: Radius.circular(20)),
+                        const BorderRadius.vertical(top: Radius.circular(20)),
                   ),
                   child: Column(
                     children: [
@@ -730,10 +730,10 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen>
                                     children: [
                                       Text(
                                         _getDayName(dayOfWeek ?? 0),
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
-                                          color: AppColors.primary,
+                                          color: context.palette.primary,
                                         ),
                                       ),
                                       const SizedBox(height: 8),
@@ -762,10 +762,10 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen>
                                             ),
                                             child: Row(
                                               children: [
-                                                const Icon(
+                                                Icon(
                                                   Icons.circle,
                                                   size: 6,
-                                                  color: AppColors.primary,
+                                                  color: context.palette.primary,
                                                 ),
                                                 const SizedBox(width: 8),
                                                 Expanded(
@@ -781,9 +781,9 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen>
                                                   ),
                                                 ),
                                                 IconButton(
-                                                  icon: const Icon(
+                                                  icon: Icon(
                                                     Icons.remove_circle_outline,
-                                                    color: AppColors.error,
+                                                    color: context.palette.error,
                                                     size: 18,
                                                   ),
                                                   padding: EdgeInsets.zero,
@@ -816,7 +816,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen>
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
                           color: Theme.of(context).scaffoldBackgroundColor,
-                          borderRadius: BorderRadius.vertical(
+                          borderRadius: const BorderRadius.vertical(
                             bottom: Radius.circular(20),
                           ),
                         ),
@@ -858,7 +858,7 @@ class _AdminPlanningsScreenState extends State<AdminPlanningsScreen>
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, color: AppColors.primary, size: 20),
+        Icon(icon, color: context.palette.primary, size: 20),
         const SizedBox(width: 12),
         Expanded(
           child: Column(

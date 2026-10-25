@@ -5,3 +5,4 @@ export 'theme_provider.dart';
 
 
 
+export 'app_palette.dart';

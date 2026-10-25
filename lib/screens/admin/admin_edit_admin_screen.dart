@@ -147,9 +147,9 @@ class _AdminEditAdminScreenState extends State<AdminEditAdminScreen> {
                       shape: BoxShape.circle,
                       color: AppColors.primary.withValues(alpha: 0.2),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.admin_panel_settings,
-                      color: AppColors.primary,
+                      color: context.palette.primary,
                       size: 40,
                     ),
                   ),
@@ -162,9 +162,9 @@ class _AdminEditAdminScreenState extends State<AdminEditAdminScreen> {
                     decoration: InputDecoration(
                       labelText: 'Prénom',
                       labelStyle: const TextStyle(color: Colors.white60),
-                      prefixIcon: const Icon(
+                      prefixIcon: Icon(
                         Icons.person,
-                        color: AppColors.primary,
+                        color: context.palette.primary,
                       ),
                       filled: true,
                       fillColor: theme.cardTheme.color,
@@ -189,9 +189,9 @@ class _AdminEditAdminScreenState extends State<AdminEditAdminScreen> {
                     decoration: InputDecoration(
                       labelText: 'Nom',
                       labelStyle: const TextStyle(color: Colors.white60),
-                      prefixIcon: const Icon(
+                      prefixIcon: Icon(
                         Icons.person_outline,
-                        color: AppColors.primary,
+                        color: context.palette.primary,
                       ),
                       filled: true,
                       fillColor: theme.cardTheme.color,
@@ -217,9 +217,9 @@ class _AdminEditAdminScreenState extends State<AdminEditAdminScreen> {
                     decoration: InputDecoration(
                       labelText: 'Email',
                       labelStyle: const TextStyle(color: Colors.white60),
-                      prefixIcon: const Icon(
+                      prefixIcon: Icon(
                         Icons.email,
-                        color: AppColors.primary,
+                        color: context.palette.primary,
                       ),
                       filled: true,
                       fillColor: theme.cardTheme.color,
@@ -256,9 +256,9 @@ class _AdminEditAdminScreenState extends State<AdminEditAdminScreen> {
                             ? AppColors.darkTextSecondary
                             : AppColors.lightTextSecondary),
                       ),
-                      prefixIcon: const Icon(
+                      prefixIcon: Icon(
                         Icons.fitness_center,
-                        color: AppColors.primary,
+                        color: context.palette.primary,
                       ),
                       filled: true,
                       fillColor: theme.cardTheme.color,

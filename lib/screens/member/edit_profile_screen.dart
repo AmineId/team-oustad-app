@@ -141,7 +141,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: ColorScheme.dark(
-              primary: AppColors.primary,
+              primary: context.palette.primary,
               onPrimary: Theme.of(context).brightness == Brightness.dark ? (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary) : AppColors.primaryDark,
               surface: Theme.of(context).cardTheme.color ?? Colors.grey[900]!,
               onSurface: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
@@ -333,10 +333,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                 width: 2,
                               ),
                             ),
-                            child: const Icon(
+                            child: Icon(
                               Icons.camera_alt,
                               size: 20,
-                              color: AppColors.primary,
+                              color: context.palette.primary,
                             ),
                           ),
                         ),
@@ -348,7 +348,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 
                 // Info message
                 Container(
-                  padding: EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: AppColors.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
@@ -361,7 +361,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     children: [
                       Icon(
                         Icons.info_outline,
-                        color: AppColors.primary,
+                        color: context.palette.primary,
                         size: 20,
                       ),
                       const SizedBox(width: 12),
@@ -484,10 +484,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     decoration: InputDecoration(
                       prefixIcon: Icon(
                         Icons.fitness_center,
-                        color: AppColors.primary,
+                        color: context.palette.primary,
                       ),
                       border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     ),
                     dropdownColor: Theme.of(context).cardTheme.color,
                     style: TextStyle(
@@ -504,7 +504,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             : AppColors.lightTextSecondary),
                       ),
                     ),
-                    items: [
+                    items: const [
                       DropdownMenuItem(value: '', child: Text('Non renseigné')),
                       DropdownMenuItem(value: 'beginner', child: Text('Débutant')),
                       DropdownMenuItem(value: 'intermediate', child: Text('Intermédiaire')),
@@ -606,9 +606,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       decoration: InputDecoration(
         labelText: label,
         labelStyle: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)),
-        prefixIcon: Icon(icon, color: AppColors.primary),
+        prefixIcon: Icon(icon, color: context.palette.primary),
         suffixIcon: suffixIcon != null
-            ? Icon(suffixIcon, color: AppColors.primary)
+            ? Icon(suffixIcon, color: context.palette.primary)
             : null,
         filled: true,
         fillColor: Theme.of(context).cardTheme.color,
@@ -625,22 +625,22 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(
-            color: AppColors.primary,
+          borderSide: BorderSide(
+            color: context.palette.primary,
             width: 2,
           ),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(
-            color: AppColors.error,
+          borderSide: BorderSide(
+            color: context.palette.error,
             width: 1,
           ),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(
-            color: AppColors.error,
+          borderSide: BorderSide(
+            color: context.palette.error,
             width: 2,
           ),
         ),

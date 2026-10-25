@@ -190,7 +190,7 @@ class _AboutScreenState extends State<AboutScreen> {
                         _buildReleaseNotesSection(
                           'Nouveautés',
                           Icons.new_releases,
-                          AppColors.success,
+                          context.palette.success,
                           _features,
                         ),
                       ],
@@ -200,7 +200,7 @@ class _AboutScreenState extends State<AboutScreen> {
                         _buildReleaseNotesSection(
                           'Améliorations',
                           Icons.trending_up,
-                          AppColors.info,
+                          context.palette.info,
                           _improvements,
                         ),
                       ],
@@ -210,7 +210,7 @@ class _AboutScreenState extends State<AboutScreen> {
                         _buildReleaseNotesSection(
                           'Corrections',
                           Icons.bug_report,
-                          AppColors.warning,
+                          context.palette.warning,
                           _bugFixes,
                         ),
                       ],
@@ -228,7 +228,7 @@ class _AboutScreenState extends State<AboutScreen> {
                                 children: [
                                   Icon(
                                     Icons.code,
-                                    color: AppColors.primary,
+                                    color: context.palette.primary,
                                     size: 24,
                                   ),
                                   const SizedBox(width: 12),

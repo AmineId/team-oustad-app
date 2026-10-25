@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 ///   3. Violet      (#8B5CF6) — premium / badges / secondaire
 ///
 /// Mode sombre : Midnight Navy (nuance bleue profonde = premium, distinctif)
-/// Mode clair  : Ice White (fond froid propre, cartes blanches bien contrastées)
+/// Mode clair  : Warm Stone (neutres chauds, cartes blanches, or seul accent fort)
 class AppColors {
   // ── 1. Amber Gold — couleur primaire / logo ─────────────────────────
   static const Color primary      = Color(0xFFE8961E); // Amber gold vrai
@@ -25,6 +25,18 @@ class AppColors {
   static const Color accentVioletLight = Color(0xFFA78BFA); // Violet 400
   static const Color accentVioletDark  = Color(0xFF6D28D9); // Violet 700
 
+  // ── Encres mode clair — accents posés sur blanc (≥ 4,5:1) ───────────
+  // Voir AppPalette : ne pas utiliser directement, passer par context.palette
+  static const Color primaryInk = Color(0xFF9A5F08); // Bronze gold — 5,2:1
+  static const Color successInk = Color(0xFF047857); // Emerald 700 — 5,5:1
+  static const Color warningInk = Color(0xFFC2410C); // Orange 700 — 5,2:1 (≠ or)
+  static const Color errorInk   = Color(0xFFB91C1C); // Red 700 — 6,5:1
+  static const Color infoInk    = Color(0xFF0369A1); // Sky 700 — 5,9:1
+  static const Color premiumInk = Color(0xFF7C3AED); // Violet 600 — 5,7:1
+
+  /// Texte sur aplat or (#E8961E) : charbon = 7,3:1 (le blanc ne fait que 2,4:1)
+  static const Color onPrimary = Color(0xFF1C1917);
+
   // ── Alias legacy ────────────────────────────────────────────────────
   static const Color accent      = accentViolet;
   static const Color accentLight = accentVioletLight;
@@ -36,11 +48,12 @@ class AppColors {
   static const Color darkCard       = Color(0xFF172840); // Steel Navy — +6 pts
   static const Color darkElevated   = Color(0xFF1E3550); // Modal / dropdown
 
-  // ── Fond light — Ice White (froid, clean, pro) ──────────────────────
-  static const Color lightBackground = Color(0xFFEFF3F8); // Blue-tinted off-white
-  static const Color lightSurface    = Color(0xFFFFFFFF); // Blanc pur (pages, appbar)
-  static const Color lightCard       = Color(0xFFF7FAFD); // Très légèrement bleuté
-  static const Color lightElevated   = Color(0xFFDDE7F0); // Séparateurs / inputs
+  // ── Fond light — Warm Stone (neutres chauds, en accord avec l'or) ────
+  // Pas de bleu dans les neutres : un gris froid sous de l'or crée une dissonance
+  static const Color lightBackground = Color(0xFFF5F2EC); // Pierre claire — cartes blanches ressortent
+  static const Color lightSurface    = Color(0xFFFFFFFF); // Blanc pur (pages, appbar, cartes)
+  static const Color lightCard       = Color(0xFFFAF8F4); // Inputs / dialogs
+  static const Color lightElevated   = Color(0xFFECE7DF); // Séparateurs / pistes
 
   // ── Texte dark ──────────────────────────────────────────────────────
   static const Color darkTextPrimary   = Color(0xFFF0F6FF); // Blanc froid — 12:1 sur darkCard
@@ -48,9 +61,9 @@ class AppColors {
   static const Color darkTextTertiary  = Color(0xFF8BA4BB); // Légendes — 3:1
 
   // ── Texte light ─────────────────────────────────────────────────────
-  static const Color lightTextPrimary   = Color(0xFF07111E); // Midnight — >15:1 sur blanc
-  static const Color lightTextSecondary = Color(0xFF2D4A6A); // Navy doux — 7:1
-  static const Color lightTextTertiary  = Color(0xFF5A7A98); // Tertiaire — 4.5:1
+  static const Color lightTextPrimary   = Color(0xFF1C1917); // Charbon chaud — 17:1 sur blanc
+  static const Color lightTextSecondary = Color(0xFF44403C); // Pierre foncée — 10:1
+  static const Color lightTextTertiary  = Color(0xFF655C52); // Légendes — 6,5:1 (5,9 sur fond)
 
   // ── Sémantiques ─────────────────────────────────────────────────────
   static const Color success      = accentGreen;
@@ -64,11 +77,11 @@ class AppColors {
 
   // ── Bordures ────────────────────────────────────────────────────────
   static const Color darkBorder  = Color(0xFF162336); // subtil sur darkSurface
-  static const Color lightBorder = Color(0xFFBFD0E0); // bleu-gris clair — lisible
+  static const Color lightBorder = Color(0xFFE3DCD0); // discret — la carte blanche suffit à séparer
 
   // ── Ombres ──────────────────────────────────────────────────────────
   static Color darkShadow  = const Color(0xFF000D1A).withValues(alpha: 0.50);
-  static Color lightShadow = const Color(0xFF07111E).withValues(alpha: 0.08);
+  static Color lightShadow = const Color(0xFF1C1917).withValues(alpha: 0.08);
 }
 
 

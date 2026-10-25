@@ -10,6 +10,7 @@ import '../../core/config/app_config.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_palette.dart';
 import 'kiosk_audio.dart';
 import 'kiosk_links.dart';
 
@@ -340,8 +341,8 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
       body: PopScope(
         canPop: false,
         child: !_initialized
-            ? const Center(
-                child: CircularProgressIndicator(color: AppColors.primary),
+            ? Center(
+                child: CircularProgressIndicator(color: context.palette.primary),
               )
             : _token == null
             ? _buildNoSession()
@@ -398,7 +399,7 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
                         style: GoogleFonts.barlow(
                           fontSize: 10,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.warning,
+                          color: context.palette.warning,
                           letterSpacing: 1,
                         ),
                       ),
@@ -681,7 +682,7 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(
+              const Icon(
                 Icons.info_outline_rounded,
                 size: 12,
                 color: AppColors.darkTextTertiary,
@@ -744,7 +745,7 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
         style: GoogleFonts.barlowCondensed(
           fontSize: 16,
           fontWeight: FontWeight.w700,
-          color: AppColors.primary,
+          color: context.palette.primary,
         ),
       ),
     );
@@ -806,12 +807,12 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Padding(
-                padding: EdgeInsets.only(top: 2, right: 8),
+              Padding(
+                padding: const EdgeInsets.only(top: 2, right: 8),
                 child: Icon(
                   Icons.link_rounded,
                   size: 14,
-                  color: AppColors.primary,
+                  color: context.palette.primary,
                 ),
               ),
               Expanded(
@@ -823,9 +824,9 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
                       style: GoogleFonts.barlow(
                         fontSize: 12.5,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.primary,
+                        color: context.palette.primary,
                         decoration: TextDecoration.underline,
-                        decorationColor: AppColors.primary,
+                        decorationColor: context.palette.primary,
                       ),
                     ),
                     SelectableText(
@@ -1074,10 +1075,10 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
           const SizedBox(width: 12),
           if (AppConfig.fromEnvironment().isPreProduction)
             IconButton(
-              icon: const Icon(
+              icon: Icon(
                 Icons.install_mobile_outlined,
                 size: 18,
-                color: AppColors.warning,
+                color: context.palette.warning,
               ),
               tooltip: 'Installer l\'app mobile',
               onPressed: _showInstallDoc,
@@ -1107,10 +1108,10 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
+          Icon(
             Icons.people_outline_rounded,
             size: 14,
-            color: AppColors.primary,
+            color: context.palette.primary,
           ),
           const SizedBox(width: 5),
           Text(
@@ -1118,7 +1119,7 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
             style: GoogleFonts.barlowCondensed(
               fontSize: 16,
               fontWeight: FontWeight.w700,
-              color: AppColors.primary,
+              color: context.palette.primary,
               fontFeatures: const [FontFeature.tabularFigures()],
             ),
           ),
@@ -1186,8 +1187,8 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
                 backgroundColor: Colors.transparent,
                 valueColor: AlwaysStoppedAnimation(
                   _status == _ScanStatus.success
-                      ? AppColors.success
-                      : AppColors.error,
+                      ? context.palette.success
+                      : context.palette.error,
                 ),
                 minHeight: 3,
               ),
@@ -1358,11 +1359,11 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const SizedBox(
+          SizedBox(
             width: 56,
             height: 56,
             child: CircularProgressIndicator(
-              color: AppColors.primary,
+              color: context.palette.primary,
               strokeWidth: 3,
             ),
           ),
@@ -1481,25 +1482,25 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
                           _buildBadge(
                             subName,
                             AppColors.primary.withValues(alpha: 0.18),
-                            AppColors.primary,
+                            context.palette.primary,
                           ),
                         if (isExpired)
                           _buildBadge(
                             'Expiré',
                             AppColors.error.withValues(alpha: 0.2),
-                            AppColors.error,
+                            context.palette.error,
                           )
                         else if (isExpiringSoon)
                           _buildBadge(
                             'Expire dans $daysLeft j',
                             AppColors.warning.withValues(alpha: 0.2),
-                            AppColors.warning,
+                            context.palette.warning,
                           )
                         else
                           _buildBadge(
                             '✓ Actif',
                             AppColors.success.withValues(alpha: 0.2),
-                            AppColors.success,
+                            context.palette.success,
                           ),
                       ],
                     ),
@@ -1529,9 +1530,9 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
         textBaseline: TextBaseline.alphabetic,
         children: [
           if (isUnlimited)
-            const Icon(
+            Icon(
               Icons.all_inclusive_rounded,
-              color: AppColors.primary,
+              color: context.palette.primary,
               size: 52,
             )
           else
@@ -1693,7 +1694,7 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
                   style: GoogleFonts.barlow(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.success,
+                    color: context.palette.success,
                   ),
                 ),
               ),
@@ -1740,7 +1741,7 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
 
   Widget _buildListEntry(_ScanEntry entry) {
     final timeStr = DateFormat('HH:mm').format(entry.time);
-    final color = entry.allowed ? AppColors.success : AppColors.error;
+    final color = entry.allowed ? context.palette.success : context.palette.error;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 3, 12, 3),
@@ -1766,7 +1767,7 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
                   style: GoogleFonts.barlowCondensed(
                     fontSize: 12,
                     fontWeight: FontWeight.w800,
-                    color: AppColors.primary,
+                    color: context.palette.primary,
                   ),
                 ),
               ),
@@ -1988,7 +1989,7 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
               const SizedBox(height: 12),
               Text(
                 _loginError!,
-                style: GoogleFonts.barlow(color: AppColors.error, fontSize: 13),
+                style: GoogleFonts.barlow(color: context.palette.error, fontSize: 13),
               ),
             ],
             const SizedBox(height: 20),
@@ -2037,7 +2038,7 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
       decoration: BoxDecoration(
         color: AppColors.primary,
         shape: BoxShape.circle,
-        border: Border.all(color: AppColors.success, width: 3),
+        border: Border.all(color: context.palette.success, width: 3),
         boxShadow: [
           BoxShadow(
             color: AppColors.success.withValues(alpha: 0.25),
@@ -2135,10 +2136,10 @@ class _TroubleshootRow extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(
+              Icon(
                 Icons.warning_amber_rounded,
                 size: 13,
-                color: AppColors.warning,
+                color: context.palette.warning,
               ),
               const SizedBox(width: 6),
               Expanded(

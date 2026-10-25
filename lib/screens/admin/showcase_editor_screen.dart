@@ -159,7 +159,7 @@ class _ShowcaseEditorScreenState extends State<ShowcaseEditorScreen>
             ),
             for (final t in ShowcaseSectionType.contentTypes)
               ListTile(
-                leading: Icon(t.icon, color: AppColors.primary),
+                leading: Icon(t.icon, color: context.palette.primary),
                 title: Text(t.label),
                 subtitle: Text(_typeHint(t)),
                 onTap: () => Navigator.pop(ctx, t),
@@ -189,7 +189,7 @@ class _ShowcaseEditorScreenState extends State<ShowcaseEditorScreen>
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            style: TextButton.styleFrom(foregroundColor: context.palette.error),
             child: const Text('Supprimer'),
           ),
         ],
@@ -247,7 +247,7 @@ class _ShowcaseEditorScreenState extends State<ShowcaseEditorScreen>
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            style: TextButton.styleFrom(foregroundColor: context.palette.error),
             child: const Text('Quitter'),
           ),
         ],
@@ -303,7 +303,7 @@ class _ShowcaseEditorScreenState extends State<ShowcaseEditorScreen>
                   icon: const Icon(Icons.save_outlined, size: 18),
                   label: const Text('Sauver'),
                   style: TextButton.styleFrom(
-                    foregroundColor: AppColors.primary,
+                    foregroundColor: context.palette.primary,
                   ),
                 ),
               ),
@@ -319,9 +319,9 @@ class _ShowcaseEditorScreenState extends State<ShowcaseEditorScreen>
           ],
           bottom: TabBar(
             controller: _tabs,
-            labelColor: AppColors.primary,
+            labelColor: context.palette.primary,
             unselectedLabelColor: onSurface.withValues(alpha: 0.5),
-            indicatorColor: AppColors.primary,
+            indicatorColor: context.palette.primary,
             tabs: const [
               Tab(
                 icon: Icon(Icons.view_agenda_outlined, size: 18),
@@ -339,7 +339,7 @@ class _ShowcaseEditorScreenState extends State<ShowcaseEditorScreen>
                     ? FloatingActionButton.extended(
                         onPressed: _addSection,
                         backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
+                        foregroundColor: context.palette.onPrimary,
                         icon: const Icon(Icons.add),
                         label: const Text('Section'),
                       )
@@ -414,13 +414,13 @@ class _ShowcaseEditorScreenState extends State<ShowcaseEditorScreen>
       ),
       child: Row(
         children: [
-          const Icon(Icons.info_outline, size: 16, color: AppColors.primary),
+          Icon(Icons.info_outline, size: 16, color: context.palette.primary),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               'Glisse ⠿ pour réordonner, l\'œil pour masquer. Les sections '
               '« intégrées » affichent les données de l\'app (salles, horaires…).',
-              style: AppTextStyles.caption.copyWith(color: AppColors.primary),
+              style: AppTextStyles.caption.copyWith(color: context.palette.primary),
             ),
           ),
         ],
@@ -447,7 +447,7 @@ class _ShowcaseEditorScreenState extends State<ShowcaseEditorScreen>
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 1.8,
-                    color: AppColors.primary,
+                    color: context.palette.primary,
                   ),
                 ),
               const SizedBox(height: 10),
@@ -491,7 +491,7 @@ class _ShowcaseEditorScreenState extends State<ShowcaseEditorScreen>
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.error_outline, size: 48, color: AppColors.error),
+          Icon(Icons.error_outline, size: 48, color: context.palette.error),
           const SizedBox(height: 12),
           Text(_error ?? 'Erreur', style: AppTextStyles.body1),
           const SizedBox(height: 16),
@@ -611,7 +611,7 @@ class _SectionTile extends StatelessWidget {
                   size: 20,
                   color: isBuiltin
                       ? onSurface.withValues(alpha: 0.5)
-                      : AppColors.primary,
+                      : context.palette.primary,
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -650,7 +650,7 @@ class _SectionTile extends StatelessWidget {
                   IconButton(
                     tooltip: 'Supprimer',
                     icon: const Icon(Icons.delete_outline),
-                    color: AppColors.error,
+                    color: context.palette.error,
                     onPressed: onDelete,
                   ),
               ],
@@ -779,7 +779,7 @@ class _SectionEditScreenState extends State<_SectionEditScreen> {
             padding: const EdgeInsets.only(right: 8),
             child: TextButton(
               onPressed: () => Navigator.pop(context, _result()),
-              style: TextButton.styleFrom(foregroundColor: AppColors.primary),
+              style: TextButton.styleFrom(foregroundColor: context.palette.primary),
               child: const Text('OK'),
             ),
           ),
@@ -984,7 +984,7 @@ class _SectionEditScreenState extends State<_SectionEditScreen> {
                     Text(
                       '#${i + 1}',
                       style: AppTextStyles.caption.copyWith(
-                        color: AppColors.primary,
+                        color: context.palette.primary,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -1082,12 +1082,12 @@ class _EditorCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(icon, size: 16, color: AppColors.primary),
+              Icon(icon, size: 16, color: context.palette.primary),
               const SizedBox(width: 8),
               Text(
                 label,
                 style: AppTextStyles.overline.copyWith(
-                  color: AppColors.primary,
+                  color: context.palette.primary,
                   letterSpacing: 0.8,
                 ),
               ),

@@ -97,11 +97,11 @@ class _GymShowcaseDetailScreenState extends State<GymShowcaseDetailScreen> {
     await Clipboard.setData(ClipboardData(text: text));
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Lien copié dans le presse-papier'),
+      const SnackBar(
+        content: Text('Lien copié dans le presse-papier'),
         backgroundColor: AppColors.darkCard,
         behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 2),
+        duration: Duration(seconds: 2),
       ),
     );
   }
@@ -243,7 +243,7 @@ class _GymShowcaseDetailScreenState extends State<GymShowcaseDetailScreen> {
                   _loadGym(); // rafraîchit après édition
                 },
                 backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
+                foregroundColor: context.palette.onPrimary,
                 icon: const Icon(Icons.edit_outlined),
                 label: const Text('Modifier'),
               )
@@ -256,19 +256,19 @@ class _GymShowcaseDetailScreenState extends State<GymShowcaseDetailScreen> {
     if (_isLoading) {
       return Stack(
         children: [
-          const Center(
-            child: CircularProgressIndicator(color: AppColors.primary),
+          Center(
+            child: CircularProgressIndicator(color: context.palette.primary),
           ),
-          _FloatingBackButton(),
+          const _FloatingBackButton(),
         ],
       );
     }
     if (_hasError || _gym == null) {
-      return Stack(
+      return const Stack(
         children: [
           Center(
             child: Padding(
-              padding: const EdgeInsets.all(32),
+              padding: EdgeInsets.all(32),
               child: Text(
                 'Cette salle n\'est pas disponible.',
                 style: TextStyle(color: AppColors.darkTextTertiary),
@@ -526,7 +526,7 @@ class _PromosSectionState extends State<_PromosSection> {
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 2,
-                color: AppColors.primary,
+                color: context.palette.primary,
               ),
             ),
           ],
@@ -559,7 +559,7 @@ class _PromosSectionState extends State<_PromosSection> {
                   width: i == _page ? 16 : 6,
                   height: 6,
                   decoration: BoxDecoration(
-                    color: i == _page ? AppColors.primary : Colors.white24,
+                    color: i == _page ? context.palette.primary : Colors.white24,
                     borderRadius: BorderRadius.circular(3),
                   ),
                 ),
@@ -648,9 +648,9 @@ class _PhotoCarouselState extends State<_PhotoCarousel> {
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stack) => ColoredBox(
                   color: AppColors.darkElevated,
-                  child: const Icon(
+                  child: Icon(
                     Icons.broken_image_rounded,
-                    color: AppColors.primary,
+                    color: context.palette.primary,
                   ),
                 ),
               ),
@@ -685,7 +685,7 @@ class _PhotoCarouselState extends State<_PhotoCarousel> {
                         height: 6,
                         decoration: BoxDecoration(
                           color: index == _page
-                              ? AppColors.primary
+                              ? context.palette.primary
                               : Colors.white38,
                           borderRadius: BorderRadius.circular(3),
                         ),
@@ -722,10 +722,10 @@ class _MemberPill extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
+              Icon(
                 Icons.people_alt_rounded,
                 size: 13,
-                color: AppColors.primary,
+                color: context.palette.primary,
               ),
               const SizedBox(width: 5),
               Text(
@@ -773,10 +773,10 @@ class _ActionsCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (address.isNotEmpty) _infoLine(Icons.location_on_rounded, address),
+          if (address.isNotEmpty) _infoLine(context, Icons.location_on_rounded, address),
           if (phone != null && phone!.isNotEmpty) ...[
             const SizedBox(height: 10),
-            _infoLine(Icons.phone_rounded, phone!),
+            _infoLine(context, Icons.phone_rounded, phone!),
           ],
           const SizedBox(height: 16),
           Wrap(
@@ -809,10 +809,10 @@ class _ActionsCard extends StatelessWidget {
     );
   }
 
-  Widget _infoLine(IconData icon, String text) {
+  Widget _infoLine(BuildContext context, IconData icon, String text) {
     return Row(
       children: [
-        Icon(icon, size: 18, color: AppColors.primary),
+        Icon(icon, size: 18, color: context.palette.primary),
         const SizedBox(width: 10),
         Expanded(
           child: Text(
@@ -855,7 +855,7 @@ class _GlowButton extends StatelessWidget {
           constraints: const BoxConstraints(minHeight: 48),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           decoration: BoxDecoration(
-            color: filled ? AppColors.primary : AppColors.darkCard,
+            color: filled ? context.palette.primary : AppColors.darkCard,
             borderRadius: BorderRadius.circular(28),
             border: filled
                 ? null
@@ -876,7 +876,7 @@ class _GlowButton extends StatelessWidget {
               Icon(
                 icon,
                 size: 18,
-                color: filled ? AppColors.darkBackground : AppColors.primary,
+                color: filled ? AppColors.darkBackground : context.palette.primary,
               ),
               const SizedBox(width: 8),
               Text(
@@ -1026,7 +1026,7 @@ class _OpeningHoursCardState extends State<_OpeningHoursCard>
                       fontSize: 14,
                       fontWeight: isToday ? FontWeight.w700 : FontWeight.w400,
                       color: isToday
-                          ? AppColors.primary
+                          ? context.palette.primary
                           : Colors.white.withValues(alpha: 0.85),
                     ),
                   ),
@@ -1040,7 +1040,7 @@ class _OpeningHoursCardState extends State<_OpeningHoursCard>
                       color: isClosed
                           ? AppColors.errorLight
                           : (isToday
-                                ? AppColors.primary
+                                ? context.palette.primary
                                 : Colors.white.withValues(alpha: 0.7)),
                     ),
                   ),
@@ -1062,7 +1062,7 @@ class _StatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = open ? AppColors.success : AppColors.errorLight;
+    final color = open ? context.palette.success : AppColors.errorLight;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
@@ -1176,9 +1176,9 @@ class _TeamMemberState extends State<_TeamMember> {
                       ? NetworkImage(photoUrl)
                       : null,
                   child: photoUrl == null
-                      ? const Icon(
+                      ? Icon(
                           Icons.person_rounded,
-                          color: AppColors.primary,
+                          color: context.palette.primary,
                         )
                       : null,
                 ),
@@ -1343,7 +1343,7 @@ class _SubscriptionsSection extends StatelessWidget {
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 2,
-                color: AppColors.primary,
+                color: context.palette.primary,
               ),
             ),
           ],
@@ -1436,7 +1436,7 @@ class _SubscriptionCard extends StatelessWidget {
               priceStr,
               style: GoogleFonts.anton(
                 fontSize: 22,
-                color: AppColors.primary,
+                color: context.palette.primary,
                 height: 1.0,
               ),
             ),

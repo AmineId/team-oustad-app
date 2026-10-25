@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'app_colors.dart';
+import 'app_palette.dart';
 import 'app_text_styles.dart';
 
 class AppTheme {
@@ -10,7 +11,7 @@ class AppTheme {
     brightness: Brightness.dark,
     
     // Couleurs
-    colorScheme: ColorScheme.dark(
+    colorScheme: const ColorScheme.dark(
       primary: AppColors.primary,
       onPrimary: Colors.white,            // blanc passe 4.5:1 sur #E07B2A sombre
       secondary: AppColors.primaryLight,
@@ -27,6 +28,7 @@ class AppTheme {
     ),
     
     scaffoldBackgroundColor: AppColors.darkBackground,
+    extensions: const [AppPalette.dark],
 
     // AppBar
     appBarTheme: AppBarTheme(
@@ -170,13 +172,13 @@ class AppTheme {
       elevation: 8,
     ),
 
-    pageTransitionsTheme: PageTransitionsTheme(
+    pageTransitionsTheme: const PageTransitionsTheme(
       builders: {
-        TargetPlatform.android: const PredictiveBackPageTransitionsBuilder(),
-        TargetPlatform.iOS: const ZoomPageTransitionsBuilder(),
-        TargetPlatform.macOS: const ZoomPageTransitionsBuilder(),
-        TargetPlatform.windows: const FadeUpwardsPageTransitionsBuilder(),
-        TargetPlatform.linux: const FadeUpwardsPageTransitionsBuilder(),
+        TargetPlatform.android: PredictiveBackPageTransitionsBuilder(),
+        TargetPlatform.iOS: ZoomPageTransitionsBuilder(),
+        TargetPlatform.macOS: ZoomPageTransitionsBuilder(),
+        TargetPlatform.windows: FadeUpwardsPageTransitionsBuilder(),
+        TargetPlatform.linux: FadeUpwardsPageTransitionsBuilder(),
       },
     ),
   );
@@ -187,14 +189,18 @@ class AppTheme {
     brightness: Brightness.light,
     
     // Couleurs
-    colorScheme: ColorScheme.light(
-      primary: AppColors.primary,
-      onPrimary: Colors.white,             // blanc passe sur #E07B2A (4.5:1 ok)
-      secondary: AppColors.primaryDark,
+    colorScheme: const ColorScheme.light(
+      // primary = encre bronze (texte/icônes/focus sur blanc, 5,2:1).
+      // Les aplats or utilisent AppColors.primary + AppColors.onPrimary.
+      primary: AppColors.primaryInk,
+      onPrimary: Colors.white,             // blanc sur bronze = 5,2:1
+      primaryContainer: AppColors.primary, // aplat or vif
+      onPrimaryContainer: AppColors.onPrimary,
+      secondary: AppColors.primaryInk,
       onSecondary: Colors.white,
-      tertiary: AppColors.accentViolet,    // 3ème couleur identité — premium
+      tertiary: AppColors.premiumInk,      // 3ème couleur identité — premium
       onTertiary: Colors.white,
-      error: AppColors.error,
+      error: AppColors.errorInk,
       onError: Colors.white,
       surface: AppColors.lightSurface,
       onSurface: AppColors.lightTextPrimary,
@@ -204,6 +210,7 @@ class AppTheme {
     ),
     
     scaffoldBackgroundColor: AppColors.lightBackground,
+    extensions: const [AppPalette.light],
     
     // AppBar
     appBarTheme: AppBarTheme(
@@ -217,10 +224,10 @@ class AppTheme {
       shadowColor: AppColors.lightShadow,
     ),
     
-    // Cards — lightCard (#F8F9FB) sur fond lightBackground (#ECEFF3) = séparation visible
+    // Cards — blanc sur fond gris-bleu + bordure discrète
     cardTheme: CardThemeData(
       color: AppColors.lightSurface,
-      elevation: 1,
+      elevation: 0,
       shadowColor: AppColors.lightShadow,
       surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(
@@ -230,12 +237,12 @@ class AppTheme {
       margin: const EdgeInsets.all(8),
     ),
     
-    // Buttons (avec élévation pour mode clair)
+    // Buttons — aplat or vif + texte midnight (8:1 ; le blanc ne faisait que 2,4:1)
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        elevation: 2,  // Élévation pour meilleure visibilité
+        foregroundColor: AppColors.onPrimary,
+        elevation: 0,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
@@ -246,8 +253,8 @@ class AppTheme {
     
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        foregroundColor: AppColors.primary,
-        side: const BorderSide(color: AppColors.primary, width: 1.5),
+        foregroundColor: AppColors.primaryInk,
+        side: const BorderSide(color: AppColors.primaryInk, width: 1.5),
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
@@ -258,7 +265,7 @@ class AppTheme {
     
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
-        foregroundColor: AppColors.primary,
+        foregroundColor: AppColors.primaryInk,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         textStyle: AppTextStyles.button,
       ),
@@ -279,23 +286,23 @@ class AppTheme {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.primary, width: 2),
+        borderSide: const BorderSide(color: AppColors.primaryInk, width: 2),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.error, width: 1.5),
+        borderSide: const BorderSide(color: AppColors.errorInk, width: 1.5),
       ),
       labelStyle: AppTextStyles.body2.copyWith(color: AppColors.lightTextSecondary),
       hintStyle: AppTextStyles.body2.copyWith(color: AppColors.lightTextTertiary),
-      prefixIconColor: AppColors.primary,
+      prefixIconColor: AppColors.lightTextSecondary,
       suffixIconColor: AppColors.lightTextSecondary,
     ),
     
     // Bottom Navigation
     bottomNavigationBarTheme: BottomNavigationBarThemeData(
       backgroundColor: AppColors.lightSurface,
-      selectedItemColor: AppColors.primary,
-      unselectedItemColor: AppColors.lightTextSecondary,  // Meilleur contraste
+      selectedItemColor: AppColors.primaryInk,
+      unselectedItemColor: AppColors.lightTextTertiary,
       type: BottomNavigationBarType.fixed,
       elevation: 8,
       selectedLabelStyle: AppTextStyles.caption.copyWith(fontWeight: FontWeight.w600),
@@ -311,7 +318,7 @@ class AppTheme {
     
     // Icons
     iconTheme: const IconThemeData(
-      color: AppColors.lightTextPrimary,  // Contraste amélioré pour les icônes
+      color: AppColors.lightTextSecondary,
       size: 24,
     ),
     
@@ -330,9 +337,11 @@ class AppTheme {
     ),
     
     // Snackbar
+    // Snackbar — même rendu que AppSnackBar (surface blanche + bordure)
     snackBarTheme: SnackBarThemeData(
-      backgroundColor: AppColors.lightCard,
+      backgroundColor: AppColors.lightSurface,
       contentTextStyle: AppTextStyles.body2.copyWith(color: AppColors.lightTextPrimary),
+      actionTextColor: AppColors.primaryInk,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: const BorderSide(color: AppColors.lightBorder, width: 1),
@@ -343,7 +352,7 @@ class AppTheme {
     
     // Dialogs
     dialogTheme: DialogThemeData(
-      backgroundColor: AppColors.lightCard,
+      backgroundColor: AppColors.lightSurface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
         side: BorderSide(color: AppColors.lightBorder.withValues(alpha: 0.3)),
@@ -351,13 +360,13 @@ class AppTheme {
       elevation: 12,
     ),
 
-    pageTransitionsTheme: PageTransitionsTheme(
+    pageTransitionsTheme: const PageTransitionsTheme(
       builders: {
-        TargetPlatform.android: const PredictiveBackPageTransitionsBuilder(),
-        TargetPlatform.iOS: const ZoomPageTransitionsBuilder(),
-        TargetPlatform.macOS: const ZoomPageTransitionsBuilder(),
-        TargetPlatform.windows: const FadeUpwardsPageTransitionsBuilder(),
-        TargetPlatform.linux: const FadeUpwardsPageTransitionsBuilder(),
+        TargetPlatform.android: PredictiveBackPageTransitionsBuilder(),
+        TargetPlatform.iOS: ZoomPageTransitionsBuilder(),
+        TargetPlatform.macOS: ZoomPageTransitionsBuilder(),
+        TargetPlatform.windows: FadeUpwardsPageTransitionsBuilder(),
+        TargetPlatform.linux: FadeUpwardsPageTransitionsBuilder(),
       },
     ),
   );

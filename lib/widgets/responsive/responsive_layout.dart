@@ -223,14 +223,14 @@ class ResponsiveScaffold extends StatelessWidget {
                         leading: Icon(
                           isSelected ? (item.activeIcon ?? item.icon) : item.icon,
                           color: isSelected
-                              ? AppColors.primary
+                              ? context.palette.primary
                               : Colors.white60,
                         ),
                         title: Text(
                           item.label,
                           style: TextStyle(
                             color:
-                                isSelected ? AppColors.primary : Colors.white60,
+                                isSelected ? context.palette.primary : Colors.white60,
                             fontWeight:
                                 isSelected ? FontWeight.bold : FontWeight.normal,
                           ),
@@ -332,13 +332,13 @@ class ResponsiveScaffold extends StatelessWidget {
                     dense: true,
                     leading: Icon(
                       isSelected ? (item.activeIcon ?? item.icon) : item.icon,
-                      color: isSelected ? AppColors.primary : Colors.white60,
+                      color: isSelected ? context.palette.primary : Colors.white60,
                       size: 16,
                     ),
                     title: Text(
                       item.label,
                       style: TextStyle(
-                        color: isSelected ? AppColors.primary : Colors.white60,
+                        color: isSelected ? context.palette.primary : Colors.white60,
                         fontSize: 12,
                         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                       ),

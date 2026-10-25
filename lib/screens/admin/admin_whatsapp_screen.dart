@@ -255,8 +255,8 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
         backgroundColor: Theme.of(context).cardTheme.color,
         title: Row(
           children: [
-            Icon(Icons.warning_amber_rounded, color: AppColors.warning),
-            SizedBox(width: 8),
+            Icon(Icons.warning_amber_rounded, color: context.palette.warning),
+            const SizedBox(width: 8),
             Text('Déconnecter WhatsApp', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
           ],
         ),
@@ -332,7 +332,7 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
       );
       if (!mounted) return;
       if (result == null) {
-        _showSnack('Erreur lors du changement de nom', AppColors.error);
+        _showSnack('Erreur lors du changement de nom', context.palette.error);
         return;
       }
       setState(() => _displayName = result['displayName'] as String?);
@@ -340,7 +340,7 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
         result['applied'] == false
             ? 'Nom enregistré, appliqué à la prochaine connexion'
             : 'Nom d\'affichage mis à jour',
-        AppColors.success,
+        context.palette.success,
       );
     } finally {
       if (mounted) setState(() => _nameSaving = false);
@@ -375,12 +375,12 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
       if (!mounted) return;
       if (status == 200) {
         setState(() => _photoPreview = bytes);
-        _showSnack('Photo de profil mise à jour', AppColors.success);
+        _showSnack('Photo de profil mise à jour', context.palette.success);
       } else if (status == 400) {
-        _showSnack('WhatsApp doit être connecté', AppColors.error);
+        _showSnack('WhatsApp doit être connecté', context.palette.error);
         _loadStatus();
       } else {
-        _showSnack('Erreur lors du changement de photo', AppColors.error);
+        _showSnack('Erreur lors du changement de photo', context.palette.error);
       }
     } finally {
       if (mounted) setState(() => _photoUploading = false);
@@ -422,8 +422,8 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
   Widget _buildScrollBody(ThemeData theme) {
     return SafeArea(
       child: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: AppColors.primary),
+          ? Center(
+              child: CircularProgressIndicator(color: context.palette.primary),
             )
           : SingleChildScrollView(
               padding: const EdgeInsets.all(24),
@@ -460,7 +460,7 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
         color: theme.cardTheme.color,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: (_connected ? AppColors.success : AppColors.error).withValues(
+          color: (_connected ? context.palette.success : context.palette.error).withValues(
             alpha: 0.4,
           ),
         ),
@@ -471,13 +471,13 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
             width: 56,
             height: 56,
             decoration: BoxDecoration(
-              color: (_connected ? AppColors.success : AppColors.error)
+              color: (_connected ? context.palette.success : context.palette.error)
                   .withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
             child: Icon(
               _connected ? Icons.check_circle : Icons.cancel,
-              color: _connected ? AppColors.success : AppColors.error,
+              color: _connected ? context.palette.success : context.palette.error,
               size: 30,
             ),
           ),
@@ -491,7 +491,7 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: _connected ? AppColors.success : AppColors.error,
+                    color: _connected ? context.palette.success : context.palette.error,
                   ),
                 ),
                 if (_connected && _phone != null) ...[
@@ -571,20 +571,20 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
                       borderSide: BorderSide.none,
                     ),
                     suffixIcon: _nameSaving
-                        ? const Padding(
-                            padding: EdgeInsets.all(14),
+                        ? Padding(
+                            padding: const EdgeInsets.all(14),
                             child: SizedBox(
                               width: 18,
                               height: 18,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                color: AppColors.primary,
+                                color: context.palette.primary,
                               ),
                             ),
                           )
                         : IconButton(
                             icon: const Icon(Icons.check),
-                            color: AppColors.primary,
+                            color: context.palette.primary,
                             tooltip: 'Enregistrer',
                             onPressed: _saveDisplayName,
                           ),
@@ -624,12 +624,12 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
                     ? MemoryImage(_photoPreview!)
                     : null,
                 child: _photoUploading
-                    ? const CircularProgressIndicator(
+                    ? CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: AppColors.primary,
+                        color: context.palette.primary,
                       )
                     : _photoPreview == null
-                    ? const Icon(Icons.person, color: AppColors.primary)
+                    ? Icon(Icons.person, color: context.palette.primary)
                     : null,
               ),
               Positioned(
@@ -674,9 +674,9 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
             indicator: BoxDecoration(
               color: AppColors.primary.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppColors.primary, width: 1.5),
+              border: Border.all(color: context.palette.primary, width: 1.5),
             ),
-            labelColor: AppColors.primary,
+            labelColor: context.palette.primary,
             unselectedLabelColor: theme.colorScheme.onSurface.withValues(alpha: 0.55),
             labelStyle: const TextStyle(
               fontWeight: FontWeight.w600,
@@ -751,10 +751,10 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
               ),
               const SizedBox(height: 24),
               if (_qrLoading)
-                const SizedBox(
+                SizedBox(
                   height: 220,
                   child: Center(
-                    child: CircularProgressIndicator(color: AppColors.primary),
+                    child: CircularProgressIndicator(color: context.palette.primary),
                   ),
                 )
               else if (_qrDataUrl != null)
@@ -775,8 +775,8 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
           icon: const Icon(Icons.refresh, size: 18),
           label: const Text('Régénérer le QR'),
           style: OutlinedButton.styleFrom(
-            foregroundColor: AppColors.primary,
-            side: const BorderSide(color: AppColors.primary),
+            foregroundColor: context.palette.primary,
+            side: BorderSide(color: context.palette.primary),
             padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
@@ -842,21 +842,21 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
                     borderRadius: BorderRadius.circular(12),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(
-                      color: AppColors.primary,
+                    borderSide: BorderSide(
+                      color: context.palette.primary,
                       width: 1.5,
                     ),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   errorText: _pairingError,
-                  errorStyle: const TextStyle(color: AppColors.error),
+                  errorStyle: TextStyle(color: context.palette.error),
                   errorBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: AppColors.error),
+                    borderSide: BorderSide(color: context.palette.error),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   focusedErrorBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(
-                      color: AppColors.error,
+                    borderSide: BorderSide(
+                      color: context.palette.error,
                       width: 1.5,
                     ),
                     borderRadius: BorderRadius.circular(12),
@@ -887,7 +887,7 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
+                    foregroundColor: context.palette.onPrimary,
                     disabledBackgroundColor: AppColors.primary.withValues(
                       alpha: 0.4,
                     ),
@@ -929,7 +929,7 @@ class _AdminWhatsAppScreenState extends State<AdminWhatsAppScreen>
                           fontSize: 32,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 6,
-                          fontFeatures: [FontFeature.tabularFigures()],
+                          fontFeatures: const [FontFeature.tabularFigures()],
                         ),
                       ),
                       const SizedBox(height: 12),

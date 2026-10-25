@@ -70,7 +70,7 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.watch, color: AppColors.primary, size: 28),
+            Icon(Icons.watch, color: context.palette.primary, size: 28),
             const SizedBox(height: 8),
             const Text(
               'Ouvrez Team\nOustad sur\nvotre téléphone',
@@ -97,7 +97,7 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
             title: 'Abonnement',
             value: status == 'active' ? '$daysLeft j' : 'Expiré',
             color:
-                status == 'active' ? AppColors.success : AppColors.error,
+                status == 'active' ? context.palette.success : context.palette.error,
           ),
         ],
       ),

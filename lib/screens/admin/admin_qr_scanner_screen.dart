@@ -244,7 +244,7 @@ class _AdminQrScannerScreenState extends State<AdminQrScannerScreen> {
                 width: 280,
                 height: 280,
                 decoration: BoxDecoration(
-                  border: Border.all(color: AppColors.primary, width: 3),
+                  border: Border.all(color: context.palette.primary, width: 3),
                   borderRadius: BorderRadius.circular(20),
                 ),
               ),
@@ -268,13 +268,13 @@ class _AdminQrScannerScreenState extends State<AdminQrScannerScreen> {
           if (_isProcessing)
             Container(
               color: Colors.black54,
-              child: const Center(
+              child: Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    CircularProgressIndicator(color: AppColors.primary),
-                    SizedBox(height: 16),
-                    Text(
+                    CircularProgressIndicator(color: context.palette.primary),
+                    const SizedBox(height: 16),
+                    const Text(
                       'Traitement...',
                       style: TextStyle(color: Colors.white, fontSize: 16),
                     ),
@@ -329,7 +329,7 @@ class _AdminQrScannerScreenState extends State<AdminQrScannerScreen> {
               onPressed: _resetScanner,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
-                foregroundColor: AppColors.error,
+                foregroundColor: context.palette.error,
                 padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
               ),
               child: const Text('Scanner à nouveau'),
@@ -447,7 +447,7 @@ class _AdminQrScannerScreenState extends State<AdminQrScannerScreen> {
               onPressed: _resetScanner,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
-                foregroundColor: AppColors.success,
+                foregroundColor: context.palette.success,
                 padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
               ),
               child: const Text('Scanner un autre membre'),
@@ -648,7 +648,7 @@ class _AdminQrScannerScreenState extends State<AdminQrScannerScreen> {
                     label: const Text('Valider l\'entrée'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
-                      foregroundColor: AppColors.primary,
+                      foregroundColor: context.palette.primary,
                       disabledBackgroundColor: Colors.white.withValues(alpha: 0.3),
                       disabledForegroundColor: Colors.white.withValues(alpha: 0.5),
                       padding: const EdgeInsets.symmetric(vertical: 16),

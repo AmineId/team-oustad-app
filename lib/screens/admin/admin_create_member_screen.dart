@@ -265,8 +265,8 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
         child: SafeArea(
           bottom: false,
           child: _isLoading
-              ? const Center(
-                  child: CircularProgressIndicator(color: AppColors.primary),
+              ? Center(
+                  child: CircularProgressIndicator(color: context.palette.primary),
                 )
               : SingleChildScrollView(
                   padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + MediaQuery.of(context).padding.bottom),
@@ -283,20 +283,20 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                             decoration: BoxDecoration(
                               color: Colors.red.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: AppColors.error),
+                              border: Border.all(color: context.palette.error),
                             ),
                             child: Row(
                               children: [
-                                const Icon(
+                                Icon(
                                   Icons.error_outline,
-                                  color: AppColors.error,
+                                  color: context.palette.error,
                                 ),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
                                     _errorMessage!,
-                                    style: const TextStyle(
-                                      color: AppColors.error,
+                                    style: TextStyle(
+                                      color: context.palette.error,
                                     ),
                                   ),
                                 ),
@@ -313,14 +313,14 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                             shape: BoxShape.circle,
                             color: AppColors.primary.withValues(alpha: 0.2),
                             border: Border.all(
-                              color: AppColors.primary,
+                              color: context.palette.primary,
                               width: 2,
                             ),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.person_add,
                             size: 48,
-                            color: AppColors.primary,
+                            color: context.palette.primary,
                           ),
                         ),
 
@@ -360,19 +360,19 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                                 context,
                               ).textTheme.bodyMedium!.color,
                             ),
-                            prefixIcon: const Icon(
+                            prefixIcon: Icon(
                               Icons.fitness_center,
-                              color: AppColors.primary,
+                              color: context.palette.primary,
                             ),
                             suffixIcon: _isLoadingGym
-                                ? const Padding(
-                                    padding: EdgeInsets.all(12.0),
+                                ? Padding(
+                                    padding: const EdgeInsets.all(12.0),
                                     child: SizedBox(
                                       width: 20,
                                       height: 20,
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2,
-                                        color: AppColors.primary,
+                                        color: context.palette.primary,
                                       ),
                                     ),
                                   )
@@ -403,9 +403,9 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                                 context,
                               ).textTheme.bodyMedium!.color,
                             ),
-                            prefixIcon: const Icon(
+                            prefixIcon: Icon(
                               Icons.phone,
-                              color: AppColors.primary,
+                              color: context.palette.primary,
                             ),
                             filled: true,
                             fillColor: Theme.of(context).cardTheme.color,
@@ -451,9 +451,9 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                                   .color!
                                   .withValues(alpha: 0.5),
                             ),
-                            prefixIcon: const Icon(
+                            prefixIcon: Icon(
                               Icons.email,
-                              color: AppColors.primary,
+                              color: context.palette.primary,
                             ),
                             filled: true,
                             fillColor: Theme.of(context).cardTheme.color,
@@ -487,9 +487,9 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                                 context,
                               ).textTheme.bodyMedium!.color,
                             ),
-                            prefixIcon: const Icon(
+                            prefixIcon: Icon(
                               Icons.person,
-                              color: AppColors.primary,
+                              color: context.palette.primary,
                             ),
                             filled: true,
                             fillColor: Theme.of(context).cardTheme.color,
@@ -520,9 +520,9 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                                 context,
                               ).textTheme.bodyMedium!.color,
                             ),
-                            prefixIcon: const Icon(
+                            prefixIcon: Icon(
                               Icons.person_outline,
-                              color: AppColors.primary,
+                              color: context.palette.primary,
                             ),
                             filled: true,
                             fillColor: Theme.of(context).cardTheme.color,
@@ -553,9 +553,9 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                                 context,
                               ).textTheme.bodyMedium!.color,
                             ),
-                            prefixIcon: const Icon(
+                            prefixIcon: Icon(
                               Icons.home,
-                              color: AppColors.primary,
+                              color: context.palette.primary,
                             ),
                             filled: true,
                             fillColor: Theme.of(context).cardTheme.color,
@@ -595,9 +595,9 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                                   .color!
                                   .withValues(alpha: 0.5),
                             ),
-                            prefixIcon: const Icon(
+                            prefixIcon: Icon(
                               Icons.lock,
-                              color: AppColors.primary,
+                              color: context.palette.primary,
                             ),
                             suffixIcon: IconButton(
                               icon: Icon(
@@ -648,7 +648,7 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                                     });
                                   },
                                   fillColor: WidgetStateProperty.all(
-                                    AppColors.primary,
+                                    context.palette.primary,
                                   ),
                                 ),
                                 Expanded(
@@ -697,7 +697,7 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                             children: [
                               Icon(
                                 Icons.info_outline,
-                                color: AppColors.primary,
+                                color: context.palette.primary,
                                 size: 20,
                               ),
                               const SizedBox(width: 12),
@@ -751,7 +751,7 @@ class _AdminCreateMemberScreenState extends State<AdminCreateMemberScreen> {
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                 ),
-                                child: Text(
+                                child: const Text(
                                   'Créer le membre',
                                   style: TextStyle(
                                     color: Colors.white,
