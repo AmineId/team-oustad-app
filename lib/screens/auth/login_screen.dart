@@ -251,7 +251,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                   child: Icon(
                     Icons.person_off_outlined,
                     size: 48,
-                    color: AppColors.warning,
+                    color: context.palette.warning,
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -294,12 +294,12 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.info_outline, color: AppColors.info, size: 20),
+                      Icon(Icons.info_outline, color: context.palette.info, size: 20),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
                           'Veuillez vous connecter en ligne ultérieurement pour finaliser votre inscription et accéder à votre QR code.',
-                          style: TextStyle(color: AppColors.info, fontSize: 13),
+                          style: TextStyle(color: context.palette.info, fontSize: 13),
                         ),
                       ),
                     ],
@@ -313,7 +313,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                   child: ElevatedButton(
                     onPressed: () => Navigator.of(context).pop(),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
+                      backgroundColor: context.palette.primaryFill,
                       foregroundColor:
                           (Theme.of(context).brightness == Brightness.dark
                           ? AppColors.darkTextPrimary
@@ -372,17 +372,17 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                 decoration: BoxDecoration(
                   color: AppColors.info.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppColors.info, width: 1),
+                  border: Border.all(color: context.palette.info, width: 1),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.wifi_off, color: AppColors.info, size: 16),
+                    Icon(Icons.wifi_off, color: context.palette.info, size: 16),
                     const SizedBox(width: 6),
                     Text(
                       'Mode Hors Ligne',
                       style: TextStyle(
-                        color: AppColors.info,
+                        color: context.palette.info,
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
@@ -451,7 +451,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                     child: Text(
                       profileData['displayId'],
                       style: TextStyle(
-                        color: AppColors.primary,
+                        color: context.palette.primary,
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                         letterSpacing: 2,
@@ -474,12 +474,12 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.info_outline, color: AppColors.info, size: 18),
+                    Icon(Icons.info_outline, color: context.palette.info, size: 18),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         'Présentez ce code au staff pour accéder à la salle',
-                        style: TextStyle(color: AppColors.info, fontSize: 12),
+                        style: TextStyle(color: context.palette.info, fontSize: 12),
                       ),
                     ),
                   ],
@@ -493,7 +493,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                 child: ElevatedButton(
                   onPressed: () => Navigator.of(context).pop(),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: context.palette.primaryFill,
                     foregroundColor:
                         (Theme.of(context).brightness == Brightness.dark
                         ? AppColors.darkTextPrimary
@@ -796,9 +796,9 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                   color: AppColors.primary.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.fingerprint,
-                  color: AppColors.primary,
+                  color: context.palette.primary,
                   size: 28,
                 ),
               ),
@@ -847,7 +847,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                 if (context.mounted) Navigator.of(context).pop();
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
+                backgroundColor: context.palette.primaryFill,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
                   vertical: 12,
@@ -927,8 +927,8 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const CircularProgressIndicator(
-                            color: AppColors.primary,
+                          CircularProgressIndicator(
+                            color: context.palette.primary,
                           ),
                           const SizedBox(height: 16),
                           Builder(
@@ -1068,7 +1068,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Icon(Icons.wifi_off, color: AppColors.warning, size: 64),
+                Icon(Icons.wifi_off, color: context.palette.warning, size: 64),
                 const SizedBox(height: 24),
                 Text(
                   'Mode Hors Ligne',
@@ -1106,7 +1106,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                         Icon(
                           Icons.qr_code_2,
                           size: 48,
-                          color: AppColors.primary,
+                          color: context.palette.primary,
                         ),
                         const SizedBox(height: 12),
                         Text(
@@ -1154,7 +1154,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                                     ),
                                   ),
                                 )
-                              : Icon(Icons.fingerprint, size: 24),
+                              : const Icon(Icons.fingerprint, size: 24),
                           label: Text(
                             _isAuthenticating
                                 ? 'Authentification...'
@@ -1165,7 +1165,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                             ),
                           ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
+                            backgroundColor: context.palette.primaryFill,
                             foregroundColor:
                                 (Theme.of(context).brightness == Brightness.dark
                                 ? AppColors.darkTextPrimary
@@ -1221,11 +1221,11 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                 // Retry connection button
                 OutlinedButton.icon(
                   onPressed: _performHealthCheck,
-                  icon: Icon(Icons.refresh),
-                  label: Text('Réessayer la connexion'),
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Réessayer la connexion'),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.primary,
-                    side: BorderSide(color: AppColors.primary, width: 2),
+                    foregroundColor: context.palette.primary,
+                    side: BorderSide(color: context.palette.primary, width: 2),
                     padding: const EdgeInsets.symmetric(
                       horizontal: 24,
                       vertical: 16,
@@ -1277,7 +1277,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                           ),
                         ),
                         Text(
-                          'FITNESS',
+                          'OUSTAD',
                           style: AppTextStyles.h1.copyWith(
                             color: Theme.of(context).colorScheme.primary,
                             height: 1.0,

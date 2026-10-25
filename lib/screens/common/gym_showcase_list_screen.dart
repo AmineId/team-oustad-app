@@ -109,7 +109,7 @@ class _GymShowcaseListScreenState extends State<GymShowcaseListScreen>
         body: Stack(
           children: [
             RefreshIndicator(
-              color: AppColors.primary,
+              color: context.palette.primary,
               backgroundColor: AppColors.darkSurface,
               onRefresh: () => Future.wait([_loadGyms(), _loadPage()]),
               child: CustomScrollView(
@@ -163,10 +163,10 @@ class _GymShowcaseListScreenState extends State<GymShowcaseListScreen>
 
   Widget _buildContent(BuildContext context) {
     if (_isLoading) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 120),
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 120),
         child: Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
+          child: CircularProgressIndicator(color: context.palette.primary),
         ),
       );
     }
@@ -231,7 +231,7 @@ class _GymShowcaseListScreenState extends State<GymShowcaseListScreen>
               shape: BoxShape.circle,
               color: AppColors.primary.withValues(alpha: 0.12),
             ),
-            child: Icon(icon, size: 32, color: AppColors.primary),
+            child: Icon(icon, size: 32, color: context.palette.primary),
           ),
           const SizedBox(height: 20),
           Text(
@@ -256,8 +256,8 @@ class _GymShowcaseListScreenState extends State<GymShowcaseListScreen>
             OutlinedButton(
               onPressed: onRetry,
               style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.primary,
-                side: const BorderSide(color: AppColors.primary),
+                foregroundColor: context.palette.primary,
+                side: BorderSide(color: context.palette.primary),
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,
                   vertical: 12,
@@ -347,7 +347,7 @@ class _GlobalPromoBannerSectionState extends State<_GlobalPromoBannerSection> {
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 2,
-                      color: AppColors.primary,
+                      color: context.palette.primary,
                     ),
                   ),
                 ],
@@ -381,7 +381,7 @@ class _GlobalPromoBannerSectionState extends State<_GlobalPromoBannerSection> {
                         height: 6,
                         decoration: BoxDecoration(
                           color: i == _page
-                              ? AppColors.primary
+                              ? context.palette.primary
                               : Colors.white24,
                           borderRadius: BorderRadius.circular(3),
                         ),
@@ -488,7 +488,7 @@ class _ShowcaseHero extends StatelessWidget {
                     Positioned(
                       top: -140 + 36 * t + parallax,
                       left: -120 + 50 * t,
-                      child: _glowBlob(AppColors.primary, 420),
+                      child: _glowBlob(context.palette.primary, 420),
                     ),
                     Positioned(
                       bottom: -160 - 24 * t - parallax,
@@ -608,7 +608,7 @@ class _Eyebrow extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.bolt_rounded, size: 14, color: AppColors.primary),
+          Icon(Icons.bolt_rounded, size: 14, color: context.palette.primary),
           const SizedBox(width: 8),
           Text(
             text,
@@ -616,7 +616,7 @@ class _Eyebrow extends StatelessWidget {
               fontSize: 12,
               fontWeight: FontWeight.w700,
               letterSpacing: 1.8,
-              color: AppColors.primary,
+              color: context.palette.primary,
             ),
           ),
         ],
@@ -647,7 +647,7 @@ class _Wordmark extends StatelessWidget {
     final teamStyle = TextStyle(
       fontFamily: 'Vlavour',
       fontSize: size * 1.15,
-      color: AppColors.primary,
+      color: context.palette.primary,
       shadows: [
         Shadow(
           color: AppColors.primary.withValues(alpha: 0.55),
@@ -731,9 +731,9 @@ class _ScrollCueState extends State<_ScrollCue>
                     offset: Offset(0, 6 * _controller.value),
                     child: child,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.keyboard_arrow_down_rounded,
-                    color: AppColors.primary,
+                    color: context.palette.primary,
                     size: 26,
                   ),
                 ),
@@ -769,7 +769,7 @@ class _SectionHeader extends StatelessWidget {
             fontSize: 12,
             fontWeight: FontWeight.w700,
             letterSpacing: 2,
-            color: AppColors.primary,
+            color: context.palette.primary,
           ),
         ),
         const SizedBox(height: 6),
@@ -937,14 +937,14 @@ class _GymShowcaseCardState extends State<_GymShowcaseCard> {
                                           style: GoogleFonts.barlow(
                                             fontSize: 12,
                                             fontWeight: FontWeight.w700,
-                                            color: AppColors.primary,
+                                            color: context.palette.primary,
                                           ),
                                         ),
                                         const SizedBox(width: 4),
-                                        const Icon(
+                                        Icon(
                                           Icons.arrow_forward_rounded,
                                           size: 14,
-                                          color: AppColors.primary,
+                                          color: context.palette.primary,
                                         ),
                                       ],
                                     ),
@@ -999,10 +999,10 @@ class _MemberBadge extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
+              Icon(
                 Icons.people_alt_rounded,
                 size: 12,
-                color: AppColors.primary,
+                color: context.palette.primary,
               ),
               const SizedBox(width: 4),
               Text(

@@ -108,7 +108,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(
-          color: isActive ? AppColors.primary : Colors.transparent,
+          color: isActive ? context.palette.primary : Colors.transparent,
           width: 2,
         ),
       ),
@@ -126,7 +126,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                     color: AppColors.primary.withValues(alpha: 0.2),
                     child: Icon(
                       Icons.person,
-                      color: isActive ? AppColors.primary : Colors.grey,
+                      color: isActive ? context.palette.primary : Colors.grey,
                       size: 20,
                     ),
                   );
@@ -136,7 +136,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                 color: AppColors.primary.withValues(alpha: 0.2),
                 child: Icon(
                   Icons.person,
-                  color: isActive ? AppColors.primary : Colors.grey,
+                  color: isActive ? context.palette.primary : Colors.grey,
                   size: 20,
                 ),
               ),
@@ -351,7 +351,7 @@ class _AccueilPageState extends State<AccueilPage> {
   Widget build(BuildContext context) {
     return RefreshIndicator(
       onRefresh: _fetchStats,
-      color: AppColors.primary,
+      color: context.palette.primary,
       child: SafeArea(top: false, bottom: false,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -413,13 +413,13 @@ class _AccueilPageState extends State<AccueilPage> {
         icon: Icons.fitness_center,
         title: 'Actifs',
         value: _activeMembers,
-        color: AppColors.success,
+        color: context.palette.success,
       ),
       _StatCard(
         icon: Icons.calendar_today,
         title: "Aujourd'hui",
         value: _todayCheckIns,
-        color: AppColors.info,
+        color: context.palette.info,
       ),
       if (_canViewReports)
         _StatCard(
@@ -1068,9 +1068,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             children: [
                               CircleAvatar(
                                 radius: 50,
-                                backgroundColor: Theme.of(
-                                  context,
-                                ).colorScheme.primary,
+                                backgroundColor: context.palette.primaryFill,
                                 child: Icon(
                                   Icons.person,
                                   size: 50,
@@ -1200,14 +1198,14 @@ class _ProfilePageState extends State<ProfilePage> {
                             vertical: 8,
                           ),
                           decoration: BoxDecoration(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.primary.withValues(alpha: 0.2),
+                            color: (role == 'owner'
+                                ? context.palette.premium
+                                : context.palette.primary).withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.primary.withValues(alpha: 0.5),
+                              color: (role == 'owner'
+                                ? context.palette.premium
+                                : context.palette.primary).withValues(alpha: 0.5),
                               width: 1,
                             ),
                           ),
@@ -1219,7 +1217,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                     ? Icons.verified
                                     : Icons.admin_panel_settings,
                                 size: 16,
-                                color: Theme.of(context).colorScheme.primary,
+                                color: (role == 'owner'
+                                ? context.palette.premium
+                                : context.palette.primary),
                               ),
                               const SizedBox(width: 6),
                               Text(
@@ -1228,7 +1228,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                     : l10n.adminRole,
                                 style: TextStyle(
                                   fontSize: 13,
-                                  color: Theme.of(context).colorScheme.primary,
+                                  color: (role == 'owner'
+                                ? context.palette.premium
+                                : context.palette.primary),
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -1281,7 +1283,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
                 // Logout button
                 Card(
-                  color: AppColors.error,
+                  color: context.palette.error,
                   elevation: 2,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -1400,12 +1402,12 @@ class _ProfilePageState extends State<ProfilePage> {
         leading: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: AppColors.accentViolet.withValues(alpha: 0.12),
+            color: AppColors.primary.withValues(alpha: 0.12),
             shape: BoxShape.circle,
           ),
           child: Icon(
             Icons.watch_outlined,
-            color: AppColors.accentViolet,
+            color: context.palette.primary,
             size: 22,
           ),
         ),
@@ -1432,7 +1434,7 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         trailing: Switch.adaptive(
           value: _watchEnabled,
-          activeThumbColor: AppColors.accentGreen,
+          activeThumbColor: context.palette.success,
           activeTrackColor: AppColors.accentGreen.withValues(alpha: 0.4),
           onChanged: (val) async {
             setState(() => _watchEnabled = val);
@@ -1950,9 +1952,9 @@ class _AdminsListViewState extends State<_AdminsListView> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.error_outline,
-                              color: AppColors.error,
+                              color: context.palette.error,
                               size: 48,
                             ),
                             const SizedBox(height: 16),
@@ -2041,7 +2043,7 @@ class _AdminsListViewState extends State<_AdminsListView> {
         ),
         child: FloatingActionButton(
           onPressed: widget.onCreate,
-          backgroundColor: theme.colorScheme.primary,
+          backgroundColor: context.palette.primaryFill,
           child: Icon(
             Icons.add,
             color: (Theme.of(context).brightness == Brightness.dark
@@ -2310,9 +2312,9 @@ class _GymsListViewState extends State<_GymsListView> {
                     hintStyle: TextStyle(
                       color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                     ),
-                    prefixIcon: const Icon(
+                    prefixIcon: Icon(
                       Icons.search,
-                      color: AppColors.primary,
+                      color: context.palette.primary,
                     ),
                     suffixIcon: _searchController.text.isNotEmpty
                         ? IconButton(
@@ -2341,9 +2343,9 @@ class _GymsListViewState extends State<_GymsListView> {
               // Liste des salles
               Expanded(
                 child: _isLoading
-                    ? const Center(
+                    ? Center(
                         child: CircularProgressIndicator(
-                          color: AppColors.primary,
+                          color: context.palette.primary,
                         ),
                       )
                     : _errorMessage.isNotEmpty
@@ -2351,9 +2353,9 @@ class _GymsListViewState extends State<_GymsListView> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.error_outline,
-                              color: AppColors.error,
+                              color: context.palette.error,
                               size: 48,
                             ),
                             const SizedBox(height: 16),
@@ -2408,7 +2410,7 @@ class _GymsListViewState extends State<_GymsListView> {
                       )
                     : RefreshIndicator(
                         onRefresh: _loadGyms,
-                        color: AppColors.primary,
+                        color: context.palette.primary,
                         child: ListView.builder(
                           padding: EdgeInsets.fromLTRB(16, 0, 16, 16 + MediaQuery.of(context).padding.bottom),
                           itemCount: _filteredGyms.length,
@@ -2432,8 +2434,8 @@ class _GymsListViewState extends State<_GymsListView> {
         ),
         child: FloatingActionButton(
           onPressed: widget.onCreate,
-          backgroundColor: AppColors.primary,
-          child: const Icon(Icons.add, color: Colors.white),
+          backgroundColor: context.palette.primaryFill,
+          child: Icon(Icons.add, color: context.palette.onPrimary),
         ),
       ),
     );
@@ -2462,12 +2464,12 @@ class _GymsListViewState extends State<_GymsListView> {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: AppColors.primary.withValues(alpha: 0.2),
-                  border: Border.all(color: AppColors.primary, width: 2),
+                  border: Border.all(color: context.palette.primary, width: 2),
                 ),
-                child: const Center(
+                child: Center(
                   child: Icon(
                     Icons.fitness_center,
-                    color: AppColors.primary,
+                    color: context.palette.primary,
                     size: 28,
                   ),
                 ),
@@ -2509,8 +2511,8 @@ class _GymsListViewState extends State<_GymsListView> {
                       ),
                       child: Text(
                         '$memberCount membre${memberCount > 1 ? 's' : ''}',
-                        style: const TextStyle(
-                          color: AppColors.primary,
+                        style: TextStyle(
+                          color: context.palette.primary,
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
                         ),
@@ -2600,7 +2602,7 @@ class _AdminDetailsViewState extends State<_AdminDetailsView> {
                   ),
                   const Spacer(),
                   IconButton(
-                    icon: const Icon(Icons.edit, color: AppColors.primary),
+                    icon: Icon(Icons.edit, color: context.palette.primary),
                     onPressed: widget.onEdit,
                   ),
                 ],
@@ -2620,13 +2622,13 @@ class _AdminDetailsViewState extends State<_AdminDetailsView> {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: AppColors.primary.withValues(alpha: 0.2),
-                        border: Border.all(color: AppColors.primary, width: 3),
+                        border: Border.all(color: context.palette.primary, width: 3),
                       ),
                       child: Center(
                         child: Text(
                           initials,
-                          style: const TextStyle(
-                            color: AppColors.primary,
+                          style: TextStyle(
+                            color: context.palette.primary,
                             fontSize: 48,
                             fontWeight: FontWeight.bold,
                           ),
@@ -2657,10 +2659,10 @@ class _AdminDetailsViewState extends State<_AdminDetailsView> {
                         color: AppColors.primary.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Administrateur',
                         style: TextStyle(
-                          color: AppColors.primary,
+                          color: context.palette.primary,
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
@@ -2756,7 +2758,7 @@ class _AdminDetailsViewState extends State<_AdminDetailsView> {
               color: AppColors.primary.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: AppColors.primary, size: 24),
+            child: Icon(icon, color: context.palette.primary, size: 24),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -2917,7 +2919,7 @@ class _GymDetailsViewState extends State<_GymDetailsView> {
                   ),
                   const Spacer(),
                   IconButton(
-                    icon: const Icon(Icons.edit, color: AppColors.primary),
+                    icon: Icon(Icons.edit, color: context.palette.primary),
                     onPressed: widget.onEdit,
                   ),
                 ],
@@ -2937,12 +2939,12 @@ class _GymDetailsViewState extends State<_GymDetailsView> {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: AppColors.primary.withValues(alpha: 0.2),
-                        border: Border.all(color: AppColors.primary, width: 3),
+                        border: Border.all(color: context.palette.primary, width: 3),
                       ),
-                      child: const Center(
+                      child: Center(
                         child: Icon(
                           Icons.fitness_center,
-                          color: AppColors.primary,
+                          color: context.palette.primary,
                           size: 60,
                         ),
                       ),
@@ -2973,8 +2975,8 @@ class _GymDetailsViewState extends State<_GymDetailsView> {
                       ),
                       child: Text(
                         '$memberCount membre${memberCount > 1 ? 's' : ''}',
-                        style: const TextStyle(
-                          color: AppColors.primary,
+                        style: TextStyle(
+                          color: context.palette.primary,
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
@@ -2990,7 +2992,7 @@ class _GymDetailsViewState extends State<_GymDetailsView> {
                       ),
                       decoration: BoxDecoration(
                         color: (widget.gym['isPublished'] == true
-                                ? AppColors.success
+                                ? context.palette.success
                                 : Colors.white38)
                             .withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(20),
@@ -3004,7 +3006,7 @@ class _GymDetailsViewState extends State<_GymDetailsView> {
                                 : Icons.public_off,
                             size: 14,
                             color: widget.gym['isPublished'] == true
-                                ? AppColors.success
+                                ? context.palette.success
                                 : Colors.white60,
                           ),
                           const SizedBox(width: 6),
@@ -3014,7 +3016,7 @@ class _GymDetailsViewState extends State<_GymDetailsView> {
                                 : 'Non publiée',
                             style: TextStyle(
                               color: widget.gym['isPublished'] == true
-                                  ? AppColors.success
+                                  ? context.palette.success
                                   : Colors.white60,
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
@@ -3069,7 +3071,7 @@ class _GymDetailsViewState extends State<_GymDetailsView> {
                             icon: const Icon(Icons.schedule),
                             label: const Text('Horaires'),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
+                              backgroundColor: context.palette.primaryFill,
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -3092,7 +3094,7 @@ class _GymDetailsViewState extends State<_GymDetailsView> {
                             icon: const Icon(Icons.group),
                             label: const Text('Membres'),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
+                              backgroundColor: context.palette.primaryFill,
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -3112,7 +3114,7 @@ class _GymDetailsViewState extends State<_GymDetailsView> {
                         icon: const Icon(Icons.photo_library_outlined),
                         label: const Text('Galerie photos (site vitrine)'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
+                          backgroundColor: context.palette.primaryFill,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -3145,8 +3147,8 @@ class _GymDetailsViewState extends State<_GymDetailsView> {
                         icon: const Icon(Icons.web),
                         label: const Text('Contenu de la page vitrine'),
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.primary,
-                          side: const BorderSide(color: AppColors.primary),
+                          foregroundColor: context.palette.primary,
+                          side: BorderSide(color: context.palette.primary),
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -3209,7 +3211,7 @@ class _GymDetailsViewState extends State<_GymDetailsView> {
               color: AppColors.primary.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: AppColors.primary, size: 24),
+            child: Icon(icon, color: context.palette.primary, size: 24),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -3481,9 +3483,9 @@ class _AdminEditViewState extends State<_AdminEditView> {
                             shape: BoxShape.circle,
                             color: AppColors.primary.withValues(alpha: 0.2),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.admin_panel_settings,
-                            color: AppColors.primary,
+                            color: context.palette.primary,
                             size: 40,
                           ),
                         ),
@@ -3503,9 +3505,9 @@ class _AdminEditViewState extends State<_AdminEditView> {
                               context,
                             ).colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
-                          prefixIcon: const Icon(
+                          prefixIcon: Icon(
                             Icons.person,
-                            color: AppColors.primary,
+                            color: context.palette.primary,
                           ),
                           filled: true,
                           fillColor: Theme.of(context).cardTheme.color,
@@ -3536,9 +3538,9 @@ class _AdminEditViewState extends State<_AdminEditView> {
                               context,
                             ).colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
-                          prefixIcon: const Icon(
+                          prefixIcon: Icon(
                             Icons.person_outline,
-                            color: AppColors.primary,
+                            color: context.palette.primary,
                           ),
                           filled: true,
                           fillColor: Theme.of(context).cardTheme.color,
@@ -3570,9 +3572,9 @@ class _AdminEditViewState extends State<_AdminEditView> {
                               context,
                             ).colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
-                          prefixIcon: const Icon(
+                          prefixIcon: Icon(
                             Icons.email,
-                            color: AppColors.primary,
+                            color: context.palette.primary,
                           ),
                           filled: true,
                           fillColor: Theme.of(context).cardTheme.color,
@@ -3607,9 +3609,9 @@ class _AdminEditViewState extends State<_AdminEditView> {
                               context,
                             ).colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
-                          prefixIcon: const Icon(
+                          prefixIcon: Icon(
                             Icons.fitness_center,
-                            color: AppColors.primary,
+                            color: context.palette.primary,
                           ),
                           filled: true,
                           fillColor: Theme.of(context).cardTheme.color,
@@ -3640,14 +3642,14 @@ class _AdminEditViewState extends State<_AdminEditView> {
                       ElevatedButton(
                         onPressed: _isLoading ? null : _updateAdmin,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
+                          backgroundColor: context.palette.primaryFill,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
                         child: _isLoading
-                            ? SizedBox(
+                            ? const SizedBox(
                                 height: 20,
                                 width: 20,
                                 child: CircularProgressIndicator(
@@ -3657,7 +3659,7 @@ class _AdminEditViewState extends State<_AdminEditView> {
                                   ),
                                 ),
                               )
-                            : Text(
+                            : const Text(
                                 'Modifier l\'administrateur',
                                 style: TextStyle(
                                   fontSize: 16,
@@ -3837,9 +3839,9 @@ class _GymEditViewState extends State<_GymEditView> {
                             shape: BoxShape.circle,
                             color: AppColors.primary.withValues(alpha: 0.2),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.fitness_center,
-                            color: AppColors.primary,
+                            color: context.palette.primary,
                             size: 40,
                           ),
                         ),
@@ -3857,9 +3859,9 @@ class _GymEditViewState extends State<_GymEditView> {
                               context,
                             ).colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
-                          prefixIcon: const Icon(
+                          prefixIcon: Icon(
                             Icons.business,
-                            color: AppColors.primary,
+                            color: context.palette.primary,
                           ),
                           filled: true,
                           fillColor: Theme.of(context).cardTheme.color,
@@ -3889,9 +3891,9 @@ class _GymEditViewState extends State<_GymEditView> {
                               context,
                             ).colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
-                          prefixIcon: const Icon(
+                          prefixIcon: Icon(
                             Icons.location_on,
-                            color: AppColors.primary,
+                            color: context.palette.primary,
                           ),
                           filled: true,
                           fillColor: Theme.of(context).cardTheme.color,
@@ -3921,9 +3923,9 @@ class _GymEditViewState extends State<_GymEditView> {
                               context,
                             ).colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
-                          prefixIcon: const Icon(
+                          prefixIcon: Icon(
                             Icons.phone,
-                            color: AppColors.primary,
+                            color: context.palette.primary,
                           ),
                           filled: true,
                           fillColor: Theme.of(context).cardTheme.color,
@@ -3950,9 +3952,9 @@ class _GymEditViewState extends State<_GymEditView> {
                               context,
                             ).colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
-                          prefixIcon: const Icon(
+                          prefixIcon: Icon(
                             Icons.notes_rounded,
-                            color: AppColors.primary,
+                            color: context.palette.primary,
                           ),
                           alignLabelWithHint: true,
                           filled: true,
@@ -3973,7 +3975,7 @@ class _GymEditViewState extends State<_GymEditView> {
                           value: _isPublished,
                           onChanged: (value) =>
                               setState(() => _isPublished = value),
-                          activeThumbColor: AppColors.primary,
+                          activeThumbColor: context.palette.primary,
                           title: Text(
                             'Publier sur le site vitrine',
                             style: TextStyle(
@@ -3996,14 +3998,14 @@ class _GymEditViewState extends State<_GymEditView> {
                       ElevatedButton(
                         onPressed: _isLoading ? null : _updateGym,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
+                          backgroundColor: context.palette.primaryFill,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
                         child: _isLoading
-                            ? SizedBox(
+                            ? const SizedBox(
                                 height: 20,
                                 width: 20,
                                 child: CircularProgressIndicator(
@@ -4013,7 +4015,7 @@ class _GymEditViewState extends State<_GymEditView> {
                                   ),
                                 ),
                               )
-                            : Text(
+                            : const Text(
                                 'Modifier la salle',
                                 style: TextStyle(
                                   fontSize: 16,
@@ -4181,7 +4183,7 @@ class _GymGalleryViewState extends State<_GymGalleryView> {
         ),
         child: Column(
           children: [
-            Icon(icon, color: AppColors.primary, size: 32),
+            Icon(icon, color: context.palette.primary, size: 32),
             const SizedBox(height: 8),
             Text(label, style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 13)),
           ],
@@ -4304,7 +4306,7 @@ class _GymGalleryViewState extends State<_GymGalleryView> {
                             height: 20,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : const Icon(Icons.add_a_photo, color: AppColors.primary),
+                        : Icon(Icons.add_a_photo, color: context.palette.primary),
                     onPressed: _isUploading ? null : _addPhoto,
                   ),
                 ],
@@ -4353,7 +4355,7 @@ class _GymGalleryViewState extends State<_GymGalleryView> {
                                 color: Theme.of(context).cardTheme.color,
                                 borderRadius: BorderRadius.circular(16),
                                 border: isCover
-                                    ? Border.all(color: AppColors.primary, width: 2)
+                                    ? Border.all(color: context.palette.primary, width: 2)
                                     : null,
                               ),
                               child: Row(
@@ -4372,7 +4374,7 @@ class _GymGalleryViewState extends State<_GymGalleryView> {
                                         width: 90,
                                         height: 90,
                                         color: AppColors.primary.withValues(alpha: 0.1),
-                                        child: const Icon(Icons.broken_image, color: AppColors.primary),
+                                        child: Icon(Icons.broken_image, color: context.palette.primary),
                                       ),
                                     ),
                                   ),
@@ -4391,13 +4393,13 @@ class _GymGalleryViewState extends State<_GymGalleryView> {
                                   IconButton(
                                     icon: Icon(
                                       isCover ? Icons.star : Icons.star_border,
-                                      color: isCover ? AppColors.primary : Colors.white38,
+                                      color: isCover ? context.palette.primary : Colors.white38,
                                     ),
                                     tooltip: 'Définir comme couverture',
                                     onPressed: isCover ? null : () => _setCover(photoId),
                                   ),
                                   IconButton(
-                                    icon: const Icon(Icons.delete_outline, color: AppColors.error),
+                                    icon: Icon(Icons.delete_outline, color: context.palette.error),
                                     onPressed: () => _deletePhoto(photoId),
                                   ),
                                   const SizedBox(width: 4),
@@ -4554,7 +4556,7 @@ class _GymOpeningHoursViewState extends State<_GymOpeningHoursView> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: ColorScheme.dark(
-              primary: AppColors.primary,
+              primary: context.palette.primary,
               onSurface: Colors.white,
               surface: Theme.of(context).cardTheme.color ?? Colors.grey[900]!,
             ),
@@ -4604,9 +4606,9 @@ class _GymOpeningHoursViewState extends State<_GymOpeningHoursView> {
             const SizedBox(height: 4),
             Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.access_time,
-                  color: AppColors.primary,
+                  color: context.palette.primary,
                   size: 20,
                 ),
                 const SizedBox(width: 8),
@@ -4680,9 +4682,9 @@ class _GymOpeningHoursViewState extends State<_GymOpeningHoursView> {
             // Contenu
             Expanded(
               child: _isLoading
-                  ? const Center(
+                  ? Center(
                       child: CircularProgressIndicator(
-                        color: AppColors.primary,
+                        color: context.palette.primary,
                       ),
                     )
                   : ListView.builder(
@@ -4707,8 +4709,8 @@ class _GymOpeningHoursViewState extends State<_GymOpeningHoursView> {
                                   children: [
                                     Text(
                                       _dayNames[index],
-                                      style: const TextStyle(
-                                        color: AppColors.primary,
+                                      style: TextStyle(
+                                        color: context.palette.primary,
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -4727,7 +4729,7 @@ class _GymOpeningHoursViewState extends State<_GymOpeningHoursView> {
                                     const SizedBox(width: 8),
                                     Switch(
                                       value: isClosed,
-                                      activeThumbColor: AppColors.error,
+                                      activeThumbColor: context.palette.error,
                                       onChanged: (value) {
                                         setState(() {
                                           _hoursData[index]['isClosed'] = value;
@@ -4786,14 +4788,14 @@ class _GymOpeningHoursViewState extends State<_GymOpeningHoursView> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _saveOpeningHours,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: context.palette.primaryFill,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                   child: _isLoading
-                      ? SizedBox(
+                      ? const SizedBox(
                           height: 20,
                           width: 20,
                           child: CircularProgressIndicator(
@@ -4801,7 +4803,7 @@ class _GymOpeningHoursViewState extends State<_GymOpeningHoursView> {
                             color: Colors.white,
                           ),
                         )
-                      : Text(
+                      : const Text(
                           'Enregistrer',
                           style: TextStyle(
                             fontSize: 16,
@@ -4977,9 +4979,9 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
                             shape: BoxShape.circle,
                             color: AppColors.primary.withValues(alpha: 0.2),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.admin_panel_settings,
-                            color: AppColors.primary,
+                            color: context.palette.primary,
                             size: 40,
                           ),
                         ),
@@ -4999,9 +5001,9 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
                               context,
                             ).colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
-                          prefixIcon: const Icon(
+                          prefixIcon: Icon(
                             Icons.person,
-                            color: AppColors.primary,
+                            color: context.palette.primary,
                           ),
                           filled: true,
                           fillColor: Theme.of(context).cardTheme.color,
@@ -5032,9 +5034,9 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
                               context,
                             ).colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
-                          prefixIcon: const Icon(
+                          prefixIcon: Icon(
                             Icons.person_outline,
-                            color: AppColors.primary,
+                            color: context.palette.primary,
                           ),
                           filled: true,
                           fillColor: Theme.of(context).cardTheme.color,
@@ -5066,9 +5068,9 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
                               context,
                             ).colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
-                          prefixIcon: const Icon(
+                          prefixIcon: Icon(
                             Icons.email,
-                            color: AppColors.primary,
+                            color: context.palette.primary,
                           ),
                           filled: true,
                           fillColor: Theme.of(context).cardTheme.color,
@@ -5102,9 +5104,9 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
                               context,
                             ).colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
-                          prefixIcon: const Icon(
+                          prefixIcon: Icon(
                             Icons.home,
-                            color: AppColors.primary,
+                            color: context.palette.primary,
                           ),
                           filled: true,
                           fillColor: Theme.of(context).cardTheme.color,
@@ -5136,9 +5138,9 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
                               context,
                             ).colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
-                          prefixIcon: const Icon(
+                          prefixIcon: Icon(
                             Icons.fitness_center,
-                            color: AppColors.primary,
+                            color: context.palette.primary,
                           ),
                           filled: true,
                           fillColor: Theme.of(context).cardTheme.color,
@@ -5180,7 +5182,7 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
                             Checkbox(
                               value: _sendSetupEmail,
                               fillColor: WidgetStateProperty.all(
-                                AppColors.primary,
+                                context.palette.primary,
                               ),
                               onChanged: (value) {
                                 setState(() {
@@ -5218,9 +5220,9 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
                                 context,
                               ).colorScheme.onSurface.withValues(alpha: 0.6),
                             ),
-                            prefixIcon: const Icon(
+                            prefixIcon: Icon(
                               Icons.lock,
-                              color: AppColors.primary,
+                              color: context.palette.primary,
                             ),
                             filled: true,
                             fillColor: Theme.of(context).cardTheme.color,
@@ -5249,14 +5251,14 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
                       ElevatedButton(
                         onPressed: _isLoading ? null : _createAdmin,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
+                          backgroundColor: context.palette.primaryFill,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
                         child: _isLoading
-                            ? SizedBox(
+                            ? const SizedBox(
                                 height: 20,
                                 width: 20,
                                 child: CircularProgressIndicator(
@@ -5266,7 +5268,7 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
                                   ),
                                 ),
                               )
-                            : Text(
+                            : const Text(
                                 'Créer l\'administrateur',
                                 style: TextStyle(
                                   fontSize: 16,
@@ -5411,9 +5413,9 @@ class _GymCreateViewState extends State<_GymCreateView> {
                             shape: BoxShape.circle,
                             color: AppColors.primary.withValues(alpha: 0.2),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.fitness_center,
-                            color: AppColors.primary,
+                            color: context.palette.primary,
                             size: 40,
                           ),
                         ),
@@ -5433,9 +5435,9 @@ class _GymCreateViewState extends State<_GymCreateView> {
                               context,
                             ).colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
-                          prefixIcon: const Icon(
+                          prefixIcon: Icon(
                             Icons.business,
-                            color: AppColors.primary,
+                            color: context.palette.primary,
                           ),
                           filled: true,
                           fillColor: Theme.of(context).cardTheme.color,
@@ -5467,9 +5469,9 @@ class _GymCreateViewState extends State<_GymCreateView> {
                               context,
                             ).colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
-                          prefixIcon: const Icon(
+                          prefixIcon: Icon(
                             Icons.location_on,
-                            color: AppColors.primary,
+                            color: context.palette.primary,
                           ),
                           filled: true,
                           fillColor: Theme.of(context).cardTheme.color,
@@ -5501,9 +5503,9 @@ class _GymCreateViewState extends State<_GymCreateView> {
                               context,
                             ).colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
-                          prefixIcon: const Icon(
+                          prefixIcon: Icon(
                             Icons.phone,
-                            color: AppColors.primary,
+                            color: context.palette.primary,
                           ),
                           filled: true,
                           fillColor: Theme.of(context).cardTheme.color,
@@ -5519,14 +5521,14 @@ class _GymCreateViewState extends State<_GymCreateView> {
                       ElevatedButton(
                         onPressed: _isLoading ? null : _createGym,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
+                          backgroundColor: context.palette.primaryFill,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
                         child: _isLoading
-                            ? SizedBox(
+                            ? const SizedBox(
                                 height: 20,
                                 width: 20,
                                 child: CircularProgressIndicator(
@@ -5536,7 +5538,7 @@ class _GymCreateViewState extends State<_GymCreateView> {
                                   ),
                                 ),
                               )
-                            : Text(
+                            : const Text(
                                 'Créer la salle',
                                 style: TextStyle(
                                   fontSize: 16,

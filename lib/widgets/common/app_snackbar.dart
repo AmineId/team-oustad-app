@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_palette.dart';
 
 enum SnackBarType { success, error, info, warning }
 
@@ -11,10 +12,10 @@ class AppSnackBar {
     Duration duration = const Duration(seconds: 4),
   }) {
     final (Color color, IconData icon) = switch (type) {
-      SnackBarType.success => (AppColors.success, Icons.check_circle_outline),
-      SnackBarType.error   => (AppColors.error,   Icons.error_outline),
-      SnackBarType.warning => (AppColors.warning,  Icons.warning_amber_outlined),
-      SnackBarType.info    => (AppColors.info,     Icons.info_outline),
+      SnackBarType.success => (context.palette.success, Icons.check_circle_outline),
+      SnackBarType.error   => (context.palette.error,   Icons.error_outline),
+      SnackBarType.warning => (context.palette.warning,  Icons.warning_amber_outlined),
+      SnackBarType.info    => (context.palette.info,     Icons.info_outline),
     };
 
     final isDark = Theme.of(context).brightness == Brightness.dark;

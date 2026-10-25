@@ -102,7 +102,7 @@ class _ModernButtonState extends State<ModernButton>
         button = ElevatedButton(
           onPressed: _onPressed,
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.error,
+            backgroundColor: context.palette.error,
             foregroundColor: Colors.white,
           ),
           child: buttonChild,
@@ -113,7 +113,7 @@ class _ModernButtonState extends State<ModernButton>
         button = ElevatedButton(
           onPressed: _onPressed,
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.accentGreen,
+            backgroundColor: context.palette.success,
             foregroundColor: Colors.white,
           ),
           child: buttonChild,
@@ -123,7 +123,7 @@ class _ModernButtonState extends State<ModernButton>
         button = ElevatedButton(
           onPressed: _onPressed,
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.accentViolet,
+            backgroundColor: context.palette.premium,
             foregroundColor: Colors.white,
           ),
           child: buttonChild,
@@ -146,6 +146,8 @@ class _ModernButtonState extends State<ModernButton>
       case ModernButtonVariant.secondary:
       case ModernButtonVariant.text:
         return cs.primary;
+      case ModernButtonVariant.primary:
+        return context.palette.onPrimary;
       default:
         return Colors.white;
     }

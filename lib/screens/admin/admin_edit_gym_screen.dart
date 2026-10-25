@@ -113,7 +113,7 @@ class _AdminEditGymScreenState extends State<AdminEditGymScreen> {
         ),
         child: Column(
           children: [
-            Icon(icon, color: AppColors.primary, size: 32),
+            Icon(icon, color: context.palette.primary, size: 32),
             const SizedBox(height: 8),
             Text(label, style: const TextStyle(color: Colors.white, fontSize: 13)),
           ],
@@ -231,7 +231,7 @@ class _AdminEditGymScreenState extends State<AdminEditGymScreen> {
                             : Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Icon(Icons.add_photo_alternate_outlined, color: AppColors.primary, size: 36),
+                                  Icon(Icons.add_photo_alternate_outlined, color: context.palette.primary, size: 36),
                                   const SizedBox(height: 6),
                                   Text(
                                     'Photo salle',
@@ -254,7 +254,7 @@ class _AdminEditGymScreenState extends State<AdminEditGymScreen> {
                     decoration: InputDecoration(
                       labelText: 'Nom de la salle',
                       labelStyle: const TextStyle(color: Colors.white60),
-                      prefixIcon: const Icon(Icons.business, color: AppColors.primary),
+                      prefixIcon: Icon(Icons.business, color: context.palette.primary),
                       filled: true,
                       fillColor: theme.cardTheme.color,
                       border: OutlineInputBorder(
@@ -279,7 +279,7 @@ class _AdminEditGymScreenState extends State<AdminEditGymScreen> {
                     decoration: InputDecoration(
                       labelText: 'Adresse',
                       labelStyle: const TextStyle(color: Colors.white60),
-                      prefixIcon: const Icon(Icons.location_on, color: AppColors.primary),
+                      prefixIcon: Icon(Icons.location_on, color: context.palette.primary),
                       filled: true,
                       fillColor: theme.cardTheme.color,
                       border: OutlineInputBorder(
@@ -304,7 +304,7 @@ class _AdminEditGymScreenState extends State<AdminEditGymScreen> {
                     decoration: InputDecoration(
                       labelText: 'Téléphone (optionnel)',
                       labelStyle: const TextStyle(color: Colors.white60),
-                      prefixIcon: const Icon(Icons.phone, color: AppColors.primary),
+                      prefixIcon: Icon(Icons.phone, color: context.palette.primary),
                       filled: true,
                       fillColor: theme.cardTheme.color,
                       border: OutlineInputBorder(
@@ -319,7 +319,7 @@ class _AdminEditGymScreenState extends State<AdminEditGymScreen> {
                   ElevatedButton(
                     onPressed: _isLoading ? null : _updateGym,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
+                      backgroundColor: context.palette.primaryFill,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),

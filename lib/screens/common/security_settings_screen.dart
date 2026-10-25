@@ -131,7 +131,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage>
                 Icon(
                   value ? Icons.notifications_active : Icons.notifications_off,
                   color: value
-                      ? AppColors.success
+                      ? context.palette.success
                       : (Theme.of(context).brightness == Brightness.dark
                             ? AppColors.darkTextSecondary
                             : AppColors.lightTextSecondary),
@@ -162,7 +162,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage>
               borderRadius: BorderRadius.circular(12),
               side: BorderSide(
                 color: value
-                    ? AppColors.success
+                    ? context.palette.success
                     : (Theme.of(context).brightness == Brightness.dark
                               ? AppColors.darkTextPrimary
                               : AppColors.lightTextPrimary)
@@ -180,8 +180,8 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage>
           SnackBar(
             content: Row(
               children: [
-                Icon(Icons.error_outline, color: AppColors.error, size: 24),
-                SizedBox(width: 12),
+                Icon(Icons.error_outline, color: context.palette.error, size: 24),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Text(
                     'Erreur lors de la sauvegarde',
@@ -232,7 +232,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage>
                 Icon(
                   value ? Icons.calendar_today : Icons.event_busy,
                   color: value
-                      ? AppColors.success
+                      ? context.palette.success
                       : (Theme.of(context).brightness == Brightness.dark
                             ? AppColors.darkTextSecondary
                             : AppColors.lightTextSecondary),
@@ -263,7 +263,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage>
               borderRadius: BorderRadius.circular(12),
               side: BorderSide(
                 color: value
-                    ? AppColors.success
+                    ? context.palette.success
                     : (Theme.of(context).brightness == Brightness.dark
                               ? AppColors.darkTextPrimary
                               : AppColors.lightTextPrimary)
@@ -281,9 +281,9 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage>
           SnackBar(
             content: Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.error_outline,
-                  color: AppColors.error,
+                  color: context.palette.error,
                   size: 24,
                 ),
                 const SizedBox(width: 12),
@@ -359,9 +359,9 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage>
             SnackBar(
               content: Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.check_circle,
-                    color: AppColors.success,
+                    color: context.palette.success,
                     size: 24,
                   ),
                   const SizedBox(width: 12),
@@ -383,7 +383,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage>
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
-                side: const BorderSide(color: AppColors.success, width: 1),
+                side: BorderSide(color: context.palette.success, width: 1),
               ),
             ),
           );
@@ -411,9 +411,9 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage>
             SnackBar(
               content: Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.info_outline,
-                    color: AppColors.info,
+                    color: context.palette.info,
                     size: 24,
                   ),
                   const SizedBox(width: 12),
@@ -435,7 +435,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage>
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
-                side: const BorderSide(color: AppColors.info, width: 1),
+                side: BorderSide(color: context.palette.info, width: 1),
               ),
             ),
           );
@@ -467,9 +467,9 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage>
                       color: AppColors.warning.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.security,
-                      color: AppColors.warning,
+                      color: context.palette.warning,
                       size: 28,
                     ),
                   ),
@@ -518,16 +518,16 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage>
                             ? AppColors.darkTextSecondary
                             : AppColors.lightTextSecondary,
                       ),
-                      prefixIcon: const Icon(
+                      prefixIcon: Icon(
                         Icons.lock,
-                        color: AppColors.primary,
+                        color: context.palette.primary,
                       ),
                       suffixIcon: IconButton(
                         icon: Icon(
                           obscurePassword
                               ? Icons.visibility
                               : Icons.visibility_off,
-                          color: AppColors.primary,
+                          color: context.palette.primary,
                         ),
                         onPressed: () {
                           setState(() {
@@ -551,8 +551,8 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage>
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                          color: AppColors.primary,
+                        borderSide: BorderSide(
+                          color: context.palette.primary,
                           width: 2,
                         ),
                       ),
@@ -606,7 +606,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage>
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: context.palette.primaryFill,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 24,
                       vertical: 12,
@@ -636,7 +636,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage>
       context: context,
       barrierDismissible: false,
       builder: (context) =>
-          const Center(child: CircularProgressIndicator(color: AppColors.info)),
+          Center(child: CircularProgressIndicator(color: context.palette.info)),
     );
 
     try {
@@ -651,7 +651,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage>
           title: 'Application à jour',
           message: 'Vous utilisez la dernière version de l\'application.',
           icon: Icons.check_circle_outline,
-          iconColor: AppColors.success,
+          iconColor: context.palette.success,
         );
       } else {
         // Mise à jour disponible
@@ -666,7 +666,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage>
         message:
             'Impossible de vérifier les mises à jour. Vérifiez votre connexion.',
         icon: Icons.error_outline,
-        iconColor: AppColors.error,
+        iconColor: context.palette.error,
       );
     }
   }
@@ -714,9 +714,9 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage>
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
-            child: const Text(
+            child: Text(
               'OK',
-              style: TextStyle(color: AppColors.info, fontSize: 16),
+              style: TextStyle(color: context.palette.info, fontSize: 16),
             ),
           ),
         ],
@@ -977,9 +977,9 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage>
                                                           12,
                                                         ),
                                                   ),
-                                                  child: const Icon(
+                                                  child: Icon(
                                                     Icons.notifications_active,
-                                                    color: AppColors.success,
+                                                    color: context.palette.success,
                                                     size: 28,
                                                   ),
                                                 ),
@@ -1036,7 +1036,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage>
                                                   onChanged:
                                                       _toggleNotifications,
                                                   activeTrackColor:
-                                                      AppColors.success,
+                                                      context.palette.success,
                                                   inactiveThumbColor:
                                                       (Theme.of(
                                                             context,
@@ -1134,7 +1134,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage>
                                                         ? _toggleWorkoutNotifications
                                                         : null,
                                                     activeTrackColor:
-                                                        AppColors.success,
+                                                        context.palette.success,
                                                     inactiveThumbColor:
                                                         (Theme.of(
                                                               context,
@@ -1182,8 +1182,8 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage>
                                                   ),
                                                   decoration: BoxDecoration(
                                                     color: (isDark
-                                                        ? AppColors.primary
-                                                        : AppColors.info)
+                                                        ? context.palette.primary
+                                                        : context.palette.info)
                                                         .withValues(alpha: 0.2),
                                                     shape: BoxShape.circle,
                                                   ),
@@ -1211,8 +1211,8 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage>
                                                                 .light_mode_rounded,
                                                       key: ValueKey(isDark),
                                                       color: isDark
-                                                          ? AppColors.info
-                                                          : AppColors.warning,
+                                                          ? context.palette.info
+                                                          : context.palette.warning,
                                                       size: 28,
                                                     ),
                                                   ),
@@ -1296,11 +1296,11 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage>
                                                       ),
                                                       border: Border.all(
                                                         color: isDark
-                                                            ? AppColors.warning
+                                                            ? context.palette.warning
                                                                   .withValues(
                                                                     alpha: 0.5,
                                                                   )
-                                                            : AppColors.info
+                                                            : context.palette.info
                                                                   .withValues(
                                                                     alpha: 0.5,
                                                                   ),
@@ -1326,19 +1326,19 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage>
                                                             end: Alignment.bottomRight,
                                                             colors: isDark
                                                                 ? [
-                                                                    AppColors.warning,
+                                                                    context.palette.warning,
                                                                     AppColors.warningLight,
                                                                   ]
                                                                 : [
-                                                                    AppColors.info,
+                                                                    context.palette.info,
                                                                     AppColors.infoLight,
                                                                   ],
                                                           ),
                                                           boxShadow: [
                                                             BoxShadow(
                                                               color: (isDark
-                                                                      ? AppColors.warning
-                                                                      : AppColors.info)
+                                                                      ? context.palette.warning
+                                                                      : context.palette.info)
                                                                   .withValues(alpha: 0.4),
                                                               blurRadius: 8,
                                                               spreadRadius: 1,
@@ -1396,9 +1396,9 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage>
                                                   borderRadius:
                                                       BorderRadius.circular(12),
                                                 ),
-                                                child: const Icon(
+                                                child: Icon(
                                                   Icons.system_update,
-                                                  color: AppColors.info,
+                                                  color: context.palette.info,
                                                   size: 28,
                                                 ),
                                               ),

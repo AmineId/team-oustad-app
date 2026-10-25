@@ -17,9 +17,9 @@ class WearPlanningScreen extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
+          Icon(
             Icons.fitness_center,
-            color: AppColors.primary,
+            color: context.palette.primary,
             size: 28,
           ),
           const SizedBox(height: 8),
@@ -36,7 +36,7 @@ class WearPlanningScreen extends StatelessWidget {
               icon: Icons.repeat,
               title: 'Exercices',
               value: '$count',
-              color: AppColors.primary,
+              color: context.palette.primary,
             ),
           ],
         ],

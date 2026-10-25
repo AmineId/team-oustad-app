@@ -8,6 +8,7 @@ import '../../core/services/store_service.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_text_styles.dart';
 
 /// Écran de création/édition d'un produit store
@@ -102,7 +103,7 @@ class _AdminCreateProductScreenState extends State<AdminCreateProductScreen> {
   Future<void> _pickImages() async {
     if (!_canAddMoreImages) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Maximum $_maxImages images autorisées'),
           backgroundColor: AppColors.warning,
         ),
@@ -293,7 +294,7 @@ class _AdminCreateProductScreenState extends State<AdminCreateProductScreen> {
               onPressed: _save,
               icon: const Icon(Icons.check_rounded),
               label: Text(_isEditing ? 'Enregistrer' : 'Créer'),
-              style: TextButton.styleFrom(foregroundColor: AppColors.primary),
+              style: TextButton.styleFrom(foregroundColor: context.palette.primary),
             ),
         ],
       ),
@@ -439,7 +440,7 @@ class _AdminCreateProductScreenState extends State<AdminCreateProductScreen> {
                   color: AppColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(icon, color: AppColors.primary, size: 20),
+                child: Icon(icon, color: context.palette.primary, size: 20),
               ),
               const SizedBox(width: 12),
               Text(
@@ -499,11 +500,11 @@ class _AdminCreateProductScreenState extends State<AdminCreateProductScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.primary, width: 2),
+          borderSide: BorderSide(color: context.palette.primary, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.error),
+          borderSide: BorderSide(color: context.palette.error),
         ),
       ),
       validator: required
@@ -539,7 +540,7 @@ class _AdminCreateProductScreenState extends State<AdminCreateProductScreen> {
                 onPressed: _pickImages,
                 icon: const Icon(Icons.add_photo_alternate_outlined, size: 18),
                 label: const Text('Ajouter'),
-                style: TextButton.styleFrom(foregroundColor: AppColors.primary),
+                style: TextButton.styleFrom(foregroundColor: context.palette.primary),
               ),
           ],
         ),
@@ -653,7 +654,7 @@ class _AdminCreateProductScreenState extends State<AdminCreateProductScreen> {
               onTap: onRemove,
               child: Container(
                 padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: AppColors.error,
                   shape: BoxShape.circle,
                 ),
@@ -708,11 +709,11 @@ class _AdminCreateProductScreenState extends State<AdminCreateProductScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.add_rounded, color: AppColors.primary, size: 32),
+            Icon(Icons.add_rounded, color: context.palette.primary, size: 32),
             const SizedBox(height: 4),
             Text(
               'Ajouter',
-              style: TextStyle(color: AppColors.primary, fontSize: 12),
+              style: TextStyle(color: context.palette.primary, fontSize: 12),
             ),
           ],
         ),
@@ -782,10 +783,10 @@ class _AdminCreateProductScreenState extends State<AdminCreateProductScreen> {
                 });
               },
               selectedColor: AppColors.primary.withValues(alpha: 0.2),
-              checkmarkColor: AppColors.primary,
+              checkmarkColor: context.palette.primary,
               labelStyle: TextStyle(
                 color: isSelected
-                    ? AppColors.primary
+                    ? context.palette.primary
                     : (isDark
                         ? AppColors.darkTextSecondary
                         : AppColors.lightTextSecondary),
@@ -798,7 +799,7 @@ class _AdminCreateProductScreenState extends State<AdminCreateProductScreen> {
                 borderRadius: BorderRadius.circular(20),
                 side: BorderSide(
                   color: isSelected
-                      ? AppColors.primary
+                      ? context.palette.primary
                       : (isDark
                           ? Colors.white.withValues(alpha: 0.1)
                           : Colors.black.withValues(alpha: 0.1)),
@@ -835,7 +836,7 @@ class _AdminCreateProductScreenState extends State<AdminCreateProductScreen> {
             ),
             child: Icon(
               _isActive ? Icons.visibility_rounded : Icons.visibility_off_rounded,
-              color: _isActive ? AppColors.success : AppColors.error,
+              color: _isActive ? context.palette.success : context.palette.error,
               size: 20,
             ),
           ),
@@ -869,7 +870,7 @@ class _AdminCreateProductScreenState extends State<AdminCreateProductScreen> {
           Switch(
             value: _isActive,
             onChanged: (value) => setState(() => _isActive = value),
-            activeThumbColor: AppColors.success,
+            activeThumbColor: context.palette.success,
           ),
         ],
       ),
@@ -982,7 +983,7 @@ class _ImageSourceSheet extends StatelessWidget {
                 color: AppColors.primary.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: AppColors.primary, size: 32),
+              child: Icon(icon, color: context.palette.primary, size: 32),
             ),
             const SizedBox(height: 12),
             Text(

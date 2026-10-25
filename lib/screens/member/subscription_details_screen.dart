@@ -158,8 +158,8 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
         backgroundColor: Theme.of(context).cardTheme.color,
         title: Row(
           children: [
-            Icon(Icons.autorenew, color: AppColors.primary),
-            SizedBox(width: 8),
+            Icon(Icons.autorenew, color: context.palette.primary),
+            const SizedBox(width: 8),
             Text('Renouveler', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
           ],
         ),
@@ -185,8 +185,8 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const Center(
-        child: CircularProgressIndicator(color: AppColors.primary),
+      builder: (context) => Center(
+        child: CircularProgressIndicator(color: context.palette.primary),
       ),
     );
 
@@ -321,7 +321,7 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
                     children: [
                       // Subscription details card
                       Card(
-                        color: theme.colorScheme.primary,
+                        color: context.palette.primaryFill,
                         elevation: 4,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
@@ -351,8 +351,8 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
                                     ),
                                     decoration: BoxDecoration(
                                       color: subscriptionStatus == 'active' 
-                                          ? AppColors.success 
-                                          : AppColors.error,
+                                          ? context.palette.success 
+                                          : context.palette.error,
                                       borderRadius: BorderRadius.circular(20),
                                     ),
                                     child: Text(
@@ -389,7 +389,7 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
                                         color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary).withValues(alpha: 0.7),
                                       ),
                                     ),
-                                    SizedBox(
+                                    const SizedBox(
                                       width: 16,
                                       height: 16,
                                       child: CircularProgressIndicator(
@@ -433,8 +433,8 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
                             icon: const Icon(Icons.autorenew, size: 20),
                             label: const Text('Renouveler l\'abonnement'),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
-                              foregroundColor: Colors.white,
+                              backgroundColor: context.palette.primaryFill,
+                              foregroundColor: context.palette.onPrimary,
                               padding: const EdgeInsets.symmetric(vertical: 14),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                             ),
@@ -543,22 +543,22 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
     
     switch (status) {
       case 'completed':
-        statusColor = AppColors.success;
+        statusColor = context.palette.success;
         backgroundColor = AppColors.success.withValues(alpha: 0.2);
         statusIcon = Icons.check_circle;
         break;
       case 'overdue':
-        statusColor = AppColors.warning;
+        statusColor = context.palette.warning;
         backgroundColor = AppColors.warning.withValues(alpha: 0.2);
         statusIcon = Icons.schedule;
         break;
       case 'failed':
-        statusColor = AppColors.error;
+        statusColor = context.palette.error;
         backgroundColor = AppColors.error.withValues(alpha: 0.2);
         statusIcon = Icons.error;
         break;
       case 'refunded':
-        statusColor = AppColors.info;
+        statusColor = context.palette.info;
         backgroundColor = AppColors.info.withValues(alpha: 0.2);
         statusIcon = Icons.refresh;
         break;

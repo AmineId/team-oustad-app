@@ -35,8 +35,8 @@ class GymMapEmbed extends StatelessWidget {
           height: height,
           width: double.infinity,
           color: AppColors.darkElevated,
-          child: const Center(
-            child: Icon(Icons.map_rounded, color: AppColors.primary, size: 40),
+          child: Center(
+            child: Icon(Icons.map_rounded, color: context.palette.primary, size: 40),
           ),
         ),
       ),

@@ -77,7 +77,7 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
             content: const Text(
               'Ce numéro a déjà un mot de passe. Redirection vers la réinitialisation...',
             ),
-            backgroundColor: AppColors.primary,
+            backgroundColor: context.palette.primaryFill,
             duration: const Duration(seconds: 2),
           ),
         );
@@ -113,9 +113,9 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
                       color: AppColors.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.store,
-                      color: AppColors.primary,
+                      color: context.palette.primary,
                       size: 28,
                     ),
                   ),
@@ -146,21 +146,21 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
                         color: AppColors.primary.withValues(alpha: 0.3),
                       ),
                     ),
-                    child: const Row(
+                    child: Row(
                       children: [
                         Icon(
                           Icons.info_outline,
-                          color: AppColors.primary,
+                          color: context.palette.primary,
                           size: 24,
                         ),
-                        SizedBox(width: 12),
+                        const SizedBox(width: 12),
                         Expanded(
                           child: Text(
                             'Merci de passer à notre salle pour créer votre compte.',
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
-                              color: AppColors.primary,
+                              color: context.palette.primary,
                             ),
                           ),
                         ),
@@ -419,18 +419,18 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
                             : '+33612345678',
                         prefixIcon: Icon(
                           _isEmail ? Icons.email : Icons.phone,
-                          color: AppColors.primary,
+                          color: context.palette.primary,
                         ),
                         suffixIcon: _isPhoneNumber
                             ? IconButton(
                                 icon: _phoneExists == true
-                                    ? const Icon(
+                                    ? Icon(
                                         Icons.check_circle,
-                                        color: AppColors.success,
+                                        color: context.palette.success,
                                       )
-                                    : const Icon(
+                                    : Icon(
                                         Icons.search,
-                                        color: AppColors.primary,
+                                        color: context.palette.primary,
                                       ),
                                 onPressed: _isCheckingPhone
                                     ? null
@@ -470,18 +470,18 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
                             color: AppColors.success.withValues(alpha: 0.3),
                           ),
                         ),
-                        child: const Row(
+                        child: Row(
                           children: [
                             Icon(
                               Icons.check_circle,
-                              color: AppColors.success,
+                              color: context.palette.success,
                               size: 20,
                             ),
-                            SizedBox(width: 8),
+                            const SizedBox(width: 8),
                             Text(
                               'Numéro vérifié',
                               style: TextStyle(
-                                color: AppColors.success,
+                                color: context.palette.success,
                                 fontSize: 12,
                               ),
                             ),
@@ -505,12 +505,12 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
                               : AppColors.lightTextPrimary),
                           fontSize: 16,
                         ),
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: 'Code reçu par email',
                           hintText: '123456',
                           prefixIcon: Icon(
                             Icons.password,
-                            color: AppColors.primary,
+                            color: context.palette.primary,
                           ),
                           counterText: '',
                         ),
@@ -530,9 +530,9 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
                       decoration: InputDecoration(
                         labelText: 'Nouveau mot de passe',
                         hintText: 'Minimum 6 caractères',
-                        prefixIcon: const Icon(
+                        prefixIcon: Icon(
                           Icons.lock,
-                          color: AppColors.primary,
+                          color: context.palette.primary,
                         ),
                         suffixIcon: IconButton(
                           icon: Icon(
@@ -567,9 +567,9 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
                       ),
                       decoration: InputDecoration(
                         labelText: 'Confirmer le mot de passe',
-                        prefixIcon: const Icon(
+                        prefixIcon: Icon(
                           Icons.lock_outline,
-                          color: AppColors.primary,
+                          color: context.palette.primary,
                         ),
                         suffixIcon: IconButton(
                           icon: Icon(
@@ -633,9 +633,9 @@ class _SetupPasswordScreenState extends State<SetupPasswordScreen> {
                       ),
                       child: Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.info_outline,
-                            color: AppColors.primary,
+                            color: context.palette.primary,
                             size: 24,
                           ),
                           const SizedBox(width: 12),

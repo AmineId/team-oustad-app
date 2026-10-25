@@ -139,7 +139,7 @@ class _AdminGymOpeningHoursScreenState extends State<AdminGymOpeningHoursScreen>
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.dark(primary: AppColors.primary, onSurface: Colors.white, surface: Theme.of(context).cardTheme.color ?? Colors.grey[900]!,
+            colorScheme: ColorScheme.dark(primary: context.palette.primary, onSurface: Colors.white, surface: Theme.of(context).cardTheme.color ?? Colors.grey[900]!,
             ),
           ),
           child: child!,
@@ -202,9 +202,9 @@ class _AdminGymOpeningHoursScreenState extends State<AdminGymOpeningHoursScreen>
               // Contenu
               Expanded(
                 child: _isLoading
-                    ? const Center(
+                    ? Center(
                         child: CircularProgressIndicator(
-                          color: AppColors.primary,
+                          color: context.palette.primary,
                         ),
                       )
                     : ListView.builder(
@@ -229,8 +229,8 @@ class _AdminGymOpeningHoursScreenState extends State<AdminGymOpeningHoursScreen>
                                     children: [
                                       Text(
                                         _dayNames[index],
-                                        style: const TextStyle(
-                                          color: AppColors.primary,
+                                        style: TextStyle(
+                                          color: context.palette.primary,
                                           fontSize: 18,
                                           fontWeight: FontWeight.bold,
                                         ),
@@ -303,7 +303,7 @@ class _AdminGymOpeningHoursScreenState extends State<AdminGymOpeningHoursScreen>
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _saveOpeningHours,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
+                      backgroundColor: context.palette.primaryFill,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -371,9 +371,9 @@ class _AdminGymOpeningHoursScreenState extends State<AdminGymOpeningHoursScreen>
             const SizedBox(height: 4),
             Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.access_time,
-                  color: AppColors.primary,
+                  color: context.palette.primary,
                   size: 20,
                 ),
                 const SizedBox(width: 8),

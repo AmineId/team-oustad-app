@@ -147,9 +147,9 @@ class _AdminCreateAdminScreenState extends State<AdminCreateAdminScreen> {
                       shape: BoxShape.circle,
                       color: AppColors.primary.withValues(alpha: 0.2),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.admin_panel_settings,
-                      color: AppColors.primary,
+                      color: context.palette.primary,
                       size: 40,
                     ),
                   ),
@@ -162,9 +162,9 @@ class _AdminCreateAdminScreenState extends State<AdminCreateAdminScreen> {
                     decoration: InputDecoration(
                       labelText: 'Prénom',
                       labelStyle: const TextStyle(color: Colors.white60),
-                      prefixIcon: const Icon(
+                      prefixIcon: Icon(
                         Icons.person,
-                        color: AppColors.primary,
+                        color: context.palette.primary,
                       ),
                       filled: true,
                       fillColor: theme.cardTheme.color,
@@ -189,9 +189,9 @@ class _AdminCreateAdminScreenState extends State<AdminCreateAdminScreen> {
                     decoration: InputDecoration(
                       labelText: 'Nom de famille',
                       labelStyle: const TextStyle(color: Colors.white60),
-                      prefixIcon: const Icon(
+                      prefixIcon: Icon(
                         Icons.person_outline,
-                        color: AppColors.primary,
+                        color: context.palette.primary,
                       ),
                       filled: true,
                       fillColor: theme.cardTheme.color,
@@ -217,9 +217,9 @@ class _AdminCreateAdminScreenState extends State<AdminCreateAdminScreen> {
                     decoration: InputDecoration(
                       labelText: 'Email',
                       labelStyle: const TextStyle(color: Colors.white60),
-                      prefixIcon: const Icon(
+                      prefixIcon: Icon(
                         Icons.email,
-                        color: AppColors.primary,
+                        color: context.palette.primary,
                       ),
                       filled: true,
                       fillColor: theme.cardTheme.color,
@@ -247,9 +247,9 @@ class _AdminCreateAdminScreenState extends State<AdminCreateAdminScreen> {
                     decoration: InputDecoration(
                       labelText: 'Adresse',
                       labelStyle: const TextStyle(color: Colors.white60),
-                      prefixIcon: const Icon(
+                      prefixIcon: Icon(
                         Icons.home,
-                        color: AppColors.primary,
+                        color: context.palette.primary,
                       ),
                       filled: true,
                       fillColor: theme.cardTheme.color,
@@ -283,9 +283,9 @@ class _AdminCreateAdminScreenState extends State<AdminCreateAdminScreen> {
                             ? AppColors.darkTextSecondary
                             : AppColors.lightTextSecondary),
                       ),
-                      prefixIcon: const Icon(
+                      prefixIcon: Icon(
                         Icons.fitness_center,
-                        color: AppColors.primary,
+                        color: context.palette.primary,
                       ),
                       filled: true,
                       fillColor: theme.cardTheme.color,
@@ -332,7 +332,7 @@ class _AdminCreateAdminScreenState extends State<AdminCreateAdminScreen> {
                                 );
                               },
                               fillColor: WidgetStateProperty.all(
-                                AppColors.primary,
+                                context.palette.primary,
                               ),
                             ),
                             const Expanded(
@@ -373,9 +373,9 @@ class _AdminCreateAdminScreenState extends State<AdminCreateAdminScreen> {
                       decoration: InputDecoration(
                         labelText: 'Mot de passe',
                         labelStyle: const TextStyle(color: Colors.white60),
-                        prefixIcon: const Icon(
+                        prefixIcon: Icon(
                           Icons.lock,
-                          color: AppColors.primary,
+                          color: context.palette.primary,
                         ),
                         filled: true,
                         fillColor: theme.cardTheme.color,
@@ -403,7 +403,7 @@ class _AdminCreateAdminScreenState extends State<AdminCreateAdminScreen> {
                   ElevatedButton(
                     onPressed: _isLoading ? null : _createAdmin,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
+                      backgroundColor: context.palette.primaryFill,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),

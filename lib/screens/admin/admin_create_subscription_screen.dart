@@ -113,11 +113,11 @@ class _AdminCreateSubscriptionScreenState extends State<AdminCreateSubscriptionS
           context: context,
           builder: (context) => AlertDialog(
             backgroundColor: Theme.of(context).cardTheme.color,
-            title: const Row(
+            title: Row(
               children: [
-                Icon(Icons.check_circle, color: AppColors.success),
-                SizedBox(width: 8),
-                Text(
+                Icon(Icons.check_circle, color: context.palette.success),
+                const SizedBox(width: 8),
+                const Text(
                   'Succès',
                   style: TextStyle(color: Colors.white),
                 ),
@@ -133,9 +133,9 @@ class _AdminCreateSubscriptionScreenState extends State<AdminCreateSubscriptionS
                 style: TextButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 ),
-                child: const Text(
+                child: Text(
                   'OK',
-                  style: TextStyle(color: AppColors.primary),
+                  style: TextStyle(color: context.palette.primary),
                 ),
               ),
             ],
@@ -165,11 +165,11 @@ class _AdminCreateSubscriptionScreenState extends State<AdminCreateSubscriptionS
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Theme.of(context).cardTheme.color,
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.error, color: AppColors.error),
-            SizedBox(width: 8),
-            Text(
+            Icon(Icons.error, color: context.palette.error),
+            const SizedBox(width: 8),
+            const Text(
               'Erreur',
               style: TextStyle(color: Colors.white),
             ),
@@ -185,9 +185,9 @@ class _AdminCreateSubscriptionScreenState extends State<AdminCreateSubscriptionS
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             ),
-            child: const Text(
+            child: Text(
               'OK',
-              style: TextStyle(color: AppColors.primary),
+              style: TextStyle(color: context.palette.primary),
             ),
           ),
         ],
@@ -213,9 +213,9 @@ class _AdminCreateSubscriptionScreenState extends State<AdminCreateSubscriptionS
           color: Theme.of(context).scaffoldBackgroundColor,
         ),
         child: _isLoading
-            ? const Center(
+            ? Center(
                 child: CircularProgressIndicator(
-                  color: AppColors.primary,
+                  color: context.palette.primary,
                 ),
               )
             : _errorMessage.isNotEmpty
@@ -223,9 +223,9 @@ class _AdminCreateSubscriptionScreenState extends State<AdminCreateSubscriptionS
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.error_outline,
-                          color: AppColors.error,
+                          color: context.palette.error,
                           size: 48,
                         ),
                         const SizedBox(height: 16),
@@ -289,8 +289,8 @@ class _AdminCreateSubscriptionScreenState extends State<AdminCreateSubscriptionS
                           child: ElevatedButton(
                             onPressed: _isCreating ? null : _createSubscription,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
-                              foregroundColor: Colors.white,
+                              backgroundColor: context.palette.primaryFill,
+                              foregroundColor: context.palette.onPrimary,
                               padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
                               disabledBackgroundColor: Colors.grey,
                             ),
@@ -336,7 +336,7 @@ class _AdminCreateSubscriptionScreenState extends State<AdminCreateSubscriptionS
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
           color: isSelected 
-              ? AppColors.primary
+              ? context.palette.primary
               : Colors.transparent,
           width: 2,
         ),
@@ -368,9 +368,9 @@ class _AdminCreateSubscriptionScreenState extends State<AdminCreateSubscriptionS
                     ),
                   ),
                   if (isSelected)
-                    const Icon(
+                    Icon(
                       Icons.check_circle,
-                      color: AppColors.primary,
+                      color: context.palette.primary,
                       size: 28,
                     )
                   else
@@ -398,8 +398,8 @@ class _AdminCreateSubscriptionScreenState extends State<AdminCreateSubscriptionS
               // Prix
               Text(
                 '$monthlyPrice MAD / mois',
-                style: const TextStyle(
-                  color: AppColors.primary,
+                style: TextStyle(
+                  color: context.palette.primary,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
@@ -414,9 +414,9 @@ class _AdminCreateSubscriptionScreenState extends State<AdminCreateSubscriptionS
                   padding: const EdgeInsets.only(bottom: 8),
                   child: Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.check,
-                        color: AppColors.primary,
+                        color: context.palette.primary,
                         size: 16,
                       ),
                       const SizedBox(width: 8),

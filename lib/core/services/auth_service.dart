@@ -687,7 +687,7 @@ class AuthService {
       if (cacheTime == null) return true;
 
       final now = DateTime.now().millisecondsSinceEpoch;
-      final oneHour = 60 * 60 * 1000; // 1 hour in milliseconds
+      const oneHour = 60 * 60 * 1000; // 1 hour in milliseconds
       return (now - cacheTime) > oneHour;
     } catch (_) {
       return true;

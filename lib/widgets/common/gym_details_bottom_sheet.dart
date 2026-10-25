@@ -125,9 +125,9 @@ class _GymDetailsBottomSheetState extends State<GymDetailsBottomSheet> {
                   color: AppColors.primary.withValues(alpha: 0.7),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.fitness_center,
-                  color: AppColors.primary,
+                  color: context.palette.primary,
                   size: 28,
                 ),
               ),
@@ -170,8 +170,8 @@ class _GymDetailsBottomSheetState extends State<GymDetailsBottomSheet> {
           ),
           const SizedBox(height: 12),
           _isLoading
-              ? const Center(
-                  child: CircularProgressIndicator(color: AppColors.primary),
+              ? Center(
+                  child: CircularProgressIndicator(color: context.palette.primary),
                 )
               : _openingHours == null || _openingHours!.isEmpty
               ? Text(

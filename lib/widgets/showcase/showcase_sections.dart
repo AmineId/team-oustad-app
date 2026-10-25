@@ -162,7 +162,7 @@ class ShowcaseSectionHeading extends StatelessWidget {
               fontSize: 12,
               fontWeight: FontWeight.w700,
               letterSpacing: 2,
-              color: AppColors.primary,
+              color: context.palette.primary,
             ),
           ),
         ],
@@ -201,9 +201,9 @@ class ShowcaseMarkdown extends StatelessWidget {
         p: body,
         listBullet: body,
         strong: body.copyWith(fontWeight: FontWeight.w700, color: Colors.white),
-        a: body.copyWith(color: AppColors.primary),
+        a: body.copyWith(color: context.palette.primary),
         h1: GoogleFonts.anton(fontSize: 22, color: Colors.white),
-        h2: GoogleFonts.anton(fontSize: 18, color: AppColors.primary),
+        h2: GoogleFonts.anton(fontSize: 18, color: context.palette.primary),
         h3: GoogleFonts.barlow(
           fontSize: 16,
           fontWeight: FontWeight.w700,
@@ -441,7 +441,7 @@ class _CategoryTileState extends State<_CategoryTile> {
                     alpha: _hovered ? 0.22 : 0.12,
                   ),
                 ),
-                child: Icon(widget.icon, color: AppColors.primary, size: 24),
+                child: Icon(widget.icon, color: context.palette.primary, size: 24),
               ),
               const SizedBox(height: 12),
               Text(
@@ -540,8 +540,8 @@ class _FeatureImage extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          border: const Border(
-            left: BorderSide(color: AppColors.primary, width: 5),
+          border: Border(
+            left: BorderSide(color: context.palette.primary, width: 5),
           ),
           gradient: LinearGradient(
             begin: Alignment.topLeft,
@@ -581,7 +581,7 @@ class _FeatureImage extends StatelessWidget {
                     style: GoogleFonts.barlow(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.primary,
+                      color: context.palette.primary,
                       letterSpacing: 1,
                     ),
                   ),
@@ -620,7 +620,7 @@ class _FeatureCopy extends StatelessWidget {
               fontSize: 12,
               fontWeight: FontWeight.w700,
               letterSpacing: 2,
-              color: AppColors.primary,
+              color: context.palette.primary,
             ),
           ),
           const SizedBox(height: 10),
@@ -660,10 +660,10 @@ class _FeatureCopy extends StatelessWidget {
                     color: AppColors.primary.withValues(alpha: 0.18),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.check_rounded,
                     size: 13,
-                    color: AppColors.primary,
+                    color: context.palette.primary,
                   ),
                 ),
                 Expanded(
@@ -749,10 +749,10 @@ class _TestimonialCard extends StatelessWidget {
           Row(
             children: List.generate(
               5,
-              (_) => const Icon(
+              (_) => Icon(
                 Icons.star_rounded,
                 size: 16,
-                color: AppColors.primary,
+                color: context.palette.primary,
               ),
             ),
           ),
@@ -905,10 +905,10 @@ class _CallToAction extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.arrow_forward_rounded,
                           size: 16,
-                          color: AppColors.primary,
+                          color: context.palette.primary,
                         ),
                         const SizedBox(width: 6),
                         Text(
@@ -916,7 +916,7 @@ class _CallToAction extends StatelessWidget {
                           style: GoogleFonts.barlow(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.primary,
+                            color: context.palette.primary,
                           ),
                         ),
                       ],

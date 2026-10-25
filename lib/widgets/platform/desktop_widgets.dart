@@ -138,7 +138,7 @@ class DesktopActionCard extends StatelessWidget {
                 color: AppColors.primary.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(icon, color: AppColors.primary, size: 32),
+              child: Icon(icon, color: context.palette.primary, size: 32),
             ),
             const SizedBox(height: 16),
             Text(
@@ -165,15 +165,15 @@ class DesktopActionCard extends StatelessWidget {
                 Text(
                   'Accéder',
                   style: TextStyle(
-                    color: AppColors.primary,
+                    color: context.palette.primary,
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
                 const SizedBox(width: 4),
-                const Icon(
+                Icon(
                   Icons.arrow_forward,
-                  color: AppColors.primary,
+                  color: context.palette.primary,
                   size: 16,
                 ),
               ],

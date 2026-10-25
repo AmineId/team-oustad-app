@@ -6,6 +6,7 @@ import '../../core/services/banner_service.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_text_styles.dart';
 import 'admin_create_banner_screen.dart';
 
@@ -92,7 +93,7 @@ class _AdminBannersScreenState extends State<AdminBannersScreen>
                 color: AppColors.error.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.delete_outline, color: AppColors.error),
+              child: Icon(Icons.delete_outline, color: context.palette.error),
             ),
             const SizedBox(width: 12),
             const Text('Supprimer'),
@@ -126,8 +127,8 @@ class _AdminBannersScreenState extends State<AdminBannersScreen>
         _loadBanners();
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('Bannière supprimée'),
+            const SnackBar(
+              content: Text('Bannière supprimée'),
               backgroundColor: AppColors.success,
             ),
           );
@@ -188,11 +189,11 @@ class _AdminBannersScreenState extends State<AdminBannersScreen>
         ),
         bottom: TabBar(
           controller: _tabController,
-          labelColor: AppColors.primary,
+          labelColor: context.palette.primary,
           unselectedLabelColor: isDark
               ? AppColors.darkTextSecondary
               : AppColors.lightTextSecondary,
-          indicatorColor: AppColors.primary,
+          indicatorColor: context.palette.primary,
           indicatorWeight: 3,
           isScrollable: true,
           tabAlignment: TabAlignment.start,
@@ -215,7 +216,7 @@ class _AdminBannersScreenState extends State<AdminBannersScreen>
                   Icon(
                     Icons.play_circle_outline,
                     size: 16,
-                    color: AppColors.success,
+                    color: context.palette.success,
                   ),
                   const SizedBox(width: 4),
                   Text('Actives (${_activeBanners.length})', style: const TextStyle(fontSize: 13)),
@@ -229,7 +230,7 @@ class _AdminBannersScreenState extends State<AdminBannersScreen>
                   Icon(
                     Icons.schedule_rounded,
                     size: 16,
-                    color: AppColors.warning,
+                    color: context.palette.warning,
                   ),
                   const SizedBox(width: 4),
                   Text('Prog. (${_scheduledBanners.length})', style: const TextStyle(fontSize: 13)),
@@ -240,7 +241,7 @@ class _AdminBannersScreenState extends State<AdminBannersScreen>
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.history_rounded, size: 16, color: AppColors.error),
+                  Icon(Icons.history_rounded, size: 16, color: context.palette.error),
                   const SizedBox(width: 4),
                   Text('Exp. (${_expiredBanners.length})', style: const TextStyle(fontSize: 13)),
                 ],
@@ -256,7 +257,7 @@ class _AdminBannersScreenState extends State<AdminBannersScreen>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.error_outline, size: 48, color: AppColors.error),
+                  Icon(Icons.error_outline, size: 48, color: context.palette.error),
                   const SizedBox(height: 16),
                   Text(_error!),
                   const SizedBox(height: 16),
@@ -282,8 +283,8 @@ class _AdminBannersScreenState extends State<AdminBannersScreen>
             ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _navigateToCreate,
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
+        backgroundColor: context.palette.primaryFill,
+        foregroundColor: context.palette.onPrimary,
         icon: const Icon(Icons.add_rounded),
         label: const Text('Nouveau'),
       ),
@@ -566,14 +567,14 @@ class _BannerCard extends StatelessWidget {
                     // Actions
                     IconButton(
                       onPressed: onEdit,
-                      icon: Icon(Icons.edit_rounded, color: AppColors.primary),
+                      icon: Icon(Icons.edit_rounded, color: context.palette.primary),
                       tooltip: 'Modifier',
                     ),
                     IconButton(
                       onPressed: onDelete,
                       icon: Icon(
                         Icons.delete_outline_rounded,
-                        color: AppColors.error,
+                        color: context.palette.error,
                       ),
                       tooltip: 'Supprimer',
                     ),

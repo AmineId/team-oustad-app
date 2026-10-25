@@ -90,7 +90,7 @@ class WatchActionButton extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(icon, color: AppColors.primary, size: 18),
+            Icon(icon, color: context.palette.primary, size: 18),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
@@ -142,7 +142,7 @@ class WatchListItem extends StatelessWidget {
         child: Row(
           children: [
             if (icon != null) ...[
-              Icon(icon, color: AppColors.primary, size: 16),
+              Icon(icon, color: context.palette.primary, size: 16),
               const SizedBox(width: 8),
             ],
             Expanded(

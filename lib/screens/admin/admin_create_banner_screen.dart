@@ -8,6 +8,7 @@ import '../../core/services/banner_service.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_text_styles.dart';
 
 /// Écran de création/édition de bannière
@@ -144,7 +145,7 @@ class _AdminCreateBannerScreenState extends State<AdminCreateBannerScreen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: ColorScheme.light(
-              primary: AppColors.primary,
+              primary: context.palette.primary,
               onPrimary: Colors.white,
               surface: Theme.of(context).cardTheme.color!,
             ),
@@ -296,7 +297,7 @@ class _AdminCreateBannerScreenState extends State<AdminCreateBannerScreen> {
               onPressed: _save,
               icon: const Icon(Icons.check_rounded),
               label: Text(_isEditing ? 'Enregistrer' : 'Créer'),
-              style: TextButton.styleFrom(foregroundColor: AppColors.primary),
+              style: TextButton.styleFrom(foregroundColor: context.palette.primary),
             ),
         ],
       ),
@@ -431,7 +432,7 @@ class _AdminCreateBannerScreenState extends State<AdminCreateBannerScreen> {
                         },
                         icon: Icon(
                           Icons.remove_circle_outline,
-                          color: AppColors.primary,
+                          color: context.palette.primary,
                         ),
                       ),
                       Container(
@@ -446,7 +447,7 @@ class _AdminCreateBannerScreenState extends State<AdminCreateBannerScreen> {
                         child: Text(
                           '$_priority',
                           style: TextStyle(
-                            color: AppColors.primary,
+                            color: context.palette.primary,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -455,7 +456,7 @@ class _AdminCreateBannerScreenState extends State<AdminCreateBannerScreen> {
                         onPressed: () => setState(() => _priority++),
                         icon: Icon(
                           Icons.add_circle_outline,
-                          color: AppColors.primary,
+                          color: context.palette.primary,
                         ),
                       ),
                     ],
@@ -484,7 +485,7 @@ class _AdminCreateBannerScreenState extends State<AdminCreateBannerScreen> {
                         fontSize: 12,
                       ),
                     ),
-                    activeThumbColor: AppColors.primary,
+                    activeThumbColor: context.palette.primary,
                     contentPadding: EdgeInsets.zero,
                   ),
                 ],
@@ -585,7 +586,7 @@ class _AdminCreateBannerScreenState extends State<AdminCreateBannerScreen> {
                   color: AppColors.primary.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(icon, color: AppColors.primary, size: 20),
+                child: Icon(icon, color: context.palette.primary, size: 20),
               ),
               const SizedBox(width: 12),
               Text(
@@ -731,7 +732,7 @@ class _AdminCreateBannerScreenState extends State<AdminCreateBannerScreen> {
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
-        prefixIcon: Icon(icon, color: AppColors.primary),
+        prefixIcon: Icon(icon, color: context.palette.primary),
         filled: true,
         fillColor: isDark ? AppColors.darkSurface : AppColors.lightBackground,
         border: OutlineInputBorder(
@@ -740,11 +741,11 @@ class _AdminCreateBannerScreenState extends State<AdminCreateBannerScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.primary, width: 2),
+          borderSide: BorderSide(color: context.palette.primary, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.error, width: 2),
+          borderSide: BorderSide(color: context.palette.error, width: 2),
         ),
       ),
       validator: required
@@ -829,7 +830,7 @@ class _AdminCreateBannerScreenState extends State<AdminCreateBannerScreen> {
                   : AppColors.lightBackground,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: isSelected ? AppColors.primary : Colors.transparent,
+                color: isSelected ? context.palette.primary : Colors.transparent,
                 width: 2,
               ),
             ),
@@ -837,7 +838,7 @@ class _AdminCreateBannerScreenState extends State<AdminCreateBannerScreen> {
               type.displayName,
               style: TextStyle(
                 color: isSelected
-                    ? AppColors.primary
+                    ? context.palette.primary
                     : isDark
                     ? AppColors.darkTextSecondary
                     : AppColors.lightTextSecondary,
@@ -869,7 +870,7 @@ class _AdminCreateBannerScreenState extends State<AdminCreateBannerScreen> {
         ),
         child: Row(
           children: [
-            Icon(Icons.calendar_today_rounded, color: AppColors.primary),
+            Icon(Icons.calendar_today_rounded, color: context.palette.primary),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -988,12 +989,12 @@ class _ImageSourceSheet extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Icon(icon, size: 48, color: AppColors.primary),
+            Icon(icon, size: 48, color: context.palette.primary),
             const SizedBox(height: 8),
             Text(
               label,
               style: TextStyle(
-                color: AppColors.primary,
+                color: context.palette.primary,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -1056,7 +1057,7 @@ extension _ColorPickerExtension on _AdminCreateBannerScreenState {
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: isSelected
-                        ? AppColors.primary
+                        ? context.palette.primary
                         : (presetColor == Colors.white
                               ? Colors.grey.shade300
                               : Colors.transparent),

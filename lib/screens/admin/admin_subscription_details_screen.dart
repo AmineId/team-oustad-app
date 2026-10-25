@@ -97,8 +97,8 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
         backgroundColor: Theme.of(context).cardTheme.color,
         title: Row(
           children: [
-            Icon(Icons.autorenew, color: AppColors.primary),
-            SizedBox(width: 8),
+            Icon(Icons.autorenew, color: context.palette.primary),
+            const SizedBox(width: 8),
             Text('Renouveler l\'abonnement', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
           ],
         ),
@@ -125,7 +125,7 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+      builder: (context) => Center(child: CircularProgressIndicator(color: context.palette.primary)),
     );
 
     try {
@@ -164,7 +164,7 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
           'Mode de paiement',
           style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
         ),
-        content: Column(
+        content: const Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             _PaymentMethodOption(
@@ -172,19 +172,19 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
               label: 'Carte bancaire',
               value: 'credit_card',
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             _PaymentMethodOption(
               icon: Icons.account_balance,
               label: 'Virement bancaire',
               value: 'bank_transfer',
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             _PaymentMethodOption(
               icon: Icons.money,
               label: 'Espèces',
               value: 'cash',
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             _PaymentMethodOption(
               icon: Icons.payment,
               label: 'Autre',
@@ -214,9 +214,9 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const Center(
+      builder: (context) => Center(
         child: CircularProgressIndicator(
-          color: AppColors.primary,
+          color: context.palette.primary,
         ),
       ),
     );
@@ -259,8 +259,8 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
         backgroundColor: Theme.of(context).cardTheme.color,
         title: Row(
           children: [
-            Icon(Icons.check_circle, color: AppColors.success),
-            SizedBox(width: 8),
+            Icon(Icons.check_circle, color: context.palette.success),
+            const SizedBox(width: 8),
             Text(
               'Succès',
               style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
@@ -277,9 +277,9 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             ),
-            child: const Text(
+            child: Text(
               'OK',
-              style: TextStyle(color: AppColors.primary),
+              style: TextStyle(color: context.palette.primary),
             ),
           ),
         ],
@@ -294,8 +294,8 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
         backgroundColor: Theme.of(context).cardTheme.color,
         title: Row(
           children: [
-            Icon(Icons.error, color: AppColors.error),
-            SizedBox(width: 8),
+            Icon(Icons.error, color: context.palette.error),
+            const SizedBox(width: 8),
             Text(
               'Erreur',
               style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
@@ -312,9 +312,9 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             ),
-            child: const Text(
+            child: Text(
               'OK',
-              style: TextStyle(color: AppColors.primary),
+              style: TextStyle(color: context.palette.primary),
             ),
           ),
         ],
@@ -342,14 +342,14 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
   Color _getStatusColor(String status) {
     switch (status) {
       case 'active':
-        return AppColors.success;
+        return context.palette.success;
       case 'paused':
-        return AppColors.warning;
+        return context.palette.warning;
       case 'cancelled':
       case 'expired':
-        return AppColors.error;
+        return context.palette.error;
       case 'pending':
-        return AppColors.info;
+        return context.palette.info;
       default:
         return Colors.grey;
     }
@@ -371,11 +371,11 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
   Color _getPaymentStatusColor(String status) {
     switch (status) {
       case 'completed':
-        return AppColors.success;
+        return context.palette.success;
       case 'pending':
-        return AppColors.warning;
+        return context.palette.warning;
       case 'failed':
-        return AppColors.error;
+        return context.palette.error;
       default:
         return Colors.grey;
     }
@@ -406,9 +406,9 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
           color: Theme.of(context).scaffoldBackgroundColor,
         ),
         child: SafeArea(child: _isLoading
-            ? const Center(
+            ? Center(
                 child: CircularProgressIndicator(
-                  color: AppColors.primary,
+                  color: context.palette.primary,
                 ),
               )
             : _errorMessage.isNotEmpty
@@ -416,9 +416,9 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.error_outline,
-                          color: AppColors.error,
+                          color: context.palette.error,
                           size: 48,
                         ),
                         const SizedBox(height: 16),
@@ -443,7 +443,7 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
                   )
                 : RefreshIndicator(
                     onRefresh: _loadSubscriptionDetails,
-                    color: AppColors.primary,
+                    color: context.palette.primary,
                     child: SingleChildScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
                       padding: const EdgeInsets.all(16.0),
@@ -592,8 +592,8 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
                 icon: const Icon(Icons.autorenew, size: 20),
                 label: const Text('Renouveler l\'abonnement'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
+                  backgroundColor: context.palette.primaryFill,
+                  foregroundColor: context.palette.onPrimary,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
@@ -608,7 +608,7 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
   Widget _buildInfoRow(IconData icon, String label, String value) {
     return Row(
       children: [
-        Icon(icon, color: AppColors.primary, size: 20),
+        Icon(icon, color: context.palette.primary, size: 20),
         const SizedBox(width: 12),
         Expanded(
           child: Text(
@@ -708,8 +708,8 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
               children: [
                 Text(
                   '$amount MAD',
-                  style: const TextStyle(
-                    color: AppColors.primary,
+                  style: TextStyle(
+                    color: context.palette.primary,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
@@ -771,12 +771,12 @@ class _AdminSubscriptionDetailsScreenState extends State<AdminSubscriptionDetail
               const SizedBox(height: 8),
               Row(
                 children: [
-                  const Icon(Icons.check_circle, color: AppColors.success, size: 16),
+                  Icon(Icons.check_circle, color: context.palette.success, size: 16),
                   const SizedBox(width: 8),
                   Text(
                     'Payé le: ${_formatDate(paymentDate)}',
-                    style: const TextStyle(
-                      color: AppColors.success,
+                    style: TextStyle(
+                      color: context.palette.success,
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
                     ),
@@ -843,7 +843,7 @@ class _PaymentMethodOption extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(icon, color: AppColors.primary),
+            Icon(icon, color: context.palette.primary),
             const SizedBox(width: 16),
             Text(
               label,

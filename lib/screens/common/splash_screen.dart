@@ -195,7 +195,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   Column(
                     children: [
                       CircularProgressIndicator(
-                        color: AppColors.primary,
+                        color: context.palette.primary,
                         strokeWidth: isWatch ? 2.0 : 4.0,
                       ),
                       const SizedBox(height: 16),

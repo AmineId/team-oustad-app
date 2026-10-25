@@ -6,6 +6,7 @@ import '../../core/services/store_service.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_text_styles.dart';
 import 'admin_create_product_screen.dart';
 
@@ -87,7 +88,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen>
                 color: AppColors.error.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.delete_outline, color: AppColors.error),
+              child: Icon(Icons.delete_outline, color: context.palette.error),
             ),
             const SizedBox(width: 12),
             const Text('Supprimer'),
@@ -122,8 +123,8 @@ class _AdminProductsScreenState extends State<AdminProductsScreen>
           _loadProducts();
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: const Text('Produit supprimé'),
+              const SnackBar(
+                content: Text('Produit supprimé'),
                 backgroundColor: AppColors.success,
               ),
             );
@@ -132,8 +133,8 @@ class _AdminProductsScreenState extends State<AdminProductsScreen>
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('Erreur lors de la suppression'),
+            const SnackBar(
+              content: Text('Erreur lors de la suppression'),
               backgroundColor: AppColors.error,
             ),
           );
@@ -194,11 +195,11 @@ class _AdminProductsScreenState extends State<AdminProductsScreen>
         ),
         bottom: TabBar(
           controller: _tabController,
-          labelColor: AppColors.primary,
+          labelColor: context.palette.primary,
           unselectedLabelColor: isDark
               ? AppColors.darkTextSecondary
               : AppColors.lightTextSecondary,
-          indicatorColor: AppColors.primary,
+          indicatorColor: context.palette.primary,
           indicatorWeight: 3,
           isScrollable: true,
           tabAlignment: TabAlignment.start,
@@ -221,7 +222,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen>
                   Icon(
                     Icons.check_circle_outline,
                     size: 16,
-                    color: AppColors.success,
+                    color: context.palette.success,
                   ),
                   const SizedBox(width: 4),
                   Text('Actifs (${_activeProducts.length})', style: const TextStyle(fontSize: 13)),
@@ -235,7 +236,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen>
                   Icon(
                     Icons.warning_amber_rounded,
                     size: 16,
-                    color: AppColors.warning,
+                    color: context.palette.warning,
                   ),
                   const SizedBox(width: 4),
                   Text('Stock bas (${_lowStockProducts.length})', style: const TextStyle(fontSize: 13)),
@@ -252,7 +253,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.error_outline, size: 48, color: AppColors.error),
+                  Icon(Icons.error_outline, size: 48, color: context.palette.error),
                   const SizedBox(height: 16),
                   Text(_error!),
                   const SizedBox(height: 16),
@@ -277,8 +278,8 @@ class _AdminProductsScreenState extends State<AdminProductsScreen>
             ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _navigateToCreate,
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
+        backgroundColor: context.palette.primaryFill,
+        foregroundColor: context.palette.onPrimary,
         icon: const Icon(Icons.add_rounded),
         label: const Text('Nouveau produit'),
       ),
@@ -403,8 +404,8 @@ class _ProductCard extends StatelessWidget {
                           product.isActive ? 'Actif' : 'Inactif',
                           style: TextStyle(
                             color: product.isActive
-                                ? AppColors.success
-                                : AppColors.error,
+                                ? context.palette.success
+                                : context.palette.error,
                             fontSize: 10,
                             fontWeight: FontWeight.w600,
                           ),
@@ -423,7 +424,7 @@ class _ProductCard extends StatelessWidget {
                           child: Text(
                             product.category!,
                             style: TextStyle(
-                              color: AppColors.primary,
+                              color: context.palette.primary,
                               fontSize: 10,
                               fontWeight: FontWeight.w600,
                             ),
@@ -472,7 +473,7 @@ class _ProductCard extends StatelessWidget {
                         child: Text(
                           priceFormat.format(product.price),
                           style: TextStyle(
-                            color: AppColors.primary,
+                            color: context.palette.primary,
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
                           ),
@@ -480,7 +481,7 @@ class _ProductCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      _buildStockBadge(isDark),
+                      _buildStockBadge(context, isDark),
                     ],
                   ),
                 ],
@@ -495,14 +496,14 @@ class _ProductCard extends StatelessWidget {
             children: [
               IconButton(
                 onPressed: onEdit,
-                icon: Icon(Icons.edit_rounded, color: AppColors.primary, size: 20),
+                icon: Icon(Icons.edit_rounded, color: context.palette.primary, size: 20),
                 tooltip: 'Modifier',
                 padding: const EdgeInsets.all(8),
                 constraints: const BoxConstraints(),
               ),
               IconButton(
                 onPressed: onDelete,
-                icon: Icon(Icons.delete_outline_rounded, color: AppColors.error, size: 20),
+                icon: Icon(Icons.delete_outline_rounded, color: context.palette.error, size: 20),
                 tooltip: 'Supprimer',
                 padding: const EdgeInsets.all(8),
                 constraints: const BoxConstraints(),
@@ -568,19 +569,19 @@ class _ProductCard extends StatelessWidget {
     );
   }
 
-  Widget _buildStockBadge(bool isDark) {
+  Widget _buildStockBadge(BuildContext context, bool isDark) {
     final stock = product.availableStock;
     final Color color;
     final String text;
 
     if (stock <= 0) {
-      color = AppColors.error;
+      color = context.palette.error;
       text = 'Rupture';
     } else if (stock <= 5) {
-      color = AppColors.warning;
+      color = context.palette.warning;
       text = 'Stock: $stock';
     } else {
-      color = AppColors.success;
+      color = context.palette.success;
       text = 'Stock: $stock';
     }
 

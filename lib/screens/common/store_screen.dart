@@ -256,7 +256,7 @@ class _StoreScreenState extends State<StoreScreen>
                                       begin: Alignment.topLeft,
                                       end: Alignment.bottomRight,
                                       colors: [
-                                        AppColors.primary,
+                                        context.palette.primaryFill,
                                         AppColors.primaryLight,
                                         AppColors.primaryDark,
                                       ],
@@ -272,10 +272,10 @@ class _StoreScreenState extends State<StoreScreen>
                                       ),
                                     ],
                                   ),
-                                  child: const Icon(
+                                  child: Icon(
                                     Icons.storefront_rounded,
                                     size: 80,
-                                    color: Colors.white,
+                                    color: context.palette.onPrimary,
                                   ),
                                 ),
                               ),
@@ -293,7 +293,7 @@ class _StoreScreenState extends State<StoreScreen>
                                   decoration: BoxDecoration(
                                     gradient: LinearGradient(
                                       colors: [
-                                        AppColors.primary,
+                                        context.palette.primaryFill,
                                         AppColors.primaryLight,
                                       ],
                                     ),
@@ -311,16 +311,16 @@ class _StoreScreenState extends State<StoreScreen>
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      const Icon(
+                                      Icon(
                                         Icons.rocket_launch_rounded,
-                                        color: Colors.white,
+                                        color: context.palette.onPrimary,
                                         size: 24,
                                       ),
                                       const SizedBox(width: 12),
                                       Text(
                                         'Coming Soon',
                                         style: AppTextStyles.h3.copyWith(
-                                          color: Colors.white,
+                                          color: context.palette.onPrimary,
                                           fontWeight: FontWeight.bold,
                                           letterSpacing: 1.5,
                                         ),
@@ -437,7 +437,7 @@ class _StoreScreenState extends State<StoreScreen>
           child: Icon(
             icons[index],
             size: sizes[index],
-            color: AppColors.primary,
+            color: context.palette.primary,
           ),
         ),
       ),
@@ -460,7 +460,7 @@ class _StoreScreenState extends State<StoreScreen>
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 18, color: AppColors.primary),
+          Icon(icon, size: 18, color: context.palette.primary),
           const SizedBox(width: 8),
           Text(
             label,
@@ -540,7 +540,7 @@ class _StoreScreenState extends State<StoreScreen>
                   Text(
                     currencyFormatter.format(product.price),
                     style: AppTextStyles.h2.copyWith(
-                      color: AppColors.primary,
+                      color: context.palette.primary,
                     ),
                   ),
                   Container(
@@ -558,8 +558,8 @@ class _StoreScreenState extends State<StoreScreen>
                           : 'Rupture',
                       style: AppTextStyles.caption.copyWith(
                         color: product.availableStock > 0
-                            ? AppColors.success
-                            : AppColors.error,
+                            ? context.palette.success
+                            : context.palette.error,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -724,7 +724,7 @@ class _StoreScreenState extends State<StoreScreen>
                         child: Text(
                           product.category!,
                           style: AppTextStyles.caption.copyWith(
-                            color: AppColors.primary,
+                            color: context.palette.primary,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -736,7 +736,7 @@ class _StoreScreenState extends State<StoreScreen>
                     Text(
                       currencyFormatter.format(product.price),
                       style: AppTextStyles.h1.copyWith(
-                        color: AppColors.primary,
+                        color: context.palette.primary,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -752,8 +752,8 @@ class _StoreScreenState extends State<StoreScreen>
                               : Icons.cancel,
                           size: 20,
                           color: product.availableStock > 0
-                              ? AppColors.success
-                              : AppColors.error,
+                              ? context.palette.success
+                              : context.palette.error,
                         ),
                         const SizedBox(width: 8),
                         Text(
@@ -762,8 +762,8 @@ class _StoreScreenState extends State<StoreScreen>
                               : 'Rupture de stock',
                           style: AppTextStyles.body2.copyWith(
                             color: product.availableStock > 0
-                                ? AppColors.success
-                                : AppColors.error,
+                                ? context.palette.success
+                                : context.palette.error,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -812,8 +812,8 @@ class _StoreScreenState extends State<StoreScreen>
                               }
                             : null,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
+                          backgroundColor: context.palette.primaryFill,
+                          foregroundColor: context.palette.onPrimary,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -824,7 +824,9 @@ class _StoreScreenState extends State<StoreScreen>
                               ? 'Réserver'
                               : 'Indisponible',
                           style: AppTextStyles.h3.copyWith(
-                            color: Colors.white,
+                            color: product.availableStock > 0
+                                ? context.palette.onPrimary
+                                : null,
                             fontWeight: FontWeight.bold,
                           ),
                         ),

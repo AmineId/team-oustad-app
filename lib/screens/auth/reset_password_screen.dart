@@ -149,7 +149,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                           Icon(
                             Icons.lock_open,
                             size: 80,
-                            color: AppColors.primary,
+                            color: context.palette.primary,
                           ),
                           const SizedBox(height: 32),
                           
@@ -213,7 +213,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                                borderSide: BorderSide(color: context.palette.primary, width: 2),
                               ),
                             ),
                             validator: (value) {
@@ -237,7 +237,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                             decoration: InputDecoration(
                               labelText: 'Nouveau mot de passe',
                               labelStyle: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)),
-                              prefixIcon: const Icon(Icons.lock, color: AppColors.primary),
+                              prefixIcon: Icon(Icons.lock, color: context.palette.primary),
                               suffixIcon: IconButton(
                                 icon: Icon(
                                   _obscurePassword ? Icons.visibility_off : Icons.visibility,
@@ -259,7 +259,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                                borderSide: BorderSide(color: context.palette.primary, width: 2),
                               ),
                             ),
                             validator: (value) {
@@ -283,7 +283,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                             decoration: InputDecoration(
                               labelText: 'Confirmer le mot de passe',
                               labelStyle: TextStyle(color: (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)),
-                              prefixIcon: const Icon(Icons.lock_outline, color: AppColors.primary),
+                              prefixIcon: Icon(Icons.lock_outline, color: context.palette.primary),
                               suffixIcon: IconButton(
                                 icon: Icon(
                                   _obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
@@ -305,7 +305,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                                borderSide: BorderSide(color: context.palette.primary, width: 2),
                               ),
                             ),
                             validator: (value) {
@@ -324,7 +324,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                           ElevatedButton(
                             onPressed: _isLoading ? null : _submitReset,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
+                              backgroundColor: context.palette.primaryFill,
                               foregroundColor: Theme.of(context).brightness == Brightness.dark ? (Theme.of(context).brightness == Brightness.dark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary) : AppColors.primaryDark,
                               padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
                               shape: RoundedRectangleBorder(
