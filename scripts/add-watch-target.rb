@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 #
-# Ajoute le target watchOS "TeamFitnessWatch" au Runner.xcodeproj
+# Ajoute le target watchOS "TeamOustadWatch" au Runner.xcodeproj
 # et l'embarque dans le target "Runner" (app iPhone).
 #
 # Requis en CI macOS : pas de Xcode local en dev (WSL/Windows).
@@ -12,9 +12,10 @@
 require 'xcodeproj'
 
 PROJECT_PATH = 'ios/Runner.xcodeproj'
-WATCH_NAME   = 'TeamFitnessWatch'
+WATCH_NAME   = 'TeamOustadWatch'
+DISPLAY_NAME = 'Team Oustad'
 WATCH_BUNDLE = 'team.oustad.app.watchkitapp'
-WATCH_DIR    = 'TeamFitnessWatch'   # relatif à ios/
+WATCH_DIR    = 'TeamOustadWatch'    # relatif à ios/
 WATCHOS_MIN  = '7.0'
 
 project = Xcodeproj::Project.open(PROJECT_PATH)
@@ -39,6 +40,8 @@ watch_target.build_configurations.each do |cfg|
   s['ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES'] = 'YES'
   s['ENABLE_BITCODE']                        = 'NO'
   s['GENERATE_INFOPLIST_FILE']               = 'YES'
+  s['INFOPLIST_KEY_CFBundleDisplayName']     = DISPLAY_NAME
+  s['ASSETCATALOG_COMPILER_APPICON_NAME']    = 'AppIcon'
   s['INFOPLIST_KEY_WKApplication']           = 'YES'
   s['INFOPLIST_KEY_WKCompanionAppBundleIdentifier'] = 'team.oustad.app'
   s['INFOPLIST_KEY_UISupportedInterfaceOrientations'] = 'UIInterfaceOrientationPortrait'
@@ -62,6 +65,13 @@ Dir.glob("ios/#{WATCH_DIR}/Views/*.swift").sort.each do |path|
   watch_target.source_build_phase.add_file_reference(ref)
   puts "  + Views/#{File.basename(path)}"
 end
+
+# Icône de l'app montre (catalogue d'assets, icône watchOS 1024 unique)
+assets_path = "ios/#{WATCH_DIR}/Assets.xcassets"
+abort("❌ #{assets_path} introuvable") unless File.directory?(assets_path)
+assets_ref = watch_group.new_reference('Assets.xcassets')
+watch_target.resources_build_phase.add_file_reference(assets_ref)
+puts '  + Assets.xcassets (AppIcon)'
 
 # ── 4. Embarquer le Watch app dans Runner ────────────────────────────────────
 runner = project.targets.find { |t| t.name == 'Runner' }

@@ -12,7 +12,7 @@ class WearApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Team Fitness',
+      title: 'Team Oustad',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
       home: WatchShape(

@@ -36,7 +36,7 @@ struct WatchHomeView: View {
                         .fill(statusColor)
                         .frame(width: 8, height: 8)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(store.gymName.isEmpty ? "Team Fitness" : store.gymName)
+                        Text(store.gymName.isEmpty ? "Team Oustad" : store.gymName)
                             .font(.system(size: 12, weight: .semibold))
                             .lineLimit(1)
                         if store.subscriptionStatus == "active" {

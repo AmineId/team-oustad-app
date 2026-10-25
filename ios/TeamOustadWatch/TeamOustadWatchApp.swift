@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct TeamFitnessWatchApp: App {
+struct TeamOustadWatchApp: App {
     @StateObject private var store = WatchDataStore()
 
     var body: some Scene {

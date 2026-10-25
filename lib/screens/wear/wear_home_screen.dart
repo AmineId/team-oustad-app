@@ -61,7 +61,7 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
   Widget _buildStatusPage() {
     final isRound = widget.shape == WearShape.round;
     final status = _data['subscriptionStatus'] as String? ?? '';
-    final gymName = _data['gymName'] as String? ?? 'Team Fitness';
+    final gymName = _data['gymName'] as String? ?? 'Team Oustad';
     final userName = _data['userName'] as String? ?? '';
     final daysLeft = _data['daysLeft'] as int? ?? 0;
 
@@ -73,7 +73,7 @@ class _WearHomeScreenState extends State<WearHomeScreen> {
             const Icon(Icons.watch, color: AppColors.primary, size: 28),
             const SizedBox(height: 8),
             const Text(
-              'Ouvrez Team\nFitness sur\nvotre téléphone',
+              'Ouvrez Team\nOustad sur\nvotre téléphone',
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.white60, fontSize: 11),
             ),
