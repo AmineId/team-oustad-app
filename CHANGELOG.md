@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.116](https://github.com/AmineId/team-oustad-app/compare/v1.0.0-beta.115...v1.0.0-beta.116) (2026-10-25)
+
+
+### 🐛 Bug Fixes
+
+* **banners:** lire la réponse /banners en tableau brut ([0f1669c](https://github.com/AmineId/team-oustad-app/commit/0f1669c18c131aa978f7382c3a684a9b0b8c1cb4))
+* **showcase:** carrousel photo des salles swipeable et défilement auto ([16d55dd](https://github.com/AmineId/team-oustad-app/commit/16d55ddb7b55efc2d1f0c31698e5b940e1534b25))
+
 ## [1.0.0-beta.115](https://github.com/AmineId/team-oustad-app/compare/v1.0.0-beta.114...v1.0.0-beta.115) (2026-10-25)
 
 
