@@ -346,17 +346,21 @@ class _GymShowcaseDetailScreenState extends State<GymShowcaseDetailScreen> {
               fit: StackFit.expand,
               children: [
                 _PhotoCarousel(photos: photos),
-                const DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.transparent,
-                        Colors.black87,
-                      ],
-                      stops: [0, 0.45, 1],
+                // IgnorePointer : sans ça le dégradé capte les gestes et le
+                // carrousel photo ne se swipe pas.
+                const IgnorePointer(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.transparent,
+                          Colors.black87,
+                        ],
+                        stops: [0, 0.45, 1],
+                      ),
                     ),
                   ),
                 ),
@@ -364,25 +368,27 @@ class _GymShowcaseDetailScreenState extends State<GymShowcaseDetailScreen> {
                   left: 20,
                   right: 20,
                   bottom: 20,
-                  child: RevealOnLoad(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (memberCountDisplay != null)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 10),
-                            child: _MemberPill(display: memberCountDisplay),
+                  child: IgnorePointer(
+                    child: RevealOnLoad(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (memberCountDisplay != null)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 10),
+                              child: _MemberPill(display: memberCountDisplay),
+                            ),
+                          Text(
+                            name,
+                            style: GoogleFonts.anton(
+                              fontSize: isDesktop ? 50 : 36,
+                              color: Colors.white,
+                              height: 1.0,
+                            ),
                           ),
-                        Text(
-                          name,
-                          style: GoogleFonts.anton(
-                            fontSize: isDesktop ? 50 : 36,
-                            color: Colors.white,
-                            height: 1.0,
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -535,6 +541,7 @@ class _PromosSectionState extends State<_PromosSection> {
         SizedBox(
           height: 160,
           child: PageView.builder(
+            scrollBehavior: const CarouselScrollBehavior(),
             controller: _pageController,
             itemCount: widget.banners.length,
             onPageChanged: (i) => setState(() => _page = i),
@@ -559,7 +566,9 @@ class _PromosSectionState extends State<_PromosSection> {
                   width: i == _page ? 16 : 6,
                   height: 6,
                   decoration: BoxDecoration(
-                    color: i == _page ? context.palette.primary : Colors.white24,
+                    color: i == _page
+                        ? context.palette.primary
+                        : Colors.white24,
                     borderRadius: BorderRadius.circular(3),
                   ),
                 ),
@@ -603,11 +612,40 @@ class _PhotoCarousel extends StatefulWidget {
 class _PhotoCarouselState extends State<_PhotoCarousel> {
   final _controller = PageController();
   int _page = 0;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _restartAutoPlay();
+  }
+
+  @override
+  void didUpdateWidget(covariant _PhotoCarousel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.photos.length != widget.photos.length) _restartAutoPlay();
+  }
 
   @override
   void dispose() {
+    _timer?.cancel();
     _controller.dispose();
     super.dispose();
+  }
+
+  /// Défilement auto toutes les 5 s ; relancé à chaque changement de page
+  /// pour ne pas enchaîner juste après un swipe manuel.
+  void _restartAutoPlay() {
+    _timer?.cancel();
+    if (_reduceMotion || widget.photos.length < 2) return;
+    _timer = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (!mounted || !_controller.hasClients) return;
+      _controller.animateToPage(
+        (_page + 1) % widget.photos.length,
+        duration: const Duration(milliseconds: 450),
+        curve: Curves.easeInOut,
+      );
+    });
   }
 
   @override
@@ -629,9 +667,13 @@ class _PhotoCarouselState extends State<_PhotoCarousel> {
       fit: StackFit.expand,
       children: [
         PageView.builder(
+          scrollBehavior: const CarouselScrollBehavior(),
           controller: _controller,
           itemCount: widget.photos.length,
-          onPageChanged: (page) => setState(() => _page = page),
+          onPageChanged: (page) {
+            setState(() => _page = page);
+            _restartAutoPlay();
+          },
           itemBuilder: (context, index) {
             final url = widget.photos[index]['url'] as String?;
             return GestureDetector(
@@ -773,7 +815,8 @@ class _ActionsCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (address.isNotEmpty) _infoLine(context, Icons.location_on_rounded, address),
+          if (address.isNotEmpty)
+            _infoLine(context, Icons.location_on_rounded, address),
           if (phone != null && phone!.isNotEmpty) ...[
             const SizedBox(height: 10),
             _infoLine(context, Icons.phone_rounded, phone!),
@@ -876,7 +919,9 @@ class _GlowButton extends StatelessWidget {
               Icon(
                 icon,
                 size: 18,
-                color: filled ? AppColors.darkBackground : context.palette.primary,
+                color: filled
+                    ? AppColors.darkBackground
+                    : context.palette.primary,
               ),
               const SizedBox(width: 8),
               Text(
@@ -1249,6 +1294,7 @@ class _PhotoFullscreenViewerState extends State<_PhotoFullscreenViewer> {
       body: Stack(
         children: [
           PageView.builder(
+            scrollBehavior: const CarouselScrollBehavior(),
             controller: _controller,
             itemCount: widget.photos.length,
             onPageChanged: (i) => setState(() => _page = i),

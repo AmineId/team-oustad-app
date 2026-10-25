@@ -2442,7 +2442,11 @@ class ApiService {
       if (resp.statusCode == 200) {
         try {
           final body = jsonDecode(resp.body);
-          final banners = body['banners'] as List<dynamic>;
+          // Le serveur renvoie un tableau brut, le swagger annonce
+          // { banners: [...] } : on accepte les deux.
+          final banners = body is List
+              ? body
+              : (body as Map<String, dynamic>)['banners'] as List<dynamic>;
           debugPrint('ApiService.getBanners found ${banners.length} banners');
           return banners;
         } catch (_) {
