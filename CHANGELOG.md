@@ -1,5 +1,32 @@
 # 📋 Changelog
 
+All notable changes to Team Oustad App will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+
+## [1.0.0-beta.110](https://github.com/AmineId/team-oustad-app/compare/v1.0.0-beta.109...v1.0.0-beta.110) (2026-10-25)
+
+
+### ✨ New Features
+
+* **play:** publier l'app téléphone et l'app montre, notes générées ([0fbe343](https://github.com/AmineId/team-oustad-app/commit/0fbe343246656e7932e96999892fef16a1f896eb))
+
+
+### 🐛 Bug Fixes
+
+* **android:** l'app téléphone n'est plus déclarée comme app Wear OS ([16b7ca2](https://github.com/AmineId/team-oustad-app/commit/16b7ca232ee3272c79c359f302916ab93b48fc28))
+* **ios:** ios-install.sh trouve les IPA des releases, plist montre complété ([ee60950](https://github.com/AmineId/team-oustad-app/commit/ee60950ab5f00b7a84d356c55c13d974c77c3fc6))
+* **watch:** app montre nommée Team Oustad, avec son icône ([d97dfc0](https://github.com/AmineId/team-oustad-app/commit/d97dfc0e4f2d656f2326bd50bb2afc8478e9dee1))
+
+
+### 📚 Documentation
+
+* Team Oustad partout à la place de Team Fitness ([b5230ba](https://github.com/AmineId/team-oustad-app/commit/b5230ba533fdc11a5c7016d1ce586eefd6df5dca))
+
+# 📋 Changelog
+
 All notable changes to Team Fitness App will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
