@@ -40,7 +40,7 @@ class _GymShowcaseDetailScreenState extends State<GymShowcaseDetailScreen> {
   List<dynamic> _subscriptions = [];
   bool _isLoading = true;
   bool _hasError = false;
-  bool _canEdit = false; // owner ou admin autorisé
+  bool _canEdit = false; // vitrine : owner uniquement
 
   @override
   void initState() {
@@ -50,7 +50,7 @@ class _GymShowcaseDetailScreenState extends State<GymShowcaseDetailScreen> {
   }
 
   Future<void> _checkEditPermission() async {
-    final canEdit = await _authService.hasAdminAccess();
+    final canEdit = await _authService.isOwner();
     if (!mounted) return;
     setState(() => _canEdit = canEdit);
   }
@@ -140,8 +140,11 @@ class _GymShowcaseDetailScreenState extends State<GymShowcaseDetailScreen> {
   String _roleLabel(String? role) {
     switch (role) {
       case 'owner':
-        return 'Gérant';
+        return 'Propriétaire';
+      case 'manager':
       case 'admin':
+        return 'Manager';
+      case 'coach':
         return 'Coach';
       default:
         return 'Équipe';

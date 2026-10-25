@@ -94,7 +94,7 @@ class _AdminEditAdminScreenState extends State<AdminEditAdminScreen> {
       if (response != null && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Administrateur modifié avec succès !'),
+            content: Text('Manager modifié avec succès !'),
             backgroundColor: AppColors.success,
           ),
         );
@@ -123,7 +123,7 @@ class _AdminEditAdminScreenState extends State<AdminEditAdminScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Modifier administrateur',
+          'Modifier le manager',
           style: TextStyle(color: theme.appBarTheme.titleTextStyle?.color),
         ),
       ),
@@ -307,7 +307,7 @@ class _AdminEditAdminScreenState extends State<AdminEditAdminScreen> {
                             ),
                           )
                         : const Text(
-                            'Modifier l\'administrateur',
+                            'Modifier le manager',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,

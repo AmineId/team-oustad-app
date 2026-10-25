@@ -234,6 +234,7 @@ class _AccueilPageState extends State<AccueilPage> {
   String _todayCheckIns = '—';
   String _totalRevenue = '—';
   bool _canViewReports = false;
+  bool _isOwner = false;
   bool _isLoading = false;
 
   static const _cacheKey = 'admin_dashboard_stats_cache';
@@ -245,6 +246,9 @@ class _AccueilPageState extends State<AccueilPage> {
     _authService = AuthService(_apiService);
     _authService.ownerCan('canViewReports').then((can) {
       if (mounted) setState(() => _canViewReports = can);
+    });
+    _authService.isOwner().then((isOwner) {
+      if (mounted) setState(() => _isOwner = isOwner);
     });
     _loadStats();
   }
@@ -494,14 +498,16 @@ class _AccueilPageState extends State<AccueilPage> {
             onTap: () =>
                 AppSnackBar.info(context, 'Fonctionnalité en développement'),
           ),
-          _QuickActionButton(
-            icon: Icons.campaign_rounded,
-            title: 'Événements',
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const AdminBannersScreen()),
+          // Bannières / promos : réservées à l'owner.
+          if (_isOwner)
+            _QuickActionButton(
+              icon: Icons.campaign_rounded,
+              title: 'Événements',
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AdminBannersScreen()),
+              ),
             ),
-          ),
           _QuickActionButton(
             icon: Icons.store_rounded,
             title: 'Produits Store',
@@ -739,29 +745,6 @@ class _GestionPageState extends State<GestionPage> {
   String _currentView =
       'menu'; // 'menu', 'members', 'plannings', 'member_details', 'member_create', 'planning_create'
   int? _selectedMemberId;
-  final AuthService _authService = AuthService(ApiService.fromEnv());
-  // Salle de l'admin connecté (null pour l'owner, qui passe par Gestion globale).
-  int? _ownGymId;
-  String _ownGymName = 'Ma salle';
-
-  @override
-  void initState() {
-    super.initState();
-    _loadOwnGym();
-  }
-
-  Future<void> _loadOwnGym() async {
-    if (await _authService.isOwner()) return;
-    final profile = await _authService.getCachedUserProfile();
-    final gymId = profile?['gymId'];
-    if (!mounted || gymId is! int) return;
-    setState(() {
-      _ownGymId = gymId;
-      _ownGymName =
-          (profile?['gym'] as Map<String, dynamic>?)?['name'] as String? ??
-          'Ma salle';
-    });
-  }
 
   void _navigateBack() {
     setState(() {
@@ -862,22 +845,6 @@ class _GestionPageState extends State<GestionPage> {
                   setState(() => _currentView = 'plannings');
                 },
               ),
-              if (_ownGymId != null) ...[
-                const SizedBox(height: 12),
-                _QuickActionButton(
-                  icon: Icons.web,
-                  title: 'Page vitrine de ma salle',
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => ShowcaseEditorScreen.gym(
-                        gymId: _ownGymId!,
-                        gymName: _ownGymName,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
             ],
           ),
         ),
@@ -999,11 +966,13 @@ class _ProfilePageState extends State<ProfilePage> {
 
     final fullName = getUserFullName(
       _profileData,
-      defaultValue: 'Administrateur',
+      defaultValue: 'Manager',
     );
     final email = _profileData?['email'] ?? '';
     final phoneNumber = _profileData?['phoneNumber'] ?? '';
-    final role = _profileData?['role'] ?? 'admin';
+    final role =
+        AuthService.normalizeRole(_profileData?['role'] as String?) ??
+        'manager';
     final joinedAt = _profileData?['joinedAt'] ?? 'N/A';
 
     return Container(
@@ -1213,7 +1182,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               Text(
                                 role == 'owner'
                                     ? l10n.ownerRole
-                                    : l10n.adminRole,
+                                    : l10n.managerRole,
                                 style: TextStyle(
                                   fontSize: 13,
                                   color: (role == 'owner'
@@ -1458,7 +1427,7 @@ class _GestionGlobalePageState extends State<GestionGlobalePage> {
   }
 
   Future<void> _loadPermissions() async {
-    final admins = await _authService.ownerCan('canManageAdmins');
+    final admins = await _authService.ownerCan('canManageManagers');
     final gyms = await _authService.ownerCan('canManageGyms');
     if (!mounted) return;
     setState(() {
@@ -1587,14 +1556,14 @@ class _GestionGlobalePageState extends State<GestionGlobalePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Gestion des Admins
+              // Gestion des managers
               if (_canManageAdmins) ...[
                 _buildGlobalOption(
                   context,
                   icon: Icons.admin_panel_settings,
-                  title: 'Gestion des Admins',
+                  title: 'Gestion des managers',
                   description:
-                      'Ajouter, modifier ou supprimer des administrateurs',
+                      'Ajouter, modifier ou supprimer des managers',
                   onTap: () => setState(() => _currentView = 'admins'),
                 ),
                 const SizedBox(height: 16),
@@ -1794,10 +1763,12 @@ class _AdminsListViewState extends State<_AdminsListView> {
 
       if (users != null) {
         setState(() {
-          // Ne lister QUE les admins, PAS les owners
+          // Ne lister QUE les managers, PAS les owners
           _admins = users
               .where(
-                (user) => user['role'] == 'admin' && user['role'] != 'owner',
+                (user) =>
+                    AuthService.normalizeRole(user['role'] as String?) ==
+                    'manager',
               )
               .map((user) => user as Map<String, dynamic>)
               .toList();
@@ -1806,7 +1777,7 @@ class _AdminsListViewState extends State<_AdminsListView> {
         });
       } else {
         setState(() {
-          _errorMessage = 'Impossible de charger les administrateurs';
+          _errorMessage = 'Impossible de charger les managers';
           _isLoading = false;
         });
       }
@@ -1864,7 +1835,7 @@ class _AdminsListViewState extends State<_AdminsListView> {
                       onPressed: widget.onBack,
                     ),
                     Text(
-                      'Administrateurs',
+                      'Managers',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -1888,7 +1859,7 @@ class _AdminsListViewState extends State<_AdminsListView> {
                         : AppColors.lightTextPrimary),
                   ),
                   decoration: InputDecoration(
-                    hintText: 'Rechercher un administrateur...',
+                    hintText: 'Rechercher un manager...',
                     hintStyle: TextStyle(
                       color:
                           (Theme.of(context).brightness == Brightness.dark
@@ -1927,7 +1898,7 @@ class _AdminsListViewState extends State<_AdminsListView> {
               ),
               const SizedBox(height: 16),
 
-              // Liste des administrateurs
+              // Liste des managers
               Expanded(
                 child: _isLoading
                     ? Center(
@@ -1990,8 +1961,8 @@ class _AdminsListViewState extends State<_AdminsListView> {
                             const SizedBox(height: 16),
                             Text(
                               _searchController.text.isNotEmpty
-                                  ? 'Aucun administrateur trouvé'
-                                  : 'Aucun administrateur',
+                                  ? 'Aucun manager trouvé'
+                                  : 'Aucun manager',
                               style: TextStyle(
                                 color:
                                     (Theme.of(context).brightness ==
@@ -2058,8 +2029,8 @@ class _AdminsListViewState extends State<_AdminsListView> {
 
     final roleBadge = role == 'owner'
         ? 'Propriétaire'
-        : role == 'admin'
-        ? 'Administrateur'
+        : AuthService.normalizeRole(role) == 'manager'
+        ? 'Manager'
         : role;
     final roleColor = role == 'owner'
         ? Colors.purple
@@ -2648,7 +2619,7 @@ class _AdminDetailsViewState extends State<_AdminDetailsView> {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        'Administrateur',
+                        'Manager',
                         style: TextStyle(
                           color: context.palette.primary,
                           fontSize: 14,
@@ -3398,7 +3369,7 @@ class _AdminEditViewState extends State<_AdminEditView> {
       if (response != null && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Administrateur modifié avec succès !'),
+            content: Text('Manager modifié avec succès !'),
             backgroundColor: AppColors.success,
           ),
         );
@@ -3442,7 +3413,7 @@ class _AdminEditViewState extends State<_AdminEditView> {
                     onPressed: widget.onBack,
                   ),
                   Text(
-                    'Modifier administrateur',
+                    'Modifier le manager',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -3648,7 +3619,7 @@ class _AdminEditViewState extends State<_AdminEditView> {
                                 ),
                               )
                             : const Text(
-                                'Modifier l\'administrateur',
+                                'Modifier le manager',
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -4938,7 +4909,7 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
                     onPressed: widget.onBack,
                   ),
                   Text(
-                    'Créer un administrateur',
+                    'Créer un manager',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -5257,7 +5228,7 @@ class _AdminCreateViewState extends State<_AdminCreateView> {
                                 ),
                               )
                             : const Text(
-                                'Créer l\'administrateur',
+                                'Créer le manager',
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,

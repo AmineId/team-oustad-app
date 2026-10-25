@@ -1845,7 +1845,7 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
     });
 
     try {
-      final loginResult = await _api.login(email, password);
+      final loginResult = await _api.login(email, password, kiosk: true);
       if (loginResult == null) {
         setState(() {
           _loginError = 'Identifiants incorrects';
@@ -1857,9 +1857,12 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
       final userType = AuthService.normalizeRole(
         loginResult['userType'] as String?,
       );
-      if (userType != 'admin' && userType != 'owner') {
+      // Le serveur refuse déjà coach/member au kiosk (kiosk_forbidden_role) ;
+      // ce filtre couvre un serveur pas encore migré.
+      if (loginResult['error'] == 'kiosk_forbidden_role' ||
+          (userType != 'manager' && userType != 'owner')) {
         setState(() {
-          _loginError = 'Accès réservé aux administrateurs et propriétaires';
+          _loginError = 'Accès réservé aux managers et propriétaires';
           _loggingIn = false;
         });
         return;

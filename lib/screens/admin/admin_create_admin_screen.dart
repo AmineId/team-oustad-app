@@ -92,8 +92,8 @@ class _AdminCreateAdminScreenState extends State<AdminCreateAdminScreen> {
           SnackBar(
             content: Text(
               _sendSetupEmail
-                  ? 'Admin créé ! Email de configuration envoyé.'
-                  : 'Admin créé avec succès !',
+                  ? 'Manager créé ! Email de configuration envoyé.'
+                  : 'Manager créé avec succès !',
             ),
             backgroundColor: AppColors.success,
           ),
@@ -123,7 +123,7 @@ class _AdminCreateAdminScreenState extends State<AdminCreateAdminScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Créer un administrateur',
+          'Créer un manager',
           style: TextStyle(color: theme.appBarTheme.titleTextStyle?.color),
         ),
       ),
@@ -421,7 +421,7 @@ class _AdminCreateAdminScreenState extends State<AdminCreateAdminScreen> {
                             ),
                           )
                         : const Text(
-                            'Créer l\'administrateur',
+                            'Créer le manager',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,

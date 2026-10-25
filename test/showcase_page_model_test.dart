@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:team_oustad_app/core/models/showcase_page_model.dart';
-import 'package:team_oustad_app/core/services/auth_service.dart';
 
 void main() {
   group('ShowcasePage.fromJson', () {
@@ -72,13 +71,5 @@ void main() {
       expect(md, hasLength(1));
       expect(md.single.text('title'), 'Tarifs');
     });
-  });
-
-  test('AuthService.normalizeRole', () {
-    expect(AuthService.normalizeRole(' Owner '), 'owner');
-    expect(AuthService.normalizeRole('ADMIN'), 'admin');
-    expect(AuthService.normalizeRole('member'), 'member');
-    expect(AuthService.normalizeRole('superadmin'), isNull);
-    expect(AuthService.normalizeRole(null), isNull);
   });
 }

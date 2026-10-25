@@ -99,9 +99,14 @@ class ApiService {
   /// or null on failure. The backend returns JSON like:
   /// {"token":"...", "user": {"id":"...", "email":"...", "fullName":"...", "gymId":"...", "type":"admin|member|owner"}}
   /// Supports login with email OR phoneNumber
+  ///
+  /// [kiosk] ouvre une session borne (`client: "kiosk"`), distincte de celle
+  /// de l'app : elle ne déconnecte pas le téléphone. Un rôle non autorisé au
+  /// kiosk (coach, member) renvoie `{'error': 'kiosk_forbidden_role'}`.
   Future<Map<String, dynamic>?> login(
     String emailOrPhone,
     String password, {
+    bool kiosk = false,
     Duration timeout = const Duration(seconds: 8),
   }) async {
     final uri = baseUri.resolve('/auth/login');
@@ -115,6 +120,7 @@ class ApiService {
       final requestBody = isEmail
           ? {'email': cleanEmailOrPhone, 'password': cleanPassword}
           : {'phoneNumber': cleanEmailOrPhone, 'password': cleanPassword};
+      if (kiosk) requestBody['client'] = 'kiosk';
 
       // ignore: avoid_print
       debugPrint(
@@ -131,6 +137,16 @@ class ApiService {
 
       // ignore: avoid_print
       debugPrint('ApiService.login response status: ${resp.statusCode}');
+
+      if (resp.statusCode == 403) {
+        try {
+          final body = jsonDecode(resp.body);
+          if (body is Map && body['error'] == 'kiosk_forbidden_role') {
+            return {'error': 'kiosk_forbidden_role'};
+          }
+        } catch (_) {}
+        return null;
+      }
 
       if (resp.statusCode == 200) {
         try {

@@ -185,7 +185,9 @@ class AppLocalizations {
       'confirm': 'Confirmer',
       'active_status': 'ACTIF',
       'owner_role': 'Propriétaire',
-      'admin_role': 'Administrateur',
+      'manager_role': 'Manager',
+      'coach_role': 'Coach',
+      'coach_space_soon': 'Votre espace coach arrive bientôt.',
     },
     'en': {
       'home': 'Home',
@@ -350,7 +352,9 @@ class AppLocalizations {
       'confirm': 'Confirm',
       'active_status': 'ACTIVE',
       'owner_role': 'Owner',
-      'admin_role': 'Administrator',
+      'manager_role': 'Manager',
+      'coach_role': 'Coach',
+      'coach_space_soon': 'Your coach space is coming soon.',
     },
     'ar': {
       'home': 'الرئيسية',
@@ -512,7 +516,9 @@ class AppLocalizations {
       'confirm': 'تأكيد',
       'active_status': 'نشط',
       'owner_role': 'المالك',
-      'admin_role': 'مسؤول',
+      'manager_role': 'مدير',
+      'coach_role': 'مدرب',
+      'coach_space_soon': 'مساحة المدرب قادمة قريبًا.',
     },
   };
 
@@ -705,7 +711,9 @@ class AppLocalizations {
   String get confirm => translate('confirm');
   String get activeStatus => translate('active_status');
   String get ownerRole => translate('owner_role');
-  String get adminRole => translate('admin_role');
+  String get managerRole => translate('manager_role');
+  String get coachRole => translate('coach_role');
+  String get coachSpaceSoon => translate('coach_space_soon');
 }
 
 class _AppLocalizationsDelegate

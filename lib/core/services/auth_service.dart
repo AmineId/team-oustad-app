@@ -97,16 +97,18 @@ class AuthService {
     }
   }
 
-  static const _knownRoles = {'owner', 'admin', 'member'};
+  static const _knownRoles = {'owner', 'manager', 'coach', 'member'};
 
-  /// Rôle normalisé ('owner' | 'admin' | 'member'), null si inconnu.
-  /// Accepte les variantes de casse/espaces renvoyées par le serveur.
+  /// Rôle normalisé ('owner' | 'manager' | 'coach' | 'member'), null si
+  /// inconnu. Accepte les variantes de casse/espaces renvoyées par le serveur,
+  /// et l'ancien nom 'admin' (anciens tokens, serveur pas encore migré).
   static String? normalizeRole(String? raw) {
-    final role = raw?.trim().toLowerCase();
+    var role = raw?.trim().toLowerCase();
+    if (role == 'admin') role = 'manager';
     return _knownRoles.contains(role) ? role : null;
   }
 
-  /// Save user type (owner, admin or member) in SharedPreferences
+  /// Save user type (owner, manager, coach or member) in SharedPreferences
   Future<void> saveUserType(String userType) async {
     try {
       final role = normalizeRole(userType);
@@ -138,10 +140,16 @@ class AuthService {
     }
   }
 
-  /// Check if current user is an admin (NOT owner)
-  Future<bool> isAdmin() async {
+  /// Manager : gère une seule salle (anciennement « admin »), pas un owner.
+  Future<bool> isManager() async {
     final userType = await getUserType();
-    return userType == 'admin';
+    return userType == 'manager';
+  }
+
+  /// Coach : créé par l'owner, rattaché à une ou plusieurs salles.
+  Future<bool> isCoach() async {
+    final userType = await getUserType();
+    return userType == 'coach';
   }
 
   /// Check if current user is an owner (super admin)
@@ -151,7 +159,8 @@ class AuthService {
   }
 
   /// Permissions fines d'un owner (`permissions` du profil, cf. swagger) :
-  /// 'canManageAdmins', 'canManageGyms', 'canViewReports'. Une permission
+  /// 'canManageManagers' (ex-'canManageAdmins'), 'canManageGyms',
+  /// 'canViewReports'. Une permission
   /// absente vaut true (défaut serveur). Toujours false pour un non-owner.
   /// Ne fait que masquer l'UI : le serveur applique les mêmes règles.
   Future<bool> ownerCan(String permission) async {
@@ -161,14 +170,19 @@ class AuthService {
         profile?['permissions'] ??
         (profile?['user'] as Map<String, dynamic>?)?['permissions'];
     if (permissions is! Map) return true;
-    final value = permissions[permission];
+    // Serveur pas encore migré : seule l'ancienne clé existe.
+    final value =
+        permissions[permission] ??
+        (permission == 'canManageManagers'
+            ? permissions['canManageAdmins']
+            : null);
     return value is bool ? value : true;
   }
 
-  /// Check if current user is an admin OR owner (has admin access)
-  Future<bool> hasAdminAccess() async {
+  /// Accès à l'espace gestion (owner ou manager).
+  Future<bool> hasManagementAccess() async {
     final userType = await getUserType();
-    return userType == 'admin' || userType == 'owner';
+    return userType == 'manager' || userType == 'owner';
   }
 
   Future<bool> hasStoredCredentials() async {
