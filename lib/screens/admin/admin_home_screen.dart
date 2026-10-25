@@ -25,7 +25,6 @@ import 'admin_edit_profile_screen.dart';
 import 'admin_products_screen.dart';
 import 'showcase_editor_screen.dart';
 import 'admin_qr_scanner_screen.dart';
-import '../kiosk/checkin_terminal_screen.dart';
 import 'admin_whatsapp_screen.dart';
 
 class AdminHomeScreen extends StatefulWidget {
@@ -520,17 +519,6 @@ class _AccueilPageState extends State<AccueilPage> {
                 MaterialPageRoute(builder: (_) => const AdminQrScannerScreen()),
               ),
             ),
-          _QuickActionButton(
-            icon: Icons.sensor_door_outlined,
-            title: 'Borne d\'accueil',
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                fullscreenDialog: true,
-                builder: (_) => const CheckinTerminalScreen(),
-              ),
-            ),
-          ),
         ];
 
         if (isDesktop) {

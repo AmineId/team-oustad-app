@@ -4,7 +4,6 @@
 export 'admin/admin_screens.dart';
 export 'auth/auth_screens.dart';
 export 'member/member_screens.dart';
-export 'kiosk/kiosk_screens.dart';
 // Excluded common screens due to naming conflicts with admin screens
 
 
