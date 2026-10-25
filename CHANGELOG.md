@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.115](https://github.com/AmineId/team-oustad-app/compare/v1.0.0-beta.114...v1.0.0-beta.115) (2026-10-25)
+
+
+### 🐛 Bug Fixes
+
+* **theme:** contraste du thème clair et règles d'usage des accents ([94a3437](https://github.com/AmineId/team-oustad-app/commit/94a34378698cfe9f1c32cabc15c64ffdda50aafa))
+* **theme:** hiérarchie des accents en mode clair (or clair, neutres, barre) ([d3394d2](https://github.com/AmineId/team-oustad-app/commit/d3394d28c8cdd0ea28d95cc3f29079a7b6f4e0f5)), closes [#F5B040](https://github.com/AmineId/team-oustad-app/issues/F5B040)
+
 ## [1.0.0-beta.114](https://github.com/AmineId/team-oustad-app/compare/v1.0.0-beta.113...v1.0.0-beta.114) (2026-10-25)
 
 
