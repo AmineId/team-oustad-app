@@ -173,6 +173,7 @@ jobs:
       web-target: showcase
       api-url: ${{ needs.version.outputs.api_url }}
       ref: ${{ github.ref }}
+      android-testing-url: ${{ vars.ANDROID_TESTING_URL }}
 
   # Étape 3a: Deploy kiosk — récupère l'IPA buildé par build-ios (pas de rebuild),
   # le place dans le build web buildé par build-web-kiosk, et pousse le tout sur Pages.
