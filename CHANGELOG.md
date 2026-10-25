@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.113](https://github.com/AmineId/team-oustad-app/compare/v1.0.0-beta.112...v1.0.0-beta.113) (2026-10-25)
+
+
+### 🐛 Bug Fixes
+
+* **kiosk:** lien Play du kiosk et de la vitrine via la variable ANDROID_TESTING_URL ([2504494](https://github.com/AmineId/team-oustad-app/commit/2504494adb805e35d450700274d0c4f8c567d34c))
+* **wear:** targetSdk montre aligné sur Flutter (36) ([7a4b7ba](https://github.com/AmineId/team-oustad-app/commit/7a4b7bac78eec8956bc754959cefdc5d64049e58))
+
 ## [1.0.0-beta.112](https://github.com/AmineId/team-oustad-app/compare/v1.0.0-beta.111...v1.0.0-beta.112) (2026-10-25)
 
 
