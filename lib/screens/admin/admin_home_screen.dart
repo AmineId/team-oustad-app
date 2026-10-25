@@ -16,9 +16,8 @@ import '../auth/login_screen.dart';
 import 'admin_coaches_screen.dart';
 import 'admin_create_member_screen.dart';
 import 'admin_members_screen.dart';
-import 'admin_plannings_screen.dart';
+import '../programs/program_screens.dart';
 import 'admin_member_details_screen.dart';
-import 'admin_create_planning_screen.dart';
 import '../common/security_settings_screen.dart';
 import '../common/about_screen.dart';
 import 'admin_banners_screen.dart';
@@ -744,7 +743,7 @@ class GestionPage extends StatefulWidget {
 
 class _GestionPageState extends State<GestionPage> {
   String _currentView =
-      'menu'; // 'menu', 'members', 'plannings', 'member_details', 'member_create', 'planning_create'
+      'menu'; // 'menu', 'members', 'member_details', 'member_create'
   int? _selectedMemberId;
 
   void _navigateBack() {
@@ -753,8 +752,6 @@ class _GestionPageState extends State<GestionPage> {
         case 'member_details':
         case 'member_create':
           _currentView = 'members';
-        case 'planning_create':
-          _currentView = 'plannings';
         default:
           _currentView = 'menu';
       }
@@ -785,13 +782,6 @@ class _GestionPageState extends State<GestionPage> {
         }),
         onCreateMember: () => setState(() => _currentView = 'member_create'),
       );
-    } else if (_currentView == 'plannings') {
-      return AdminPlanningsScreen(
-        key: const ValueKey('plannings'),
-        onBack: () => setState(() => _currentView = 'menu'),
-        onCreatePlanning: () =>
-            setState(() => _currentView = 'planning_create'),
-      );
     } else if (_currentView == 'member_details' && _selectedMemberId != null) {
       return AdminMemberDetailsScreen(
         key: ValueKey('member_details_$_selectedMemberId'),
@@ -803,12 +793,6 @@ class _GestionPageState extends State<GestionPage> {
         key: const ValueKey('member_create'),
         onBack: () => setState(() => _currentView = 'members'),
         onSuccess: () => setState(() => _currentView = 'members'),
-      );
-    } else if (_currentView == 'planning_create') {
-      return AdminCreatePlanningScreen(
-        key: const ValueKey('planning_create'),
-        onBack: () => setState(() => _currentView = 'plannings'),
-        onSuccess: () => setState(() => _currentView = 'plannings'),
       );
     }
     return null;
@@ -838,13 +822,14 @@ class _GestionPageState extends State<GestionPage> {
               ),
               const SizedBox(height: 12),
 
-              // Bouton pour aller à la liste des plannings
+              // Programmes (créés par l'owner, affectés aux membres)
               _QuickActionButton(
-                icon: Icons.calendar_today,
-                title: 'Gérer les plannings',
-                onTap: () {
-                  setState(() => _currentView = 'plannings');
-                },
+                icon: Icons.fitness_center,
+                title: 'Programmes',
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ProgramsScreen()),
+                ),
               ),
             ],
           ),

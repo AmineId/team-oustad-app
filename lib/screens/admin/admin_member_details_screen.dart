@@ -3,12 +3,13 @@ import 'admin_chrome.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/services/coach_service.dart';
+import '../../core/services/program_service.dart';
 import '../../core/theme/theme.dart';
 import '../../core/utils/user_utils.dart';
 import '../../widgets/common/app_snackbar.dart';
 import 'admin_subscription_details_screen.dart';
 import 'admin_create_subscription_screen.dart';
-import 'admin_create_planning_screen.dart';
+import '../programs/programs_screen.dart';
 
 class AdminMemberDetailsScreen extends StatefulWidget {
   final int memberId;
@@ -29,6 +30,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
   final ApiService _apiService = ApiService.fromEnv();
   final AuthService _authService = AuthService(ApiService.fromEnv());
   late final CoachService _coachService = CoachService(_apiService);
+  late final ProgramService _programService = ProgramService(_apiService);
 
   Map<String, dynamic>? _member;
   List<Map<String, dynamic>> _subscriptions = [];
@@ -371,7 +373,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Plannings',
+                            'Programmes',
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
@@ -380,22 +382,20 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                           ),
                           IconButton(
                             onPressed: () async {
-                              await Navigator.push(
+                              final assigned = await Navigator.push<bool>(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) =>
-                                      AdminCreatePlanningScreen(
-                                        preselectedMemberId: widget.memberId,
-                                      ),
+                                  builder: (context) => ProgramsScreen(
+                                    assignToMemberIds: [widget.memberId],
+                                  ),
                                 ),
                               );
-                              // Recharger après création
-                              _loadMemberDetails();
+                              if (assigned == true) _loadMemberDetails();
                             },
                             icon: const Icon(Icons.add_circle),
                             color: context.palette.primary,
                             iconSize: 32,
-                            tooltip: 'Ajouter un planning',
+                            tooltip: 'Affecter un programme',
                           ),
                         ],
                       ),
@@ -416,7 +416,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
-                                  'Aucun planning',
+                                  'Aucun programme',
                                   style: TextStyle(
                                     color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                                     fontSize: 16,
@@ -1284,11 +1284,11 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
       builder: (context) => AlertDialog(
         backgroundColor: Theme.of(context).cardTheme.color,
         title: Text(
-          'Confirmer la suppression',
+          'Annuler le programme',
           style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
         ),
         content: Text(
-          'Êtes-vous sûr de vouloir supprimer le planning "$title" ?\n\nCette action est irréversible.',
+          'Annuler le programme "$title" pour ce membre ?\n\nL\'historique est conservé.',
           style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8)),
         ),
         actions: [
@@ -1312,7 +1312,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
-            child: const Text('Supprimer'),
+            child: const Text('Confirmer'),
           ),
         ],
       ),
@@ -1346,15 +1346,15 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
         return;
       }
 
-      // Appeler l'API pour supprimer le planning
-      final success = await _apiService.deletePlanning(id, token);
+      // planning.id = id de l'affectation de programme (Rôles V2)
+      final success = await _programService.cancelAssignment(token, id);
 
       if (!mounted) return;
 
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('✅ Planning supprimé avec succès'),
+            content: Text('✅ Programme annulé'),
             backgroundColor: AppColors.success,
           ),
         );
@@ -1364,7 +1364,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('❌ Erreur lors de la suppression du planning'),
+            content: Text('❌ Erreur lors de l\'annulation du programme'),
             backgroundColor: AppColors.error,
           ),
         );

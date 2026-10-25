@@ -4,6 +4,7 @@ import '../../core/core.dart';
 import '../../core/l10n/app_localizations.dart';
 import '../../core/utils/user_utils.dart';
 import '../auth/login_screen.dart';
+import '../programs/programs_screen.dart';
 
 /// Accueil coach : ses membres affectés. Les séances et les check-ins du
 /// jour arrivent dans les prochaines tranches Rôles V2.
@@ -41,6 +42,18 @@ class _CoachHomeScreenState extends State<CoachHomeScreen> {
     });
   }
 
+  Future<void> _assignProgram(Map<String, dynamic> member) async {
+    final id = member['id'];
+    if (id is! int) return;
+    final assigned = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ProgramsScreen(assignToMemberIds: [id]),
+      ),
+    );
+    if (assigned == true) _load();
+  }
+
   Future<void> _logout() async {
     await _authService.clearProfileCache();
     await _authService.clearAll();
@@ -62,6 +75,14 @@ class _CoachHomeScreenState extends State<CoachHomeScreen> {
       appBar: AppBar(
         title: Text(l10n.coachRole),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.fitness_center),
+            tooltip: 'Programmes',
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const ProgramsScreen()),
+            ),
+          ),
           IconButton(
             icon: const Icon(Icons.logout),
             tooltip: l10n.disconnect,
@@ -104,6 +125,8 @@ class _CoachHomeScreenState extends State<CoachHomeScreen> {
                       leading: const Icon(Icons.person_outline),
                       title: Text(getUserFullName(member)),
                       subtitle: Text(member['displayId'] as String? ?? ''),
+                      trailing: const Icon(Icons.playlist_add),
+                      onTap: () => _assignProgram(member),
                     ),
                   );
                 },
