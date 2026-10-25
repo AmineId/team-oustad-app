@@ -453,23 +453,23 @@ class _AccueilPageState extends State<AccueilPage> {
             .toList(),
       );
     } else {
+      // 2 par ligne ; 3 ou 4 cartes selon _canViewReports
       return Column(
         children: [
-          Row(
-            children: [
-              Expanded(child: stats[0]),
-              const SizedBox(width: 16),
-              Expanded(child: stats[1]),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(child: stats[2]),
-              const SizedBox(width: 16),
-              Expanded(child: stats[3]),
-            ],
-          ),
+          for (var i = 0; i < stats.length; i += 2) ...[
+            if (i > 0) const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(child: stats[i]),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: i + 1 < stats.length
+                      ? stats[i + 1]
+                      : const SizedBox.shrink(),
+                ),
+              ],
+            ),
+          ],
         ],
       );
     }

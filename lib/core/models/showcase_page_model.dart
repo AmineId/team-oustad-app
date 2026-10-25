@@ -448,8 +448,12 @@ class ShowcasePage {
           'eyebrow': 'L\'APP TEAM OUSTAD',
           'text': 'Gérez vos séances, vos abonnements et vos objectifs.',
           'buttonLabel': 'Télécharger',
-          'url':
-              'https://play.google.com/store/apps/details?id=team.oustad.app',
+          // Variable GitHub ANDROID_TESTING_URL (tests internes) ; fiche Play sinon
+          'url': String.fromEnvironment(
+            'ANDROID_TESTING_URL',
+            defaultValue:
+                'https://play.google.com/store/apps/details?id=team.oustad.app',
+          ),
         },
       ),
     ],

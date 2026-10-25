@@ -1,10 +1,10 @@
 // Liens de distribution affichés sur la page kiosk.
 // Valeurs injectées à la compilation via --dart-define (voir _build-web.yml).
 
-// URLs de distribution pprod — à mettre à jour à chaque release
+// Lien Play tests internes = variable GitHub ANDROID_TESTING_URL ; fiche Play sinon
 const kAndroidTestingUrl = String.fromEnvironment(
   'ANDROID_TESTING_URL',
-  defaultValue: 'https://play.google.com/apps/internaltest/4700178556172561963',
+  defaultValue: 'https://play.google.com/store/apps/details?id=team.oustad.app',
 );
 const kIpaDownloadUrl = String.fromEnvironment(
   'KIOSK_IPA_URL',
