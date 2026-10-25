@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.111](https://github.com/AmineId/team-oustad-app/compare/v1.0.0-beta.110...v1.0.0-beta.111) (2026-10-25)
+
+
+### 🐛 Bug Fixes
+
+* **watch:** compiler l'app montre pour watchOS, pas pour iOS ([0cbd593](https://github.com/AmineId/team-oustad-app/commit/0cbd5933e9a2c45e9ef32cffdbda3859085f1af3))
+* **watch:** icône montre en jeu de tailles watchOS complet ([4d04cd7](https://github.com/AmineId/team-oustad-app/commit/4d04cd7b64cff7710e2468b6d20d11dfbd9315fd))
+* **watch:** scheme montre pour que flutter détecte l'app compagnon ([091aead](https://github.com/AmineId/team-oustad-app/commit/091aead132627f45a4f58e9199dd04a1c08949a7))
+
 ## [1.0.0-beta.110](https://github.com/AmineId/team-oustad-app/compare/v1.0.0-beta.109...v1.0.0-beta.110) (2026-10-25)
 
 
