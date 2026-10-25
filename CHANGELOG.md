@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.114](https://github.com/AmineId/team-oustad-app/compare/v1.0.0-beta.113...v1.0.0-beta.114) (2026-10-25)
+
+
+### 🐛 Bug Fixes
+
+* **admin:** accueil admin sans crash quand la carte Revenus est masquée ([c98e048](https://github.com/AmineId/team-oustad-app/commit/c98e048d123d0e19af48b79a99d702cd376a0827))
+
 ## [1.0.0-beta.113](https://github.com/AmineId/team-oustad-app/compare/v1.0.0-beta.112...v1.0.0-beta.113) (2026-10-25)
 
 
