@@ -34,6 +34,8 @@ on:
         required: false
       OTA_BEARER_TOKEN:
         required: false
+      ANTHROPIC_API_KEY:
+        required: false
 
   # Permet de lancer ce build Android seul, sans passer par Release & Deploy.
   # deploy-to-play / publish-version à false par défaut : un run manuel ne
@@ -274,7 +276,7 @@ jobs:
             echo "⚠️  Pas de keystore, debug signing"
           fi
 
-      - name: 🏗️ Build AAB (téléphone + Wear OS intégré)
+      - name: 🏗️ Build AAB (téléphone + Wear OS)
         id: build_aab
         env:
           GRADLE_OPTS: "-Dorg.gradle.logging.stacktrace=all"
@@ -282,6 +284,20 @@ jobs:
           flutter build appbundle --release \
             --dart-define=ENVIRONMENT=${{ inputs.dart-env }} \
             --dart-define=API_BASE_URL=${{ inputs.api-url }}
+
+      # Play refuse sur la piste mobile tout bundle qui exige la fonction montre
+      # (le plugin Dart `wear` l'injecte) : vérifié ici, avant tout envoi.
+      - name: 🔍 Vérifier les manifestes (téléphone ≠ montre)
+        run: |
+          PHONE=build/app/outputs/bundle/release/app-release.aab
+          WEAR=build/wear_app/outputs/bundle/release/wear_app-release.aab
+          if unzip -p "$PHONE" base/manifest/AndroidManifest.xml | grep -a -q 'android.hardware.type.watch'; then
+            echo "❌ L'AAB téléphone exige android.hardware.type.watch (voir android/app/src/main/AndroidManifest.xml)"; exit 1
+          fi
+          if ! unzip -p "$WEAR" base/manifest/AndroidManifest.xml | grep -a -q 'android.hardware.type.watch'; then
+            echo "❌ L'AAB Wear OS ne déclare pas android.hardware.type.watch"; exit 1
+          fi
+          echo "✅ Téléphone sans fonction montre, Wear OS avec"
 
       - name: 🔧 Setup Ruby + Fastlane
         if: inputs.deploy-to-play
@@ -303,17 +319,17 @@ jobs:
           EOFJSON
           jq empty android/fastlane/service-account-key.json || exit 1
 
+      # Notes Play (fr-FR, ≤ 500 car.) rédigées par Claude depuis les commits ;
+      # le résumé technique va dans le résumé du run, jamais dans les notes Play.
       - name: 📝 Generate release notes
         if: inputs.deploy-to-play
+        continue-on-error: true
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
-          mkdir -p android/fastlane/metadata/android/fr-FR/changelogs
-          cat > android/fastlane/metadata/android/fr-FR/changelogs/default.txt << 'EOF'
-          Nouveautés :
-          • Borne d'accueil kiosk (scan QR)
-          • Interface modernisée
-
-          Corrections : résolution de bugs et optimisations
-          EOF
+          scripts/release-notes.sh \
+            android/fastlane/metadata/android/fr-FR/changelogs/default.txt \
+            "$GITHUB_STEP_SUMMARY"
 
       - name: 📤 Deploy to Play Store (internal testing)
         id: deploy_play
@@ -326,6 +342,26 @@ jobs:
           cd android && bundle exec fastlane supply \
             --aab "$AAB" \
             --track internal \
+            --release_status completed \
+            --json_key fastlane/service-account-key.json \
+            --package_name team.oustad.app \
+            --skip_upload_metadata \
+            --skip_upload_images \
+            --skip_upload_screenshots
+
+      # L'app montre a son propre canal Wear OS (facteur de forme ajouté dans la
+      # Play Console) : même package, versionCode du téléphone + 1 000 000.
+      - name: ⌚ Deploy Wear OS (internal testing)
+        id: deploy_wear
+        if: inputs.deploy-to-play
+        env:
+          FASTLANE_SKIP_UPDATE_CHECK: 'true'
+        run: |
+          AAB="$(pwd)/build/wear_app/outputs/bundle/release/wear_app-release.aab"
+          [ -f "$AAB" ] || { echo "❌ AAB Wear OS introuvable"; exit 1; }
+          cd android && bundle exec fastlane supply \
+            --aab "$AAB" \
+            --track wear:internal \
             --release_status completed \
             --json_key fastlane/service-account-key.json \
             --package_name team.oustad.app \
@@ -362,6 +398,7 @@ jobs:
           API_URL: ${{ inputs.api-url }}
           BUILD: ${{ steps.build_aab.outcome }}
           DEPLOY: ${{ steps.deploy_play.outcome }}
+          DEPLOY_WEAR: ${{ steps.deploy_wear.outcome }}
           PUBLISH: ${{ steps.publish_version.outcome }}
         run: |
           icon() { case "$1" in success) echo "✅";; failure) echo "❌";; cancelled) echo "⏹️";; *) echo "⏭️";; esac; }
@@ -377,8 +414,9 @@ jobs:
             echo "| --- | --- | --- |"
             echo "| Build AAB | $(icon "$BUILD") | signature : $SIGNING |"
             echo "| AAB téléphone | $([ -f "$PHONE" ] && echo ✅ || echo —) | $(size "$PHONE") |"
-            echo "| AAB Wear OS | $([ -f "$WEAR" ] && echo ✅ || echo —) | $(size "$WEAR") — non publié (pas de piste Wear OS) |"
-            echo "| Play Store (internal) | $(icon "$DEPLOY") | \`team.oustad.app\` |"
+            echo "| AAB Wear OS | $([ -f "$WEAR" ] && echo ✅ || echo —) | $(size "$WEAR") |"
+            echo "| Play Store téléphone (internal) | $(icon "$DEPLOY") | \`team.oustad.app\` |"
+            echo "| Play Store Wear OS (wear:internal) | $(icon "$DEPLOY_WEAR") | \`team.oustad.app\` |"
             echo "| Version serveur | $(icon "$PUBLISH") | \`$API_URL/android/update-version\` |"
           } >> "$GITHUB_STEP_SUMMARY"
 

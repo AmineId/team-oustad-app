@@ -35,7 +35,9 @@ android {
         applicationId = "team.oustad.app"
         minSdk = 26   // Wear OS 2.0 minimum
         targetSdk = 34
-        versionCode = flutter.versionCode
+        // Play exige un versionCode unique par artefact d'un même package : la montre
+        // (canal Wear OS dédié) prend celui du téléphone + 1 000 000.
+        versionCode = flutter.versionCode + 1_000_000
         versionName = flutter.versionName
     }
 
