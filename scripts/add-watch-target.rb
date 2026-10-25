@@ -46,6 +46,7 @@ watch_target.build_configurations.each do |cfg|
   s['INFOPLIST_KEY_WKCompanionAppBundleIdentifier'] = 'team.oustad.app'
   s['INFOPLIST_KEY_UISupportedInterfaceOrientations'] = 'UIInterfaceOrientationPortrait'
   s['SDKROOT']                               = 'watchos'
+  s['SUPPORTED_PLATFORMS']                   = 'watchos watchsimulator'
   s['CODE_SIGN_STYLE']                       = 'Automatic'
   s['SWIFT_OPTIMIZATION_LEVEL']              = cfg.name == 'Debug' ? '-Onone' : '-O'
 end
@@ -76,6 +77,11 @@ puts '  + Assets.xcassets (AppIcon)'
 # ── 4. Embarquer le Watch app dans Runner ────────────────────────────────────
 runner = project.targets.find { |t| t.name == 'Runner' }
 abort("❌ Target 'Runner' non trouvé") unless runner
+
+# Dépendance explicite : sans elle, Xcode compile le target montre comme une
+# dépendance implicite de Runner, donc pour iphoneos (actool --platform iphoneos,
+# Release-iphoneos/…) — l'app « montre » embarquée était une app iPhone.
+runner.add_dependency(watch_target)
 
 embed_phase = project.new(Xcodeproj::Project::Object::PBXCopyFilesBuildPhase)
 embed_phase.name               = 'Embed Watch Content'
