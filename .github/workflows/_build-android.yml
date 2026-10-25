@@ -185,8 +185,11 @@ jobs:
           # Fix 1 : extension 'flutter' sur le plugin créée seulement si absente.
           # Fix 2 : project.afterEvaluate{} → run{} pour exécuter inline
           #         (project = :app est configuré, ses buildTypes sont disponibles).
-          # Fix 3 : pluginProject.afterEvaluate{} → afterEvaluateOrNow{} (défini dans
-          #         FlutterPluginUtils.kt) : différé pour :app, immédiat pour :wear_app.
+          # Fix 3 : pluginProject.afterEvaluate{} sauté si le plugin est déjà évalué
+          #         (= déjà configuré par :app : avertissement compileSdk + embedding
+          #         ajouté au plugin). L'exécuter tout de suite planterait : on est au
+          #         apply du plugin Flutter dans :wear_app, avant son bloc android{}
+          #         → compileSdkVersion null (NPE dans getCompileSdkFromProject).
           # Fix 4 : early-return dans configurePluginDependencies uniquement — les
           #         dépendances plugin→plugin ont déjà été posées lors du passage de :app.
           patch_file(pathlib.Path(sys.argv[2]), [
@@ -198,11 +201,7 @@ jobs:
               # Fix 3
               (
                   '// Wait until the Android plugin loaded.\n            pluginProject.afterEvaluate {',
-                  '// Wait until the Android plugin loaded.\n            pluginProject.afterEvaluateOrNow {',
-              ),
-              (
-                  'import com.flutter.gradle.FlutterPluginUtils\n',
-                  'import com.flutter.gradle.FlutterPluginUtils\nimport com.flutter.gradle.afterEvaluateOrNow\n',
+                  '// Wait until the Android plugin loaded.\n            if (!pluginProject.state.executed) pluginProject.afterEvaluate {',
               ),
               # Fix 4 (contexte suivant spécifique à configurePluginDependencies)
               (
