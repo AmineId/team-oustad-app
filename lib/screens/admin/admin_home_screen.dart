@@ -23,6 +23,7 @@ import '../common/about_screen.dart';
 import 'admin_banners_screen.dart';
 import 'admin_edit_profile_screen.dart';
 import 'admin_products_screen.dart';
+import 'showcase_editor_screen.dart';
 import 'admin_qr_scanner_screen.dart';
 import '../kiosk/checkin_terminal_screen.dart';
 import 'admin_whatsapp_screen.dart';
@@ -233,6 +234,7 @@ class _AccueilPageState extends State<AccueilPage> {
   String _activeMembers = '—';
   String _todayCheckIns = '—';
   String _totalRevenue = '—';
+  bool _canViewReports = false;
   bool _isLoading = false;
 
   static const _cacheKey = 'admin_dashboard_stats_cache';
@@ -242,6 +244,9 @@ class _AccueilPageState extends State<AccueilPage> {
   void initState() {
     super.initState();
     _authService = AuthService(_apiService);
+    _authService.ownerCan('canViewReports').then((can) {
+      if (mounted) setState(() => _canViewReports = can);
+    });
     _loadStats();
   }
 
@@ -308,7 +313,7 @@ class _AccueilPageState extends State<AccueilPage> {
 
       final data = <String, dynamic>{};
 
-      if (isOwner) {
+      if (isOwner && await _authService.ownerCan('canViewReports')) {
         final gs = await _apiService.getGlobalStats(token);
         if (gs != null) {
           data['totalMembers'] = gs['totalMembers'];
@@ -416,12 +421,13 @@ class _AccueilPageState extends State<AccueilPage> {
         value: _todayCheckIns,
         color: AppColors.info,
       ),
-      _StatCard(
-        icon: Icons.trending_up,
-        title: 'Revenus',
-        value: _totalRevenue,
-        color: Colors.purple,
-      ),
+      if (_canViewReports)
+        _StatCard(
+          icon: Icons.trending_up,
+          title: 'Revenus',
+          value: _totalRevenue,
+          color: Colors.purple,
+        ),
     ];
 
     if (isWatch) {
@@ -745,6 +751,29 @@ class _GestionPageState extends State<GestionPage> {
   String _currentView =
       'menu'; // 'menu', 'members', 'plannings', 'member_details', 'member_create', 'planning_create'
   int? _selectedMemberId;
+  final AuthService _authService = AuthService(ApiService.fromEnv());
+  // Salle de l'admin connecté (null pour l'owner, qui passe par Gestion globale).
+  int? _ownGymId;
+  String _ownGymName = 'Ma salle';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadOwnGym();
+  }
+
+  Future<void> _loadOwnGym() async {
+    if (await _authService.isOwner()) return;
+    final profile = await _authService.getCachedUserProfile();
+    final gymId = profile?['gymId'];
+    if (!mounted || gymId is! int) return;
+    setState(() {
+      _ownGymId = gymId;
+      _ownGymName =
+          (profile?['gym'] as Map<String, dynamic>?)?['name'] as String? ??
+          'Ma salle';
+    });
+  }
 
   void _navigateBack() {
     setState(() {
@@ -845,6 +874,22 @@ class _GestionPageState extends State<GestionPage> {
                   setState(() => _currentView = 'plannings');
                 },
               ),
+              if (_ownGymId != null) ...[
+                const SizedBox(height: 12),
+                _QuickActionButton(
+                  icon: Icons.web,
+                  title: 'Page vitrine de ma salle',
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ShowcaseEditorScreen.gym(
+                        gymId: _ownGymId!,
+                        gymName: _ownGymName,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),
@@ -1412,6 +1457,25 @@ class _GestionGlobalePageState extends State<GestionGlobalePage> {
       'menu'; // 'menu', 'admins', 'gyms', 'admin_details', 'gym_details', 'admin_edit', 'gym_edit', 'gym_hours', 'gym_gallery', 'admin_create', 'gym_create'
   Map<String, dynamic>? _selectedAdmin;
   Map<String, dynamic>? _selectedGym;
+  final AuthService _authService = AuthService(ApiService.fromEnv());
+  bool _canManageAdmins = false;
+  bool _canManageGyms = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPermissions();
+  }
+
+  Future<void> _loadPermissions() async {
+    final admins = await _authService.ownerCan('canManageAdmins');
+    final gyms = await _authService.ownerCan('canManageGyms');
+    if (!mounted) return;
+    setState(() {
+      _canManageAdmins = admins;
+      _canManageGyms = gyms;
+    });
+  }
 
   void _navigateBack() {
     setState(() {
@@ -1534,23 +1598,44 @@ class _GestionGlobalePageState extends State<GestionGlobalePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Gestion des Admins
-              _buildGlobalOption(
-                context,
-                icon: Icons.admin_panel_settings,
-                title: 'Gestion des Admins',
-                description:
-                    'Ajouter, modifier ou supprimer des administrateurs',
-                onTap: () => setState(() => _currentView = 'admins'),
-              ),
-              const SizedBox(height: 16),
+              if (_canManageAdmins) ...[
+                _buildGlobalOption(
+                  context,
+                  icon: Icons.admin_panel_settings,
+                  title: 'Gestion des Admins',
+                  description:
+                      'Ajouter, modifier ou supprimer des administrateurs',
+                  onTap: () => setState(() => _currentView = 'admins'),
+                ),
+                const SizedBox(height: 16),
+              ],
 
               // Gestion des Salles
+              if (_canManageGyms) ...[
+                _buildGlobalOption(
+                  context,
+                  icon: Icons.fitness_center,
+                  title: 'Gestion des Salles',
+                  description:
+                      'Créer, modifier ou supprimer des salles de sport',
+                  onTap: () => setState(() => _currentView = 'gyms'),
+                ),
+                const SizedBox(height: 16),
+              ],
+
+              // Site vitrine — page d'accueil
               _buildGlobalOption(
                 context,
-                icon: Icons.fitness_center,
-                title: 'Gestion des Salles',
-                description: 'Créer, modifier ou supprimer des salles de sport',
-                onTap: () => setState(() => _currentView = 'gyms'),
+                icon: Icons.web,
+                title: 'Site vitrine',
+                description:
+                    'Modifier les sections de la page d\'accueil team-oustad.com',
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const ShowcaseEditorScreen.home(),
+                  ),
+                ),
               ),
               const SizedBox(height: 16),
 
@@ -3028,6 +3113,40 @@ class _GymDetailsViewState extends State<_GymDetailsView> {
                         label: const Text('Galerie photos (site vitrine)'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Contenu éditable de la page vitrine de la salle
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          final id = widget.gym['id'];
+                          final gymId = id is int
+                              ? id
+                              : int.tryParse(id.toString());
+                          if (gymId == null) return;
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ShowcaseEditorScreen.gym(
+                                gymId: gymId,
+                                gymName: name,
+                              ),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.web),
+                        label: const Text('Contenu de la page vitrine'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.primary,
+                          side: const BorderSide(color: AppColors.primary),
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),

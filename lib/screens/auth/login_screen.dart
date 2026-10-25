@@ -642,8 +642,6 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
     try {
       final loginResult = await _apiService.login(email, password);
 
-      debugPrint('🔍 Login - loginResult reçu: $loginResult');
-
       if (!mounted) return;
 
       if (loginResult != null) {
@@ -733,6 +731,10 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                   'Confirmez votre identité pour activer la connexion biométrique',
             );
           }
+        }
+        // Le mot de passe n'est gardé que pour la reconnexion biométrique.
+        if (!await _authService.isBiometricEnabled()) {
+          await _authService.clearCredentials();
         }
 
         // Check if onboarding is needed for members who haven't completed it

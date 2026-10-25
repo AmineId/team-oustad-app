@@ -17,6 +17,11 @@ import 'firebase_options.dart';
 void main() async {
   // Ensure Flutter bindings are initialized
   WidgetsFlutterBinding.ensureInitialized();
+
+  // debugPrint écrit aussi en release (logcat / console iOS, lisibles par
+  // d'autres outils) : les nombreux logs de diagnostic contiennent profils,
+  // réponses API et tokens FCM. Les erreurs passent par l'ErrorReporter.
+  if (kReleaseMode) debugPrint = (String? message, {int? wrapWidth}) {};
   
   // Captures d'écran bloquées uniquement sur les écrans sensibles
   // (voir SecureScreen / ScreenSecurityService)

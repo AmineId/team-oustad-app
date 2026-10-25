@@ -61,6 +61,8 @@ class AuthService {
       await setBiometricEnabled(true);
     } else {
       await setBiometricEnabled(false);
+      // Le mot de passe n'est conservé que pour la reconnexion biométrique.
+      await clearCredentials();
     }
   }
 
@@ -71,6 +73,14 @@ class AuthService {
     } catch (_) {
       // ignore storage errors
     }
+  }
+
+  /// Supprime l'identifiant et le mot de passe stockés.
+  Future<void> clearCredentials() async {
+    try {
+      await _secureStorage.delete(key: 'auth_email');
+      await _secureStorage.delete(key: 'auth_password');
+    } catch (_) {}
   }
 
   Future<void> saveToken(String token) async {
@@ -87,19 +97,42 @@ class AuthService {
     }
   }
 
-  /// Save user type (admin or member) in SharedPreferences
+  static const _knownRoles = {'owner', 'admin', 'member'};
+
+  /// Rôle normalisé ('owner' | 'admin' | 'member'), null si inconnu.
+  /// Accepte les variantes de casse/espaces renvoyées par le serveur.
+  static String? normalizeRole(String? raw) {
+    final role = raw?.trim().toLowerCase();
+    return _knownRoles.contains(role) ? role : null;
+  }
+
+  /// Save user type (owner, admin or member) in SharedPreferences
   Future<void> saveUserType(String userType) async {
     try {
+      final role = normalizeRole(userType);
+      if (role == null) {
+        debugPrint('⚠️ [Auth] Rôle inconnu ignoré: "$userType"');
+      }
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('user_type', userType);
+      await prefs.setString('user_type', role ?? 'member');
     } catch (_) {}
   }
 
-  /// Load user type from SharedPreferences
+  /// Rôle de l'utilisateur connecté. Lu en priorité dans le JWT (stockage
+  /// sécurisé, signé par le serveur) plutôt que dans SharedPreferences, que
+  /// l'utilisateur peut modifier. Ce rôle ne sert qu'à choisir les écrans :
+  /// les droits réels sont toujours vérifiés par le serveur.
   Future<String?> getUserType() async {
+    final token = await loadToken();
+    if (token != null) {
+      final fromToken =
+          normalizeRole(ApiService.decodeJwtClaim(token, 'type')) ??
+          normalizeRole(ApiService.decodeJwtClaim(token, 'role'));
+      if (fromToken != null) return fromToken;
+    }
     try {
       final prefs = await SharedPreferences.getInstance();
-      return prefs.getString('user_type');
+      return normalizeRole(prefs.getString('user_type'));
     } catch (_) {
       return null;
     }
@@ -115,6 +148,21 @@ class AuthService {
   Future<bool> isOwner() async {
     final userType = await getUserType();
     return userType == 'owner';
+  }
+
+  /// Permissions fines d'un owner (`permissions` du profil, cf. swagger) :
+  /// 'canManageAdmins', 'canManageGyms', 'canViewReports'. Une permission
+  /// absente vaut true (défaut serveur). Toujours false pour un non-owner.
+  /// Ne fait que masquer l'UI : le serveur applique les mêmes règles.
+  Future<bool> ownerCan(String permission) async {
+    if (!await isOwner()) return false;
+    final profile = await getCachedUserProfile();
+    final permissions =
+        profile?['permissions'] ??
+        (profile?['user'] as Map<String, dynamic>?)?['permissions'];
+    if (permissions is! Map) return true;
+    final value = permissions[permission];
+    return value is bool ? value : true;
   }
 
   /// Check if current user is an admin OR owner (has admin access)
@@ -248,9 +296,6 @@ class AuthService {
           if (fcmToken != null && fcmToken.isNotEmpty) {
             debugPrint(
               '📤 [Biometric] Envoi du token FCM au serveur (userId: $userId)...',
-            );
-            debugPrint(
-              '🔑 [Biometric] JWT utilisé: ${token.substring(0, 20)}...',
             );
             final result = await _apiService.updateUserFCMToken(
               int.parse(userId),
@@ -405,9 +450,6 @@ class AuthService {
             debugPrint(
               '📤 [Biometric] Envoi du token FCM au serveur (userId: $userId)...',
             );
-            debugPrint(
-              '🔑 [Biometric] JWT utilisé: ${token.substring(0, 20)}...',
-            );
             final result = await _apiService.updateUserFCMToken(
               int.parse(userId),
               fcmToken,
@@ -522,6 +564,11 @@ class AuthService {
         await _secureStorage.delete(key: 'auth_token');
         await prefs.setBool('_app_installed', true);
       }
+      // Les versions précédentes gardaient le mot de passe même sans
+      // biométrie : on le purge s'il n'a plus de raison d'être.
+      if (!(prefs.getBool('biometric_enabled') ?? false)) {
+        await clearCredentials();
+      }
     } catch (_) {}
   }
 
@@ -541,8 +588,12 @@ class AuthService {
       final biometricConsent = prefs.getBool('biometric_consent');
       final biometricEnabled = prefs.getBool('biometric_enabled');
       await prefs.clear();
-      if (biometricConsent != null) await prefs.setBool('biometric_consent', biometricConsent);
-      if (biometricEnabled != null) await prefs.setBool('biometric_enabled', biometricEnabled);
+      if (biometricConsent != null) {
+        await prefs.setBool('biometric_consent', biometricConsent);
+      }
+      if (biometricEnabled != null) {
+        await prefs.setBool('biometric_enabled', biometricEnabled);
+      }
       // Clear QR code cache on logout
       await clearQrCodeCache();
     } catch (_) {}

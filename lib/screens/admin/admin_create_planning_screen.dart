@@ -71,6 +71,7 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
       final adminProfile = await _authService.getCachedUserProfile();
       final adminGymId = adminProfile?['gymId'] as int?;
 
+      final isOwner = await _authService.isOwner();
       final users = await _apiService.getUsers(token);
       if (users != null) {
         setState(() {
@@ -79,7 +80,11 @@ class _AdminCreatePlanningScreenState extends State<AdminCreatePlanningScreen> {
               .where((user) {
                 final isRoleMember = user['role'] == 'member';
                 final userGymId = user['gymId'] as int?;
-                final isSameGym = adminGymId == null || userGymId == adminGymId;
+                // Défense en profondeur : le serveur filtre déjà /users par salle
+                // pour un admin ; sans salle connue, un admin ne voit personne.
+                final isSameGym = adminGymId == null
+                    ? isOwner
+                    : userGymId == adminGymId;
                 return isRoleMember && isSameGym;
               })
               .map((user) => user as Map<String, dynamic>)

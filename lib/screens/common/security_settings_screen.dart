@@ -308,8 +308,30 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage>
     }
   }
 
+  /// Vérifie le mot de passe : contre les identifiants stockés quand il y en
+  /// a (biométrie active), sinon auprès du serveur. Dans ce dernier cas ils
+  /// sont mémorisés, car c'est l'activation de la biométrie qui le demande.
+  Future<bool> _verifyPassword(String password) async {
+    final stored = await _authService.loadCredentials();
+    if (stored != null) return stored['password'] == password;
+    final profile = await _authService.getCachedUserProfile();
+    final email = profile?['email'] as String?;
+    final identifier = (email != null && email.isNotEmpty)
+        ? email
+        : profile?['phoneNumber'] as String?;
+    if (identifier == null || identifier.isEmpty) return false;
+    final result = await _apiService.login(identifier, password);
+    if (result == null) return false;
+    await _authService.saveCredentials(identifier, password);
+    return true;
+  }
+
   Future<void> _toggleBiometric(bool value) async {
     if (value) {
+      // Sans biométrie, le mot de passe n'est pas conservé : le redemander.
+      if (!await _authService.hasStoredCredentials()) {
+        if (!await _showPasswordConfirmationDialog(enabling: true)) return;
+      }
       // Activation: demander la biométrie immédiatement
       final authenticated = await _authService.promptBiometric(
         localizedReason: 'Authentifiez-vous pour activer la biométrie',
@@ -419,7 +441,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage>
     }
   }
 
-  Future<bool> _showPasswordConfirmationDialog() async {
+  Future<bool> _showPasswordConfirmationDialog({bool enabling = false}) async {
     final passwordController = TextEditingController();
     bool obscurePassword = true;
 
@@ -468,7 +490,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Pour des raisons de sécurité, veuillez confirmer votre mot de passe pour désactiver l\'authentification biométrique.',
+                    'Pour des raisons de sécurité, veuillez confirmer votre mot de passe pour ${enabling ? 'activer' : 'désactiver'} l\'authentification biométrique.',
                     style: TextStyle(
                       color: Theme.of(context).brightness == Brightness.dark
                           ? AppColors.darkTextSecondary
@@ -564,9 +586,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage>
                     }
 
                     // Vérifier le mot de passe
-                    final credentials = await _authService.loadCredentials();
-                    if (credentials != null &&
-                        credentials['password'] == password) {
+                    if (await _verifyPassword(password)) {
                       passwordController.dispose();
                       if (context.mounted) {
                         Navigator.of(context).pop(true);

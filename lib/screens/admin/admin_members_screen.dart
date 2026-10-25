@@ -76,6 +76,7 @@ class _AdminMembersScreenState extends State<AdminMembersScreen> {
       final adminGymId = adminProfile['gymId'] as int?;
       debugPrint('Admin gymId: $adminGymId');
 
+      final isOwner = await _authService.isOwner();
       final users = await _apiService.getUsers(token);
 
       if (users != null) {
@@ -85,7 +86,11 @@ class _AdminMembersScreenState extends State<AdminMembersScreen> {
               .where((user) {
                 final isRoleMember = user['role'] == 'member';
                 final userGymId = user['gymId'] as int?;
-                final isSameGym = adminGymId == null || userGymId == adminGymId;
+                // Défense en profondeur : le serveur filtre déjà /users par salle
+                // pour un admin ; sans salle connue, un admin ne voit personne.
+                final isSameGym = adminGymId == null
+                    ? isOwner
+                    : userGymId == adminGymId;
 
                 debugPrint(
                   'User: ${getUserFullName(user)}, gymId: $userGymId, isRoleMember: $isRoleMember, isSameGym: $isSameGym',

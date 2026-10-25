@@ -1853,7 +1853,9 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
         return;
       }
 
-      final userType = loginResult['userType'] as String?;
+      final userType = AuthService.normalizeRole(
+        loginResult['userType'] as String?,
+      );
       if (userType != 'admin' && userType != 'owner') {
         setState(() {
           _loginError = 'Accès réservé aux administrateurs et propriétaires';
