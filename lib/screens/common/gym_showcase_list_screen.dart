@@ -356,6 +356,7 @@ class _GlobalPromoBannerSectionState extends State<_GlobalPromoBannerSection> {
               SizedBox(
                 height: 150,
                 child: PageView.builder(
+                  scrollBehavior: const CarouselScrollBehavior(),
                   controller: _pageController,
                   itemCount: _banners.length,
                   onPageChanged: (i) => setState(() => _page = i),
