@@ -176,18 +176,38 @@ jobs:
           # d'un afterEvaluate déjà en cours → "Cannot run afterEvaluate when already
           # evaluated". Les plugin projects, eux, ne sont PAS encore évalués à ce stade.
           #
-          # Fix 1 : early-return si le pluginProject a déjà l'extension 'flutter'
-          #         (empêche :wear_app de re-configurer les plugins déjà traités par :app).
+          # Pour :wear_app (2e module app), les plugins sont déjà configurés et évalués
+          # par :app. On NE doit PAS sauter configurePluginProject : c'est lui qui ajoute
+          # les plugins en dépendance du module app, et l'embedding Flutter
+          # (io.flutter:flutter_embedding_*) n'arrive dans un module app avec plugins
+          # QUE transitivement via ces plugins. Sans ça → "Unresolved reference 'io'".
+          #
+          # Fix 1 : extension 'flutter' sur le plugin créée seulement si absente.
           # Fix 2 : project.afterEvaluate{} → run{} pour exécuter inline
           #         (project = :app est configuré, ses buildTypes sont disponibles).
-          #         pluginProject.afterEvaluate{} est intentionnellement conservé
-          #         (plugins pas encore évalués : il faut différer leur configuration).
+          # Fix 3 : pluginProject.afterEvaluate{} → afterEvaluateOrNow{} (défini dans
+          #         FlutterPluginUtils.kt) : différé pour :app, immédiat pour :wear_app.
+          # Fix 4 : early-return dans configurePluginDependencies uniquement — les
+          #         dépendances plugin→plugin ont déjà été posées lors du passage de :app.
           patch_file(pathlib.Path(sys.argv[2]), [
-              # Fix 1 : early-return pour dédupliquer (appliqué aux 2 fonctions
-              #         qui appellent findProject — Python replace() remplace les 2)
+              # Fix 1
               (
-                  'val pluginProject: Project = project.rootProject.findProject(":$pluginName") ?: return',
-                  'val pluginProject: Project = project.rootProject.findProject(":$pluginName") ?: return\n            if (pluginProject.extensions.findByName("flutter") != null) return',
+                  'pluginProject.extensions.create("flutter", FlutterExtension::class.java)',
+                  'if (pluginProject.extensions.findByName("flutter") == null) pluginProject.extensions.create("flutter", FlutterExtension::class.java)',
+              ),
+              # Fix 3
+              (
+                  '// Wait until the Android plugin loaded.\n            pluginProject.afterEvaluate {',
+                  '// Wait until the Android plugin loaded.\n            pluginProject.afterEvaluateOrNow {',
+              ),
+              (
+                  'import com.flutter.gradle.FlutterPluginUtils\n',
+                  'import com.flutter.gradle.FlutterPluginUtils\nimport com.flutter.gradle.afterEvaluateOrNow\n',
+              ),
+              # Fix 4 (contexte suivant spécifique à configurePluginDependencies)
+              (
+                  'val pluginProject: Project = project.rootProject.findProject(":$pluginName") ?: return\n\n            getAndroidExtension(project).buildTypes.forEach { buildType ->\n                val flutterBuildMode',
+                  'val pluginProject: Project = project.rootProject.findProject(":$pluginName") ?: return\n            if (pluginProject.state.executed) return\n\n            getAndroidExtension(project).buildTypes.forEach { buildType ->\n                val flutterBuildMode',
               ),
               # Fix 2 : project.afterEvaluate{} dans configurePluginProject → run{}
               # Raison : appelé depuis l'intérieur d'un afterEvaluate (AGP crée
