@@ -36,17 +36,53 @@ jobs:
         run: flutter pub get
 
       - name: 🔍 Analyze code
-        run: flutter analyze --fatal-infos
+        id: analyze
+        run: flutter analyze --fatal-infos 2>&1 | tee analyze.log; exit ${PIPESTATUS[0]}
 
       - name: ✅ Run tests
-        run: flutter test
+        id: tests
+        if: always() && steps.analyze.outcome != 'skipped'
+        run: flutter test --reporter expanded 2>&1 | tee test.log; exit ${PIPESTATUS[0]}
 
       - name: 🏗️ Test build (Android)
+        id: build
         run: flutter build apk --debug --dart-define=ENVIRONMENT=pprod
 
-      - name: ✅ Validation passed
+      - name: 📋 Résumé
+        if: always()
+        continue-on-error: true
+        env:
+          ANALYZE: ${{ steps.analyze.outcome }}
+          TESTS: ${{ steps.tests.outcome }}
+          BUILD: ${{ steps.build.outcome }}
         run: |
-          echo "✅ All checks passed!" >> $GITHUB_STEP_SUMMARY
-          echo "- Code analysis: ✅" >> $GITHUB_STEP_SUMMARY
-          echo "- Tests: ✅" >> $GITHUB_STEP_SUMMARY
-          echo "- Build: ✅" >> $GITHUB_STEP_SUMMARY
+          icon() { case "$1" in success) echo "✅";; failure) echo "❌";; cancelled) echo "⏹️";; *) echo "⏭️";; esac; }
+          ISSUES=$(grep -E '^\s*(info|warning|error) •' analyze.log 2>/dev/null | wc -l)
+          TEST_LINE=$(grep -E '^[0-9:]+ \+[0-9]+' test.log 2>/dev/null | tail -1 | sed -E 's/^([0-9:]+ [^:]*).*/\1/')
+          {
+            echo "### ✅ PR Validation"
+            echo
+            echo "| Étape | Résultat | Détail |"
+            echo "| --- | --- | --- |"
+            echo "| Analyse (--fatal-infos) | $(icon "$ANALYZE") | $ISSUES problème(s) |"
+            echo "| Tests | $(icon "$TESTS") | ${TEST_LINE:-—} |"
+            echo "| Build APK debug | $(icon "$BUILD") | $(du -h build/app/outputs/flutter-apk/app-debug.apk 2>/dev/null | cut -f1) |"
+            if [ "$ISSUES" -gt 0 ]; then
+              echo
+              echo "<details><summary>Problèmes d'analyse</summary>"
+              echo
+              echo '```'
+              grep -E '^\s*(info|warning|error) •' analyze.log | head -50
+              echo '```'
+              echo "</details>"
+            fi
+            if [ "$TESTS" = "failure" ]; then
+              echo
+              echo "<details><summary>Tests en échec</summary>"
+              echo
+              echo '```'
+              grep -E '\[E\]|^\s+Expected|^\s+Actual' test.log | head -40
+              echo '```'
+              echo "</details>"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

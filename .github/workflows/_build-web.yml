@@ -124,3 +124,22 @@ jobs:
           name: ${{ steps.meta.outputs.artifact-name }}
           path: build/web
           retention-days: 1
+
+      - name: 📋 Résumé
+        if: always()
+        continue-on-error: true
+        env:
+          TARGET: ${{ inputs.web-target }}
+          DART_ENV: ${{ inputs.dart-env }}
+          API_URL: ${{ inputs.api-url }}
+          BUILD: ${{ steps.meta.outcome }}
+          ARTIFACT: ${{ steps.meta.outputs.artifact-name }}
+        run: |
+          icon() { case "$1" in success) echo "✅";; failure) echo "❌";; cancelled) echo "⏹️";; *) echo "⏭️";; esac; }
+          {
+            echo "### 🌐 Web $TARGET ($DART_ENV) $(icon "$BUILD")"
+            echo
+            echo "- API : \`${API_URL:-par défaut ($DART_ENV)}\`"
+            [ -d build/web ] && echo "- Taille : $(du -sh build/web | cut -f1), \`main.dart.js\` $(du -h build/web/main.dart.js 2>/dev/null | cut -f1)"
+            [ -n "$ARTIFACT" ] && echo "- Artefact : \`$ARTIFACT\`"
+          } >> "$GITHUB_STEP_SUMMARY"

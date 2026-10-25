@@ -90,6 +90,34 @@ jobs:
             echo "ℹ️  No release"
           fi
 
+      - name: 📋 Résumé
+        if: always()
+        continue-on-error: true
+        env:
+          RELEASED: ${{ steps.check.outputs.released }}
+          VERSION: ${{ steps.check.outputs.version }}
+          ENVIRONMENT: ${{ steps.setup.outputs.environment }}
+          API_URL: ${{ steps.setup.outputs.api_url }}
+        run: |
+          {
+            echo "### 📝 Version — \`${{ github.ref_name }}\` → $ENVIRONMENT"
+            echo
+            echo "- Commit : \`${GITHUB_SHA::7}\` — $(git log -1 --format=%s "$GITHUB_SHA" 2>/dev/null)"
+            echo "- API : \`$API_URL\`"
+            if [ "$RELEASED" = "true" ]; then
+              echo "- Release : **$VERSION** → builds Android, iOS et web lancés"
+              echo
+              echo "<details><summary>Changelog $VERSION</summary>"
+              echo
+              # Première section de version du CHANGELOG (celle que semantic-release vient d'écrire)
+              awk '/^## \[/{n++} n==1' CHANGELOG.md
+              echo
+              echo "</details>"
+            else
+              echo "- Release : aucune (pas de commit feat/fix/perf/refactor depuis le dernier tag) → rien n'est buildé"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
   # Étape 2a: Build Android + Play Store (réutilise _build-android.yml)
   build-android:
     name: 🤖 Build & Deploy Android
@@ -244,6 +272,7 @@ jobs:
           "
 
       - name: 🚀 Deploy to Cloudflare Pages
+        id: deploy
         uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -253,6 +282,23 @@ jobs:
             --project-name=team-fitness-kiosk
             --branch=${{ github.ref_name }}
             --commit-dirty=true
+
+      - name: 📋 Résumé
+        if: always()
+        continue-on-error: true
+        env:
+          OUTCOME: ${{ steps.deploy.outcome }}
+          DEPLOYMENT_URL: ${{ steps.deploy.outputs.deployment-url }}
+          ALIAS_URL: ${{ steps.deploy.outputs.pages-deployment-alias-url }}
+        run: |
+          case "$OUTCOME" in success) ICON="✅";; failure) ICON="❌";; *) ICON="⏭️";; esac
+          {
+            echo "### 🌐 Déploiement Kiosk $ICON"
+            echo
+            echo "- Projet Cloudflare Pages : \`team-fitness-kiosk\` (branche \`${{ github.ref_name }}\`)"
+            [ -n "$ALIAS_URL" ] && echo "- URL de branche : $ALIAS_URL"
+            [ -n "$DEPLOYMENT_URL" ] && echo "- Ce déploiement : $DEPLOYMENT_URL"
+          } >> "$GITHUB_STEP_SUMMARY"
 
   # Étape 3b: Deploy showcase — page vitrine publique des salles (team-oustad.com).
   deploy-showcase:
@@ -286,6 +332,7 @@ jobs:
           "
 
       - name: 🚀 Deploy to Cloudflare Pages
+        id: deploy
         uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -295,3 +342,61 @@ jobs:
             --project-name=team-fitness-showcase
             --branch=${{ github.ref_name }}
             --commit-dirty=true
+
+      - name: 📋 Résumé
+        if: always()
+        continue-on-error: true
+        env:
+          OUTCOME: ${{ steps.deploy.outcome }}
+          DEPLOYMENT_URL: ${{ steps.deploy.outputs.deployment-url }}
+          ALIAS_URL: ${{ steps.deploy.outputs.pages-deployment-alias-url }}
+        run: |
+          case "$OUTCOME" in success) ICON="✅";; failure) ICON="❌";; *) ICON="⏭️";; esac
+          {
+            echo "### 🌐 Déploiement Vitrine $ICON"
+            echo
+            echo "- Projet Cloudflare Pages : \`team-fitness-showcase\` (branche \`${{ github.ref_name }}\`)"
+            [ -n "$ALIAS_URL" ] && echo "- URL de branche : $ALIAS_URL"
+            [ -n "$DEPLOYMENT_URL" ] && echo "- Ce déploiement : $DEPLOYMENT_URL"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # Étape 4: récapitulatif de la release sur la page du run (un seul écran,
+  # sans ouvrir chaque job).
+  recap:
+    name: 📋 Récap
+    needs: [version, build-android, build-ios, build-web-kiosk, build-web-showcase, deploy-kiosk, deploy-showcase]
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - name: 📋 Récap
+        env:
+          RELEASED: ${{ needs.version.outputs.released }}
+          VERSION: ${{ needs.version.outputs.version }}
+          ENVIRONMENT: ${{ needs.version.outputs.environment }}
+          R_VERSION: ${{ needs.version.result }}
+          R_ANDROID: ${{ needs.build-android.result }}
+          R_IOS: ${{ needs.build-ios.result }}
+          R_KIOSK_BUILD: ${{ needs.build-web-kiosk.result }}
+          R_SHOWCASE_BUILD: ${{ needs.build-web-showcase.result }}
+          R_KIOSK: ${{ needs.deploy-kiosk.result }}
+          R_SHOWCASE: ${{ needs.deploy-showcase.result }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          icon() { case "$1" in success) echo "✅";; failure) echo "❌";; cancelled) echo "⏹️";; *) echo "⏭️";; esac; }
+          {
+            if [ "$RELEASED" = "true" ]; then
+              echo "## 🚀 $VERSION → $ENVIRONMENT"
+            else
+              echo "## ℹ️ Pas de release (${{ github.ref_name }})"
+            fi
+            echo
+            echo "| Job | Résultat | Livrable |"
+            echo "| --- | --- | --- |"
+            echo "| Version & Changelog | $(icon "$R_VERSION") | tag \`${VERSION:-—}\` |"
+            echo "| Android | $(icon "$R_ANDROID") | Play Store, piste internal |"
+            echo "| iOS | $(icon "$R_IOS") | artefact IPA → \`scripts/ios-install.sh --download\` |"
+            echo "| Web kiosk | $(icon "$R_KIOSK_BUILD") build · $(icon "$R_KIOSK") déploiement | kiosk (Cloudflare Pages) |"
+            echo "| Web vitrine | $(icon "$R_SHOWCASE_BUILD") build · $(icon "$R_SHOWCASE") déploiement | team-oustad.com (Cloudflare Pages) |"
+            echo
+            echo "Le détail (tailles, versions, URLs) est dans les résumés de chaque job, plus bas sur [cette page]($RUN_URL)."
+          } >> "$GITHUB_STEP_SUMMARY"

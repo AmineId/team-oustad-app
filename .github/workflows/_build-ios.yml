@@ -90,9 +90,11 @@ jobs:
         run: gem install xcodeproj --no-document
 
       - name: ⌚ Ajouter le target watchOS au .xcodeproj
+        id: watch_target
         run: ruby scripts/add-watch-target.rb
 
       - name: 🏗️ Build iOS (no codesign)
+        id: build_ios
         run: |
           DEFINES="--dart-define=ENVIRONMENT=${{ inputs.environment }}"
           if [ -n "${{ inputs.api-url }}" ]; then
@@ -117,3 +119,30 @@ jobs:
           name: ${{ steps.meta.outputs.artifact-name }}
           path: build/ipa/${{ inputs.ipa-filename }}
           retention-days: 14
+
+      - name: 📋 Résumé
+        if: always()
+        continue-on-error: true
+        env:
+          ENVIRONMENT: ${{ inputs.environment }}
+          IPA: build/ipa/${{ inputs.ipa-filename }}
+          ARTIFACT: ${{ steps.meta.outputs.artifact-name }}
+          WATCH: ${{ steps.watch_target.outcome }}
+          BUILD: ${{ steps.build_ios.outcome }}
+        run: |
+          icon() { case "$1" in success) echo "✅";; failure) echo "❌";; cancelled) echo "⏹️";; *) echo "⏭️";; esac; }
+          APP=build/ios/iphoneos/Runner.app
+          plist() { /usr/libexec/PlistBuddy -c "Print :$2" "$1" 2>/dev/null || echo "—"; }
+          WATCH_APP=$(find "$APP/Watch" -maxdepth 1 -name "*.app" 2>/dev/null | head -1)
+          {
+            echo "### 🍎 iOS — \`$(plist "$APP/Info.plist" CFBundleShortVersionString)\` ($ENVIRONMENT)"
+            echo
+            echo "| Élément | Résultat | Détail |"
+            echo "| --- | --- | --- |"
+            echo "| Target watchOS | $(icon "$WATCH") | |"
+            echo "| Build (non signé) | $(icon "$BUILD") | bundle \`$(plist "$APP/Info.plist" CFBundleIdentifier)\` |"
+            echo "| App Apple Watch | $([ -n "$WATCH_APP" ] && echo ✅ || echo ❌) | $([ -n "$WATCH_APP" ] && plist "$WATCH_APP/Info.plist" CFBundleIdentifier || echo 'absente de l IPA') |"
+            echo "| IPA | $([ -f "$IPA" ] && echo ✅ || echo —) | $([ -f "$IPA" ] && du -h "$IPA" | cut -f1) — artefact \`$ARTIFACT\` |"
+            echo
+            [ -f "$IPA" ] && echo "Installer sur l'iPhone (WSL) : \`scripts/ios-install.sh --download $ENVIRONMENT\`"
+          } >> "$GITHUB_STEP_SUMMARY"

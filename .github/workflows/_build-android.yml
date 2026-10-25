@@ -275,6 +275,7 @@ jobs:
           fi
 
       - name: 🏗️ Build AAB (téléphone + Wear OS intégré)
+        id: build_aab
         env:
           GRADLE_OPTS: "-Dorg.gradle.logging.stacktrace=all"
         run: |
@@ -315,6 +316,7 @@ jobs:
           EOF
 
       - name: 📤 Deploy to Play Store (internal testing)
+        id: deploy_play
         if: inputs.deploy-to-play
         env:
           FASTLANE_SKIP_UPDATE_CHECK: 'true'
@@ -332,6 +334,7 @@ jobs:
             --skip_upload_screenshots
 
       - name: 📤 Publish version to server
+        id: publish_version
         if: inputs.publish-version
         run: |
           JSON_PAYLOAD=$(jq -n \
@@ -350,6 +353,34 @@ jobs:
             echo "❌ Publication échouée: HTTP $HTTP_CODE"; exit 1
           fi
           echo "✅ Version publiée"
+
+      - name: 📋 Résumé
+        if: always()
+        continue-on-error: true
+        env:
+          DART_ENV: ${{ inputs.dart-env }}
+          API_URL: ${{ inputs.api-url }}
+          BUILD: ${{ steps.build_aab.outcome }}
+          DEPLOY: ${{ steps.deploy_play.outcome }}
+          PUBLISH: ${{ steps.publish_version.outcome }}
+        run: |
+          icon() { case "$1" in success) echo "✅";; failure) echo "❌";; cancelled) echo "⏹️";; *) echo "⏭️";; esac; }
+          size() { [ -f "$1" ] && du -h "$1" | cut -f1 || echo "—"; }
+          VERSION=$(grep -m1 '^version:' pubspec.yaml | awk '{print $2}')
+          SIGNING=$([ -f android/key.properties ] && echo "clé release" || echo "⚠️ debug")
+          PHONE=build/app/outputs/bundle/release/app-release.aab
+          WEAR=build/wear_app/outputs/bundle/release/wear_app-release.aab
+          {
+            echo "### 🤖 Android — \`$VERSION\` ($DART_ENV)"
+            echo
+            echo "| Étape | Résultat | Détail |"
+            echo "| --- | --- | --- |"
+            echo "| Build AAB | $(icon "$BUILD") | signature : $SIGNING |"
+            echo "| AAB téléphone | $([ -f "$PHONE" ] && echo ✅ || echo —) | $(size "$PHONE") |"
+            echo "| AAB Wear OS | $([ -f "$WEAR" ] && echo ✅ || echo —) | $(size "$WEAR") — non publié (pas de piste Wear OS) |"
+            echo "| Play Store (internal) | $(icon "$DEPLOY") | \`team.oustad.app\` |"
+            echo "| Version serveur | $(icon "$PUBLISH") | \`$API_URL/android/update-version\` |"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: 🧹 Cleanup
         if: always()
