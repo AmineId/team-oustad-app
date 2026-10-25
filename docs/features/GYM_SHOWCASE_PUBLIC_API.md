@@ -147,3 +147,97 @@ Binaire, même source de données que l'actuel `GET /users/{id}/profile-image`. 
 - [ ] Endpoints publics `/public/gyms`, `/public/gyms/{slugOrId}`, `/public/gyms/{gymId}/photos/{photoId}/image`, `/public/gyms/{gymId}/team/{userId}/image` (section 5), CORS ouvert
 - [ ] Calcul `memberCountDisplay` côté serveur, jamais le chiffre exact publiquement (section 3)
 - [ ] Mettre à jour `swagger.yml` (nouveau schéma `Gym`, nouvelles routes `/gyms/{id}/photos*` et `/public/*`)
+
+## 8. Contenu éditable (CMS vitrine)
+
+Depuis l'app, on édite des **pages composées de sections** : la page d'accueil du site (owner) et la fiche de chaque salle (owner, admin de la salle). On peut ajouter, modifier, réordonner, masquer et supprimer des sections. Éditeur : `ShowcaseEditorScreen` (Gestion globale → « Site vitrine », fiche salle → « Contenu de la page vitrine », Gestion → « Page vitrine de ma salle » pour un admin). Modèle client : `lib/core/models/showcase_page_model.dart`.
+
+### Format d'une page
+
+```json
+{
+  "hero": { "eyebrow": "VITRINE TEAM OUSTAD", "tagline": "Choisis ta salle. Dépasse tes limites." },
+  "sections": [
+    { "id": "marquee", "type": "marquee", "visible": true, "data": { "words": ["MUSCULATION", "CARDIO"] } },
+    { "id": "gyms", "type": "gyms", "visible": true },
+    { "id": "s1k9x", "type": "markdown", "visible": false, "data": { "title": "Nouveau", "body": "**Ouverture** le 1er mars" } }
+  ]
+}
+```
+
+- `hero` : page d'accueil uniquement (absent pour une salle).
+- L'**ordre du tableau** est l'ordre d'affichage. `visible: false` = section conservée mais non affichée.
+- `id` : chaîne générée par l'app, unique dans la page. Le serveur la stocke telle quelle.
+
+Types **de contenu** (avec `data`) :
+
+| `type` | `data` |
+|---|---|
+| `markdown` | `title`, `body` (markdown) |
+| `feature` | `eyebrow`, `title`, `body`, `points: string[]`, `icon`, `tag` |
+| `testimonials` | `eyebrow`, `title`, `items: [{ name, meta, quote }]` |
+| `marquee` | `words: string[]` |
+| `categories` | `items: [{ label, icon }]` |
+| `cta` | `eyebrow`, `text`, `buttonLabel`, `url` |
+
+`icon` est une clé parmi `fitness, fire, groups, run, food, target, heart, bolt, timer, star, zen, trophy, pool, bike` (inconnue → icône par défaut côté app).
+
+Types **intégrés** (sans `data`, contenu fourni par les autres endpoints ; déplaçables/masquables, pas supprimables) :
+- accueil : `gyms` (liste des salles), `promos` (bannières réseau) ;
+- salle : `gymAbout` (`Gym.description`), `gymPromos`, `gymInfo` (adresse, contact, carte), `gymHours`, `gymTeam`, `gymSubscriptions`.
+
+L'app ignore les types inconnus et rajoute en fin de page un type intégré absent : le serveur n'a pas à connaître la liste exhaustive, mais doit **conserver** ce qu'il reçoit.
+
+### Stockage
+
+```prisma
+model ShowcasePage {
+  id        Int      @id @default(autoincrement())
+  gymId     Int?     @unique              // null = page d'accueil
+  gym       Gym?     @relation(fields: [gymId], references: [id], onDelete: Cascade)
+  content   Json                          // { hero?, sections } tel que reçu
+  updatedAt DateTime @updatedAt
+  updatedBy Int?                          // user id, pour l'audit
+}
+```
+
+Postgres autorise plusieurs `NULL` sur un `@unique` : garantir l'unicité de la page d'accueil applicativement (upsert sur `gymId IS NULL`) ou avec un index partiel.
+
+La description de salle reste `Gym.description` (éditée dans la fiche salle). Le CMS ne la duplique pas : la section `gymAbout` l'affiche.
+
+### Routes
+
+| Route | Auth | Qui |
+|---|---|---|
+| `GET /showcase/home` | Bearer | owner |
+| `PUT /showcase/home` | Bearer | owner |
+| `GET /gyms/{gymId}/showcase` | Bearer | owner (toutes salles), admin **de cette salle** |
+| `PUT /gyms/{gymId}/showcase` | Bearer | idem |
+| `GET /public/showcase/home` | aucune | public |
+| `GET /public/gyms/{slugOrId}` | aucune | public — inclut `gym.showcase` = la page de la salle |
+
+- `GET` (auth et public) : **200** avec la page, ou `{}` si rien n'a été enregistré (l'app affiche alors le contenu par défaut). Ne pas renvoyer 404 pour « pas encore de page ».
+- `PUT` : body = page complète, remplace l'existant (upsert). Réponse 200 ou 204.
+- `GET /public/gyms/{slugOrId}` : n'inclure `showcase` que pour une salle publiée (règle existante). Les sections `visible: false` peuvent être filtrées côté serveur.
+- `Cache-Control: max-age=300` sur les routes publiques : une modification met jusqu'à 5 min à apparaître (l'app l'indique après sauvegarde).
+
+### Validation `PUT` (400 sinon)
+
+- `sections` : tableau, ≤ 40 éléments ; chaque élément a `id` (string ≤ 40), `type` (string ≤ 40), `visible` (bool) et `data` objet optionnel.
+- Taille totale du body ≤ 100 Ko ; toute chaîne ≤ 5 000 caractères ; tableaux internes (`points`, `words`, `items`) ≤ 20.
+- `hero` accepté uniquement sur `/showcase/home`.
+- `url` des `cta` : schéma `https://` (ou `http://`) uniquement — refuser `javascript:`, `data:`, etc.
+- Ne pas exécuter ni nettoyer de HTML : l'app rend le markdown avec `flutter_markdown`, sans HTML brut. Les liens markdown ne s'ouvrent qu'en externe.
+
+### Ancien format
+
+Avant les sections, `GET /gyms/{gymId}/showcase` était un objet plat (`description`, `amenities`, `schedule`, `pricing`, `team`). L'app sait encore le lire (converti en sections `markdown`), mais le serveur doit implémenter directement le format ci-dessus.
+
+### Checklist pour claude serveur
+
+- [ ] Migration Prisma : table `ShowcasePage` (unicité de la page d'accueil garantie)
+- [ ] `GET/PUT /showcase/home` (owner) et `GET/PUT /gyms/{gymId}/showcase` (owner, admin de la salle), 403 sinon
+- [ ] `GET` renvoie `{}` (200) tant que rien n'est enregistré
+- [ ] Validation du body `PUT` (tailles, `url` en http(s), `hero` seulement pour l'accueil)
+- [ ] `GET /public/showcase/home` + champ `gym.showcase` dans `GET /public/gyms/{slugOrId}`, avec le `Cache-Control` existant
+- [ ] Mettre à jour `swagger.yml` (4 routes authentifiées, 1 route publique, schéma `ShowcasePage`)

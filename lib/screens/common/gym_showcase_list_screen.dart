@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../core/models/models.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/banner_service.dart';
@@ -37,6 +36,9 @@ class _GymShowcaseListScreenState extends State<GymShowcaseListScreen>
   late final AnimationController _glowController;
 
   List<Map<String, dynamic>> _gyms = [];
+  // Contenu CMS (ShowcaseEditorScreen) — défaut = contenu historique, affiché
+  // tout de suite et remplacé si le serveur renvoie une page enregistrée.
+  ShowcasePage _page = ShowcasePage.defaultHome();
   bool _isLoading = true;
   bool _hasError = false;
   bool _scrolled = false;
@@ -58,6 +60,13 @@ class _GymShowcaseListScreenState extends State<GymShowcaseListScreen>
       if (scrolled != _scrolled) setState(() => _scrolled = scrolled);
     });
     _loadGyms();
+    _loadPage();
+  }
+
+  Future<void> _loadPage() async {
+    final json = await _apiService.getPublicShowcaseHome();
+    if (!mounted || json == null) return;
+    setState(() => _page = ShowcasePage.fromJson(ShowcasePageKind.home, json));
   }
 
   @override
@@ -102,30 +111,22 @@ class _GymShowcaseListScreenState extends State<GymShowcaseListScreen>
             RefreshIndicator(
               color: AppColors.primary,
               backgroundColor: AppColors.darkSurface,
-              onRefresh: _loadGyms,
+              onRefresh: () => Future.wait([_loadGyms(), _loadPage()]),
               child: CustomScrollView(
                 controller: _scrollController,
                 physics: const AlwaysScrollableScrollPhysics(),
                 slivers: [
                   SliverToBoxAdapter(
                     child: _ShowcaseHero(
+                      eyebrow: _page.heroEyebrow,
+                      tagline: _page.heroTagline,
                       glowController: _glowController,
                       scrollController: _scrollController,
                       onDiscoverTap: _scrollToContent,
                     ),
                   ),
-                  const SliverToBoxAdapter(child: _MarqueeBand()),
-                  const SliverToBoxAdapter(child: _CategoryTiles()),
-                  const SliverToBoxAdapter(child: _GlobalPromoBannerSection()),
-                  SliverToBoxAdapter(
-                    child: KeyedSubtree(
-                      key: _contentKey,
-                      child: _buildContent(context),
-                    ),
-                  ),
-                  const SliverToBoxAdapter(child: _FeatureShowcase()),
-                  const SliverToBoxAdapter(child: _TestimonialsSection()),
-                  const SliverToBoxAdapter(child: _AppDownloadCTA()),
+                  for (final section in _sectionWidgets())
+                    SliverToBoxAdapter(child: section),
                   const SliverToBoxAdapter(child: _ShowcaseFooter()),
                 ],
               ),
@@ -135,6 +136,29 @@ class _GymShowcaseListScreenState extends State<GymShowcaseListScreen>
         ),
       ),
     );
+  }
+
+  List<Widget> _sectionWidgets() {
+    var featureIndex = 0;
+    return [
+      for (final section in _page.visibleSections)
+        switch (section.type) {
+          ShowcaseSectionType.gyms => KeyedSubtree(
+            key: _contentKey,
+            child: _buildContent(context),
+          ),
+          ShowcaseSectionType.promos => const _GlobalPromoBannerSection(),
+          ShowcaseSectionType.feature => ShowcaseContentSection(
+            key: ValueKey(section.id),
+            section: section,
+            reverse: (featureIndex++).isOdd,
+          ),
+          _ => ShowcaseContentSection(
+            key: ValueKey(section.id),
+            section: section,
+          ),
+        },
+    ];
   }
 
   Widget _buildContent(BuildContext context) {
@@ -423,11 +447,15 @@ class _TopBar extends StatelessWidget {
 }
 
 class _ShowcaseHero extends StatelessWidget {
+  final String eyebrow;
+  final String tagline;
   final AnimationController glowController;
   final ScrollController scrollController;
   final VoidCallback onDiscoverTap;
 
   const _ShowcaseHero({
+    required this.eyebrow,
+    required this.tagline,
     required this.glowController,
     required this.scrollController,
     required this.onDiscoverTap,
@@ -505,11 +533,13 @@ class _ShowcaseHero extends StatelessWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const RevealOnLoad(
-                      delay: Duration(milliseconds: 80),
-                      child: _Eyebrow(),
-                    ),
-                    const SizedBox(height: 22),
+                    if (eyebrow.isNotEmpty) ...[
+                      RevealOnLoad(
+                        delay: const Duration(milliseconds: 80),
+                        child: _Eyebrow(text: eyebrow),
+                      ),
+                      const SizedBox(height: 22),
+                    ],
                     RevealOnLoad(
                       delay: const Duration(milliseconds: 180),
                       child: _Wordmark(isDesktop: isDesktop),
@@ -518,7 +548,7 @@ class _ShowcaseHero extends StatelessWidget {
                     RevealOnLoad(
                       delay: const Duration(milliseconds: 320),
                       child: Text(
-                        'Choisis ta salle. Dépasse tes limites.',
+                        tagline,
                         textAlign: TextAlign.center,
                         style: GoogleFonts.barlow(
                           fontSize: isDesktop ? 20 : 16,
@@ -561,113 +591,10 @@ Widget _glowBlob(Color color, double size) {
   );
 }
 
-/// Bandeau défilant en continu (contenu dupliqué une fois, la boucle se fait
-/// exactement à la largeur d'une copie — pas de saut visible). Pur effet de
-/// marque : pas d'info exclusive, donc pas de lecteur d'écran dédié requis
-/// au-delà du contenu déjà annoncé par les cartes.
-class _MarqueeBand extends StatefulWidget {
-  const _MarqueeBand();
-
-  @override
-  State<_MarqueeBand> createState() => _MarqueeBandState();
-}
-
-class _MarqueeBandState extends State<_MarqueeBand>
-    with SingleTickerProviderStateMixin {
-  static const _words = [
-    'MUSCULATION',
-    'CROSSFIT',
-    'COACHING',
-    'CARDIO',
-    'NUTRITION',
-    'COMMUNAUTÉ',
-  ];
-  static const _speedPxPerSec = 46.0;
-
-  final _scrollController = ScrollController();
-  Ticker? _ticker;
-  Duration? _lastElapsed;
-
-  @override
-  void initState() {
-    super.initState();
-    // Bandeau continu à faible amplitude : on le garde même en mode
-    // "réduire les animations" (contrairement aux autres animations de
-    // cette page), ce n'est ni large ni parallax, donc pas concerné par
-    // les risques que ce réglage cible.
-    _ticker = createTicker(_onTick)..start();
-  }
-
-  void _onTick(Duration elapsed) {
-    if (!_scrollController.hasClients) return;
-    final max = _scrollController.position.maxScrollExtent;
-    if (max <= 0) {
-      _lastElapsed = elapsed;
-      return;
-    }
-    final dtSeconds = _lastElapsed == null
-        ? 0.0
-        : (elapsed - _lastElapsed!).inMicroseconds / 1e6;
-    _lastElapsed = elapsed;
-    var next = _scrollController.offset + _speedPxPerSec * dtSeconds;
-    if (next >= max) next -= max;
-    _scrollController.jumpTo(next);
-  }
-
-  @override
-  void dispose() {
-    _ticker?.dispose();
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final block = Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [for (final w in _words) _wordChip(w)],
-    );
-
-    return Container(
-      color: AppColors.primary,
-      padding: const EdgeInsets.symmetric(vertical: 14),
-      child: SingleChildScrollView(
-        controller: _scrollController,
-        scrollDirection: Axis.horizontal,
-        physics: const NeverScrollableScrollPhysics(),
-        child: Row(mainAxisSize: MainAxisSize.min, children: [block, block]),
-      ),
-    );
-  }
-
-  Widget _wordChip(String w) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            w,
-            style: GoogleFonts.anton(
-              fontSize: 21,
-              color: AppColors.darkBackground,
-              letterSpacing: 1.5,
-            ),
-          ),
-          const SizedBox(width: 16),
-          const Icon(
-            Icons.fitness_center_rounded,
-            size: 16,
-            color: AppColors.darkBackground,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _Eyebrow extends StatelessWidget {
-  const _Eyebrow();
+  final String text;
+
+  const _Eyebrow({required this.text});
 
   @override
   Widget build(BuildContext context) {
@@ -684,7 +611,7 @@ class _Eyebrow extends StatelessWidget {
           const Icon(Icons.bolt_rounded, size: 14, color: AppColors.primary),
           const SizedBox(width: 8),
           Text(
-            'VITRINE TEAM OUSTAD',
+            text,
             style: GoogleFonts.barlow(
               fontSize: 12,
               fontWeight: FontWeight.w700,
@@ -1087,690 +1014,6 @@ class _MemberBadge extends StatelessWidget {
                 ),
               ),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _CategoryTiles extends StatelessWidget {
-  const _CategoryTiles();
-
-  static const _categories = [
-    (label: 'Musculation', icon: Icons.fitness_center_rounded),
-    (label: 'CrossFit', icon: Icons.whatshot_rounded),
-    (label: 'Coaching', icon: Icons.groups_rounded),
-    (label: 'Cardio', icon: Icons.directions_run_rounded),
-    (label: 'Nutrition', icon: Icons.restaurant_rounded),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return ResponsiveContainer(
-      maxWidth: 1200,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 36, 20, 0),
-        child: RevealOnVisible(
-          child: Wrap(
-            spacing: 16,
-            runSpacing: 16,
-            alignment: WrapAlignment.center,
-            children: [
-              for (final c in _categories)
-                _CategoryTile(label: c.label, icon: c.icon),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _CategoryTile extends StatefulWidget {
-  final String label;
-  final IconData icon;
-
-  const _CategoryTile({required this.label, required this.icon});
-
-  @override
-  State<_CategoryTile> createState() => _CategoryTileState();
-}
-
-class _CategoryTileState extends State<_CategoryTile> {
-  bool _hovered = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      onEnter: (_) => setState(() => _hovered = true),
-      onExit: (_) => setState(() => _hovered = false),
-      child: AnimatedScale(
-        scale: _hovered ? 1.05 : 1.0,
-        duration: const Duration(milliseconds: 160),
-        curve: Curves.easeOut,
-        child: Container(
-          width: 128,
-          padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 12),
-          decoration: BoxDecoration(
-            color: AppColors.darkCard,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: _hovered
-                  ? AppColors.primary.withValues(alpha: 0.7)
-                  : Colors.white.withValues(alpha: 0.08),
-              width: _hovered ? 1.5 : 1,
-            ),
-            boxShadow: _hovered
-                ? [
-                    BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.25),
-                      blurRadius: 20,
-                      offset: const Offset(0, 8),
-                    ),
-                  ]
-                : null,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.primary.withValues(
-                    alpha: _hovered ? 0.22 : 0.12,
-                  ),
-                ),
-                child: Icon(widget.icon, color: AppColors.primary, size: 24),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                widget.label.toUpperCase(),
-                textAlign: TextAlign.center,
-                style: GoogleFonts.anton(
-                  fontSize: 13,
-                  color: Colors.white,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _FeatureShowcase extends StatelessWidget {
-  const _FeatureShowcase();
-
-  @override
-  Widget build(BuildContext context) {
-    return ResponsiveContainer(
-      maxWidth: 1200,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 64, 20, 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _FeatureBlock(
-              eyebrow: 'EXPÉRIENCE',
-              title: 'Du matériel qui tient ses promesses',
-              body:
-                  'Chaque salle est découpée en zones claires — musculation, '
-                  'cardio, fonctionnel, récupération — avec du matériel '
-                  'entretenu et contrôlé chaque semaine, jamais entassé.',
-              points: const [
-                'Zones dédiées, jamais de queue aux machines clés',
-                'Contrôle et entretien hebdomadaire du matériel',
-                'Espace étirements et récupération à part',
-              ],
-              icon: Icons.fitness_center_rounded,
-              tag: 'STUDIO MUSCULATION',
-              reverse: false,
-            ),
-            const SizedBox(height: 56),
-            _FeatureBlock(
-              eyebrow: 'COMMUNAUTÉ',
-              title: 'Une team, pas juste une salle',
-              body:
-                  'On connaît les prénoms, on suit les progrès, on célèbre '
-                  'les paliers. Les coachs sont présents sur le plateau aux '
-                  'heures de pointe, pas planqués dans un bureau.',
-              points: const [
-                'Coachs présents sur le plateau, pas qu\'au bureau',
-                'Suivi de progression personnalisé',
-                'Communauté active, événements réguliers',
-              ],
-              icon: Icons.groups_rounded,
-              tag: 'ESPRIT TEAM',
-              reverse: true,
-            ),
-            const SizedBox(height: 56),
-            _FeatureBlock(
-              eyebrow: 'ACCOMPAGNEMENT',
-              title: 'Des objectifs, un plan',
-              body:
-                  'Perte de poids, prise de masse, remise en forme : un '
-                  'programme ajusté à ton rythme, revu avec ton coach au '
-                  'fil des séances.',
-              points: const [
-                'Bilan initial et objectifs définis ensemble',
-                'Programme ajusté toutes les 4 semaines',
-                'Suivi dans l\'app, entre les séances',
-              ],
-              icon: Icons.track_changes_rounded,
-              tag: 'COACHING',
-              reverse: false,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _FeatureBlock extends StatelessWidget {
-  final String eyebrow;
-  final String title;
-  final String body;
-  final List<String> points;
-  final IconData icon;
-  final String tag;
-  final bool reverse;
-
-  const _FeatureBlock({
-    required this.eyebrow,
-    required this.title,
-    required this.body,
-    required this.points,
-    required this.icon,
-    required this.tag,
-    required this.reverse,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-    final isWide = width >= 860;
-
-    final image = RevealOnVisible(
-      beginOffset: Offset(reverse ? 0.06 : -0.06, 0),
-      child: _FeatureImage(icon: icon, tag: tag),
-    );
-    final copy = RevealOnVisible(
-      beginOffset: Offset(reverse ? -0.06 : 0.06, 0),
-      child: _FeatureCopy(
-        eyebrow: eyebrow,
-        title: title,
-        body: body,
-        points: points,
-      ),
-    );
-
-    if (!isWide) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [image, const SizedBox(height: 28), copy],
-      );
-    }
-
-    final children = reverse
-        ? [
-            Expanded(child: copy),
-            const SizedBox(width: 56),
-            Expanded(child: image),
-          ]
-        : [
-            Expanded(child: image),
-            const SizedBox(width: 56),
-            Expanded(child: copy),
-          ];
-
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: children,
-      ),
-    );
-  }
-}
-
-class _FeatureImage extends StatelessWidget {
-  final IconData icon;
-  final String tag;
-
-  const _FeatureImage({required this.icon, required this.tag});
-
-  @override
-  Widget build(BuildContext context) {
-    return AspectRatio(
-      aspectRatio: 16 / 10,
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          border: const Border(
-            left: BorderSide(color: AppColors.primary, width: 5),
-          ),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              AppColors.darkElevated,
-              AppColors.darkCard,
-              AppColors.primaryDark.withValues(alpha: 0.5),
-            ],
-          ),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Stack(
-          children: [
-            Center(
-              child: Icon(
-                icon,
-                size: 64,
-                color: Colors.white.withValues(alpha: 0.18),
-              ),
-            ),
-            Positioned(
-              left: 18,
-              bottom: 18,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.darkBackground.withValues(alpha: 0.7),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  tag,
-                  style: GoogleFonts.barlow(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.primary,
-                    letterSpacing: 1,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _FeatureCopy extends StatelessWidget {
-  final String eyebrow;
-  final String title;
-  final String body;
-  final List<String> points;
-
-  const _FeatureCopy({
-    required this.eyebrow,
-    required this.title,
-    required this.body,
-    required this.points,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          eyebrow,
-          style: GoogleFonts.barlow(
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 2,
-            color: AppColors.primary,
-          ),
-        ),
-        const SizedBox(height: 10),
-        Text(
-          title,
-          style: GoogleFonts.anton(
-            fontSize: 28,
-            color: Colors.white,
-            height: 1.05,
-          ),
-        ),
-        const SizedBox(height: 14),
-        Text(
-          body,
-          style: GoogleFonts.barlow(
-            fontSize: 14.5,
-            height: 1.6,
-            color: AppColors.darkTextSecondary,
-          ),
-        ),
-        const SizedBox(height: 18),
-        for (final p in points)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  margin: const EdgeInsets.only(top: 2, right: 10),
-                  width: 18,
-                  height: 18,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.18),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.check_rounded,
-                    size: 13,
-                    color: AppColors.primary,
-                  ),
-                ),
-                Expanded(
-                  child: Text(
-                    p,
-                    style: GoogleFonts.barlow(
-                      fontSize: 13.5,
-                      color: Colors.white.withValues(alpha: 0.85),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-      ],
-    );
-  }
-}
-
-class _TestimonialsSection extends StatelessWidget {
-  const _TestimonialsSection();
-
-  static const _testimonials = [
-    (
-      name: 'Sarah M.',
-      meta: 'Membre depuis 8 mois',
-      quote:
-          'Les coachs corrigent la posture sans qu\'on demande. Ambiance '
-          'sérieuse, jamais intimidante.',
-    ),
-    (
-      name: 'Yanis B.',
-      meta: 'Membre depuis 1 an',
-      quote:
-          'Salle ouverte tard, c\'est ce qui me permet de tenir le rythme '
-          'avec le travail. Jamais bondé après 20h.',
-    ),
-    (
-      name: 'Léa D.',
-      meta: 'Membre depuis 5 mois',
-      quote:
-          'Mon programme a été revu trois fois en six mois, toujours selon '
-          'mes vraies progressions. Ça change tout.',
-    ),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return ResponsiveContainer(
-      maxWidth: 1200,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 64, 20, 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            RevealOnVisible(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'LA TEAM PARLE',
-                    style: GoogleFonts.barlow(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 2,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Ce qu\'en disent les membres',
-                    style: GoogleFonts.anton(fontSize: 32, color: Colors.white),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 28),
-            ResponsiveGrid(
-              spacing: 20,
-              runSpacing: 20,
-              children: [
-                for (final t in _testimonials)
-                  RevealOnVisible(
-                    child: _TestimonialCard(
-                      name: t.name,
-                      meta: t.meta,
-                      quote: t.quote,
-                    ),
-                  ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _TestimonialCard extends StatelessWidget {
-  final String name;
-  final String meta;
-  final String quote;
-
-  const _TestimonialCard({
-    required this.name,
-    required this.meta,
-    required this.quote,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(22),
-      decoration: BoxDecoration(
-        color: AppColors.darkCard,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            children: List.generate(
-              5,
-              (_) => const Icon(
-                Icons.star_rounded,
-                size: 16,
-                color: AppColors.primary,
-              ),
-            ),
-          ),
-          const SizedBox(height: 14),
-          Text(
-            '"$quote"',
-            style: GoogleFonts.barlow(
-              fontSize: 14,
-              height: 1.55,
-              color: Colors.white.withValues(alpha: 0.9),
-            ),
-          ),
-          const SizedBox(height: 18),
-          Row(
-            children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: const BoxDecoration(
-                  color: AppColors.primary,
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Text(
-                    name[0],
-                    style: GoogleFonts.anton(
-                      fontSize: 15,
-                      color: AppColors.darkBackground,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      name,
-                      style: GoogleFonts.barlow(
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                      ),
-                    ),
-                    Text(
-                      meta,
-                      style: GoogleFonts.barlow(
-                        fontSize: 11.5,
-                        color: AppColors.darkTextTertiary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _AppDownloadCTA extends StatelessWidget {
-  const _AppDownloadCTA();
-
-  static const _storeUrl =
-      'https://play.google.com/store/apps/details?id=team.oustad.app';
-
-  @override
-  Widget build(BuildContext context) {
-    return RevealOnVisible(
-      child: ResponsiveContainer(
-        maxWidth: 1200,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 48, 20, 0),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-            decoration: BoxDecoration(
-              color: AppColors.primary,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.4),
-                  blurRadius: 32,
-                  offset: const Offset(0, 12),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'L\'APP TEAM OUSTAD',
-                        style: GoogleFonts.barlow(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 2,
-                          color: AppColors.darkBackground.withValues(alpha: 0.7),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Gérez vos séances, vos abonnements et vos objectifs.',
-                        style: GoogleFonts.barlow(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.darkBackground,
-                          height: 1.3,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Material(
-                  color: AppColors.darkBackground,
-                  borderRadius: BorderRadius.circular(14),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(14),
-                    onTap: () async {
-                      final uri = Uri.parse(_storeUrl);
-                      if (await canLaunchUrl(uri)) {
-                        await launchUrl(
-                          uri,
-                          mode: LaunchMode.externalApplication,
-                        );
-                      }
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 10,
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.download_rounded,
-                            size: 16,
-                            color: AppColors.primary,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            'Télécharger',
-                            style: GoogleFonts.barlow(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.primary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
           ),
         ),
       ),

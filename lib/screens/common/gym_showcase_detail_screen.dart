@@ -50,9 +50,9 @@ class _GymShowcaseDetailScreenState extends State<GymShowcaseDetailScreen> {
   }
 
   Future<void> _checkEditPermission() async {
-    final isAdmin = await _authService.isAdmin();
+    final canEdit = await _authService.hasAdminAccess();
     if (!mounted) return;
-    setState(() => _canEdit = isAdmin);
+    setState(() => _canEdit = canEdit);
   }
 
   Future<void> _loadGym() async {
@@ -78,10 +78,9 @@ class _GymShowcaseDetailScreenState extends State<GymShowcaseDetailScreen> {
   }
 
   Future<void> _loadBanners(int gymId) async {
-    final banners = await BannerService(_apiService).getAllBanners(
-      gymId: gymId,
-      activeOnly: true,
-    );
+    final banners = await BannerService(
+      _apiService,
+    ).getAllBanners(gymId: gymId, activeOnly: true);
     if (!mounted) return;
     setState(() => _banners = banners);
   }
@@ -149,10 +148,78 @@ class _GymShowcaseDetailScreenState extends State<GymShowcaseDetailScreen> {
     }
   }
 
+  /// Rendu d'une section de la page, précédée de son espacement. Liste vide
+  /// si la section n'a rien à afficher (pas d'adresse, pas d'offres…).
+  List<Widget> _buildSection(
+    ShowcaseSection section, {
+    required String? description,
+    required String address,
+    required String? phone,
+    required String? whatsappNumber,
+    required List<Map<String, dynamic>> openingHours,
+    required List<Map<String, dynamic>> team,
+  }) {
+    Widget? child;
+    switch (section.type) {
+      case ShowcaseSectionType.gymAbout:
+        if (description != null && description.trim().isNotEmpty) {
+          child = ShowcaseMarkdown(data: description);
+        }
+      case ShowcaseSectionType.gymPromos:
+        if (_banners.isNotEmpty) child = _PromosSection(banners: _banners);
+      case ShowcaseSectionType.gymInfo:
+        final hasPhone = phone != null && phone.isNotEmpty;
+        if (address.isEmpty && !hasPhone) break;
+        child = Column(
+          children: [
+            _ActionsCard(
+              address: address,
+              phone: phone,
+              whatsappNumber: whatsappNumber,
+              onMap: address.isNotEmpty ? () => _openMaps(address) : null,
+              onCall: hasPhone ? () => _call(phone) : null,
+              onWhatsApp: (whatsappNumber != null && whatsappNumber.isNotEmpty)
+                  ? () => _whatsApp(whatsappNumber)
+                  : null,
+            ),
+            if (address.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              GymMapEmbed(address: address),
+            ],
+          ],
+        );
+      case ShowcaseSectionType.gymHours:
+        if (openingHours.isNotEmpty) {
+          child = _OpeningHoursCard(hours: openingHours, dayName: _dayName);
+        }
+      case ShowcaseSectionType.gymTeam:
+        if (team.isNotEmpty) {
+          child = _TeamSection(team: team, roleLabel: _roleLabel);
+        }
+      case ShowcaseSectionType.gymSubscriptions:
+        if (_subscriptions.isNotEmpty) {
+          child = _SubscriptionsSection(subscriptions: _subscriptions);
+        }
+      default:
+        return [
+          const SizedBox(height: 28),
+          ShowcaseContentSection(
+            key: ValueKey(section.id),
+            section: section,
+            standalone: false,
+          ),
+        ];
+    }
+    if (child == null) return const [];
+    return [const SizedBox(height: 28), RevealOnVisible(child: child)];
+  }
+
   @override
   Widget build(BuildContext context) {
     final gymId = _gym != null
-        ? (_gym!['id'] is int ? _gym!['id'] as int : int.tryParse(_gym!['id'].toString()))
+        ? (_gym!['id'] is int
+              ? _gym!['id'] as int
+              : int.tryParse(_gym!['id'].toString()))
         : null;
     final gymName = _gym?['name'] as String? ?? 'Salle';
 
@@ -167,7 +234,7 @@ class _GymShowcaseDetailScreenState extends State<GymShowcaseDetailScreen> {
                   await Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => ShowcaseEditorScreen(
+                      builder: (_) => ShowcaseEditorScreen.gym(
                         gymId: gymId,
                         gymName: gymName,
                       ),
@@ -223,6 +290,11 @@ class _GymShowcaseDetailScreenState extends State<GymShowcaseDetailScreen> {
         : phone;
     final gymSlug = (gym['slug'] as String?) ?? gym['id'].toString();
     final description = gym['description'] as String?;
+    // Sections CMS (ShowcaseEditorScreen) ; défaut = ordre historique.
+    final page = ShowcasePage.fromJson(
+      ShowcasePageKind.gym,
+      gym['showcase'] as Map<String, dynamic>?,
+    );
     final memberCountDisplay = gym['memberCountDisplay'] as String?;
     final photos = ((gym['photos'] as List<dynamic>?) ?? [])
         .map((p) => p as Map<String, dynamic>)
@@ -322,75 +394,20 @@ class _GymShowcaseDetailScreenState extends State<GymShowcaseDetailScreen> {
           child: ResponsiveContainer(
             maxWidth: 900,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 28, 20, 48),
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 48),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (description != null && description.isNotEmpty) ...[
-                    RevealOnVisible(
-                      child: Text(
-                        description,
-                        style: GoogleFonts.barlow(
-                          fontSize: 15,
-                          height: 1.6,
-                          color: Colors.white.withValues(alpha: 0.85),
-                        ),
-                      ),
+                  for (final section in page.visibleSections)
+                    ..._buildSection(
+                      section,
+                      description: description,
+                      address: address,
+                      phone: phone,
+                      whatsappNumber: whatsappNumber,
+                      openingHours: openingHours,
+                      team: team,
                     ),
-                    const SizedBox(height: 24),
-                  ],
-                  if (_banners.isNotEmpty) ...[
-                    RevealOnVisible(
-                      child: _PromosSection(banners: _banners),
-                    ),
-                    const SizedBox(height: 24),
-                  ],
-                  if (address.isNotEmpty || (phone != null && phone.isNotEmpty))
-                    RevealOnVisible(
-                      child: _ActionsCard(
-                        address: address,
-                        phone: phone,
-                        whatsappNumber: whatsappNumber,
-                        onMap: address.isNotEmpty
-                            ? () => _openMaps(address)
-                            : null,
-                        onCall: (phone != null && phone.isNotEmpty)
-                            ? () => _call(phone)
-                            : null,
-                        onWhatsApp:
-                            (whatsappNumber != null &&
-                                whatsappNumber.isNotEmpty)
-                            ? () => _whatsApp(whatsappNumber)
-                            : null,
-                      ),
-                    ),
-                  if (address.isNotEmpty) ...[
-                    const SizedBox(height: 16),
-                    RevealOnVisible(child: GymMapEmbed(address: address)),
-                  ],
-                  if (openingHours.isNotEmpty) ...[
-                    const SizedBox(height: 24),
-                    RevealOnVisible(
-                      child: _OpeningHoursCard(
-                        hours: openingHours,
-                        dayName: _dayName,
-                      ),
-                    ),
-                  ],
-                  if (team.isNotEmpty) ...[
-                    const SizedBox(height: 28),
-                    RevealOnVisible(
-                      child: _TeamSection(team: team, roleLabel: _roleLabel),
-                    ),
-                  ],
-                  if (_subscriptions.isNotEmpty) ...[
-                    const SizedBox(height: 28),
-                    RevealOnVisible(
-                      child: _SubscriptionsSection(
-                        subscriptions: _subscriptions,
-                      ),
-                    ),
-                  ],
                   const SizedBox(height: 28),
                   RevealOnVisible(
                     child: Center(
@@ -914,7 +931,13 @@ class _OpeningHoursCardState extends State<_OpeningHoursCard>
 
   String? _nextOpenText(int todayIndex) {
     const dayNames = [
-      'dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi',
+      'dimanche',
+      'lundi',
+      'mardi',
+      'mercredi',
+      'jeudi',
+      'vendredi',
+      'samedi',
     ];
     for (var offset = 1; offset <= 7; offset++) {
       final dayIndex = (todayIndex + offset) % 7;
@@ -1347,10 +1370,7 @@ class _SubscriptionCard extends StatelessWidget {
   final Map<String, dynamic> sub;
   final bool highlighted;
 
-  const _SubscriptionCard({
-    required this.sub,
-    this.highlighted = false,
-  });
+  const _SubscriptionCard({required this.sub, this.highlighted = false});
 
   @override
   Widget build(BuildContext context) {
@@ -1359,8 +1379,7 @@ class _SubscriptionCard extends StatelessWidget {
     final duration =
         sub['durationMonths'] ?? sub['duration'] ?? sub['durationDays'];
     final priceStr = price != null ? '$price€' : '';
-    final durationLabel =
-        sub['durationMonths'] != null
+    final durationLabel = sub['durationMonths'] != null
         ? '${sub['durationMonths']} mois'
         : (sub['durationDays'] != null ? '${sub['durationDays']} jours' : '');
 

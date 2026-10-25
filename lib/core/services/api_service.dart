@@ -131,8 +131,6 @@ class ApiService {
 
       // ignore: avoid_print
       debugPrint('ApiService.login response status: ${resp.statusCode}');
-      // ignore: avoid_print
-      debugPrint('ApiService.login response body: ${resp.body}');
 
       if (resp.statusCode == 200) {
         try {
@@ -250,6 +248,22 @@ class ApiService {
 
   /// Verify a JWT locally by decoding and checking expiration.
   /// Returns true when token is valid and not expired.
+  /// Lit un claim texte du payload JWT (sans vérifier la signature : la
+  /// valeur sert à l'affichage, le serveur reste seul juge des droits).
+  static String? decodeJwtClaim(String token, String claim) {
+    try {
+      final parts = token.split('.');
+      if (parts.length != 3) return null;
+      final payload = utf8.decode(
+        base64Url.decode(base64Url.normalize(parts[1])),
+      );
+      final value = (jsonDecode(payload) as Map<String, dynamic>)[claim];
+      return value is String ? value : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
   bool verifyToken(String token) {
     try {
       final parts = token.split('.');
@@ -1363,25 +1377,6 @@ class ApiService {
     try {
       // ignore: avoid_print
       debugPrint('ApiService.updateUserFCMToken -> $uri');
-      // ignore: avoid_print
-      debugPrint('  FCM Token: $fcmToken');
-      // ignore: avoid_print
-      debugPrint('  JWT: Bearer ${token.substring(0, 30)}...');
-
-      // Décoder le JWT pour voir ce qu'il contient
-      try {
-        final parts = token.split('.');
-        if (parts.length == 3) {
-          final payload = parts[1];
-          final normalized = base64Url.normalize(payload);
-          final payloadString = utf8.decode(base64Url.decode(normalized));
-          // ignore: avoid_print
-          debugPrint('  JWT Payload: $payloadString');
-        }
-      } catch (e) {
-        // ignore: avoid_print
-        debugPrint('  Erreur décodage JWT: $e');
-      }
 
       final resp = await http
           .put(
@@ -1396,8 +1391,6 @@ class ApiService {
 
       // ignore: avoid_print
       debugPrint('updateUserFCMToken status: ${resp.statusCode}');
-      // ignore: avoid_print
-      debugPrint('updateUserFCMToken response: ${resp.body}');
 
       if (resp.statusCode == 200) {
         try {
@@ -3350,46 +3343,73 @@ class ApiService {
 
   // ==================== SHOWCASE CMS ====================
 
-  /// GET /gyms/{gymId}/showcase
-  /// Retourne le contenu markdown de la fiche vitrine (champs description, amenities, etc.)
-  Future<Map<String, dynamic>?> getShowcaseContent(
-    int gymId,
-    String token, {
+  /// Contenu éditable de la page d'accueil vitrine (public, sans auth).
+  /// Expected backend endpoint: GET /public/showcase/home
+  /// Retourne `{}` si rien n'est encore enregistré (→ contenu par défaut),
+  /// null en cas d'erreur réseau.
+  Future<Map<String, dynamic>?> getPublicShowcaseHome({
     Duration timeout = const Duration(seconds: 8),
   }) async {
-    final uri = baseUri.resolve('/gyms/$gymId/showcase');
+    final uri = baseUri.resolve('/public/showcase/home');
     try {
-      final resp = await http.get(
-        uri,
-        headers: {'Authorization': 'Bearer $token'},
-      ).timeout(timeout);
+      final resp = await http.get(uri).timeout(timeout);
       if (resp.statusCode == 200) {
-        return jsonDecode(resp.body) as Map<String, dynamic>?;
+        return (jsonDecode(resp.body) as Map<String, dynamic>?) ?? {};
       }
+      if (resp.statusCode == 404) return {};
       return null;
     } catch (_) {
       return null;
     }
   }
 
-  /// PUT /gyms/{gymId}/showcase
-  /// Enregistre le contenu markdown de la fiche vitrine.
-  Future<bool> updateShowcaseContent(
-    int gymId,
+  /// GET /showcase/home (owner) ou GET /gyms/{gymId}/showcase (owner, admin
+  /// de la salle) — page CMS `{ hero?, sections: [...] }`.
+  /// Retourne `{}` si rien n'est encore enregistré, null en cas d'erreur.
+  Future<Map<String, dynamic>?> getShowcasePage(
+    String token, {
+    int? gymId,
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
+    final uri = baseUri.resolve(
+      gymId == null ? '/showcase/home' : '/gyms/$gymId/showcase',
+    );
+    try {
+      final resp = await http
+          .get(uri, headers: {'Authorization': 'Bearer $token'})
+          .timeout(timeout);
+      if (resp.statusCode == 200) {
+        return (jsonDecode(resp.body) as Map<String, dynamic>?) ?? {};
+      }
+      if (resp.statusCode == 404) return {};
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// PUT /showcase/home ou PUT /gyms/{gymId}/showcase — remplace la page
+  /// entière (liste ordonnée des sections).
+  Future<bool> updateShowcasePage(
     String token,
-    Map<String, String> content, {
+    Map<String, dynamic> page, {
+    int? gymId,
     Duration timeout = const Duration(seconds: 10),
   }) async {
-    final uri = baseUri.resolve('/gyms/$gymId/showcase');
+    final uri = baseUri.resolve(
+      gymId == null ? '/showcase/home' : '/gyms/$gymId/showcase',
+    );
     try {
-      final resp = await http.put(
-        uri,
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode(content),
-      ).timeout(timeout);
+      final resp = await http
+          .put(
+            uri,
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
+            body: jsonEncode(page),
+          )
+          .timeout(timeout);
       return resp.statusCode == 200 || resp.statusCode == 204;
     } catch (_) {
       return false;
