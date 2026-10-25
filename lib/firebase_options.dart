@@ -100,12 +100,12 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions _iosPprod = FirebaseOptions(
-    apiKey: 'YOUR_IOS_API_KEY',
-    appId: 'YOUR_IOS_APP_ID',
-    messagingSenderId: 'YOUR_SENDER_ID',
-    projectId: 'YOUR_PROJECT_ID',
-    storageBucket: 'YOUR_PROJECT_ID.appspot.com',
-    iosBundleId: 'com.teamfitness.app',
+    apiKey: 'AIzaSyAuVYVkXMNsDuJn5X2GzouDxGZZhtIk-fo',
+    appId: '1:1056504785579:ios:15f89bcfba6f9826ebe5ee',
+    messagingSenderId: '1056504785579',
+    projectId: 'team-fitness-app-29fa1',
+    storageBucket: 'team-fitness-app-29fa1.firebasestorage.app',
+    iosBundleId: 'team.oustad.app',
   );
 
   // === PRODUCTION CONFIGS ===
