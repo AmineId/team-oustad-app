@@ -32,6 +32,10 @@ jobs:
           channel: 'stable'
           cache: true
 
+      # Même patch que la release : sans lui, :app + :wear_app font échouer le build
+      - name: 🔧 Patch Flutter Gradle plugin (multi-module dedup)
+        run: scripts/ci/patch-flutter-gradle.sh
+
       - name: 📦 Get dependencies
         run: flutter pub get
 
