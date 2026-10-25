@@ -82,8 +82,11 @@ jobs:
           if [ -n "$PLIST_B64" ]; then
             echo "$PLIST_B64" | base64 --decode > ios/Runner/GoogleService-Info.plist
             echo "✅ GoogleService-Info.plist injecté depuis le secret"
+          elif [ -f ios/Runner/GoogleService-Info.plist ]; then
+            echo "ℹ️  Secret GOOGLE_SERVICE_INFO_PLIST non défini — plist versionné utilisé"
           else
-            echo "⚠️  Secret GOOGLE_SERVICE_INFO_PLIST non défini — placeholder utilisé"
+            echo "::error::Ni secret GOOGLE_SERVICE_INFO_PLIST ni ios/Runner/GoogleService-Info.plist"
+            exit 1
           fi
 
       - name: 💎 Install xcodeproj gem
@@ -100,7 +103,13 @@ jobs:
           if [ -n "${{ inputs.api-url }}" ]; then
             DEFINES="$DEFINES --dart-define=API_BASE_URL=${{ inputs.api-url }}"
           fi
-          flutter build ios --release --no-codesign $DEFINES
+          set -o pipefail
+          flutter build ios --release --no-codesign $DEFINES 2>&1 | tee build-ios.log
+          # Sans détection, flutter passe -sdk iphoneos et la montre est compilée pour iOS
+          if ! grep -q "Watch companion app found" build-ios.log; then
+            echo "::error::flutter n'a pas détecté l'app montre (scheme TeamOustadWatch manquant ?)"
+            exit 1
+          fi
 
       - name: 📦 Package IPA
         id: meta

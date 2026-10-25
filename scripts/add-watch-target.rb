@@ -103,4 +103,15 @@ else
 end
 
 project.save
+
+# ── 5. Scheme partagé du target montre ───────────────────────────────────────
+# `flutter build ios` ne détecte l'app montre compagnon qu'en parcourant les
+# schemes autres que Runner (INFOPLIST_KEY_WKCompanionAppBundleIdentifier).
+# Sans ce scheme, il passe `-sdk iphoneos` à xcodebuild, ce qui force aussi le
+# target montre sur iphoneos (« AppIcon did not have any applicable content »).
+scheme = Xcodeproj::XCScheme.new
+scheme.configure_with_targets(watch_target, nil, launch_target: true)
+scheme.save_as(PROJECT_PATH, WATCH_NAME, true)
+puts "  + scheme partagé #{WATCH_NAME}"
+
 puts "✅ #{WATCH_NAME} ajouté et embarqué dans Runner → #{PROJECT_PATH}"
