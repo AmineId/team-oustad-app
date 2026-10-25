@@ -2,4 +2,4 @@
 
 # ID de l'application Android
 json_key_file("service-account-key.json") # Chemin vers le fichier JSON de service account
-package_name("team.fitness.team_fitness_app") # Package name de l'app
+package_name("team.oustad.app") # Package name de l'app
