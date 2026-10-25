@@ -2,7 +2,7 @@
 # Sign and install the unsigned iOS build on a connected iPhone with xtool.
 #
 # Usage:
-#   scripts/ios-install.sh path/to/TeamFitness-pprod.ipa
+#   scripts/ios-install.sh path/to/TeamOustad-pprod.ipa
 #   scripts/ios-install.sh --download [pprod|prod|dev]          # dernier artifact réussi (gh requis)
 #   scripts/ios-install.sh --build    [pprod|prod|dev] [ref]    # déclenche un build GH puis installe
 #
@@ -40,9 +40,9 @@ if [[ "${1:-}" == "--build" ]]; then
   ref="${3:-$(git rev-parse --abbrev-ref HEAD)}"
   _gh_check "--build"
   echo "🚀 Déclenchement du build iOS ($env) sur '$ref'…"
-  gh workflow run ios-build.yml --ref "$ref" --field environment="$env"
+  gh workflow run _build-ios.yml --ref "$ref" --field environment="$env"
   sleep 5
-  run_id=$(gh run list --workflow ios-build.yml --limit 1 \
+  run_id=$(gh run list --workflow _build-ios.yml --limit 1 \
     --json databaseId --jq '.[0].databaseId // empty')
   [[ -n "$run_id" ]] || { echo "❌ Run introuvable après déclenchement"; exit 1; }
   echo "⏳ Build en cours (run $run_id) — en attente…"
@@ -61,9 +61,13 @@ elif [[ "${1:-}" == "--download" ]]; then
       run_id="$candidate"
       break
     fi
-  done < <(gh run list --workflow ios-build.yml --status success --limit 50 \
-    --json databaseId,displayTitle \
-    --jq ".[] | select(.displayTitle | startswith(\"iOS build\")) | .databaseId | tostring")
+  # L'IPA vient soit du build iOS seul, soit d'une release (dont le job iOS
+  # peut réussir même si un autre job échoue) : on cherche dans les deux,
+  # du plus récent au plus ancien, et on garde le premier artefact présent.
+  done < <(for wf in _build-ios.yml semantic-release.yml; do
+      gh run list --workflow "$wf" --limit 25 --json databaseId,createdAt \
+        --jq '.[] | "\(.createdAt) \(.databaseId)"'
+    done | sort -r | cut -d' ' -f2)
   [[ -n "$run_id" ]] || { echo "❌ Aucun artefact ios-ipa-$env non expiré trouvé (50 derniers runs)"; exit 1; }
   echo "✅ Run trouvé : $run_id"
   ipa=$(_download_artifact "$run_id" "$env")
@@ -148,6 +152,8 @@ with open('$plist','rb') as f: pl=plistlib.load(f)
 pl['WKCompanionAppBundleIdentifier'] = '$companion_id'
 pl['CFBundleIdentifier'] = '$watch_bundle_id'
 pl['UIDeviceFamily'] = [4]
+pl.setdefault('WKApplication', True)
+pl.setdefault('MinimumOSVersion', '7.0')
 with open('$plist','wb') as f: plistlib.dump(pl, f)
 "
   (cd "$work" && zip -qr patched.ipa Payload)
