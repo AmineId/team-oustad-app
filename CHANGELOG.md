@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.127](https://github.com/AmineId/team-oustad-app/compare/v1.0.0-beta.126...v1.0.0-beta.127) (2026-10-26)
+
+
+### 🐛 Bug Fixes
+
+* **profil:** messages clairs pour email, adresse et taille invalides ([cde9b44](https://github.com/AmineId/team-oustad-app/commit/cde9b446e76e5ddf2bde60eaa9d39b44e9f42d77)), closes [#15](https://github.com/AmineId/team-oustad-app/issues/15)
+
 ## [1.0.0-beta.126](https://github.com/AmineId/team-oustad-app/compare/v1.0.0-beta.125...v1.0.0-beta.126) (2026-10-26)
 
 
