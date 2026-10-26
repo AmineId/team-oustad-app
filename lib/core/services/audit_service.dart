@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'api_service.dart';
 
 /// Page d'historique : entrées de la plus récente à la plus ancienne.
@@ -53,6 +55,11 @@ class AuditService {
 
   static const _fields = {
     'firstName': 'Prénom',
+    'password': 'Mot de passe',
+    'photo': 'Photo',
+    'joinedAt': 'Inscrit le',
+    'muscleGroup': 'Groupes musculaires',
+    'content': 'Contenu',
     'lastName': 'Nom',
     'email': 'E-mail',
     'phone': 'Téléphone',
@@ -141,10 +148,23 @@ class AuditService {
         return '${two(date.day)}/${two(date.month)}/${date.year} '
             '${two(date.hour)}:${two(date.minute)}';
       }
-      return value.isEmpty ? '(vide)' : value;
+      return value.isEmpty ? '(vide)' : _truncate(value);
     }
+    // Tableaux et objets JSON (muscleGroup, contenu vitrine…) : rendu
+    // générique tronqué.
+    if (value is List) {
+      if (value.isEmpty) return '(aucun)';
+      if (value.every((v) => v is String || v is num)) {
+        return _truncate(value.join(', '));
+      }
+      return '${value.length} élément(s)';
+    }
+    if (value is Map) return _truncate(jsonEncode(value));
     return '$value';
   }
+
+  static String _truncate(String text, [int max = 160]) =>
+      text.length <= max ? text : '${text.substring(0, max)}…';
 
   static const _errors = {
     'super_owner_required': 'Réservé au super-owner',
