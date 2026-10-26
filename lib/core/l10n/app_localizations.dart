@@ -188,6 +188,8 @@ class AppLocalizations {
       'manager_role': 'Manager',
       'coach_role': 'Coach',
       'coach_my_members': 'Mes membres',
+      'coach_my_sessions': 'Mes séances',
+      'coach_no_sessions': 'Aucune séance dans les 7 prochains jours.',
       'coach_no_members': 'Aucun membre ne vous est encore affecté.',
     },
     'en': {
@@ -356,6 +358,8 @@ class AppLocalizations {
       'manager_role': 'Manager',
       'coach_role': 'Coach',
       'coach_my_members': 'My members',
+      'coach_my_sessions': 'My sessions',
+      'coach_no_sessions': 'No sessions in the next 7 days.',
       'coach_no_members': 'No members are assigned to you yet.',
     },
     'ar': {
@@ -521,6 +525,8 @@ class AppLocalizations {
       'manager_role': 'مدير',
       'coach_role': 'مدرب',
       'coach_my_members': 'أعضائي',
+      'coach_my_sessions': 'حصصي',
+      'coach_no_sessions': 'لا توجد حصص خلال الأيام السبعة القادمة.',
       'coach_no_members': 'لم يتم تعيين أي عضو لك بعد.',
     },
   };
@@ -717,6 +723,8 @@ class AppLocalizations {
   String get managerRole => translate('manager_role');
   String get coachRole => translate('coach_role');
   String get coachMyMembers => translate('coach_my_members');
+  String get coachMySessions => translate('coach_my_sessions');
+  String get coachNoSessions => translate('coach_no_sessions');
   String get coachNoMembers => translate('coach_no_members');
 }
 

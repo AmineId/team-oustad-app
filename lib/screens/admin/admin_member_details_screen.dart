@@ -10,6 +10,7 @@ import '../../widgets/common/app_snackbar.dart';
 import 'admin_subscription_details_screen.dart';
 import 'admin_create_subscription_screen.dart';
 import '../programs/programs_screen.dart';
+import '../sessions/find_slot_screen.dart';
 
 class AdminMemberDetailsScreen extends StatefulWidget {
   final int memberId;
@@ -530,6 +531,23 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
 
           const SizedBox(height: 12),
           _buildCoachRow(),
+
+          if (_member!['gymId'] is int) ...[
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => FindSlotScreen(
+                    gymId: _member!['gymId'] as int,
+                    member: _member,
+                  ),
+                ),
+              ),
+              icon: const Icon(Icons.event_available),
+              label: const Text('Trouver un créneau'),
+            ),
+          ],
 
           if (email.isNotEmpty) ...[
             const SizedBox(height: 16),

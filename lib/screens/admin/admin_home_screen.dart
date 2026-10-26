@@ -17,6 +17,7 @@ import 'admin_coaches_screen.dart';
 import 'admin_create_member_screen.dart';
 import 'admin_members_screen.dart';
 import '../programs/program_screens.dart';
+import '../sessions/session_screens.dart';
 import 'admin_member_details_screen.dart';
 import '../common/security_settings_screen.dart';
 import '../common/about_screen.dart';
@@ -819,6 +820,19 @@ class _GestionPageState extends State<GestionPage> {
                 onTap: () {
                   setState(() => _currentView = 'members');
                 },
+              ),
+              const SizedBox(height: 12),
+
+              // Planning des coachs (séances) et recherche de créneaux
+              _QuickActionButton(
+                icon: Icons.calendar_month,
+                title: 'Planning des coachs',
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const SessionsPlanningScreen(),
+                  ),
+                ),
               ),
               const SizedBox(height: 12),
 
