@@ -38,6 +38,7 @@ class SessionService {
     'gym_closed': 'La salle est fermée ce jour-là',
     'invalid_time_range': 'L\'heure de fin doit suivre l\'heure de début',
     'invalid_capacity': 'Capacité invalide',
+    'invalid_type': 'Type de séance invalide',
     'capacity_below_booked': 'Capacité inférieure au nombre d\'inscrits',
     'session_full': 'Séance complète',
     'session_not_open': 'Séance annulée, terminée ou passée',
