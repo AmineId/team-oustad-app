@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -7,9 +9,11 @@ import '../../core/utils/user_utils.dart';
 import '../../widgets/common/common_widgets.dart';
 import 'incidents_screen.dart';
 
-/// Détail d'un incident et fil de messages. L'owner et le créateur
-/// répondent ; seul l'owner change le statut. Renvoie `true` au pop si
-/// quelque chose a changé.
+/// Détail d'un incident et fil de discussion. L'owner et le créateur
+/// écrivent ; seul l'owner change le statut. Les nouveaux messages arrivent
+/// par polling (toutes les 10 s, app au premier plan) et sur push FCM ; le
+/// fil est marqué lu à l'ouverture et à chaque réception. Renvoie `true` au
+/// pop si quelque chose a changé.
 class IncidentDetailScreen extends StatefulWidget {
   final Map<String, dynamic> incident;
 
@@ -24,6 +28,9 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen> {
   late final AuthService _authService = AuthService(_apiService);
   late final IncidentService _incidentService = IncidentService(_apiService);
   final _replyController = TextEditingController();
+  final _scrollController = ScrollController();
+  late final AppLifecycleListener _lifecycle;
+  Timer? _pollTimer;
 
   late Map<String, dynamic> _incident = widget.incident;
   Uint8List? _photo;
@@ -31,8 +38,14 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen> {
   int? _myId;
   bool _sending = false;
   bool _changed = false;
+  List<Map<String, dynamic>> _messages = [];
+  bool _hasOlder = false;
+  bool _loadingOlder = false;
+  bool _polling = false;
 
-  int get _id => _incident['id'] as int;
+  // L'incident peut n'avoir que son id (ouverture depuis une notification).
+  int get _id => widget.incident['id'] as int;
+  int? get _lastId => _messages.isEmpty ? null : _messages.last['id'] as int?;
   bool get _closed => _incident['status'] == 'closed';
   bool get _isCreator =>
       _myId != null &&
@@ -41,13 +54,35 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen> {
   @override
   void initState() {
     super.initState();
+    NotificationRouter.openIncidentId = _id;
+    NotificationRouter.received.addListener(_onPush);
+    _lifecycle = AppLifecycleListener(onResume: _pollNew);
     _init();
   }
 
   @override
   void dispose() {
+    _pollTimer?.cancel();
+    _lifecycle.dispose();
+    NotificationRouter.received.removeListener(_onPush);
+    if (NotificationRouter.openIncidentId == _id) {
+      NotificationRouter.openIncidentId = null;
+    }
     _replyController.dispose();
+    _scrollController.dispose();
     super.dispose();
+  }
+
+  void _onPush() {
+    final data = NotificationRouter.received.value;
+    if (data == null ||
+        data['type'] != 'incident' ||
+        NotificationRouter.incidentIdOf(data) != _id) {
+      return;
+    }
+    _pollNew();
+    // Changement de statut : recharger l'en-tête.
+    if (data['action'] != 'message') _reload();
   }
 
   Future<void> _init() async {
@@ -56,6 +91,8 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen> {
     final id = profile?['id'] ?? (profile?['user'] as Map?)?['id'];
     _myId = id is int ? id : int.tryParse('$id');
     await _reload();
+    await _loadLatest();
+    _pollTimer = Timer.periodic(const Duration(seconds: 10), (_) => _pollNew());
     if (_incident['hasPhoto'] == true) {
       final token = await _authService.loadToken();
       final photo = token == null
@@ -72,6 +109,95 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen> {
     if (mounted) setState(() => _incident = fresh ?? _incident);
   }
 
+  /// Derniers messages, puis marque le fil lu.
+  Future<void> _loadLatest() async {
+    final token = await _authService.loadToken();
+    if (token == null) return;
+    final page = await _incidentService.getMessages(token, _id);
+    if (!mounted) return;
+    setState(() {
+      _messages =
+          page?.messages ??
+          ApiService.listFrom(_incident['messages'], 'messages');
+      _hasOlder = page?.hasMore ?? false;
+    });
+    _scrollToBottom();
+    _markRead(token);
+  }
+
+  /// Messages plus récents que le dernier affiché ([after] exclusif).
+  Future<void> _pollNew() async {
+    if (_polling || !mounted) return;
+    if (WidgetsBinding.instance.lifecycleState != AppLifecycleState.resumed) {
+      return;
+    }
+    _polling = true;
+    try {
+      final token = await _authService.loadToken();
+      if (token == null) return;
+      final fresh = <Map<String, dynamic>>[];
+      var hasMore = true;
+      while (hasMore) {
+        final page = await _incidentService.getMessages(
+          token,
+          _id,
+          after: fresh.isEmpty ? _lastId : fresh.last['id'] as int?,
+        );
+        if (page == null) break;
+        fresh.addAll(page.messages);
+        hasMore = page.hasMore && page.messages.isNotEmpty;
+      }
+      final known = _messages.map((m) => m['id']).toSet();
+      fresh.removeWhere((m) => known.contains(m['id']));
+      if (fresh.isEmpty || !mounted) return;
+      final atBottom =
+          !_scrollController.hasClients ||
+          _scrollController.position.extentAfter < 120;
+      setState(() => _messages = [..._messages, ...fresh]);
+      if (atBottom) _scrollToBottom();
+      if (fresh.any((m) => (m['author'] as Map?)?['id'] != _myId)) {
+        _changed = true;
+        _markRead(token);
+      }
+    } finally {
+      _polling = false;
+    }
+  }
+
+  Future<void> _loadOlder() async {
+    final first = _messages.isEmpty ? null : _messages.first['id'] as int?;
+    if (first == null || _loadingOlder) return;
+    setState(() => _loadingOlder = true);
+    final token = await _authService.loadToken();
+    final page = token == null
+        ? null
+        : await _incidentService.getMessages(token, _id, before: first);
+    if (!mounted) return;
+    setState(() {
+      _loadingOlder = false;
+      if (page != null) {
+        _messages = [...page.messages, ..._messages];
+        _hasOlder = page.hasMore;
+      }
+    });
+  }
+
+  void _markRead(String token) {
+    _incidentService.markRead(token, _id);
+  }
+
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
   Future<void> _send() async {
     final body = _replyController.text.trim();
     if (body.isEmpty) return;
@@ -85,7 +211,8 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen> {
     if (error == null) {
       _replyController.clear();
       _changed = true;
-      _reload();
+      await _pollNew();
+      _scrollToBottom();
     } else {
       AppSnackBar.error(context, error);
     }
@@ -117,10 +244,17 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Ouvert depuis une notification : seul l'id est connu jusqu'au chargement.
+    if (_incident['status'] == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Incident')),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
     final theme = Theme.of(context);
     final creator = _incident['createdBy'] as Map<String, dynamic>?;
     final gym = (_incident['gym'] as Map<String, dynamic>?)?['name'];
-    final messages = ApiService.listFrom(_incident['messages'], 'messages');
+    final messages = _messages;
     final canReply = !_closed && (_isOwner || _isCreator);
     final severity = _incident['severity'] as String?;
     return PopScope(
@@ -149,8 +283,12 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen> {
           children: [
             Expanded(
               child: RefreshIndicator(
-                onRefresh: _reload,
+                onRefresh: () async {
+                  await _reload();
+                  await _pollNew();
+                },
                 child: ListView(
+                  controller: _scrollController,
                   padding: const EdgeInsets.all(16),
                   children: [
                     Wrap(
@@ -204,8 +342,20 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen> {
                       style: theme.textTheme.bodyLarge,
                     ),
                     const Divider(height: 32),
+                    if (_hasOlder)
+                      Center(
+                        child: _loadingOlder
+                            ? const Padding(
+                                padding: EdgeInsets.all(8),
+                                child: CircularProgressIndicator(),
+                              )
+                            : TextButton(
+                                onPressed: _loadOlder,
+                                child: const Text('Messages précédents'),
+                              ),
+                      ),
                     if (messages.isEmpty)
-                      Text('Aucune réponse', style: theme.textTheme.bodySmall),
+                      Text('Aucun message', style: theme.textTheme.bodySmall),
                     for (final m in messages) _buildMessage(m),
                   ],
                 ),
@@ -223,7 +373,7 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen> {
                           minLines: 1,
                           maxLines: 4,
                           decoration: const InputDecoration(
-                            hintText: 'Répondre…',
+                            hintText: 'Écrire un message…',
                           ),
                         ),
                       ),

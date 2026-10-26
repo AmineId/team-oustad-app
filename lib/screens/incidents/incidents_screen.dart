@@ -6,9 +6,12 @@ import 'incident_create_screen.dart';
 import 'incident_detail_screen.dart';
 
 /// Liste des incidents : owner = tous, manager = sa salle, coach = les
-/// siens. Manager et coach peuvent en signaler un nouveau.
+/// siens. Manager et coach peuvent en signaler un nouveau. Avec
+/// [openIncidentId] (tap sur une notification), le fil s'ouvre directement.
 class IncidentsScreen extends StatefulWidget {
-  const IncidentsScreen({super.key});
+  final int? openIncidentId;
+
+  const IncidentsScreen({super.key, this.openIncidentId});
 
   @override
   State<IncidentsScreen> createState() => _IncidentsScreenState();
@@ -32,11 +35,31 @@ class _IncidentsScreenState extends State<IncidentsScreen> {
         setState(() => _canCreate = role == 'manager' || role == 'coach');
       }
     });
+    NotificationRouter.received.addListener(_onPush);
     _load();
+    final openId = widget.openIncidentId;
+    if (openId != null) {
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _push(IncidentDetailScreen(incident: {'id': openId})),
+      );
+    }
   }
 
-  Future<void> _load() async {
-    setState(() => _isLoading = true);
+  @override
+  void dispose() {
+    NotificationRouter.received.removeListener(_onPush);
+    super.dispose();
+  }
+
+  /// Nouvel incident, message ou statut : rafraîchir les non-lus.
+  void _onPush() {
+    if (NotificationRouter.received.value?['type'] == 'incident') {
+      _load(silent: true);
+    }
+  }
+
+  Future<void> _load({bool silent = false}) async {
+    if (!silent) setState(() => _isLoading = true);
     final token = await _authService.loadToken();
     final incidents = token == null
         ? null
@@ -49,11 +72,12 @@ class _IncidentsScreenState extends State<IncidentsScreen> {
   }
 
   Future<void> _push(Widget screen) async {
-    final changed = await Navigator.push<bool>(
+    await Navigator.push<bool>(
       context,
       MaterialPageRoute(builder: (_) => screen),
     );
-    if (changed == true) _load();
+    // Toujours recharger : la lecture d'un fil change les non-lus.
+    if (mounted) _load(silent: true);
   }
 
   @override
@@ -152,12 +176,13 @@ class IncidentTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final severity = incident['severity'] as String?;
     final gym = (incident['gym'] as Map<String, dynamic>?)?['name'];
-    final messages = incident['messagesCount'] as int? ?? 0;
+    final unread = incident['unreadCount'] as int? ?? 0;
+    final last = incident['lastMessage'] as Map<String, dynamic>?;
+    final lastAuthor = (last?['author'] as Map<String, dynamic>?)?['firstName'];
     final subtitle = [
       IncidentService.statuses[incident['status']] ?? incident['status'],
       IncidentService.categories[incident['category']] ?? '',
       ?gym,
-      if (messages > 0) '$messages message(s)',
     ].where((e) => e != '').join(' · ');
     return Card(
       child: ListTile(
@@ -165,9 +190,26 @@ class IncidentTile extends StatelessWidget {
           Icons.report_problem_outlined,
           color: incidentSeverityColor(context, severity),
         ),
-        title: Text(incident['title'] as String? ?? 'Incident'),
-        subtitle: Text(subtitle),
-        trailing: incident['hasPhoto'] == true
+        title: Text(
+          incident['title'] as String? ?? 'Incident',
+          style: unread > 0
+              ? const TextStyle(fontWeight: FontWeight.bold)
+              : null,
+        ),
+        subtitle: Text(
+          last == null
+              ? subtitle
+              : '$subtitle\n${lastAuthor == null ? '' : '$lastAuthor : '}'
+                    '${last['body'] ?? ''}',
+          maxLines: 3,
+          overflow: TextOverflow.ellipsis,
+        ),
+        trailing: unread > 0
+            ? Badge.count(
+                count: unread,
+                child: const Icon(Icons.chat_bubble_outline),
+              )
+            : incident['hasPhoto'] == true
             ? const Icon(Icons.photo_outlined)
             : const Icon(Icons.chevron_right),
         onTap: onTap,

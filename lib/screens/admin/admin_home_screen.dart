@@ -68,7 +68,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   }
 
   /// Les notifications admin (demandes d'aide, paiements) ramènent à
-  /// l'accueil ; celles d'incident ouvrent la liste des incidents.
+  /// l'accueil ; celles d'incident ouvrent le fil concerné.
   void _openFromNotification() {
     if (!mounted || NotificationRouter.pending.value == null) return;
     final type = NotificationRouter.take();
@@ -79,7 +79,13 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     if (type == 'incident') {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => const IncidentsScreen()),
+        MaterialPageRoute(
+          builder: (_) => IncidentsScreen(
+            openIncidentId: NotificationRouter.incidentIdOf(
+              NotificationRouter.data,
+            ),
+          ),
+        ),
       );
     }
   }

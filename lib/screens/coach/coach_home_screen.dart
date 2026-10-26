@@ -55,12 +55,16 @@ class _CoachHomeScreenState extends State<CoachHomeScreen> {
     final home = ModalRoute.of(context);
     Navigator.of(context).popUntil((route) => route == home);
     _load();
-    if (type == 'incident') _openIncidents();
+    if (type == 'incident') {
+      _openIncidents(NotificationRouter.incidentIdOf(NotificationRouter.data));
+    }
   }
 
-  void _openIncidents() => Navigator.push(
+  void _openIncidents([int? incidentId]) => Navigator.push(
     context,
-    MaterialPageRoute(builder: (_) => const IncidentsScreen()),
+    MaterialPageRoute(
+      builder: (_) => IncidentsScreen(openIncidentId: incidentId),
+    ),
   );
 
   Future<void> _load() async {

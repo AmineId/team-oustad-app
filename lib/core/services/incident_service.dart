@@ -67,12 +67,53 @@ class IncidentService {
     return ApiService.listFrom(r.body, 'incidents');
   }
 
-  /// Incident avec `messages[]` (du plus ancien au plus récent).
+  /// Incident avec `unreadCount` et `lastMessage`.
   Future<Map<String, dynamic>?> getIncident(String token, int id) async {
     final r = await _api.sendJson('GET', '/incidents/$id', token);
     return r.status == 200 && r.body is Map<String, dynamic>
         ? r.body as Map<String, dynamic>
         : null;
+  }
+
+  /// Page du fil, en ordre chronologique : [after] (exclusif) pour les
+  /// nouveaux messages, [before] (exclusif) pour les plus anciens, sinon
+  /// les plus récents. `hasMore` indique qu'il en reste dans ce sens.
+  Future<({List<Map<String, dynamic>> messages, bool hasMore})?> getMessages(
+    String token,
+    int id, {
+    int? after,
+    int? before,
+    int? limit,
+  }) async {
+    final r = await _api.sendJson(
+      'GET',
+      '/incidents/$id/messages',
+      token,
+      query: {
+        if (after != null) 'after': '$after',
+        if (before != null) 'before': '$before',
+        if (limit != null) 'limit': '$limit',
+      },
+    );
+    final body = r.body;
+    if (r.status != 200 || body is! Map) return null;
+    return (
+      messages: ApiService.listFrom(body, 'messages'),
+      hasMore: body['hasMore'] == true,
+    );
+  }
+
+  /// Marque le fil comme lu (jusqu'à [lastMessageId], sinon jusqu'au
+  /// dernier message) ; renvoie les non-lus restants.
+  Future<int?> markRead(String token, int id, {int? lastMessageId}) async {
+    final r = await _api.sendJson(
+      'POST',
+      '/incidents/$id/read',
+      token,
+      body: {'lastMessageId': ?lastMessageId},
+    );
+    final body = r.body;
+    return r.status == 200 && body is Map ? body['unreadCount'] as int? : null;
   }
 
   /// Crée un incident ; renvoie null si OK, sinon le message d'erreur.
