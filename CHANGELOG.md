@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.124](https://github.com/AmineId/team-oustad-app/compare/v1.0.0-beta.123...v1.0.0-beta.124) (2026-10-26)
+
+
+### 🐛 Bug Fixes
+
+* **scanner:** arrêt et retour au login sur session expirée, anti-rebond QR ([99f5ab8](https://github.com/AmineId/team-oustad-app/commit/99f5ab8afba1701f45710634bac4405f2aabcccb))
+
 ## [1.0.0-beta.123](https://github.com/AmineId/team-oustad-app/compare/v1.0.0-beta.122...v1.0.0-beta.123) (2026-10-26)
 
 
