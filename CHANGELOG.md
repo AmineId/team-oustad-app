@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.119](https://github.com/AmineId/team-oustad-app/compare/v1.0.0-beta.118...v1.0.0-beta.119) (2026-10-26)
+
+
+### 🐛 Bug Fixes
+
+* **profile:** messages d'erreur lisibles à la mise à jour (téléphone, salle) ([4fbde23](https://github.com/AmineId/team-oustad-app/commit/4fbde237cad3efa51e48a20c53350447011cc93b))
+* **profile:** photo de profil visible et profils à jour sans rechargement ([e22e09d](https://github.com/AmineId/team-oustad-app/commit/e22e09d09b830cb92e466da935bf28fd9fe743e9))
+
 ## [1.0.0-beta.118](https://github.com/AmineId/team-oustad-app/compare/v1.0.0-beta.117...v1.0.0-beta.118) (2026-10-26)
 
 
