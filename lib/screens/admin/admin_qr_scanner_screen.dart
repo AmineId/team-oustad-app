@@ -5,6 +5,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/theme/theme.dart';
+import '../auth/login_screen.dart';
 
 class AdminQrScannerScreen extends StatefulWidget {
   const AdminQrScannerScreen({super.key});
@@ -26,6 +27,12 @@ class _AdminQrScannerScreenState extends State<AdminQrScannerScreen> {
   String? _errorMessage;
   Timer? _resetTimer;
 
+  // Anti-rebond : la caméra continue de détecter le code pendant l'affichage
+  // du résultat (noDuplicates ne suffit pas sur toutes les plateformes).
+  static const _sameCodeCooldown = Duration(seconds: 8);
+  String? _lastCode;
+  DateTime? _lastCodeAt;
+
   @override
   void dispose() {
     _scannerController.dispose();
@@ -34,12 +41,27 @@ class _AdminQrScannerScreenState extends State<AdminQrScannerScreen> {
   }
 
   Future<void> _handleScan(BarcodeCapture barcodeCapture) async {
-    if (_isProcessing) return;
+    // Un seul scan à la fois, et pas de nouveau scan tant qu'un résultat
+    // (succès ou erreur) est affiché.
+    if (_isProcessing ||
+        _scanResult != null ||
+        _checkInResult != null ||
+        _errorMessage != null) {
+      return;
+    }
 
     final barcode = barcodeCapture.barcodes.firstOrNull;
     if (barcode == null || barcode.rawValue == null) return;
 
     final qrData = barcode.rawValue!;
+    final now = DateTime.now();
+    if (qrData == _lastCode &&
+        _lastCodeAt != null &&
+        now.difference(_lastCodeAt!) < _sameCodeCooldown) {
+      return;
+    }
+    _lastCode = qrData;
+    _lastCodeAt = now;
 
     setState(() {
       _isProcessing = true;
@@ -60,6 +82,10 @@ class _AdminQrScannerScreenState extends State<AdminQrScannerScreen> {
 
       // 1. Valider le QR code et récupérer les infos du membre
       final scanResult = await _apiService.scanQrCode(qrData, token);
+      if (ApiService.isSessionExpired(scanResult)) {
+        await _expireSession();
+        return;
+      }
 
       if (scanResult == null) {
         setState(() {
@@ -153,6 +179,10 @@ class _AdminQrScannerScreenState extends State<AdminQrScannerScreen> {
         gymId: gymId,
         token: token,
       );
+      if (ApiService.isSessionExpired(checkInResult)) {
+        await _expireSession();
+        return;
+      }
 
       if (checkInResult == null) {
         setState(() {
@@ -187,10 +217,30 @@ class _AdminQrScannerScreenState extends State<AdminQrScannerScreen> {
     }
   }
 
+  /// 401 : le JWT n'est plus valide (connexion sur un autre appareil,
+  /// reseed…). Comme une déconnexion : on purge la session et on revient au
+  /// login, au lieu de laisser la caméra relancer la requête.
+  Future<void> _expireSession() async {
+    _resetTimer?.cancel();
+    await _scannerController.stop();
+    await _authService.clearProfileCache();
+    await _authService.clearAll();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Session expirée, veuillez vous reconnecter')),
+    );
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LoginScreen(fromLogout: true)),
+      (route) => false,
+    );
+  }
+
   void _scheduleReset({int seconds = 3}) {
     _resetTimer?.cancel();
     _resetTimer = Timer(Duration(seconds: seconds), () {
       if (mounted) {
+        // Le délai anti-rebond repart de la fermeture du résultat.
+        if (_lastCode != null) _lastCodeAt = DateTime.now();
         setState(() {
           _scanResult = null;
           _checkInResult = null;
@@ -202,6 +252,8 @@ class _AdminQrScannerScreenState extends State<AdminQrScannerScreen> {
 
   void _resetScanner() {
     _resetTimer?.cancel();
+    // Réinitialisation manuelle : on autorise à rescanner le même code.
+    _lastCode = null;
     setState(() {
       _scanResult = null;
       _checkInResult = null;
