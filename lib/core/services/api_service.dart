@@ -99,9 +99,14 @@ class ApiService {
   /// or null on failure. The backend returns JSON like:
   /// {"token":"...", "user": {"id":"...", "email":"...", "fullName":"...", "gymId":"...", "type":"admin|member|owner"}}
   /// Supports login with email OR phoneNumber
+  ///
+  /// [kiosk] ouvre une session borne (`client: "kiosk"`), distincte de celle
+  /// de l'app : elle ne déconnecte pas le téléphone. Un rôle non autorisé au
+  /// kiosk (coach, member) renvoie `{'error': 'kiosk_forbidden_role'}`.
   Future<Map<String, dynamic>?> login(
     String emailOrPhone,
     String password, {
+    bool kiosk = false,
     Duration timeout = const Duration(seconds: 8),
   }) async {
     final uri = baseUri.resolve('/auth/login');
@@ -115,6 +120,7 @@ class ApiService {
       final requestBody = isEmail
           ? {'email': cleanEmailOrPhone, 'password': cleanPassword}
           : {'phoneNumber': cleanEmailOrPhone, 'password': cleanPassword};
+      if (kiosk) requestBody['client'] = 'kiosk';
 
       // ignore: avoid_print
       debugPrint(
@@ -131,6 +137,16 @@ class ApiService {
 
       // ignore: avoid_print
       debugPrint('ApiService.login response status: ${resp.statusCode}');
+
+      if (resp.statusCode == 403) {
+        try {
+          final body = jsonDecode(resp.body);
+          if (body is Map && body['error'] == 'kiosk_forbidden_role') {
+            return {'error': 'kiosk_forbidden_role'};
+          }
+        } catch (_) {}
+        return null;
+      }
 
       if (resp.statusCode == 200) {
         try {
@@ -2277,135 +2293,6 @@ class ApiService {
     }
   }
 
-  /// Create a new planning
-  /// POST /plannings
-  Future<Map<String, dynamic>?> createPlanning(
-    int memberId,
-    String title,
-    String startDate,
-    String endDate,
-    String token, {
-    String? description,
-    Duration timeout = const Duration(seconds: 8),
-  }) async {
-    final uri = baseUri.resolve('/plannings');
-    try {
-      final body = {
-        'memberId': memberId,
-        'title': title,
-        'startDate': startDate,
-        'endDate': endDate,
-        'description': ?description,
-      };
-
-      final resp = await http
-          .post(
-            uri,
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer $token',
-            },
-            body: jsonEncode(body),
-          )
-          .timeout(timeout);
-
-      if (resp.statusCode == 201) {
-        try {
-          final responseBody = jsonDecode(resp.body);
-          return responseBody as Map<String, dynamic>;
-        } catch (_) {
-          return null;
-        }
-      }
-      return null;
-    } catch (_) {
-      return null;
-    }
-  }
-
-  /// Add exercise to planning day
-  /// POST /plannings/{planningId}/days/{dayOfWeek}/exercises
-  Future<Map<String, dynamic>?> addExerciseToPlanningDay(
-    int planningId,
-    int dayOfWeek,
-    int exerciseId,
-    String token, {
-    int? sets,
-    int? reps,
-    int? duration,
-    double? weight,
-    int? restTime,
-    String? notes,
-    int? order,
-    Duration timeout = const Duration(seconds: 8),
-  }) async {
-    final uri = baseUri.resolve(
-      '/plannings/$planningId/days/$dayOfWeek/exercises',
-    );
-    try {
-      final body = {
-        'exerciseId': exerciseId,
-        'sets': ?sets,
-        'reps': ?reps,
-        'duration': ?duration,
-        'weight': ?weight,
-        'restTime': ?restTime,
-        'notes': ?notes,
-        'order': ?order,
-      };
-
-      final resp = await http
-          .post(
-            uri,
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer $token',
-            },
-            body: jsonEncode(body),
-          )
-          .timeout(timeout);
-
-      if (resp.statusCode == 201) {
-        try {
-          final responseBody = jsonDecode(resp.body);
-          return responseBody as Map<String, dynamic>;
-        } catch (_) {
-          return null;
-        }
-      }
-      return null;
-    } catch (_) {
-      return null;
-    }
-  }
-
-  /// Delete a planning
-  /// DELETE /plannings/{id}
-  Future<bool> deletePlanning(
-    int planningId,
-    String token, {
-    Duration timeout = const Duration(seconds: 8),
-  }) async {
-    final uri = baseUri.resolve('/plannings/$planningId');
-    try {
-      // ignore: avoid_print
-      debugPrint('ApiService.deletePlanning -> $uri');
-
-      final resp = await http
-          .delete(uri, headers: {'Authorization': 'Bearer $token'})
-          .timeout(timeout);
-
-      // ignore: avoid_print
-      debugPrint('deletePlanning status: ${resp.statusCode}');
-
-      return resp.statusCode == 200 || resp.statusCode == 204;
-    } catch (e) {
-      // ignore: avoid_print
-      debugPrint('Error deleting planning: $e');
-      return false;
-    }
-  }
-
   // ==================== BANNERS ====================
 
   /// Get all banners with optional filters
@@ -3420,31 +3307,74 @@ class ApiService {
     }
   }
 
-  // ==================== PLANNINGS — EXERCISE REMOVAL ====================
+  // ==================== REQUÊTE JSON GÉNÉRIQUE ====================
 
-  /// Remove a specific exercise from a planning day.
-  /// DELETE /plannings/{planningId}/days/{dayOfWeek}/exercises/{exerciseId}
-  Future<bool> removeExerciseFromPlanningDay(
-    int planningId,
-    int dayOfWeek,
-    int exerciseId,
+  /// Requête JSON authentifiée pour les services de domaine (coachs,
+  /// programmes, séances, incidents) : renvoie le code HTTP et le corps
+  /// décodé (null si vide ou illisible). `status == 0` = erreur réseau.
+  Future<({int status, dynamic body})> sendJson(
+    String method,
+    String path,
     String token, {
-    Duration timeout = const Duration(seconds: 8),
+    Object? body,
+    Map<String, String>? query,
+    Duration timeout = const Duration(seconds: 10),
   }) async {
-    final uri = baseUri.resolve(
-      '/plannings/$planningId/days/$dayOfWeek/exercises/$exerciseId',
-    );
-    try {
-      debugPrint('ApiService.removeExerciseFromPlanningDay -> $uri');
-      final resp = await http
-          .delete(uri, headers: {'Authorization': 'Bearer $token'})
-          .timeout(timeout);
-      debugPrint('removeExerciseFromPlanningDay status: ${resp.statusCode}');
-      return resp.statusCode == 200 || resp.statusCode == 204;
-    } catch (e) {
-      debugPrint('Error removing exercise from planning day: $e');
-      return false;
+    var uri = baseUri.resolve(path);
+    if (query != null && query.isNotEmpty) {
+      uri = uri.replace(queryParameters: query);
     }
+    final headers = {
+      'Authorization': 'Bearer $token',
+      if (body != null) 'Content-Type': 'application/json',
+    };
+    final encoded = body == null ? null : jsonEncode(body);
+    try {
+      final resp = await switch (method) {
+        'GET' => http.get(uri, headers: headers),
+        'POST' => http.post(uri, headers: headers, body: encoded),
+        'PUT' => http.put(uri, headers: headers, body: encoded),
+        'PATCH' => http.patch(uri, headers: headers, body: encoded),
+        'DELETE' => http.delete(uri, headers: headers, body: encoded),
+        _ => throw ArgumentError.value(method, 'method'),
+      }.timeout(timeout);
+      dynamic decoded;
+      if (resp.body.isNotEmpty) {
+        try {
+          decoded = jsonDecode(resp.body);
+        } catch (_) {}
+      }
+      return (status: resp.statusCode, body: decoded);
+    } catch (e) {
+      debugPrint('ApiService.sendJson $method $path error: $e');
+      return (status: 0, body: null);
+    }
+  }
+
+  /// Contenu binaire authentifié (photos d'incident…), null si absent.
+  Future<Uint8List?> getBytes(
+    String path,
+    String token, {
+    Duration timeout = const Duration(seconds: 15),
+  }) async {
+    try {
+      final resp = await http
+          .get(
+            baseUri.resolve(path),
+            headers: {'Authorization': 'Bearer $token'},
+          )
+          .timeout(timeout);
+      return resp.statusCode == 200 ? resp.bodyBytes : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Extrait une liste d'une réponse : tableau brut ou `{key: [...]}`.
+  static List<Map<String, dynamic>> listFrom(dynamic body, String key) {
+    final raw = body is List ? body : (body is Map ? body[key] : null);
+    if (raw is! List) return [];
+    return raw.whereType<Map<String, dynamic>>().toList();
   }
 
   // ==================== SUBSCRIPTIONS — RENEW ====================

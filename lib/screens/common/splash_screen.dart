@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../auth/login_screen.dart';
 import '../admin/admin_home_screen.dart';
+import '../coach/coach_home_screen.dart';
 import '../member/member_home_screen.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
@@ -57,8 +58,10 @@ class _SplashScreenState extends State<SplashScreen> {
           // Determine which home screen based on user type
           final userType = await auth.getUserType();
           Widget homeScreen;
-          if (userType == 'admin' || userType == 'owner') {
+          if (userType == 'manager' || userType == 'owner') {
             homeScreen = const AdminHomeScreen();
+          } else if (userType == 'coach') {
+            homeScreen = const CoachHomeScreen();
           } else {
             homeScreen = const MemberHomeScreen();
           }

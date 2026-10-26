@@ -7,6 +7,7 @@ import '../../core/l10n/app_localizations.dart';
 import '../../core/utils/user_utils.dart';
 import '../../widgets/common/common_widgets.dart';
 import '../admin/admin_home_screen.dart';
+import '../coach/coach_home_screen.dart';
 import '../member/member_home_screen.dart';
 import '../member/onboarding_screen.dart';
 import 'forgot_password_screen.dart';
@@ -868,8 +869,10 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
     if (!mounted) return;
 
     Widget homeScreen;
-    if (userType == 'admin' || userType == 'owner') {
+    if (userType == 'manager' || userType == 'owner') {
       homeScreen = const AdminHomeScreen();
+    } else if (userType == 'coach') {
+      homeScreen = const CoachHomeScreen();
     } else {
       homeScreen = const MemberHomeScreen();
     }

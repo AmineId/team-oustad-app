@@ -8,6 +8,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'screens/common/common_screens.dart';
 import 'screens/admin/admin_screens.dart';
 import 'screens/kiosk/kiosk_screens.dart';
+import 'screens/programs/program_screens.dart';
 import 'core/services/services.dart';
 import 'core/utils/app_navigator.dart';
 import 'core/theme/theme.dart';
@@ -179,7 +180,7 @@ class _MyAppState extends State<MyApp> {
                       : const CheckinTerminalScreen()),
               routes: {
                 '/admin/members': (context) => const AdminMembersScreen(),
-                '/admin/plannings': (context) => const AdminPlanningsScreen(),
+                '/admin/plannings': (context) => const ProgramsScreen(),
               },
             ),
           ),

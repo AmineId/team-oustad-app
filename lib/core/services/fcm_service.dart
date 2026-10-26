@@ -161,6 +161,8 @@ class FCMService {
     // ignore: avoid_print
     debugPrint('   Data: ${message.data}');
 
+    NotificationRouter.received.value = message.data;
+
     // ✅ SÉCURITÉ : Vérifier si les notifications sont activées
     final prefs = await SharedPreferences.getInstance();
     final notificationsEnabled = prefs.getBool('notifications_enabled') ?? true;
@@ -189,6 +191,11 @@ class FCMService {
         exerciseName: exerciseName,
         memberId: memberId,
       );
+    } else if (type == 'incident' &&
+        NotificationRouter.openIncidentId != null &&
+        NotificationRouter.incidentIdOf(message.data) ==
+            NotificationRouter.openIncidentId) {
+      // Fil déjà affiché : il se met à jour, pas de notification.
     } else if (message.notification != null) {
       // Notification standard
       await _localNotifications.showNotification(
@@ -294,7 +301,7 @@ class FCMService {
   /// Gère le tap sur une notification : l'accueil bascule sur l'onglet
   /// correspondant au type (payment, subscription, planning, …).
   void _handleNotificationTap(Map<String, dynamic> data) {
-    NotificationRouter.open(data['type'] as String?);
+    NotificationRouter.open(data['type'] as String?, data);
   }
 
   /// Envoie le token FCM au serveur quand Firebase le renouvelle.

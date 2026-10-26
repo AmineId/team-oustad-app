@@ -67,7 +67,7 @@ class _AdminMembersScreenState extends State<AdminMembersScreen> {
       final adminProfile = await _authService.getCachedUserProfile();
       if (adminProfile == null) {
         setState(() {
-          _errorMessage = 'Profil administrateur non disponible';
+          _errorMessage = 'Profil manager non disponible';
           _isLoading = false;
         });
         return;

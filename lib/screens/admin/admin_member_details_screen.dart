@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'admin_chrome.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
+import '../../core/services/coach_service.dart';
+import '../../core/services/program_service.dart';
 import '../../core/theme/theme.dart';
 import '../../core/utils/user_utils.dart';
 import '../../widgets/common/app_snackbar.dart';
 import 'admin_subscription_details_screen.dart';
 import 'admin_create_subscription_screen.dart';
-import 'admin_create_planning_screen.dart';
+import '../programs/programs_screen.dart';
+import '../sessions/find_slot_screen.dart';
 
 class AdminMemberDetailsScreen extends StatefulWidget {
   final int memberId;
@@ -27,16 +30,24 @@ class AdminMemberDetailsScreen extends StatefulWidget {
 class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
   final ApiService _apiService = ApiService.fromEnv();
   final AuthService _authService = AuthService(ApiService.fromEnv());
+  late final CoachService _coachService = CoachService(_apiService);
+  late final ProgramService _programService = ProgramService(_apiService);
 
   Map<String, dynamic>? _member;
   List<Map<String, dynamic>> _subscriptions = [];
   List<Map<String, dynamic>> _plannings = [];
   bool _isLoading = true;
   String _errorMessage = '';
+  // Seuls l'owner et le coach affectent des programmes ; le manager planifie
+  // des séances et ne voit les programmes qu'en lecture.
+  bool _isOwner = false;
 
   @override
   void initState() {
     super.initState();
+    _authService.isOwner().then((v) {
+      if (mounted) setState(() => _isOwner = v);
+    });
     _loadMemberDetails();
   }
 
@@ -369,31 +380,30 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Plannings',
+                            'Programmes',
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                               color: Theme.of(context).colorScheme.onSurface,
                             ),
                           ),
-                          IconButton(
+                          if (_isOwner)
+                            IconButton(
                             onPressed: () async {
-                              await Navigator.push(
+                              final assigned = await Navigator.push<bool>(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) =>
-                                      AdminCreatePlanningScreen(
-                                        preselectedMemberId: widget.memberId,
-                                      ),
+                                  builder: (context) => ProgramsScreen(
+                                    assignToMemberIds: [widget.memberId],
+                                  ),
                                 ),
                               );
-                              // Recharger après création
-                              _loadMemberDetails();
+                              if (assigned == true) _loadMemberDetails();
                             },
                             icon: const Icon(Icons.add_circle),
                             color: context.palette.primary,
                             iconSize: 32,
-                            tooltip: 'Ajouter un planning',
+                            tooltip: 'Affecter un programme',
                           ),
                         ],
                       ),
@@ -414,7 +424,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
-                                  'Aucun planning',
+                                  'Aucun programme',
                                   style: TextStyle(
                                     color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                                     fontSize: 16,
@@ -526,6 +536,26 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
             _buildInfoRow(Icons.phone, phone),
           ],
 
+          const SizedBox(height: 12),
+          _buildCoachRow(),
+
+          if (_member!['gymId'] is int) ...[
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => FindSlotScreen(
+                    gymId: _member!['gymId'] as int,
+                    member: _member,
+                  ),
+                ),
+              ),
+              icon: const Icon(Icons.event_available),
+              label: const Text('Trouver un créneau'),
+            ),
+          ],
+
           if (email.isNotEmpty) ...[
             const SizedBox(height: 16),
             _SendSetupEmailButton(
@@ -537,6 +567,87 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
         ],
       ),
     );
+  }
+
+  /// Coach affecté au membre (`coach` détaillé, sinon seulement `coachId`).
+  String _coachLabel() {
+    final coach = _member?['coach'];
+    if (coach is Map<String, dynamic>) return getUserFullName(coach);
+    return _member?['coachId'] != null ? 'Coach affecté' : 'Aucun coach';
+  }
+
+  Widget _buildCoachRow() {
+    return Row(
+      children: [
+        Expanded(child: _buildInfoRow(Icons.sports, _coachLabel())),
+        TextButton(
+          onPressed: _pickCoach,
+          child: const Text('Modifier'),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _pickCoach() async {
+    final token = await _authService.loadToken();
+    final gymId = _member?['gymId'];
+    if (token == null || gymId is! int) return;
+    final coaches = await _coachService.getCoaches(token, gymId: gymId);
+    if (!mounted) return;
+    if (coaches == null) {
+      AppSnackBar.error(context, 'Impossible de charger les coachs');
+      return;
+    }
+    final currentId = _member?['coachId'];
+    // -1 = retirer le coach ; null = annulé.
+    final picked = await showModalBottomSheet<int>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: ListView(
+          shrinkWrap: true,
+          children: [
+            const ListTile(
+              title: Text(
+                'Coach du membre',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+            if (coaches.isEmpty)
+              const ListTile(title: Text('Aucun coach dans cette salle')),
+            for (final coach in coaches)
+              if (coach['id'] is int)
+                ListTile(
+                  leading: const Icon(Icons.sports),
+                  title: Text(getUserFullName(coach)),
+                  trailing: coach['id'] == currentId
+                      ? const Icon(Icons.check)
+                      : null,
+                  onTap: () => Navigator.pop(context, coach['id'] as int),
+                ),
+            if (currentId != null)
+              ListTile(
+                leading: const Icon(Icons.person_off_outlined),
+                title: const Text('Retirer le coach'),
+                onTap: () => Navigator.pop(context, -1),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (picked == null || !mounted) return;
+    final coachId = picked == -1 ? null : picked;
+    final ok = await _coachService.setMemberCoach(
+      token,
+      widget.memberId,
+      coachId,
+    );
+    if (!mounted) return;
+    if (ok) {
+      AppSnackBar.success(context, 'Coach mis à jour');
+      _loadMemberDetails();
+    } else {
+      AppSnackBar.error(context, 'Échec de l\'affectation du coach');
+    }
   }
 
   Widget _buildInfoRow(IconData icon, String text) {
@@ -1089,18 +1200,19 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                     const SizedBox(height: 24),
 
                     // Bouton supprimer
+                    if (_isOwner)
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
                         onPressed: () {
                           Navigator.pop(context);
                           _confirmDeletePlanning(
-                            planning['_id'] as String? ?? '',
+                            '${planning['id'] ?? planning['_id'] ?? ''}',
                             title,
                           );
                         },
                         icon: const Icon(Icons.delete_outline),
-                        label: const Text('Supprimer le planning'),
+                        label: const Text('Annuler le programme'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.red.withValues(alpha: 0.2),
                           foregroundColor: context.palette.error,
@@ -1198,11 +1310,11 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
       builder: (context) => AlertDialog(
         backgroundColor: Theme.of(context).cardTheme.color,
         title: Text(
-          'Confirmer la suppression',
+          'Annuler le programme',
           style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
         ),
         content: Text(
-          'Êtes-vous sûr de vouloir supprimer le planning "$title" ?\n\nCette action est irréversible.',
+          'Annuler le programme "$title" pour ce membre ?\n\nL\'historique est conservé.',
           style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8)),
         ),
         actions: [
@@ -1226,7 +1338,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
-            child: const Text('Supprimer'),
+            child: const Text('Confirmer'),
           ),
         ],
       ),
@@ -1260,15 +1372,15 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
         return;
       }
 
-      // Appeler l'API pour supprimer le planning
-      final success = await _apiService.deletePlanning(id, token);
+      // planning.id = id de l'affectation de programme (Rôles V2)
+      final success = await _programService.cancelAssignment(token, id);
 
       if (!mounted) return;
 
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('✅ Planning supprimé avec succès'),
+            content: Text('✅ Programme annulé'),
             backgroundColor: AppColors.success,
           ),
         );
@@ -1278,7 +1390,7 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('❌ Erreur lors de la suppression du planning'),
+            content: Text('❌ Erreur lors de l\'annulation du programme'),
             backgroundColor: AppColors.error,
           ),
         );

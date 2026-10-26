@@ -127,7 +127,21 @@ class NotificationService {
     }
     
     // Tap sur le corps de la notification : ouvrir l'onglet concerné.
-    NotificationRouter.open(_payloadType(response.payload));
+    NotificationRouter.open(
+      _payloadType(response.payload),
+      _payloadData(response.payload),
+    );
+  }
+
+  /// Data FCM d'un payload JSON (ex. `incidentId`), sinon vide.
+  static Map<String, dynamic> _payloadData(String? payload) {
+    if (payload == null || !payload.startsWith('{')) return const {};
+    try {
+      final data = jsonDecode(payload);
+      return data is Map<String, dynamic> ? data : const {};
+    } catch (_) {
+      return const {};
+    }
   }
 
   /// Type d'une notification d'après son payload : data FCM encodé en JSON,

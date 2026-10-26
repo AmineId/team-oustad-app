@@ -11,6 +11,7 @@ import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_palette.dart';
+import '../incidents/incident_create_screen.dart';
 import 'kiosk_audio.dart';
 import 'kiosk_links.dart';
 
@@ -1085,6 +1086,20 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
             ),
           IconButton(
             icon: const Icon(
+              Icons.report_outlined,
+              size: 18,
+              color: AppColors.darkTextTertiary,
+            ),
+            tooltip: 'Signaler un incident',
+            onPressed: () async {
+              await Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const IncidentCreateScreen()),
+              );
+              _refocusQr();
+            },
+          ),
+          IconButton(
+            icon: const Icon(
               Icons.close_rounded,
               size: 18,
               color: AppColors.darkTextTertiary,
@@ -1845,7 +1860,7 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
     });
 
     try {
-      final loginResult = await _api.login(email, password);
+      final loginResult = await _api.login(email, password, kiosk: true);
       if (loginResult == null) {
         setState(() {
           _loginError = 'Identifiants incorrects';
@@ -1857,9 +1872,12 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
       final userType = AuthService.normalizeRole(
         loginResult['userType'] as String?,
       );
-      if (userType != 'admin' && userType != 'owner') {
+      // Le serveur refuse déjà coach/member au kiosk (kiosk_forbidden_role) ;
+      // ce filtre couvre un serveur pas encore migré.
+      if (loginResult['error'] == 'kiosk_forbidden_role' ||
+          (userType != 'manager' && userType != 'owner')) {
         setState(() {
-          _loginError = 'Accès réservé aux administrateurs et propriétaires';
+          _loginError = 'Accès réservé aux managers et propriétaires';
           _loggingIn = false;
         });
         return;

@@ -185,7 +185,13 @@ class AppLocalizations {
       'confirm': 'Confirmer',
       'active_status': 'ACTIF',
       'owner_role': 'Propriétaire',
-      'admin_role': 'Administrateur',
+      'manager_role': 'Manager',
+      'coach_role': 'Coach',
+      'coach_my_members': 'Mes membres',
+      'coach_my_sessions': 'Mes séances',
+      'coach_today': 'Aujourd\'hui',
+      'coach_no_sessions': 'Aucune séance dans les 7 prochains jours.',
+      'coach_no_members': 'Aucun membre ne vous est encore affecté.',
     },
     'en': {
       'home': 'Home',
@@ -350,7 +356,13 @@ class AppLocalizations {
       'confirm': 'Confirm',
       'active_status': 'ACTIVE',
       'owner_role': 'Owner',
-      'admin_role': 'Administrator',
+      'manager_role': 'Manager',
+      'coach_role': 'Coach',
+      'coach_my_members': 'My members',
+      'coach_my_sessions': 'My sessions',
+      'coach_today': 'Today',
+      'coach_no_sessions': 'No sessions in the next 7 days.',
+      'coach_no_members': 'No members are assigned to you yet.',
     },
     'ar': {
       'home': 'الرئيسية',
@@ -512,7 +524,13 @@ class AppLocalizations {
       'confirm': 'تأكيد',
       'active_status': 'نشط',
       'owner_role': 'المالك',
-      'admin_role': 'مسؤول',
+      'manager_role': 'مدير',
+      'coach_role': 'مدرب',
+      'coach_my_members': 'أعضائي',
+      'coach_my_sessions': 'حصصي',
+      'coach_today': 'اليوم',
+      'coach_no_sessions': 'لا توجد حصص خلال الأيام السبعة القادمة.',
+      'coach_no_members': 'لم يتم تعيين أي عضو لك بعد.',
     },
   };
 
@@ -705,7 +723,13 @@ class AppLocalizations {
   String get confirm => translate('confirm');
   String get activeStatus => translate('active_status');
   String get ownerRole => translate('owner_role');
-  String get adminRole => translate('admin_role');
+  String get managerRole => translate('manager_role');
+  String get coachRole => translate('coach_role');
+  String get coachMyMembers => translate('coach_my_members');
+  String get coachMySessions => translate('coach_my_sessions');
+  String get coachToday => translate('coach_today');
+  String get coachNoSessions => translate('coach_no_sessions');
+  String get coachNoMembers => translate('coach_no_members');
 }
 
 class _AppLocalizationsDelegate
