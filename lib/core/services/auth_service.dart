@@ -191,6 +191,17 @@ class AuthService {
     return value is bool ? value : true;
   }
 
+  /// Super-owner : owner avec `permissions.isSuperOwner` (accès à
+  /// l'historique d'audit). Faux par défaut, contrairement à [ownerCan].
+  Future<bool> isSuperOwner() async {
+    if (!await isOwner()) return false;
+    final profile = await getCachedUserProfile();
+    final permissions =
+        profile?['permissions'] ??
+        (profile?['user'] as Map<String, dynamic>?)?['permissions'];
+    return permissions is Map && permissions['isSuperOwner'] == true;
+  }
+
   /// Accès à l'espace gestion (owner ou manager).
   Future<bool> hasManagementAccess() async {
     final userType = await getUserType();

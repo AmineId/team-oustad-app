@@ -8,6 +8,7 @@ export 'session_service.dart';
 export 'error_reporter.dart';
 export 'fcm_service.dart';
 export 'incident_service.dart';
+export 'audit_service.dart';
 export 'locale_service.dart';
 export 'notification_service.dart';
 export 'notification_router.dart';
