@@ -1,18 +1,49 @@
 openapi: 3.0.0
 info:
-  title: Team Oustad API
+  title: Team Fitness API
   version: 1.0.0
-  description: API pour la gestion des salles de sport Team Oustad
+  description: |
+    API pour la gestion des salles de sport Team Fitness
+
+    ## Rôles V2
+    Rôles : `owner` (toutes les salles), `manager` (une salle, ex-`admin`), `coach` (une ou plusieurs
+    salles via CoachGym, créé par l'owner), `member`.
+    - `admin` reste accepté **en entrée** comme alias de `manager` (body `role`, anciens JWT),
+      mais le serveur renvoie toujours `manager`.
+    - Le manager reçoit un **403** sur la vitrine et les promos : `/showcase/*`, écriture `/banners`,
+      champs vitrine de `PUT /gyms/{id}` (`isPublished`, `slug`, `description` → `showcase_forbidden`),
+      `/gyms/{id}/photos*`, `/gyms/{id}/showcase`, `PUT|DELETE /gyms/{id}/image`, et les horaires
+      d'ouverture (`POST /gyms/{id}/opening-hours`).
+    - Store (`/store/*` staff) : le manager est limité à sa salle (403 sinon) ; l'owner gère toutes les salles.
+    - Coach : **refusé par défaut** (403 `coach_forbidden`) sauf sur les routes qui lui sont ouvertes :
+      son profil (`/auth/me`, `/users/me`, `/users/{sonId}`…), `/coaches/me/*`, lecture de ses salles
+      (`GET /gyms`, `/gyms/{id}`, horaires, image). Pour un coach, se baser sur `gyms` et non sur `gymId`
+      (salle principale).
+    - Programmes : l'owner crée des modèles (`/programs`), affectés aux membres
+      (`POST /programs/{id}/assignments`) par l'owner ou le coach (ses membres) ; le manager les consulte en lecture seule.
+      Les routes `/plannings` en lecture (`/member/{id}`, `/next-day/{id}`, `GET /plannings`) gardent leur
+      forme et sont alimentées par les affectations (`planning.id` = id de l'affectation) ; les écritures
+      `/plannings` renvoient **410** `plannings_deprecated`.
+    - Séances (`/sessions`) : plage de travail d'un coach avec un ou plusieurs membres, gérée par l'owner
+      ou le manager de la salle (chevauchement coach → 409, récurrence hebdomadaire ≤ 26, horaires
+      d'ouverture en heure du Maroc). Le coach lit et pointe ses séances.
+    - Check-ins : toutes les routes `/check-in/*` appliquent la portée de salle (voir `x-roles-v2`) ;
+      `GET /check-in/today` sert au coach (ses salles), au manager (sa salle) et à l'owner.
+    - Incidents (`/incidents`) : signalés par le manager (sa salle, app ou kiosk) ou le coach (ses salles,
+      app uniquement) ; `source` est déduite du token. L'owner et le créateur répondent dans le fil ;
+      seul l'owner change le statut. FCM `data: { type: "incident", incidentId, action }`.
+    - Kiosk : `POST /auth/login` avec `client: "kiosk"`, réservé aux owners et managers
+      (403 `kiosk_forbidden_role`). La session kiosk est distincte de la session app.
   contact:
-    name: Team Oustad Support
-    email: support@team-oustad.com
+    name: Team Fitness Support
+    email: support@teamfitness.com
 
 servers:
   - url: https://api-pprod.team-oustad.com
     description: Serveur de pré-production
   - url: http://localhost:3001
     description: Serveur de développement local
-  - url: https://api.team-oustad.com
+  - url: https://api.teamfitness.com
     description: Serveur de production
 
 components:
@@ -45,8 +76,22 @@ components:
           example: "Doe"
         role:
           type: string
-          enum: [member, admin, owner]
+          enum: [member, coach, manager, owner]
+          description: "`admin` est accepté en entrée comme alias de `manager`, jamais renvoyé"
           example: "member"
+        type:
+          type: string
+          enum: [member, coach, manager, owner]
+          description: "Identique à `role` (compatibilité)"
+        client:
+          type: string
+          enum: [app, kiosk]
+          description: "Renvoyé au login : client pour lequel le token a été émis"
+        gyms:
+          type: array
+          description: "Coach uniquement : ses salles (CoachGym)"
+          items:
+            $ref: '#/components/schemas/GymRef'
         displayId:
           type: string
           example: "MEMBER-a8f3d9e2b1c4f567"
@@ -78,6 +123,19 @@ components:
         phone:
           type: string
           example: "+1234567890"
+        isPublished:
+          type: boolean
+          default: false
+          example: false
+        slug:
+          type: string
+          nullable: true
+          example: "downtown-fitness-1"
+        description:
+          type: string
+          nullable: true
+          maxLength: 5000
+          description: Texte de présentation (markdown) affiché sur la fiche vitrine
         openingHours:
           type: array
           items:
@@ -94,6 +152,65 @@ components:
         - id
         - name
         - address
+
+    ShowcaseSection:
+      type: object
+      required: [id, type]
+      properties:
+        id:
+          type: string
+          maxLength: 40
+          example: "s1k9x"
+        type:
+          type: string
+          maxLength: 40
+          description: |
+            Contenu : markdown, feature, testimonials, marquee, categories, cta.
+            Intégrées (sans data) : gyms, promos (accueil) ; gymAbout, gymPromos,
+            gymInfo, gymHours, gymTeam, gymSubscriptions (salle). Le serveur
+            stocke tout type ; l'app ignore ceux qu'elle ne connaît pas.
+          example: "markdown"
+        visible:
+          type: boolean
+          default: true
+        data:
+          type: object
+          additionalProperties: true
+          description: Champs propres au type (chaînes ≤ 5000, tableaux ≤ 20). `url` en http(s) uniquement.
+          example: { title: "Tarifs", body: "**30 €** / mois" }
+
+    ShowcasePage:
+      type: object
+      description: Page CMS du site vitrine ; `{}` tant que rien n'a été enregistré.
+      properties:
+        hero:
+          type: object
+          description: Page d'accueil uniquement
+          properties:
+            eyebrow:
+              type: string
+              maxLength: 200
+            tagline:
+              type: string
+              maxLength: 200
+        sections:
+          type: array
+          maxItems: 40
+          items:
+            $ref: '#/components/schemas/ShowcaseSection'
+
+    GymPhoto:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 5
+        position:
+          type: integer
+          example: 0
+        isCover:
+          type: boolean
+          example: true
 
     OpeningHour:
       type: object
@@ -280,6 +397,545 @@ components:
           example: true
         user:
           $ref: '#/components/schemas/User'
+
+    GymRef:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        displayId:
+          type: string
+          example: "GYM-a1b2c3"
+        name:
+          type: string
+          example: "Salle A"
+
+    CoachRef:
+      type: object
+      nullable: true
+      properties:
+        id:
+          type: integer
+          example: 7
+        firstName:
+          type: string
+          example: "Yassine"
+        lastName:
+          type: string
+          example: "Benali"
+
+    Coach:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 7
+        displayId:
+          type: string
+        email:
+          type: string
+          format: email
+        firstName:
+          type: string
+        lastName:
+          type: string
+        phoneNumber:
+          type: string
+          nullable: true
+        role:
+          type: string
+          example: coach
+        gymId:
+          type: integer
+          description: "Salle principale (ne pas s'en servir : utiliser gyms)"
+        gyms:
+          type: array
+          items:
+            $ref: '#/components/schemas/GymRef'
+        membersCount:
+          type: integer
+          description: "GET /coaches uniquement : nombre de membres affectés"
+
+    CoachedMember:
+      type: object
+      properties:
+        id:
+          type: integer
+        displayId:
+          type: string
+        email:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        phoneNumber:
+          type: string
+          nullable: true
+        gymId:
+          type: integer
+        gym:
+          $ref: '#/components/schemas/GymRef'
+        fitnessLevel:
+          type: string
+          nullable: true
+        coachId:
+          type: integer
+          nullable: true
+        coach:
+          $ref: '#/components/schemas/CoachRef'
+        activeSubscription:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: integer
+            status:
+              type: string
+            startDate:
+              type: string
+              format: date-time
+            endDate:
+              type: string
+              format: date-time
+              nullable: true
+            sessionQuota:
+              type: integer
+              nullable: true
+            sessionsUsed:
+              type: integer
+
+    ProgramExercise:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: "Id de la ligne (programExerciseId), utilisé dans PUT/DELETE"
+        exerciseId:
+          type: integer
+        exercise:
+          $ref: '#/components/schemas/Exercise'
+        sets:
+          type: integer
+          nullable: true
+        reps:
+          type: integer
+          nullable: true
+        duration:
+          type: integer
+          nullable: true
+        weight:
+          type: number
+          nullable: true
+        restTime:
+          type: integer
+          nullable: true
+          description: Secondes
+        notes:
+          type: string
+          nullable: true
+        order:
+          type: integer
+
+    ProgramExerciseInput:
+      type: object
+      required: [exerciseId]
+      properties:
+        exerciseId:
+          type: integer
+        sets:
+          type: integer
+        reps:
+          type: integer
+        duration:
+          type: integer
+        weight:
+          type: number
+        restTime:
+          type: integer
+        notes:
+          type: string
+        order:
+          type: integer
+
+    ProgramDayInput:
+      type: object
+      required: [dayOfWeek]
+      properties:
+        dayOfWeek:
+          type: integer
+          minimum: 0
+          maximum: 6
+          description: "0 = dimanche … 6 = samedi"
+        exercises:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProgramExerciseInput'
+
+    Program:
+      type: object
+      properties:
+        id:
+          type: integer
+        displayId:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        level:
+          type: string
+          nullable: true
+        durationWeeks:
+          type: integer
+          nullable: true
+        createdBy:
+          $ref: '#/components/schemas/CoachRef'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        days:
+          type: array
+          items:
+            type: object
+            properties:
+              dayOfWeek:
+                type: integer
+              exercises:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProgramExercise'
+        assignmentsCount:
+          type: integer
+          description: Affectations actives
+
+    ProgramInput:
+      type: object
+      properties:
+        title:
+          type: string
+          description: Requis à la création
+        description:
+          type: string
+        level:
+          type: string
+        durationWeeks:
+          type: integer
+        days:
+          type: array
+          description: "Création : jours initiaux. PUT : remplace tous les jours si fourni."
+          items:
+            $ref: '#/components/schemas/ProgramDayInput'
+
+    ProgramAssignment:
+      type: object
+      properties:
+        id:
+          type: integer
+        displayId:
+          type: string
+        programId:
+          type: integer
+        memberId:
+          type: integer
+        assignedBy:
+          $ref: '#/components/schemas/CoachRef'
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+          nullable: true
+          description: "null = sans fin (tant que l'affectation est active)"
+        status:
+          type: string
+          enum: [active, completed, cancelled]
+        createdAt:
+          type: string
+          format: date-time
+        program:
+          $ref: '#/components/schemas/Program'
+
+    ProgramError:
+      type: object
+      properties:
+        error:
+          type: string
+          description: "title_required, invalid_day_of_week, duplicate_day, exercise_id_required, invalid_field, invalid_days, exercise_not_found, program_not_found, program_exercise_not_found, program_in_use, member_ids_required, invalid_date, assignment_rejected, assignment_not_found, member_not_found, invalid_status"
+        message:
+          type: string
+        activeAssignments:
+          type: integer
+          description: "program_in_use uniquement"
+        rejected:
+          type: array
+          description: "assignment_rejected uniquement"
+          items:
+            type: object
+            properties:
+              memberId:
+                type: integer
+              reason:
+                type: string
+                enum: [member_not_found, other_gym, not_your_member, forbidden]
+
+    SessionMember:
+      type: object
+      properties:
+        memberId:
+          type: integer
+        member:
+          type: object
+          properties:
+            id:
+              type: integer
+            displayId:
+              type: string
+            firstName:
+              type: string
+            lastName:
+              type: string
+            phoneNumber:
+              type: string
+              nullable: true
+        status:
+          type: string
+          enum: [booked, checked_in, absent, cancelled]
+        checkedInAt:
+          type: string
+          format: date-time
+          nullable: true
+        bookedAt:
+          type: string
+          format: date-time
+
+    Session:
+      type: object
+      properties:
+        id:
+          type: integer
+        displayId:
+          type: string
+        gymId:
+          type: integer
+        gym:
+          $ref: '#/components/schemas/GymRef'
+        coachId:
+          type: integer
+        coach:
+          $ref: '#/components/schemas/CoachRef'
+        startAt:
+          type: string
+          format: date-time
+        endAt:
+          type: string
+          format: date-time
+        capacity:
+          type: integer
+        title:
+          type: string
+          nullable: true
+        type:
+          type: string
+          enum: [discovery, training, group_class, assessment, private]
+          description: "discovery = découverte, training = entraînement, group_class = cours collectif, assessment = bilan, private = coaching individuel"
+        notes:
+          type: string
+          nullable: true
+        seriesId:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [scheduled, done, cancelled]
+          description: "`done` posé automatiquement après la fin (inscrits non pointés → `absent`)"
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/SessionMember'
+        bookedCount:
+          type: integer
+          description: "Inscrits non annulés"
+        remaining:
+          type: integer
+        createdBy:
+          $ref: '#/components/schemas/CoachRef'
+        createdAt:
+          type: string
+          format: date-time
+        isMemberCoach:
+          type: boolean
+          description: "GET /sessions/available avec memberId uniquement"
+
+    SessionError:
+      type: object
+      properties:
+        error:
+          type: string
+          description: "missing_fields, invalid_type, invalid_date, invalid_time_range, invalid_capacity, invalid_repeat, too_many_occurrences, invalid_scope, range_too_large, coach_not_found, coach_not_in_gym, outside_opening_hours, gym_closed, session_overlap, capacity_below_booked, session_not_found, session_not_open, member_ids_required, booking_rejected, session_full, member_not_in_session, member_id_required, no_active_subscription, quota_exhausted, subscription_expired, gym_id_required, member_not_found, forbidden"
+        message:
+          type: string
+        conflicts:
+          type: array
+          description: "session_overlap uniquement"
+          items:
+            $ref: '#/components/schemas/Session'
+        rejected:
+          type: array
+          description: "booking_rejected uniquement"
+          items:
+            type: object
+            properties:
+              memberId:
+                type: integer
+              reason:
+                type: string
+                enum: [member_not_found, member_other_gym, no_active_subscription, member_overlap, already_booked]
+        remaining:
+          type: integer
+          description: "session_full uniquement"
+
+    IncidentAuthor:
+      type: object
+      nullable: true
+      properties:
+        id:
+          type: integer
+        firstName:
+          type: string
+        lastName:
+          type: string
+        role:
+          type: string
+          enum: [owner, manager, coach]
+
+    IncidentMessage:
+      type: object
+      properties:
+        id:
+          type: integer
+        incidentId:
+          type: integer
+        authorId:
+          type: integer
+        author:
+          $ref: '#/components/schemas/IncidentAuthor'
+        body:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    Incident:
+      type: object
+      properties:
+        id:
+          type: integer
+        displayId:
+          type: string
+        gymId:
+          type: integer
+        gym:
+          $ref: '#/components/schemas/GymRef'
+        createdBy:
+          $ref: '#/components/schemas/IncidentAuthor'
+        creatorRole:
+          type: string
+          enum: [manager, coach]
+        source:
+          type: string
+          enum: [app, kiosk]
+        title:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+          enum: [equipment, safety, hygiene, member, other]
+        severity:
+          type: string
+          enum: [low, medium, high, critical]
+        hasPhoto:
+          type: boolean
+          description: "Photo servie par GET /incidents/{id}/photo"
+        status:
+          type: string
+          enum: [open, in_progress, resolved, closed]
+        closedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: "Posé au passage en resolved ou closed"
+        closedBy:
+          $ref: '#/components/schemas/CoachRef'
+        messagesCount:
+          type: integer
+        lastMessage:
+          allOf:
+            - $ref: '#/components/schemas/IncidentMessage'
+          nullable: true
+          description: "Dernier message du chat (null si aucun)"
+        unreadCount:
+          type: integer
+          description: "Messages des autres postérieurs au dernier lu par l'appelant (voir POST /incidents/{id}/read)"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        messages:
+          type: array
+          description: "GET /incidents/{id} uniquement, du plus ancien au plus récent"
+          items:
+            $ref: '#/components/schemas/IncidentMessage'
+
+    IncidentError:
+      type: object
+      properties:
+        error:
+          type: string
+          description: "missing_fields, invalid_field, invalid_photo, gym_id_required, kiosk_forbidden_role, incident_not_found, photo_not_found, incident_closed, invalid_id, invalid_cursor, forbidden"
+        message:
+          type: string
+
+    CoachError:
+      type: object
+      properties:
+        error:
+          type: string
+          description: "Code stable : missing_fields, gym_ids_required, invalid_gym_ids, gym_not_found, email_taken, phone_taken, coach_not_found, member_not_found, coach_not_in_gym"
+        message:
+          type: string
+
+    CreatedManager:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 2
+        email:
+          type: string
+          format: email
+          example: "manager@example.com"
+        firstName:
+          type: string
+          example: "Jane"
+        lastName:
+          type: string
+          example: "Manager"
+        role:
+          type: string
+          example: manager
+        gymId:
+          type: integer
+          example: 1
 
     Error:
       type: object
@@ -1490,6 +2146,14 @@ paths:
                 password:
                   type: string
                   example: "password123"
+                client:
+                  type: string
+                  enum: [app, kiosk]
+                  default: app
+                  description: |
+                    `kiosk` pour la borne : réservé aux owners et managers. La session kiosk
+                    a son propre emplacement : elle ne déconnecte pas l'app, et inversement
+                    (une nouvelle connexion du même client invalide l'ancien token de ce client).
       responses:
         '200':
           description: Login successful
@@ -1503,6 +2167,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '401':
+          description: Identifiants invalides
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: "Connexion kiosk refusée pour ce rôle (coach, member)"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: kiosk_forbidden_role
+                  message:
+                    type: string
+                    example: "Le kiosk est réservé aux owners et managers"
         '500':
           description: Server error
           content:
@@ -1537,13 +2220,24 @@ paths:
                     example: "John Doe"
                   role:
                     type: string
-                    enum: [owner, admin, member]
+                    enum: [owner, manager, coach, member]
                     example: "member"
+                  type:
+                    type: string
+                    enum: [owner, manager, coach, member]
+                    description: "Identique à `role`"
                   displayId:
                     type: string
                     example: "MEMBER-a8f3d9e2b1c4f567"
+                  gymId:
+                    type: integer
                   gym:
                     $ref: '#/components/schemas/Gym'
+                  gyms:
+                    type: array
+                    description: "Owner : toutes les salles avec `stats` (`members`, `managers`, `coaches`, `admins` (déprécié), `owners`). Coach : ses salles `[{id, displayId, name}]`."
+                    items:
+                      type: object
                   activeSubscription:
                     $ref: '#/components/schemas/Subscription'
                   recentPayments:
@@ -1556,6 +2250,10 @@ paths:
                     properties:
                       canManageAdmins:
                         type: boolean
+                        description: "Déprécié : utiliser canManageManagers"
+                      canManageManagers:
+                        type: boolean
+                        description: "Rôles V2 : alias de canManageAdmins (même valeur)"
                       canManageGyms:
                         type: boolean
                       canViewReports:
@@ -1667,7 +2365,7 @@ paths:
                         example: "2025-12-31T10:30:00.000Z"
                       gymName:
                         type: string
-                        example: "Team Oustad Downtown"
+                        example: "Team Fitness Downtown"
         '400':
           description: Invalid QR code or access denied
           content:
@@ -2017,8 +2715,8 @@ paths:
                   example: "Doe"
                 role:
                   type: string
-                  enum: [admin, member]
-                  description: User role (admin can create members, owner can create admins/members)
+                  enum: [manager, member]
+                  description: User role (manager can create members, owner can create managers/members). `admin` accepté comme alias de `manager`.
                   example: "member"
                 gymId:
                   type: integer
@@ -2205,7 +2903,7 @@ paths:
                     example: "John Doe"
                   role:
                     type: string
-                    enum: [owner, admin, member]
+                    enum: [owner, manager, coach, member]
                     example: "member"
                   displayId:
                     type: string
@@ -2224,6 +2922,10 @@ paths:
                     properties:
                       canManageAdmins:
                         type: boolean
+                        description: "Déprécié : utiliser canManageManagers"
+                      canManageManagers:
+                        type: boolean
+                        description: "Rôles V2 : alias de canManageAdmins (même valeur)"
                       canManageGyms:
                         type: boolean
                       canViewReports:
@@ -2743,10 +3445,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /users/create-admin:
+  /users/create-manager:
     post:
-      summary: Create a new admin (Owner only)
-      description: Create a new admin user. Only owners can create admins.
+      summary: Create a new manager (Owner only)
+      description: |
+        Crée un manager (ex-admin) rattaché à une salle. Owner avec `canManageAdmins` uniquement.
+        `POST /users/create-admin` reste disponible comme alias pendant la transition (même réponse).
       tags: [Users, Owners]
       security:
         - bearerAuth: []
@@ -2795,23 +3499,14 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: "Admin créé avec succès"
+                    example: "Manager créé avec succès"
+                  setupEmailSent:
+                    type: boolean
+                  manager:
+                    $ref: '#/components/schemas/CreatedManager'
                   admin:
-                    type: object
-                    properties:
-                      id:
-                        type: integer
-                        example: 2
-                      email:
-                        type: string
-                        format: email
-                        example: "admin@example.com"
-                      firstName:
-                        type: string
-                        example: "Jane"
-                      lastName:
-                        type: string
-                        example: "Admin"
+                    $ref: '#/components/schemas/CreatedManager'
+                    description: "Déprécié : identique à `manager`"
         '400':
           description: Invalid input or email already exists
           content:
@@ -2827,6 +3522,18 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+
+  /users/create-admin:
+    post:
+      deprecated: true
+      summary: "Alias de /users/create-manager (transition Rôles V2)"
+      description: Identique à `POST /users/create-manager`.
+      tags: [Users, Owners]
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Manager créé (voir /users/create-manager)
   /users/gyms/all:
     get:
       summary: List all gyms (Owner only)
@@ -2913,9 +3620,12 @@ paths:
                         type: integer
                         description: Total number of users
                         example: 150
+                      totalManagers:
+                        type: integer
+                        description: Total number of manager users
                       totalAdmins:
                         type: integer
-                        description: Total number of admin users
+                        description: "Déprécié : identique à totalManagers"
                         example: 10
                       totalMembers:
                         type: integer
@@ -3041,7 +3751,7 @@ paths:
   /users/gym/{gymId}/members:
     get:
       summary: Get all members of a specific gym
-      description: Get a list of all members in a specific gym with their subscription status and recent payments. Owners can access any gym, admins can only access their own gym.
+      description: Get a list of all members in a specific gym with their subscription status and recent payments. Owners can access any gym, managers only their own gym. Chaque membre expose `coachId` (int|null) et `coach` ({id, firstName, lastName}|null) — Rôles V2.
       tags: [Users, Gyms]
       security:
         - bearerAuth: []
@@ -3325,7 +4035,7 @@ paths:
 
     put:
       summary: Update gym
-      description: Update gym information. Owners can update any gym, admins can only update their gym.
+      description: Update gym information. Owners can update any gym, managers only their gym and never the showcase fields (`isPublished`, `slug`, `description` → 403 `showcase_forbidden`).
       tags: [Gyms]
       security:
         - bearerAuth: []
@@ -3422,7 +4132,7 @@ paths:
   /gyms/{id}/opening-hours:
     post:
       summary: Set opening hours for gym
-      description: Create or update opening hours for each day of the week. Owners can set hours for any gym, admins only for their gym.
+      description: "Create or update opening hours for each day of the week. Owner uniquement (Rôles V2 : 403 pour le manager)."
       tags: [Gyms, Opening Hours]
       security:
         - bearerAuth: []
@@ -3512,7 +4222,7 @@ paths:
   /gyms/{id}/image:
     put:
       summary: Upload gym image
-      description: Upload or update a gym's image (base64). Owners can update any gym, admins can only update their own gym.
+      description: "Upload or update a gym's image (base64). Owner uniquement (Rôles V2 : 403 pour le manager)."
       tags: [Gyms, Images]
       security:
         - bearerAuth: []
@@ -3598,7 +4308,7 @@ paths:
           description: Server error
     delete:
       summary: Delete gym image
-      description: Delete a gym's image. Owners can delete any gym image, admins can only delete their own gym's image.
+      description: "Delete a gym's image. Owner uniquement (Rôles V2 : 403 pour le manager)."
       tags: [Gyms, Images]
       security:
         - bearerAuth: []
@@ -3789,6 +4499,8 @@ paths:
 
   /plannings:
     post:
+      deprecated: true
+      x-roles-v2: "410 plannings_deprecated : utiliser /programs et POST /programs/{id}/assignments"
       summary: Create a new workout plan
       description: Create a new workout plan for a member. Only coaches can create plans for members in their gym.
       tags: [Plannings]
@@ -3979,7 +4691,7 @@ paths:
                           properties:
                             fullName:
                               type: string
-                              example: "Admin Team Oustad"
+                              example: "Admin TeamFitness"
                         days:
                           type: array
                           items:
@@ -4173,6 +4885,8 @@ paths:
 
   /plannings/{planningId}/days/{dayOfWeek}/exercises:
     post:
+      deprecated: true
+      x-roles-v2: "410 plannings_deprecated : utiliser /programs et POST /programs/{id}/assignments"
       summary: Add exercise to planning day
       description: Add an exercise to a specific day in a workout plan. Only the coach who created the plan can modify it.
       tags: [Plannings, Exercises]
@@ -4267,6 +4981,8 @@ paths:
 
   /plannings/{planningId}/days/{dayOfWeek}/exercises/{exerciseId}:
     delete:
+      deprecated: true
+      x-roles-v2: "410 plannings_deprecated : utiliser /programs et POST /programs/{id}/assignments"
       summary: Remove exercise from planning day
       description: Remove a specific exercise from a specific day in a workout plan. Only the coach who created the plan can modify it.
       tags: [Plannings, Exercises]
@@ -4466,6 +5182,8 @@ paths:
 
   /plannings/{planningId}:
     delete:
+      deprecated: true
+      x-roles-v2: "410 plannings_deprecated : utiliser /programs et POST /programs/{id}/assignments"
       summary: Delete a planning
       description: Delete a workout plan. Only the coach who created the plan can delete it. Cascades to all days and exercises.
       tags: [Plannings]
@@ -6086,7 +6804,7 @@ paths:
     
     post:
       summary: Créer une nouvelle bannière
-      description: Créer une nouvelle bannière avec support multimédia et A/B testing (Admin/Owner uniquement)
+      description: Créer une nouvelle bannière avec support multimédia et A/B testing (Owner uniquement — 403 pour le manager)
       tags:
         - Banners
       security:
@@ -6234,7 +6952,7 @@ paths:
 
     put:
       summary: Mettre à jour une bannière
-      description: Mettre à jour les informations d'une bannière (Admin/Owner uniquement)
+      description: Mettre à jour les informations d'une bannière (Owner uniquement — 403 pour le manager)
       tags:
         - Banners
       security:
@@ -6325,7 +7043,7 @@ paths:
 
     delete:
       summary: Supprimer une bannière
-      description: Supprimer une bannière et ses variantes (Admin/Owner uniquement)
+      description: Supprimer une bannière et ses variantes (Owner uniquement — 403 pour le manager)
       tags:
         - Banners
       security:
@@ -6379,7 +7097,7 @@ paths:
     
     post:
       summary: Créer une variante A/B
-      description: Créer une nouvelle variante pour A/B testing (Admin/Owner uniquement)
+      description: Créer une nouvelle variante pour A/B testing (Owner uniquement — 403 pour le manager)
       tags:
         - Banners
       security:
@@ -6453,7 +7171,7 @@ paths:
   /banners/{id}/variants/{variantId}:
     put:
       summary: Mettre à jour une variante
-      description: Modifier une variante A/B existante (Admin/Owner uniquement)
+      description: Modifier une variante A/B existante (Owner uniquement — 403 pour le manager)
       tags:
         - Banners
       security:
@@ -6520,7 +7238,7 @@ paths:
     
     delete:
       summary: Supprimer une variante
-      description: Supprimer une variante A/B (Admin/Owner uniquement)
+      description: Supprimer une variante A/B (Owner uniquement — 403 pour le manager)
       tags:
         - Banners
       security:
@@ -6628,7 +7346,7 @@ paths:
   /banners/{id}/stats:
     get:
       summary: Récupérer les statistiques d'une bannière
-      description: Récupère les statistiques globales et par variante (Admin/Owner uniquement)
+      description: Récupère les statistiques globales et par variante (Manager/Owner)
       tags:
         - Banners
       security:
@@ -6703,7 +7421,7 @@ paths:
   /banners/stats/summary:
     get:
       summary: Résumé des statistiques de toutes les bannières
-      description: Vue d'ensemble des performances (Admin/Owner uniquement)
+      description: Vue d'ensemble des performances (Manager/Owner)
       tags:
         - Banners
       security:
@@ -6766,6 +7484,7 @@ paths:
   # ==================== CHECK-IN API ====================
   /check-in:
     post:
+      x-roles-v2: "Rôles V2 : staff de la salle uniquement (owner, manager de `gymId`)."
       summary: Enregistrer une entrée en salle
       description: Check-in manuel par staff
       tags:
@@ -6808,6 +7527,7 @@ paths:
 
   /check-in/{id}/checkout:
     post:
+      x-roles-v2: "Rôles V2 : staff de la salle du check-in, ou le membre lui-même."
       summary: Checkout d'un membre
       description: Enregistre l'heure de sortie d'un membre de la salle
       tags:
@@ -6845,6 +7565,7 @@ paths:
 
   /check-in/scan:
     post:
+      x-roles-v2: "Rôles V2 : staff de la salle `gymId` (app staff ou kiosk)."
       summary: Check-in via QR code
       description: Scanner le QR code du membre (1 scan par jour)
       tags:
@@ -6937,6 +7658,7 @@ paths:
 
   /check-in/member/{memberId}:
     get:
+      x-roles-v2: "Rôles V2 : le membre, le staff de sa salle, ou son coach."
       summary: Historique des check-ins
       description: Récupère l'historique des entrées d'un membre
       tags:
@@ -6981,6 +7703,7 @@ paths:
 
   /check-in/subscription/{subscriptionId}/quota:
     get:
+      x-roles-v2: "Rôles V2 : le membre titulaire, le staff de sa salle, ou son coach."
       summary: Informations de quota
       description: Récupère les séances utilisées/restantes
       tags:
@@ -7026,6 +7749,7 @@ paths:
 
   /check-in/gym/{gymId}/today:
     get:
+      x-roles-v2: "Rôles V2 : owner ou manager de la salle (le coach utilise GET /check-in/today)."
       summary: Membres présents aujourd'hui
       description: Liste des membres qui ont scanné aujourd'hui
       tags:
@@ -7057,6 +7781,7 @@ paths:
 
   /check-in/stats/gym/{gymId}:
     get:
+      x-roles-v2: "Rôles V2 : owner ou manager de la salle."
       summary: Statistiques de fréquentation
       description: Stats d'une salle sur une période
       tags:
@@ -7146,7 +7871,7 @@ paths:
     post:
       summary: Créer un produit
       description: |
-        Ajouter un nouveau produit (admin/owner uniquement).
+        Ajouter un nouveau produit (manager de la salle du produit ou owner ; 403 si autre salle).
         Les images sont converties en base64 et stockées directement dans la base de données.
       tags:
         - Store
@@ -7242,7 +7967,7 @@ paths:
     put:
       summary: Modifier un produit
       description: |
-        Met à jour un produit existant (admin/owner uniquement).
+        Met à jour un produit existant (manager de la salle du produit ou owner ; 403 si autre salle).
         Les nouvelles images sont converties en base64 et ajoutées aux existantes.
       tags:
         - Store
@@ -7306,7 +8031,7 @@ paths:
     delete:
       summary: Supprimer un produit
       description: |
-        Supprime un produit (admin/owner uniquement).
+        Supprime un produit (manager de la salle du produit ou owner ; 403 si autre salle).
         Les images stockées en base64 sont automatiquement supprimées avec le produit.
       tags:
         - Store
@@ -7343,7 +8068,7 @@ paths:
   /store/reservations:
     get:
       summary: Toutes les réservations
-      description: Liste toutes les réservations (admin/owner uniquement)
+      description: "Liste les réservations : manager = sa salle ; owner = toutes, ou `?gymId=`"
       tags:
         - Store
       security:
@@ -7497,7 +8222,7 @@ paths:
   /store/reservations/{id}/complete:
     patch:
       summary: Finaliser une réservation
-      description: Marque une réservation comme retirée (admin/owner uniquement)
+      description: Marque une réservation comme retirée (manager de la salle ou owner)
       tags:
         - Store
       security:
@@ -7533,7 +8258,7 @@ paths:
   /store/stats:
     get:
       summary: Statistiques du store
-      description: Récupère les statistiques globales (admin/owner uniquement)
+      description: "Statistiques du store : manager = sa salle ; owner = `?gymId=` ou sa salle"
       tags:
         - Store
       security:
@@ -7608,7 +8333,7 @@ paths:
                     type: string
                     nullable: true
                     description: Nom d'affichage personnalisé, null si non défini
-                    example: "Team Oustad"
+                    example: "Team Fitness"
         '403':
           description: Accès réservé aux propriétaires
 
@@ -7724,7 +8449,7 @@ paths:
                 displayName:
                   type: string
                   nullable: true
-                  example: "Team Oustad"
+                  example: "Team Fitness"
       responses:
         '200':
           description: Nom mis à jour
@@ -7736,7 +8461,7 @@ paths:
                   displayName:
                     type: string
                     nullable: true
-                    example: "Team Oustad"
+                    example: "Team Fitness"
                   applied:
                     type: boolean
                     description: true si appliqué immédiatement, false si sera appliqué à la prochaine connexion
@@ -7790,3 +8515,1870 @@ paths:
           description: Accès réservé aux propriétaires
         '500':
           description: Erreur lors du changement de photo
+
+  /gyms/{id}/photos:
+    post:
+      summary: Add photo to gym gallery
+      tags: [Gyms, Gallery]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [imageData]
+              properties:
+                imageData:
+                  type: string
+                  example: "data:image/jpeg;base64,/9j/4AAQ..."
+      responses:
+        '201':
+          description: Photo added
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  photo:
+                    $ref: '#/components/schemas/GymPhoto'
+        '403':
+          description: Insufficient permissions
+    get:
+      summary: List gym gallery photos (metadata only)
+      tags: [Gyms, Gallery]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of photos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  photos:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/GymPhoto'
+
+  /gyms/{id}/photos/{photoId}/image:
+    get:
+      summary: Get gym gallery photo binary
+      tags: [Gyms, Gallery]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - in: path
+          name: photoId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Image binary
+          content:
+            image/*:
+              schema:
+                type: string
+                format: binary
+
+  /gyms/{id}/photos/{photoId}:
+    delete:
+      summary: Delete gym gallery photo
+      tags: [Gyms, Gallery]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - in: path
+          name: photoId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Photo deleted
+
+  /gyms/{id}/photos/reorder:
+    put:
+      summary: Reorder gym gallery photos
+      tags: [Gyms, Gallery]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [order]
+              properties:
+                order:
+                  type: array
+                  items:
+                    type: integer
+                  example: [5, 2, 7]
+      responses:
+        '200':
+          description: Order updated
+
+  /gyms/{id}/photos/{photoId}/cover:
+    put:
+      summary: Set photo as cover for gym gallery
+      tags: [Gyms, Gallery]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - in: path
+          name: photoId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Cover updated
+
+  /public/gyms:
+    get:
+      summary: List published gyms (public)
+      tags: [Public]
+      responses:
+        '200':
+          description: List of published gyms
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  gyms:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        slug:
+                          type: string
+                        name:
+                          type: string
+                        address:
+                          type: string
+                        phone:
+                          type: string
+                          nullable: true
+                        memberCountDisplay:
+                          type: string
+                          example: "40+"
+                        coverPhotoUrl:
+                          type: string
+                          nullable: true
+
+  /showcase/home:
+    get:
+      summary: Contenu CMS de la page d'accueil vitrine (owner)
+      tags: [Showcase]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Page enregistrée, ou {} si vide
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShowcasePage'
+        '403':
+          description: Réservé aux owners
+    put:
+      summary: Remplacer la page d'accueil vitrine (owner)
+      tags: [Showcase]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShowcasePage'
+      responses:
+        '200':
+          description: Page enregistrée (normalisée)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShowcasePage'
+        '400':
+          description: Page invalide (tailles, ids en double, lien non http(s)…)
+        '403':
+          description: Réservé aux owners
+
+  /gyms/{id}/showcase:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    get:
+      summary: Contenu CMS de la fiche vitrine d'une salle
+      description: "Owner avec canManageGyms uniquement (Rôles V2 : 403 pour le manager)."
+      tags: [Showcase]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Page enregistrée, ou {} si vide
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShowcasePage'
+        '403':
+          description: Permissions insuffisantes
+        '404':
+          description: Salle introuvable
+    put:
+      summary: Remplacer la fiche vitrine d'une salle
+      description: "Owner avec canManageGyms uniquement (Rôles V2 : 403 pour le manager). `hero` refusé."
+      tags: [Showcase]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShowcasePage'
+      responses:
+        '200':
+          description: Page enregistrée (normalisée)
+        '400':
+          description: Page invalide
+        '403':
+          description: Permissions insuffisantes
+        '404':
+          description: Salle introuvable
+
+  /public/showcase/home:
+    get:
+      summary: Contenu CMS public de la page d'accueil vitrine
+      description: Sans authentification, sections masquées exclues, Cache-Control max-age=300.
+      tags: [Public]
+      responses:
+        '200':
+          description: Page, ou {} si vide
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShowcasePage'
+
+  /public/gyms/{slugOrId}:
+    get:
+      summary: Get published gym detail by slug or id (public)
+      tags: [Public]
+      parameters:
+        - in: path
+          name: slugOrId
+          required: true
+          schema:
+            type: string
+          description: Gym slug or numeric id
+      responses:
+        '200':
+          description: Gym detail
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  gym:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      slug:
+                        type: string
+                      name:
+                        type: string
+                      address:
+                        type: string
+                      phone:
+                        type: string
+                        nullable: true
+                      memberCountDisplay:
+                        type: string
+                        example: "200+"
+                      description:
+                        type: string
+                        nullable: true
+                      showcase:
+                        $ref: '#/components/schemas/ShowcasePage'
+                      openingHours:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/OpeningHour'
+                      photos:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                            url:
+                              type: string
+                            isCover:
+                              type: boolean
+                      team:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                            fullName:
+                              type: string
+                            role:
+                              type: string
+                            photoUrl:
+                              type: string
+        '404':
+          description: Gym not found or not published
+
+  /public/gyms/{gymId}/photos/{photoId}/image:
+    get:
+      summary: Get public gym gallery photo binary
+      tags: [Public]
+      parameters:
+        - in: path
+          name: gymId
+          required: true
+          schema:
+            type: integer
+        - in: path
+          name: photoId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Image binary
+          content:
+            image/*:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Not found or gym not published
+
+  /public/gyms/{gymId}/team/{userId}/image:
+    get:
+      summary: Get public team member profile image
+      tags: [Public]
+      parameters:
+        - in: path
+          name: gymId
+          required: true
+          schema:
+            type: integer
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Profile image binary
+          content:
+            image/*:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Not found or gym not published
+
+  /users/create-coach:
+    post:
+      summary: Créer un coach (Owner uniquement)
+      description: |
+        Rôles V2. Owner avec `canManageAdmins`. Le coach est rattaché à `gymIds` (CoachGym) ; sa salle
+        principale (`gymId`) est la première de la liste. Sans `password`, un email d'activation est envoyé
+        comme pour les managers.
+      tags: [Users, Coaches]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, firstName, lastName, gymIds]
+              properties:
+                email:
+                  type: string
+                  format: email
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                phoneNumber:
+                  type: string
+                password:
+                  type: string
+                  description: Optionnel
+                gymIds:
+                  type: array
+                  items:
+                    type: integer
+                  example: [1, 2]
+                sendSetupEmail:
+                  type: boolean
+                  default: true
+      responses:
+        '201':
+          description: Coach créé
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  coach:
+                    $ref: '#/components/schemas/Coach'
+                  setupEmailSent:
+                    type: boolean
+        '400':
+          description: Champs manquants, gymIds invalides, email ou téléphone déjà utilisé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoachError'
+        '403':
+          description: Pas owner (ou sans canManageAdmins)
+        '404':
+          description: Salle introuvable (`gym_not_found`)
+
+  /users/{id}/gyms:
+    patch:
+      summary: Remplacer les salles d'un coach (Owner uniquement)
+      description: |
+        Remplace les rattachements CoachGym. Les membres des salles retirées qui étaient affectés à ce coach
+        repassent à `coachId = null` (`unassignedMembers`). Si la salle principale est retirée, elle bascule
+        sur la première salle de `gymIds`.
+      tags: [Users, Coaches]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [gymIds]
+              properties:
+                gymIds:
+                  type: array
+                  items:
+                    type: integer
+      responses:
+        '200':
+          description: Salles mises à jour
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  gymIds:
+                    type: array
+                    items:
+                      type: integer
+                  gyms:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/GymRef'
+                  unassignedMembers:
+                    type: integer
+        '400':
+          description: gymIds invalide
+        '403':
+          description: Pas owner
+        '404':
+          description: Coach ou salle introuvable
+
+  /coaches:
+    get:
+      summary: Lister les coachs (Owner / Manager)
+      description: "Owner : tous les coachs, ou ceux d'une salle avec `gymId`. Manager : coachs de sa salle (403 si `gymId` d'une autre salle)."
+      tags: [Coaches]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: gymId
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Tableau brut de coachs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Coach'
+        '403':
+          description: Autre rôle, ou manager sur une autre salle
+
+  /coaches/me/members:
+    get:
+      summary: Membres affectés au coach connecté (Coach)
+      tags: [Coaches]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Tableau brut de membres (toutes les salles du coach)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CoachedMember'
+        '403':
+          description: Pas coach
+
+  /members/{id}/coach:
+    patch:
+      summary: Affecter ou retirer le coach principal d'un membre (Owner / Manager)
+      description: "`id` = userId du membre. Manager : membres de sa salle uniquement. Le coach doit être rattaché à la salle du membre."
+      tags: [Members, Coaches]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [coachId]
+              properties:
+                coachId:
+                  type: integer
+                  nullable: true
+                  description: "null pour retirer le coach"
+      responses:
+        '200':
+          description: Affectation enregistrée
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  memberId:
+                    type: integer
+                  coachId:
+                    type: integer
+                    nullable: true
+                  coach:
+                    $ref: '#/components/schemas/CoachRef'
+        '400':
+          description: "coachId invalide, ou `coach_not_in_gym`"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoachError'
+        '403':
+          description: Autre rôle, ou manager sur un membre d'une autre salle
+        '404':
+          description: Membre ou coach introuvable
+
+  /programs:
+    get:
+      summary: Lister les programmes (Owner / Manager / Coach)
+      description: Programmes communs à toutes les salles, du plus récent au plus ancien.
+      tags: [Programs]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Filtre sur le titre (insensible à la casse)
+      responses:
+        '200':
+          description: Tableau brut de programmes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Program'
+        '403':
+          description: Membre
+    post:
+      summary: Créer un programme (Owner)
+      tags: [Programs]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProgramInput'
+      responses:
+        '201':
+          description: Programme créé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Program'
+        '400':
+          description: Body invalide
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgramError'
+        '403':
+          description: Pas owner
+        '404':
+          description: Exercice introuvable
+
+  /programs/{id}:
+    get:
+      summary: Détail d'un programme (Owner / Manager / Coach)
+      tags: [Programs]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Programme
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Program'
+        '404':
+          description: Programme introuvable
+    put:
+      summary: Modifier un programme (Owner)
+      description: "Les champs absents sont conservés ; `days` fourni remplace tous les jours."
+      tags: [Programs]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProgramInput'
+      responses:
+        '200':
+          description: Programme mis à jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Program'
+        '400':
+          description: Body invalide
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgramError'
+        '404':
+          description: Programme introuvable
+    delete:
+      summary: Supprimer un programme (Owner)
+      tags: [Programs]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: "Supprimé : `{ deletedId }`"
+        '409':
+          description: "`program_in_use` : encore des affectations actives (`activeAssignments`)"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgramError'
+
+  /programs/{id}/days/{dayOfWeek}/exercises:
+    post:
+      summary: Ajouter un exercice à un jour du programme (Owner)
+      description: "Crée le jour s'il n'existe pas. `order` par défaut : à la fin du jour."
+      tags: [Programs]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - in: path
+          name: dayOfWeek
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 6
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProgramExerciseInput'
+      responses:
+        '201':
+          description: Exercice ajouté
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgramExercise'
+        '400':
+          description: Body invalide
+        '404':
+          description: Programme ou exercice introuvable
+
+  /programs/{id}/days/{dayOfWeek}/exercises/{exerciseId}:
+    put:
+      summary: Modifier un exercice du programme (Owner)
+      description: "`exerciseId` = id de la ligne ProgramExercise. Les champs absents sont conservés."
+      tags: [Programs]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - in: path
+          name: dayOfWeek
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 6
+        - in: path
+          name: exerciseId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProgramExerciseInput'
+      responses:
+        '200':
+          description: Exercice mis à jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgramExercise'
+        '404':
+          description: Exercice absent de ce jour du programme
+    delete:
+      summary: Retirer un exercice du programme (Owner)
+      tags: [Programs]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - in: path
+          name: dayOfWeek
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 6
+        - in: path
+          name: exerciseId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: "Retiré : `{ deletedId }`"
+        '404':
+          description: Exercice absent de ce jour du programme
+
+  /programs/{id}/assignments:
+    post:
+      summary: Affecter un programme à des membres (Owner / Coach)
+      description: |
+        Tout ou rien. Owner : tous les membres ; coach : ses membres affectés. Manager : 403 forbidden.
+        Un membre n'a qu'une affectation active : les précédentes passent en `completed` (`replaced`).
+        Chaque membre reçoit un FCM `data: { type: "program", assignmentId, programId }`.
+      tags: [Programs]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [memberIds, startDate]
+              properties:
+                memberIds:
+                  type: array
+                  items:
+                    type: integer
+                startDate:
+                  type: string
+                  format: date-time
+                endDate:
+                  type: string
+                  format: date-time
+                  nullable: true
+      responses:
+        '201':
+          description: Affectations créées
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  assignments:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProgramAssignment'
+                  replaced:
+                    type: integer
+        '400':
+          description: memberIds ou dates invalides
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgramError'
+        '403':
+          description: Membre
+        '404':
+          description: Programme introuvable
+        '422':
+          description: "`assignment_rejected` avec `rejected[]` — rien n'est créé"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgramError'
+
+  /program-assignments/{id}:
+    delete:
+      summary: Annuler une affectation (Owner / Coach)
+      description: "Passe le statut à `cancelled` (historique conservé). Mêmes droits que l'affectation."
+      tags: [Programs]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Affectation annulée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgramAssignment'
+        '403':
+          description: Hors portée
+        '404':
+          description: Affectation introuvable
+
+  /members/{id}/programs:
+    get:
+      summary: Programmes affectés à un membre
+      description: "`id` = userId du membre. Lecture : le membre, le manager de sa salle, son coach, l'owner. Plus récent d'abord."
+      tags: [Programs, Members]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [active, completed, cancelled]
+      responses:
+        '200':
+          description: Tableau brut d'affectations (avec `program`)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProgramAssignment'
+        '403':
+          description: Hors portée
+        '404':
+          description: Membre introuvable
+
+  /sessions:
+    get:
+      summary: Lister les séances (Owner / Manager)
+      description: "Owner : toutes ; manager : sa salle (403 si gymId d'une autre salle). Triées par startAt."
+      tags: [Sessions]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: type
+          schema:
+            type: string
+            enum: [discovery, training, group_class, assessment, private]
+          description: "Filtre par type de séance (400 invalid_type si inconnu)"
+        - in: query
+          name: gymId
+          schema:
+            type: integer
+        - in: query
+          name: coachId
+          schema:
+            type: integer
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [scheduled, done, cancelled]
+        - in: query
+          name: from
+          schema:
+            type: string
+            format: date-time
+          description: "Défaut : aujourd'hui 00:00"
+        - in: query
+          name: to
+          schema:
+            type: string
+            format: date-time
+          description: "Défaut : from + 7 jours ; plage ≤ 62 jours"
+      responses:
+        '200':
+          description: Tableau brut
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Session'
+        '400':
+          description: Plage invalide
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionError'
+    post:
+      summary: Créer une séance ou une série hebdomadaire (Owner / Manager de la salle)
+      description: |
+        Le coach doit être rattaché à la salle. Refus si une séance non annulée du coach chevauche (toutes salles).
+        Avec `repeat`, une occurrence par semaine (même heure locale) jusqu'à `until` inclus, 26 au plus, en tout ou rien.
+        Si des horaires d'ouverture sont définis pour le jour, la séance doit y tenir (heure du Maroc).
+        Le coach reçoit un FCM `data: { type: "session", sessionId, action: "assigned" }`.
+      tags: [Sessions]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [gymId, coachId, type, startAt, endAt]
+              properties:
+                gymId:
+                  type: integer
+                coachId:
+                  type: integer
+                startAt:
+                  type: string
+                  format: date-time
+                endAt:
+                  type: string
+                  format: date-time
+                capacity:
+                  type: integer
+                  minimum: 1
+                  default: 1
+                title:
+                  type: string
+                type:
+                  type: string
+                  enum: [discovery, training, group_class, assessment, private]
+                notes:
+                  type: string
+                repeat:
+                  type: object
+                  properties:
+                    weekly:
+                      type: boolean
+                      enum: [true]
+                    until:
+                      type: string
+                      format: date-time
+      responses:
+        '201':
+          description: Séance(s) créée(s) — toujours un tableau
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sessions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Session'
+        '400':
+          description: Validation, coach_not_in_gym, outside_opening_hours, gym_closed, too_many_occurrences
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionError'
+        '403':
+          description: Salle hors portée
+        '409':
+          description: "session_overlap avec `conflicts`"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionError'
+
+  /sessions/available:
+    get:
+      summary: Rechercher des créneaux disponibles (Owner / Manager)
+      description: |
+        Séances `scheduled` à venir avec des places. Avec `memberId` : exclut celles où il est inscrit ou qui
+        chevauchent ses séances, et met d'abord celles de son coach (`isMemberCoach`), puis tri par date.
+      tags: [Sessions]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: type
+          schema:
+            type: string
+            enum: [discovery, training, group_class, assessment, private]
+          description: "Filtre par type de séance (400 invalid_type si inconnu)"
+        - in: query
+          name: gymId
+          schema:
+            type: integer
+          description: "Obligatoire pour l'owner, forcé pour le manager"
+        - in: query
+          name: memberId
+          schema:
+            type: integer
+        - in: query
+          name: coachId
+          schema:
+            type: integer
+        - in: query
+          name: from
+          schema:
+            type: string
+            format: date-time
+          description: "Défaut : aujourd'hui 00:00"
+        - in: query
+          name: to
+          schema:
+            type: string
+            format: date-time
+          description: "Défaut : from + 7 jours ; plage ≤ 62 jours"
+      responses:
+        '200':
+          description: Tableau brut
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Session'
+        '400':
+          description: gym_id_required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionError'
+
+  /sessions/{id}:
+    get:
+      summary: Détail d'une séance (Owner / Manager de la salle / Coach de la séance)
+      tags: [Sessions]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Séance
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '403':
+          description: Hors portée
+        '404':
+          description: Introuvable
+    patch:
+      summary: Modifier une séance ou sa série (Owner / Manager)
+      description: "Avec scope ≠ this, le décalage de startAt/endAt s'applique à chaque occurrence. Coach et membres notifiés."
+      tags: [Sessions]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - in: query
+          name: scope
+          schema:
+            type: string
+            enum: [this, following, series]
+            default: this
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                startAt:
+                  type: string
+                  format: date-time
+                endAt:
+                  type: string
+                  format: date-time
+                coachId:
+                  type: integer
+                capacity:
+                  type: integer
+                title:
+                  type: string
+                type:
+                  type: string
+                  enum: [discovery, training, group_class, assessment, private]
+                notes:
+                  type: string
+      responses:
+        '200':
+          description: Séances modifiées
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sessions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Session'
+        '400':
+          description: Validation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionError'
+        '409':
+          description: session_overlap, capacity_below_booked, session_not_open
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionError'
+    delete:
+      summary: Annuler une séance ou sa série (Owner / Manager)
+      description: "Statut `cancelled` (historique conservé). Coach et membres inscrits notifiés."
+      tags: [Sessions]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - in: query
+          name: scope
+          schema:
+            type: string
+            enum: [this, following, series]
+            default: this
+      responses:
+        '200':
+          description: Séances annulées
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sessions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Session'
+
+  /sessions/{id}/members:
+    post:
+      summary: Inscrire des membres (Owner / Manager)
+      description: "Tout ou rien. Membres de la salle avec un abonnement actif, sans séance qui chevauche."
+      tags: [Sessions]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [memberIds]
+              properties:
+                memberIds:
+                  type: array
+                  items:
+                    type: integer
+      responses:
+        '200':
+          description: Séance mise à jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '409':
+          description: session_full (`remaining`), session_not_open
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionError'
+        '422':
+          description: booking_rejected avec `rejected`
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionError'
+
+  /sessions/{id}/members/{memberId}:
+    delete:
+      summary: Désinscrire un membre (Owner / Manager)
+      tags: [Sessions]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - in: path
+          name: memberId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Séance mise à jour (statut du membre `cancelled`)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '404':
+          description: member_not_in_session
+
+  /sessions/{id}/check-in:
+    post:
+      summary: Pointer un membre à la séance (Coach de la séance / Manager / Owner)
+      description: |
+        Crée aussi l'entrée salle du jour (décompte du quota) si le membre n'a pas encore scanné aujourd'hui ;
+        sinon `created: false` et rien n'est décompté. Re-pointer est idempotent.
+      tags: [Sessions]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [memberId]
+              properties:
+                memberId:
+                  type: integer
+      responses:
+        '200':
+          description: Membre pointé
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  member:
+                    $ref: '#/components/schemas/SessionMember'
+                  gymCheckIn:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      created:
+                        type: boolean
+                      sessionsRemaining:
+                        type: integer
+                        nullable: true
+        '403':
+          description: Ni coach de la séance, ni staff de la salle
+        '404':
+          description: member_not_in_session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionError'
+        '409':
+          description: session_not_open, no_active_subscription, quota_exhausted, subscription_expired (rien n'est pointé)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionError'
+
+  /coaches/me/sessions:
+    get:
+      summary: Séances du coach connecté (Coach)
+      tags: [Coaches, Sessions]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: type
+          schema:
+            type: string
+            enum: [discovery, training, group_class, assessment, private]
+          description: "Filtre par type de séance (400 invalid_type si inconnu)"
+        - in: query
+          name: status
+          schema:
+            type: string
+        - in: query
+          name: from
+          schema:
+            type: string
+            format: date-time
+          description: "Défaut : aujourd'hui 00:00"
+        - in: query
+          name: to
+          schema:
+            type: string
+            format: date-time
+          description: "Défaut : from + 7 jours ; plage ≤ 62 jours"
+      responses:
+        '200':
+          description: Tableau brut (toutes les salles du coach)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Session'
+
+  /check-in/today:
+    get:
+      summary: Check-ins du jour (Coach / Manager / Owner)
+      description: |
+        Coach : ses salles (toutes si `gymId` absent, 403 hors de ses salles) ; manager : sa salle ; owner : `gymId` ou toutes.
+        Entrées du jour (présents et sortis), plus récentes d'abord.
+      tags: [Check-In]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: gymId
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Tableau brut
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    displayId:
+                      type: string
+                    memberId:
+                      type: integer
+                    member:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        displayId:
+                          type: string
+                        firstName:
+                          type: string
+                        lastName:
+                          type: string
+                    gymId:
+                      type: integer
+                    gym:
+                      $ref: '#/components/schemas/GymRef'
+                    checkInTime:
+                      type: string
+                      format: date-time
+                    checkOutTime:
+                      type: string
+                      format: date-time
+                      nullable: true
+                    isManual:
+                      type: boolean
+                    coachId:
+                      type: integer
+                      nullable: true
+                    isMyMember:
+                      type: boolean
+                      description: "Membre suivi par le demandeur (coach)"
+                    nextSessionToday:
+                      type: object
+                      nullable: true
+                      description: "Prochaine séance du jour (non terminée) où le membre est inscrit"
+                      properties:
+                        id:
+                          type: integer
+                        startAt:
+                          type: string
+                          format: date-time
+                        endAt:
+                          type: string
+                          format: date-time
+                        coachId:
+                          type: integer
+                        title:
+                          type: string
+                          nullable: true
+        '403':
+          description: Membre, ou salle hors portée
+
+  /incidents:
+    post:
+      summary: Signaler un incident (Manager / Coach)
+      description: |
+        Manager : sa salle, depuis l'app ou le kiosk. Coach : une de ses salles, depuis l'app uniquement
+        (403 `kiosk_forbidden_role` avec un token kiosk). `source` est déduite du token (le body est ignoré).
+        Photo optionnelle : multipart `photo` (JPEG/PNG/WebP, 5 Mo) ou JSON `photoData` (data URI base64).
+        Tous les owners reçoivent un FCM `action: "created"`.
+      tags: [Incidents]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [title, description, category, severity]
+              properties:
+                title:
+                  type: string
+                  maxLength: 200
+                description:
+                  type: string
+                  maxLength: 5000
+                category:
+                  type: string
+                  enum: [equipment, safety, hygiene, member, other]
+                severity:
+                  type: string
+                  enum: [low, medium, high, critical]
+                gymId:
+                  type: integer
+                  description: "Obligatoire pour le coach (une de ses salles) ; forcé pour le manager"
+                photo:
+                  type: string
+                  format: binary
+          application/json:
+            schema:
+              type: object
+              required: [title, description, category, severity]
+              properties:
+                title:
+                  type: string
+                  maxLength: 200
+                description:
+                  type: string
+                  maxLength: 5000
+                category:
+                  type: string
+                  enum: [equipment, safety, hygiene, member, other]
+                severity:
+                  type: string
+                  enum: [low, medium, high, critical]
+                gymId:
+                  type: integer
+                  description: "Obligatoire pour le coach (une de ses salles) ; forcé pour le manager"
+                photoData:
+                  type: string
+                  example: "data:image/jpeg;base64,/9j/4AAQ..."
+      responses:
+        '201':
+          description: Incident créé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Incident'
+        '400':
+          description: Validation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IncidentError'
+        '403':
+          description: Owner, membre, salle hors portée, ou coach depuis le kiosk
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IncidentError'
+    get:
+      summary: Lister les incidents
+      description: "Owner : tout (`gymId` optionnel) ; manager : sa salle ; coach : les siens. Plus récents d'abord."
+      tags: [Incidents]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: gymId
+          schema:
+            type: integer
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [open, in_progress, resolved, closed]
+      responses:
+        '200':
+          description: Tableau brut (sans `messages`)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Incident'
+        '403':
+          description: Membre, ou manager sur une autre salle
+
+  /incidents/{id}:
+    get:
+      summary: Détail d'un incident avec son fil
+      tags: [Incidents]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Incident avec `messages`
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Incident'
+        '403':
+          description: Hors portée
+        '404':
+          description: Introuvable
+    patch:
+      summary: Changer le statut (Owner)
+      description: "Le créateur reçoit un FCM `action: \"status\"`. `resolved` / `closed` posent `closedAt` et `closedBy`."
+      tags: [Incidents]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [open, in_progress, resolved, closed]
+      responses:
+        '200':
+          description: Incident mis à jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Incident'
+        '400':
+          description: Statut invalide
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IncidentError'
+        '403':
+          description: Pas owner
+
+  /incidents/{id}/messages:
+    get:
+      summary: Messages du chat, paginés par curseur (lecteurs de l'incident)
+      description: |
+        Réponse `{ messages, hasMore }`, messages toujours en ordre chronologique (id croissant).
+        - `after=<messageId>` (exclusif) : messages suivants, pour le polling ; `hasMore` = d'autres plus récents.
+        - `before=<messageId>` (exclusif) : messages précédents ; `hasMore` = d'autres plus anciens.
+        - sans curseur : les `limit` plus récents ; `hasMore` = d'autres plus anciens.
+        `after` et `before` sont exclusifs entre eux (400 `invalid_cursor`). Ne marque pas comme lu.
+      tags: [Incidents]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - in: query
+          name: after
+          schema:
+            type: integer
+        - in: query
+          name: before
+          schema:
+            type: integer
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+      responses:
+        '200':
+          description: Page de messages
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  messages:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/IncidentMessage'
+                  hasMore:
+                    type: boolean
+        '400':
+          description: invalid_cursor
+        '403':
+          description: Hors portée
+    post:
+      summary: Écrire dans le chat (Owner / créateur)
+      description: |
+        Message de l'owner : le créateur est notifié ; message du créateur : les owners sont notifiés
+        (FCM `data: { type: "incident", incidentId, action: "message", messageId }`).
+        Écrire marque tout le fil comme lu pour l'auteur. 409 `incident_closed` une fois clôturé.
+      tags: [Incidents]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [body]
+              properties:
+                body:
+                  type: string
+                  maxLength: 5000
+      responses:
+        '201':
+          description: Message ajouté
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IncidentMessage'
+        '403':
+          description: Ni owner, ni créateur
+        '409':
+          description: incident_closed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IncidentError'
+
+  /incidents/{id}/read:
+    post:
+      summary: Marquer le chat comme lu (lecteurs de l'incident)
+      description: |
+        Avance le curseur de lecture de l'appelant jusqu'à `lastMessageId` (défaut : dernier message).
+        Le curseur ne recule jamais. Ouvert à tout lecteur de l'incident (owner, manager de la salle, créateur).
+      tags: [Incidents]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                lastMessageId:
+                  type: integer
+      responses:
+        '200':
+          description: État de lecture
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  incidentId:
+                    type: integer
+                  lastReadMessageId:
+                    type: integer
+                  unreadCount:
+                    type: integer
+        '400':
+          description: invalid_cursor
+        '403':
+          description: Hors portée
+
+  /incidents/{id}/photo:
+    get:
+      summary: Photo de l'incident (binaire)
+      tags: [Incidents]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Image
+          content:
+            image/*:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Pas de photo
