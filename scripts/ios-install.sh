@@ -82,9 +82,32 @@ fi
 # Prérequis Windows (PowerShell admin, à relancer après chaque reboot) :
 #   $ip = (Get-NetIPAddress -InterfaceAlias "vEthernet (WSL*)" -AddressFamily IPv4).IPAddress
 #   netsh interface portproxy set v4tov4 listenport=27015 connectaddress=127.0.0.1 connectport=27015 listenaddress=$ip
+# Si la règle existe mais n'écoute pas (iphlpsvc démarré avant vEthernet WSL
+# après un reboot) : Restart-Service iphlpsvc — proposé automatiquement ci-dessous.
 # Fallback : usbmuxd local (nécessite usbipd attach).
 WIN_HOST=$(ip route show default 2>/dev/null | awk '/default/{print $3; exit}')
-if [[ -n "$WIN_HOST" ]] && nc -z -w1 "$WIN_HOST" 27015 2>/dev/null; then
+relay_up() { [[ -n "$WIN_HOST" ]] && nc -z -w1 "$WIN_HOST" 27015 2>/dev/null; }
+
+if ! relay_up && [[ -n "$WIN_HOST" ]] && command -v powershell.exe >/dev/null; then
+  # powershell.exe refuse un cwd sur un chemin Linux : on se place sur /mnt/c.
+  if (cd /mnt/c && powershell.exe -NoProfile -Command "netsh interface portproxy show v4tov4") 2>/dev/null \
+      | grep -qE "^${WIN_HOST//./\\.}[[:space:]]+27015"; then
+    echo "⚠️  Règle portproxy $WIN_HOST:27015 présente mais inactive (iphlpsvc à redémarrer)"
+    fix_cmd="Restart-Service iphlpsvc"
+  else
+    echo "⚠️  Aucune règle portproxy pour $WIN_HOST:27015"
+    fix_cmd="netsh interface portproxy set v4tov4 listenport=27015 connectaddress=127.0.0.1 connectport=27015 listenaddress=$WIN_HOST; New-NetFirewallRule -DisplayName WSL-usbmuxd-27015 -Direction Inbound -Protocol TCP -LocalPort 27015 -Action Allow"
+  fi
+  read -rp "   Corriger maintenant via PowerShell admin (UAC) ? [o/N] " ans
+  if [[ "$ans" =~ ^[oOyY]$ ]]; then
+    (cd /mnt/c && powershell.exe -NoProfile -Command \
+      "Start-Process powershell -Verb RunAs -Wait -ArgumentList '-NoProfile','-Command','$fix_cmd'") \
+      || echo "   ❌ Élévation refusée ou échouée"
+    sleep 1
+  fi
+fi
+
+if relay_up; then
   echo "📡 Relais iTunes actif ($WIN_HOST:27015)"
   # sudo pkill -x usbmuxd 2>/dev/null || true
   export USBMUXD_SOCKET_ADDRESS="$WIN_HOST:27015"
@@ -94,6 +117,7 @@ else
   echo '   $ip = (Get-NetIPAddress -InterfaceAlias "vEthernet (WSL*)" -AddressFamily IPv4).IPAddress'
   echo '   netsh interface portproxy set v4tov4 listenport=27015 connectaddress=127.0.0.1 connectport=27015 listenaddress=$ip'
   echo '   New-NetFirewallRule -DisplayName "WSL-usbmuxd-27015" -Direction Inbound -Protocol TCP -LocalPort 27015 -Action Allow'
+  echo '   (règle déjà là mais inactive → Restart-Service iphlpsvc)'
   echo "   Fallback usbmuxd local…"
   pgrep -x usbmuxd >/dev/null || sudo usbmuxd
 fi
