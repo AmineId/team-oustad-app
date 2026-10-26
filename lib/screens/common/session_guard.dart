@@ -7,9 +7,9 @@ import '../../core/theme/theme.dart';
 import '../auth/login_screen.dart';
 
 /// Enveloppe les écrans d'accueil (membre, coach, admin) : la session est
-/// revérifiée auprès du serveur à chaque retour au premier plan (l'app
-/// reprise depuis l'arrière-plan ne repasse pas par le splash) et à chaque
-/// changement de réseau.
+/// surveillée en permanence : à l'ouverture, toutes les 30 s au premier
+/// plan, à chaque reprise (l'app reprise depuis l'arrière-plan ne repasse
+/// pas par le splash) et à chaque changement de réseau.
 /// - serveur injoignable → bandeau « Hors ligne », données du cache ;
 /// - jeton refusé (401/403) → purge de la session et retour au login.
 class SessionGuard extends StatefulWidget {
@@ -44,42 +44,76 @@ class SessionGuard extends StatefulWidget {
 }
 
 class _SessionGuardState extends State<SessionGuard> {
-  static const _minInterval = Duration(seconds: 15);
+  static const _pollInterval = Duration(seconds: 30);
 
   late final AppLifecycleListener _lifecycle;
   StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
-  DateTime? _lastCheck;
+  Timer? _poll;
   bool _checking = false;
 
   @override
   void initState() {
     super.initState();
-    _lifecycle = AppLifecycleListener(onResume: _onResume);
+    _lifecycle = AppLifecycleListener(
+      onResume: _startPolling,
+      onPause: _stopPolling,
+    );
     _connectivitySub = Connectivity().onConnectivityChanged.listen(
-      (_) => _check(),
+      _onConnectivityChanged,
       onError: (_) {},
     );
+    _startPolling();
   }
 
   @override
   void dispose() {
     _lifecycle.dispose();
     _connectivitySub?.cancel();
+    _poll?.cancel();
     super.dispose();
   }
 
-  void _onResume() {
-    final last = _lastCheck;
-    if (last != null && DateTime.now().difference(last) < _minInterval) return;
+  /// Vérification immédiate puis toutes les [_pollInterval] tant que l'app
+  /// est au premier plan.
+  void _startPolling() {
+    _poll?.cancel();
+    _poll = Timer.periodic(_pollInterval, (_) => _check());
     _check();
   }
+
+  void _stopPolling() {
+    _poll?.cancel();
+    _poll = null;
+  }
+
+  void _onConnectivityChanged(List<ConnectivityResult> results) {
+    // Plus aucun réseau : bandeau tout de suite, sans attendre le délai
+    // d'expiration de la requête.
+    if (_noNetwork(results)) {
+      AuthService.serverReachable.value = false;
+      return;
+    }
+    _check();
+  }
+
+  static bool _noNetwork(List<ConnectivityResult> results) =>
+      results.isEmpty || results.every((r) => r == ConnectivityResult.none);
 
   Future<void> _check() async {
     if (_checking) return;
     _checking = true;
-    _lastCheck = DateTime.now();
     try {
-      if (mounted) await SessionGuard.check(context);
+      List<ConnectivityResult>? network;
+      try {
+        network = await Connectivity().checkConnectivity();
+      } catch (_) {
+        network = null; // statut inconnu : on interroge le serveur
+      }
+      if (network != null && _noNetwork(network)) {
+        AuthService.serverReachable.value = false;
+      } else if (mounted) {
+        await SessionGuard.check(context);
+      }
     } finally {
       _checking = false;
     }
