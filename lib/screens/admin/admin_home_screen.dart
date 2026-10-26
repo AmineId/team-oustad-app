@@ -2002,7 +2002,7 @@ class _AdminsListViewState extends State<_AdminsListView> {
                         onRefresh: _loadAdmins,
                         color: theme.colorScheme.primary,
                         child: ListView.builder(
-                          padding: EdgeInsets.fromLTRB(16, 0, 16, 16 + MediaQuery.of(context).padding.bottom),
+                          padding: EdgeInsets.fromLTRB(16, 0, 16, 96 + MediaQuery.of(context).padding.bottom),
                           itemCount: _filteredAdmins.length,
                           itemBuilder: (context, index) {
                             final admin = _filteredAdmins[index];
@@ -2393,7 +2393,7 @@ class _GymsListViewState extends State<_GymsListView> {
                         onRefresh: _loadGyms,
                         color: context.palette.primary,
                         child: ListView.builder(
-                          padding: EdgeInsets.fromLTRB(16, 0, 16, 16 + MediaQuery.of(context).padding.bottom),
+                          padding: EdgeInsets.fromLTRB(16, 0, 16, 96 + MediaQuery.of(context).padding.bottom),
                           itemCount: _filteredGyms.length,
                           itemBuilder: (context, index) {
                             final gym = _filteredGyms[index];
