@@ -198,11 +198,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
       final userId = widget.profileData?['id'] as int;
       
+      // Identité et contact sont sur le User (PUT /users/:id) : la route
+      // /members/:id/profile les ignore.
+      String? text(TextEditingController c) {
+        final v = c.text.trim();
+        return v.isEmpty ? null : v;
+      }
+
+      await _apiService.updateUserProfile(userId, {
+        'firstName': ?text(_firstNameController),
+        'lastName': ?text(_lastNameController),
+        'phoneNumber': ?text(_phoneController),
+        'email': ?text(_emailController),
+      }, token);
+
       final updateData = <String, dynamic>{
-        'firstName': _firstNameController.text,
-        'lastName': _lastNameController.text,
-        'phoneNumber': _phoneController.text,
-        'email': _emailController.text.isNotEmpty ? _emailController.text : null,
         'profession': _professionController.text.isNotEmpty ? _professionController.text : null,
         'fitnessLevel': _selectedFitnessLevel.isNotEmpty ? _selectedFitnessLevel : null,
       };
@@ -222,7 +232,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         updateData['profileImage'] = 'data:image/jpeg;base64,$base64Image';
       }
 
-      await _apiService.updateMemberProfile(userId, updateData, token);
+      final memberResult = await _apiService.updateMemberProfile(
+        userId,
+        updateData,
+        token,
+      );
+      if (memberResult == null || memberResult['error'] != null) {
+        throw Exception(
+          memberResult?['error'] ?? 'Erreur lors de la mise à jour du profil',
+        );
+      }
       if (_newProfileImage != null) ProfilePhotos.invalidate(userId);
       
       // Refresh profile data

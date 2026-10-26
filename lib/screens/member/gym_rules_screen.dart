@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/theme/theme.dart';
+import '../../widgets/common/profile_avatar.dart';
 import 'member_home_screen.dart';
 
 class GymRulesScreen extends StatefulWidget {
@@ -103,9 +104,22 @@ class _GymRulesScreenState extends State<GymRulesScreen> {
       final imageBytes = await imageFile.readAsBytes();
       final base64Image = base64Encode(imageBytes);
       
+      // Identité et contact sont sur le User (PUT /users/:id) : la route
+      // /members/:id/profile les ignorait, seule la photo était enregistrée.
+      String? text(String key) {
+        final v = (savedData[key] as String?)?.trim();
+        return v == null || v.isEmpty ? null : v;
+      }
+
+      await _apiService.updateUserProfile(userId, {
+        'firstName': ?text('firstName'),
+        'lastName': ?text('lastName'),
+        'phoneNumber': ?text('phone'),
+        'email': ?text('email'),
+      }, token);
+
       final profileUpdateData = {
         'birthDate': _convertFrenchDateToISO(savedData['birthDate']),
-        'phone': savedData['phone'],
         'profession': savedData['profession'],
         'fitnessLevel': savedData['fitnessLevel'],
         'profileImage': 'data:image/jpeg;base64,$base64Image',
@@ -114,11 +128,6 @@ class _GymRulesScreenState extends State<GymRulesScreen> {
         'preferredTrainingDays': savedData['preferredTrainingDays'],
         'workoutNotificationsEnabled': savedData['workoutNotificationsEnabled'],
       };
-      
-      // Add email if provided
-      if (savedData['email'] != null && (savedData['email'] as String).trim().isNotEmpty) {
-        profileUpdateData['email'] = savedData['email'];
-      }
 
       final profileResponse = await _apiService.updateMemberProfile(
         userId,
@@ -181,6 +190,10 @@ class _GymRulesScreenState extends State<GymRulesScreen> {
           // Don't block the onboarding if goal creation fails
         }
       }
+
+      // Le profil affiché ensuite doit refléter ce qui vient d'être saisi.
+      ProfilePhotos.invalidate(userId);
+      await _authService.refreshUserProfile();
 
       // 4. Clear saved onboarding data
       await prefs.remove('onboarding_data');
