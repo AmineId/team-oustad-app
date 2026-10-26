@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.122](https://github.com/AmineId/team-oustad-app/compare/v1.0.0-beta.121...v1.0.0-beta.122) (2026-10-26)
+
+
+### 🐛 Bug Fixes
+
+* **ui:** le bouton flottant « Nouveau » ne masque plus la dernière carte ([081a0e1](https://github.com/AmineId/team-oustad-app/commit/081a0e11e0829feeb4de5a5590254b18183e5993))
+
 ## [1.0.0-beta.121](https://github.com/AmineId/team-oustad-app/compare/v1.0.0-beta.120...v1.0.0-beta.121) (2026-10-26)
 
 
