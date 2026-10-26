@@ -32,7 +32,6 @@ class _AdminEditProfileScreenState extends State<AdminEditProfileScreen> {
   late TextEditingController _phoneController;
 
   File? _newProfileImage;
-  String? _currentProfileImageBase64;
   bool _isLoading = false;
 
   @override
@@ -52,8 +51,6 @@ class _AdminEditProfileScreenState extends State<AdminEditProfileScreen> {
     _phoneController = TextEditingController(
       text: data?['phoneNumber'] as String? ?? '',
     );
-    final img = data?['profileImage'];
-    _currentProfileImageBase64 = img is String && img.isNotEmpty ? img : null;
   }
 
   @override
@@ -90,6 +87,7 @@ class _AdminEditProfileScreenState extends State<AdminEditProfileScreen> {
       if (_newProfileImage != null) {
         final bytes = await _newProfileImage!.readAsBytes();
         await _apiService.uploadProfileImage(userId, base64Encode(bytes), token);
+        ProfilePhotos.invalidate(userId);
       }
 
       await _apiService.updateUserProfile(
@@ -119,14 +117,22 @@ class _AdminEditProfileScreenState extends State<AdminEditProfileScreen> {
     }
   }
 
-  ImageProvider? get _avatarImage {
-    if (_newProfileImage != null) return FileImage(_newProfileImage!);
-    final b64 = _currentProfileImageBase64;
-    if (b64 != null && b64.isNotEmpty) {
-      final data = b64.contains('base64,') ? b64.split('base64,')[1] : b64;
-      return MemoryImage(base64Decode(data));
+  Widget _buildAvatar(Color iconColor) {
+    final placeholder = Container(
+      color: context.palette.primaryFill,
+      child: Icon(Icons.person, size: 52, color: iconColor),
+    );
+    final picked = _newProfileImage;
+    if (picked != null) {
+      return ClipOval(
+        child: Image.file(picked, width: 104, height: 104, fit: BoxFit.cover),
+      );
     }
-    return null;
+    return ProfileAvatar(
+      userId: ProfilePhotos.userIdOf(widget.profileData),
+      size: 104,
+      placeholder: placeholder,
+    );
   }
 
   @override
@@ -183,18 +189,7 @@ class _AdminEditProfileScreenState extends State<AdminEditProfileScreen> {
                   onTap: _pickImage,
                   child: Stack(
                     children: [
-                      CircleAvatar(
-                        radius: 52,
-                        backgroundColor: context.palette.primaryFill,
-                        backgroundImage: _avatarImage,
-                        child: _avatarImage == null
-                            ? Icon(
-                                Icons.person,
-                                size: 52,
-                                color: textPrimary,
-                              )
-                            : null,
-                      ),
+                      _buildAvatar(textPrimary),
                       Positioned(
                         bottom: 0,
                         right: 0,

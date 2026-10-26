@@ -107,15 +107,6 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   }
 
   Widget _buildProfileAvatar(bool isActive) {
-    // Try to get photo from root level first (from /me endpoint)
-    String? profileImageBase64 = _profileData?['profileImage'] as String?;
-
-    // Fallback to member.profileImage if not found at root level
-    if (profileImageBase64 == null || profileImageBase64.isEmpty) {
-      final member = _profileData?['member'] as Map<String, dynamic>?;
-      profileImageBase64 = member?['profileImage'] as String?;
-    }
-
     return Container(
       width: 32,
       height: 32,
@@ -126,34 +117,17 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
           width: 2,
         ),
       ),
-      child: ClipOval(
-        child: profileImageBase64 != null && profileImageBase64.isNotEmpty
-            ? Image.memory(
-                base64Decode(
-                  profileImageBase64.contains('base64,')
-                      ? profileImageBase64.split('base64,')[1]
-                      : profileImageBase64,
-                ),
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: AppColors.primary.withValues(alpha: 0.2),
-                    child: Icon(
-                      Icons.person,
-                      color: isActive ? context.palette.primary : Colors.grey,
-                      size: 20,
-                    ),
-                  );
-                },
-              )
-            : Container(
-                color: AppColors.primary.withValues(alpha: 0.2),
-                child: Icon(
-                  Icons.person,
-                  color: isActive ? context.palette.primary : Colors.grey,
-                  size: 20,
-                ),
-              ),
+      child: ProfileAvatar(
+        userId: ProfilePhotos.userIdOf(_profileData),
+        size: 28,
+        placeholder: Container(
+          color: AppColors.primary.withValues(alpha: 0.2),
+          child: Icon(
+            Icons.person,
+            color: isActive ? context.palette.primary : Colors.grey,
+            size: 20,
+          ),
+        ),
       ),
     );
   }
@@ -1048,17 +1022,20 @@ class _ProfilePageState extends State<ProfilePage> {
                           ),
                           child: Stack(
                             children: [
-                              CircleAvatar(
-                                radius: 50,
-                                backgroundColor: context.palette.primaryFill,
-                                child: Icon(
-                                  Icons.person,
-                                  size: 50,
-                                  color:
-                                      (Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? AppColors.darkTextPrimary
-                                      : AppColors.lightTextPrimary),
+                              ProfileAvatar(
+                                userId: ProfilePhotos.userIdOf(_profileData),
+                                size: 100,
+                                placeholder: Container(
+                                  color: context.palette.primaryFill,
+                                  child: Icon(
+                                    Icons.person,
+                                    size: 50,
+                                    color:
+                                        (Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? AppColors.darkTextPrimary
+                                        : AppColors.lightTextPrimary),
+                                  ),
                                 ),
                               ),
                               Positioned(
@@ -1533,7 +1510,10 @@ class _GestionGlobalePageState extends State<GestionGlobalePage> {
       return _AdminEditView(
         admin: _selectedAdmin!,
         onBack: () => setState(() => _currentView = 'admin_details'),
-        onSuccess: () => setState(() => _currentView = 'admin_details'),
+        onSuccess: (updatedAdmin) => setState(() {
+          _selectedAdmin = updatedAdmin;
+          _currentView = 'admin_details';
+        }),
       );
     } else if (_currentView == 'gym_edit' && _selectedGym != null) {
       return _GymEditView(
@@ -3317,7 +3297,7 @@ class _GymDetailsViewState extends State<_GymDetailsView> {
 class _AdminEditView extends StatefulWidget {
   final Map<String, dynamic> admin;
   final VoidCallback onBack;
-  final VoidCallback onSuccess;
+  final ValueChanged<Map<String, dynamic>> onSuccess;
 
   const _AdminEditView({
     required this.admin,
@@ -3415,7 +3395,11 @@ class _AdminEditViewState extends State<_AdminEditView> {
             backgroundColor: AppColors.success,
           ),
         );
-        widget.onSuccess();
+        // Le détail affiche la fiche à jour sans recharger la liste.
+        widget.onSuccess({
+          ...widget.admin,
+          ...Map<String, dynamic>.from(response)..remove('profileImage'),
+        });
       } else {
         throw Exception('Erreur lors de la modification');
       }

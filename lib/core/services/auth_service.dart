@@ -708,6 +708,10 @@ class AuthService {
     }
   }
 
+  /// Incrémenté à chaque profil rechargé depuis l'API : les écrans qui
+  /// affichent le profil en cache l'écoutent pour se mettre à jour.
+  static final ValueNotifier<int> profileVersion = ValueNotifier<int>(0);
+
   /// Refresh user profile (fetch from API and update cache)
   Future<Map<String, dynamic>?> refreshUserProfile() async {
     try {
@@ -722,6 +726,7 @@ class AuthService {
           'user_profile_cache_time',
           DateTime.now().millisecondsSinceEpoch,
         );
+        profileVersion.value++;
         return profileData;
       }
       return null;
