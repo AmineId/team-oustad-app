@@ -6,6 +6,37 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.117](https://github.com/AmineId/team-oustad-app/compare/v1.0.0-beta.116...v1.0.0-beta.117) (2026-10-26)
+
+
+### ✨ New Features
+
+* **coach:** onglet Aujourd'hui avec les entrées en salle du jour ([e0b53bd](https://github.com/AmineId/team-oustad-app/commit/e0b53bd207bb41a5886e13751bdd1907980d1829))
+* **coachs:** création des coachs, salles et affectation aux membres ([8a10550](https://github.com/AmineId/team-oustad-app/commit/8a10550819dd85741730829f07aebe2f799f20ab))
+* **incidents:** fil d'incident en chat (polling, push, non-lus) ([b49fa87](https://github.com/AmineId/team-oustad-app/commit/b49fa87612acc43c07c722e20aa14232754ad4b4))
+* **incidents:** signalement par manager et coach, suivi par l'owner ([49e3677](https://github.com/AmineId/team-oustad-app/commit/49e3677a43f2015c6230a1cbd877e3bd357ae32b))
+* **programmes:** programmes créés par l'owner et affectés aux membres ([8d0a640](https://github.com/AmineId/team-oustad-app/commit/8d0a640c21e8d9f532e2988bcf63bed1941e9e2b))
+* **roles:** le manager ne peut plus affecter de programmes ([1ea818e](https://github.com/AmineId/team-oustad-app/commit/1ea818e39fbb378eb5c87111b157f422880607f7))
+* **roles:** renommer admin en manager et préparer le rôle coach ([e1602b1](https://github.com/AmineId/team-oustad-app/commit/e1602b138c586bf2a65e280e9610ff88a4c96e80))
+* **séances:** planning des coachs, créneaux et pointage ([0550910](https://github.com/AmineId/team-oustad-app/commit/0550910409028ed5836f4b60d947ddeeff09a8b3))
+* **sessions:** séances typées (découverte, entraînement, cours collectif, bilan, coaching) ([d03dc5c](https://github.com/AmineId/team-oustad-app/commit/d03dc5cc9c830d501956a04aa2864f49b50358ba))
+
+
+### 🐛 Bug Fixes
+
+* **sessions:** message pour l'erreur invalid_type ([f23e0f5](https://github.com/AmineId/team-oustad-app/commit/f23e0f55f158021a1c05f561a1586d9b36de403b))
+
+
+### ♻️ Code Refactoring
+
+* **admin:** retirer la borne d'accueil de l'app mobile ([24f5b6c](https://github.com/AmineId/team-oustad-app/commit/24f5b6cf391f4dbe8cbf18b3184aed3e87f5354b))
+
+
+### 📚 Documentation
+
+* **api:** swagger Rôles V2 (manager, coach, programmes, séances, incidents) ([399573c](https://github.com/AmineId/team-oustad-app/commit/399573c950086ce00c58ba13b5d91a5f49bb41b5))
+* **api:** swagger Rôles V2 à jour (séances typées, chat incident, manager sans affectation) ([53b5762](https://github.com/AmineId/team-oustad-app/commit/53b5762c90e5ef370d8770bfa96c3e8af98da72f))
+
 ## [1.0.0-beta.116](https://github.com/AmineId/team-oustad-app/compare/v1.0.0-beta.115...v1.0.0-beta.116) (2026-10-25)
 
 
