@@ -33,6 +33,9 @@ class _SessionEditorScreenState extends State<SessionEditorScreen> {
 
   late final Map<String, dynamic>? _session = widget.session;
   late int? _coachId = _session?['coachId'] as int?;
+  late String _type = _session == null
+      ? 'training'
+      : SessionService.typeOf(_session);
   late DateTime _day;
   late TimeOfDay _start;
   late TimeOfDay _end;
@@ -159,6 +162,7 @@ class _SessionEditorScreenState extends State<SessionEditorScreen> {
             endAt: _at(_end),
             coachId: _coachId,
             capacity: capacity,
+            type: _type,
             title: title,
             notes: notes,
           )
@@ -169,6 +173,7 @@ class _SessionEditorScreenState extends State<SessionEditorScreen> {
             startAt: _at(_start),
             endAt: _at(_end),
             capacity: capacity,
+            type: _type,
             title: title.isEmpty ? null : title,
             notes: notes.isEmpty ? null : notes,
             repeatUntil: _repeat
@@ -198,6 +203,32 @@ class _SessionEditorScreenState extends State<SessionEditorScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          DropdownButtonFormField<String>(
+            initialValue: _type,
+            decoration: const InputDecoration(labelText: 'Type de séance'),
+            items: [
+              for (final e in SessionService.types.entries)
+                DropdownMenuItem(
+                  value: e.key,
+                  child: Row(
+                    children: [
+                      Icon(sessionTypeIcon(e.key), size: 20),
+                      const SizedBox(width: 12),
+                      Text(e.value),
+                    ],
+                  ),
+                ),
+            ],
+            onChanged: (v) {
+              if (v == null) return;
+              setState(() {
+                _type = v;
+                // Un coaching individuel n'a qu'une place.
+                if (v == 'private') _capacityController.text = '1';
+              });
+            },
+          ),
+          const SizedBox(height: 8),
           DropdownButtonFormField<int>(
             initialValue: _coachId,
             decoration: const InputDecoration(labelText: 'Coach'),

@@ -213,7 +213,11 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text(_session['title'] as String? ?? 'Séance'),
+          title: Text(
+            (_session['title'] as String?)?.isNotEmpty == true
+                ? _session['title'] as String
+                : SessionService.types[SessionService.typeOf(_session)]!,
+          ),
           actions: [
             if (_canManage && _open) ...[
               IconButton(
@@ -246,6 +250,7 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
               const SizedBox(height: 4),
               Text(
                 [
+                  SessionService.types[SessionService.typeOf(_session)]!,
                   sessionCoachName(_session),
                   ?gym,
                   '${_session['bookedCount'] ?? members.length}/'

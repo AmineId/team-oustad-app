@@ -29,6 +29,7 @@ class _FindSlotScreenState extends State<FindSlotScreen> {
   List<Map<String, dynamic>>? _slots;
   String _query = '';
   int _days = 14;
+  String? _type;
   bool _isLoading = false;
 
   @override
@@ -60,6 +61,7 @@ class _FindSlotScreenState extends State<FindSlotScreen> {
             token,
             gymId: widget.gymId,
             memberId: _member?['id'] as int?,
+            type: _type,
             from: now,
             to: now.add(Duration(days: _days)),
           );
@@ -187,6 +189,16 @@ class _FindSlotScreenState extends State<FindSlotScreen> {
             selected: {_days},
             onSelectionChanged: (v) {
               setState(() => _days = v.first);
+              _loadSlots();
+            },
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: SessionTypeFilter(
+            value: _type,
+            onChanged: (v) {
+              setState(() => _type = v);
               _loadSlots();
             },
           ),

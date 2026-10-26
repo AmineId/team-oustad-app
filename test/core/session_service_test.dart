@@ -24,4 +24,17 @@ void main() {
     };
     expect(SessionService.membersOf(s).map((m) => m['memberId']), [1, 3]);
   });
+
+  test('typeOf retombe sur training pour un type absent ou inconnu', () {
+    expect(SessionService.typeOf({'type': 'group_class'}), 'group_class');
+    expect(SessionService.typeOf({}), 'training');
+    expect(SessionService.typeOf({'type': 'yoga'}), 'training');
+    expect(SessionService.types.keys, [
+      'discovery',
+      'training',
+      'group_class',
+      'assessment',
+      'private',
+    ]);
+  });
 }

@@ -43,6 +43,52 @@ String sessionCoachName(Map<String, dynamic> s) {
       : 'Coach';
 }
 
+IconData sessionTypeIcon(String type) => switch (type) {
+  'discovery' => Icons.explore_outlined,
+  'group_class' => Icons.groups_outlined,
+  'assessment' => Icons.monitor_heart_outlined,
+  'private' => Icons.person_outline,
+  _ => Icons.fitness_center,
+};
+
+/// Puces de filtre par type de séance ; [value] null = tous les types.
+class SessionTypeFilter extends StatelessWidget {
+  final String? value;
+  final ValueChanged<String?> onChanged;
+
+  const SessionTypeFilter({
+    super.key,
+    required this.value,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: [
+          ChoiceChip(
+            label: const Text('Tous'),
+            selected: value == null,
+            onSelected: (_) => onChanged(null),
+          ),
+          for (final e in SessionService.types.entries) ...[
+            const SizedBox(width: 8),
+            ChoiceChip(
+              avatar: Icon(sessionTypeIcon(e.key), size: 18),
+              label: Text(e.value),
+              selected: value == e.key,
+              onSelected: (_) => onChanged(value == e.key ? null : e.key),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
 const sessionMemberStatus = {
   'booked': 'Inscrit',
   'checked_in': 'Présent',
@@ -130,9 +176,12 @@ class SessionCard extends StatelessWidget {
     final cancelled = session['status'] == 'cancelled';
     final booked = session['bookedCount'] as int? ?? 0;
     final capacity = session['capacity'] as int? ?? 0;
+    final type = SessionService.typeOf(session);
+    final typeLabel = SessionService.types[type]!;
     final title = session['title'] as String?;
     final gym = (session['gym'] as Map<String, dynamic>?)?['name'] as String?;
     final subtitle = [
+      if (title != null && title.isNotEmpty) typeLabel,
       sessionCoachName(session),
       ?gym,
       '$booked/$capacity inscrit${booked > 1 ? 's' : ''}',
@@ -154,13 +203,14 @@ class SessionCard extends StatelessWidget {
               ),
               if (end != null)
                 Text(sessionTime(end), style: const TextStyle(fontSize: 12)),
+              Icon(sessionTypeIcon(type), size: 14),
             ],
           ),
         ),
         title: Text(
           [
             if (showDay && start != null) sessionDay(start),
-            title ?? 'Séance',
+            (title == null || title.isEmpty) ? typeLabel : title,
           ].join(' · '),
           style: cancelled
               ? const TextStyle(decoration: TextDecoration.lineThrough)

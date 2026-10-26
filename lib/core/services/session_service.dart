@@ -47,6 +47,21 @@ class SessionService {
     'subscription_expired': 'Abonnement expiré',
   };
 
+  /// Types de séance (`type`, requis à la création ; `training` par défaut
+  /// pour les séances antérieures au typage).
+  static const types = {
+    'discovery': 'Découverte',
+    'training': 'Entraînement',
+    'group_class': 'Cours collectif',
+    'assessment': 'Bilan',
+    'private': 'Coaching individuel',
+  };
+
+  static String typeOf(Map<String, dynamic> s) {
+    final type = s['type'];
+    return types.containsKey(type) ? type as String : 'training';
+  }
+
   static const rejectReasons = {
     'member_not_found': 'membre introuvable',
     'member_other_gym': 'membre d\'une autre salle',
@@ -109,6 +124,7 @@ class SessionService {
     String token, {
     int? gymId,
     int? coachId,
+    String? type,
     DateTime? from,
     DateTime? to,
   }) async {
@@ -119,6 +135,7 @@ class SessionService {
       query: {
         if (gymId != null) 'gymId': '$gymId',
         if (coachId != null) 'coachId': '$coachId',
+        'type': ?type,
         ..._range(from, to),
       },
     );
@@ -136,6 +153,7 @@ class SessionService {
   /// Séances du coach connecté, toutes salles.
   Future<List<Map<String, dynamic>>?> getMySessions(
     String token, {
+    String? type,
     DateTime? from,
     DateTime? to,
   }) async {
@@ -143,7 +161,7 @@ class SessionService {
       'GET',
       '/coaches/me/sessions',
       token,
-      query: _range(from, to),
+      query: {'type': ?type, ..._range(from, to)},
     );
     if (r.status != 200) return null;
     return ApiService.listFrom(r.body, 'sessions');
@@ -156,6 +174,7 @@ class SessionService {
     required int gymId,
     int? memberId,
     int? coachId,
+    String? type,
     DateTime? from,
     DateTime? to,
   }) async {
@@ -167,6 +186,7 @@ class SessionService {
         'gymId': '$gymId',
         if (memberId != null) 'memberId': '$memberId',
         if (coachId != null) 'coachId': '$coachId',
+        'type': ?type,
         ..._range(from, to),
       },
     );
@@ -182,6 +202,7 @@ class SessionService {
     required DateTime startAt,
     required DateTime endAt,
     required int capacity,
+    required String type,
     String? title,
     String? notes,
     DateTime? repeatUntil,
@@ -196,6 +217,7 @@ class SessionService {
         'startAt': _iso(startAt),
         'endAt': _iso(endAt),
         'capacity': capacity,
+        'type': type,
         'title': ?title,
         'notes': ?notes,
         if (repeatUntil != null)
@@ -214,6 +236,7 @@ class SessionService {
     DateTime? endAt,
     int? coachId,
     int? capacity,
+    String? type,
     String? title,
     String? notes,
   }) async {
@@ -227,6 +250,7 @@ class SessionService {
         if (endAt != null) 'endAt': _iso(endAt),
         'coachId': ?coachId,
         'capacity': ?capacity,
+        'type': ?type,
         'title': ?title,
         'notes': ?notes,
       },

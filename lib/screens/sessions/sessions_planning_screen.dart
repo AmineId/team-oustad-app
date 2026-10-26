@@ -27,6 +27,7 @@ class _SessionsPlanningScreenState extends State<SessionsPlanningScreen> {
   int? _gymId;
   List<Map<String, dynamic>> _coaches = [];
   int? _coachId;
+  String? _type;
   List<Map<String, dynamic>>? _sessions;
   bool _isLoading = true;
 
@@ -75,6 +76,7 @@ class _SessionsPlanningScreenState extends State<SessionsPlanningScreen> {
             token,
             gymId: _gymId,
             coachId: _coachId,
+            type: _type,
             from: _weekStart,
             to: _weekStart.add(const Duration(days: 7)),
           );
@@ -170,6 +172,16 @@ class _SessionsPlanningScreenState extends State<SessionsPlanningScreen> {
               ],
               onChanged: (v) {
                 _coachId = v;
+                _load();
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: SessionTypeFilter(
+              value: _type,
+              onChanged: (v) {
+                setState(() => _type = v);
                 _load();
               },
             ),
