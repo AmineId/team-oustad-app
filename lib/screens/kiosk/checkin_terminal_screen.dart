@@ -11,6 +11,7 @@ import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_palette.dart';
+import '../incidents/incident_create_screen.dart';
 import 'kiosk_audio.dart';
 import 'kiosk_links.dart';
 
@@ -1083,6 +1084,20 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
               tooltip: 'Installer l\'app mobile',
               onPressed: _showInstallDoc,
             ),
+          IconButton(
+            icon: const Icon(
+              Icons.report_outlined,
+              size: 18,
+              color: AppColors.darkTextTertiary,
+            ),
+            tooltip: 'Signaler un incident',
+            onPressed: () async {
+              await Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const IncidentCreateScreen()),
+              );
+              _refocusQr();
+            },
+          ),
           IconButton(
             icon: const Icon(
               Icons.close_rounded,

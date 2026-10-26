@@ -4,6 +4,7 @@ import '../../core/core.dart';
 import '../../core/l10n/app_localizations.dart';
 import '../../core/utils/user_utils.dart';
 import '../auth/login_screen.dart';
+import '../incidents/incidents_screen.dart';
 import '../programs/programs_screen.dart';
 import '../sessions/session_detail_screen.dart';
 import '../sessions/session_widgets.dart';
@@ -34,7 +35,33 @@ class _CoachHomeScreenState extends State<CoachHomeScreen> {
   void initState() {
     super.initState();
     _load();
+    NotificationRouter.pending.addListener(_openFromNotification);
+    // L'app a pu être lancée par un tap sur une notification.
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _openFromNotification(),
+    );
   }
+
+  @override
+  void dispose() {
+    NotificationRouter.pending.removeListener(_openFromNotification);
+    super.dispose();
+  }
+
+  /// Séance affectée / modifiée → rafraîchir ; incident → la liste.
+  void _openFromNotification() {
+    if (!mounted || NotificationRouter.pending.value == null) return;
+    final type = NotificationRouter.take();
+    final home = ModalRoute.of(context);
+    Navigator.of(context).popUntil((route) => route == home);
+    _load();
+    if (type == 'incident') _openIncidents();
+  }
+
+  void _openIncidents() => Navigator.push(
+    context,
+    MaterialPageRoute(builder: (_) => const IncidentsScreen()),
+  );
 
   Future<void> _load() async {
     setState(() => _isLoading = true);
@@ -221,6 +248,11 @@ class _CoachHomeScreenState extends State<CoachHomeScreen> {
         appBar: AppBar(
           title: Text(l10n.coachRole),
           actions: [
+            IconButton(
+              icon: const Icon(Icons.report_outlined),
+              tooltip: 'Incidents',
+              onPressed: _openIncidents,
+            ),
             IconButton(
               icon: const Icon(Icons.fitness_center),
               tooltip: 'Programmes',

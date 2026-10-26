@@ -18,6 +18,7 @@ import 'admin_create_member_screen.dart';
 import 'admin_members_screen.dart';
 import '../programs/program_screens.dart';
 import '../sessions/session_screens.dart';
+import '../incidents/incident_screens.dart';
 import 'admin_member_details_screen.dart';
 import '../common/security_settings_screen.dart';
 import '../common/about_screen.dart';
@@ -66,14 +67,21 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     super.dispose();
   }
 
-  /// Les notifications admin (demandes d'aide, paiements) ramènent à l'accueil.
+  /// Les notifications admin (demandes d'aide, paiements) ramènent à
+  /// l'accueil ; celles d'incident ouvrent la liste des incidents.
   void _openFromNotification() {
     if (!mounted || NotificationRouter.pending.value == null) return;
-    NotificationRouter.take();
+    final type = NotificationRouter.take();
     // Fermer les écrans ouverts par-dessus l'accueil (sans dépiler l'accueil).
     final home = ModalRoute.of(context);
     Navigator.of(context).popUntil((route) => route == home);
     setState(() => _currentIndex = 0);
+    if (type == 'incident') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const IncidentsScreen()),
+      );
+    }
   }
 
   Future<void> _loadProfileData() async {
@@ -820,6 +828,17 @@ class _GestionPageState extends State<GestionPage> {
                 onTap: () {
                   setState(() => _currentView = 'members');
                 },
+              ),
+              const SizedBox(height: 12),
+
+              // Incidents (manager : signaler ; owner : répondre, clôturer)
+              _QuickActionButton(
+                icon: Icons.report_outlined,
+                title: 'Incidents',
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const IncidentsScreen()),
+                ),
               ),
               const SizedBox(height: 12),
 

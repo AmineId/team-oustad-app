@@ -7,6 +7,7 @@ export 'member/member_screens.dart';
 export 'coach/coach_screens.dart';
 export 'programs/program_screens.dart';
 export 'sessions/session_screens.dart';
+export 'incidents/incident_screens.dart';
 // Excluded common screens due to naming conflicts with admin screens
 
 

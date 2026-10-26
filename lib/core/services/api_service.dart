@@ -3351,6 +3351,25 @@ class ApiService {
     }
   }
 
+  /// Contenu binaire authentifié (photos d'incident…), null si absent.
+  Future<Uint8List?> getBytes(
+    String path,
+    String token, {
+    Duration timeout = const Duration(seconds: 15),
+  }) async {
+    try {
+      final resp = await http
+          .get(
+            baseUri.resolve(path),
+            headers: {'Authorization': 'Bearer $token'},
+          )
+          .timeout(timeout);
+      return resp.statusCode == 200 ? resp.bodyBytes : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// Extrait une liste d'une réponse : tableau brut ou `{key: [...]}`.
   static List<Map<String, dynamic>> listFrom(dynamic body, String key) {
     final raw = body is List ? body : (body is Map ? body[key] : null);
