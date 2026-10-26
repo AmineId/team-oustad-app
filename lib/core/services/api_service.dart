@@ -1285,6 +1285,13 @@ class ApiService {
 
   /// Update user profile information
   /// PUT /users/{userId}
+  static const _userUpdateErrors = {
+    'invalid_phone': 'Numéro de téléphone invalide',
+    'phone_taken': 'Ce numéro de téléphone est déjà utilisé',
+    'gym_change_forbidden': 'Vous ne pouvez pas changer cette salle',
+    'gym_not_found': 'Salle introuvable',
+  };
+
   Future<Map<String, dynamic>?> updateUserProfile(
     int userId,
     Map<String, dynamic> updateData,
@@ -1321,7 +1328,15 @@ class ApiService {
         debugPrint(
           'Failed to update profile: ${resp.statusCode} - ${resp.body}',
         );
-        throw Exception('Failed to update profile: ${resp.statusCode}');
+        String? code;
+        try {
+          final body = jsonDecode(resp.body);
+          if (body is Map) code = body['error'] as String?;
+        } catch (_) {}
+        throw ApiError(
+          _userUpdateErrors[code] ??
+              'Erreur lors de la mise à jour (${resp.statusCode})',
+        );
       }
     } catch (e) {
       // ignore: avoid_print
@@ -3673,4 +3688,14 @@ class ApiService {
       return {'error': e.toString()};
     }
   }
+}
+
+/// Erreur d'API au message lisible (affiché tel quel à l'utilisateur).
+class ApiError implements Exception {
+  final String message;
+
+  const ApiError(this.message);
+
+  @override
+  String toString() => message;
 }

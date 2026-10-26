@@ -110,8 +110,13 @@ class _AdminEditProfileScreenState extends State<AdminEditProfileScreen> {
         AppSnackBar.success(context, 'Profil mis à jour');
         Navigator.of(context).pop();
       }
-    } catch (_) {
-      if (mounted) AppSnackBar.error(context, 'Erreur lors de la mise à jour');
+    } catch (e) {
+      if (mounted) {
+        AppSnackBar.error(
+          context,
+          e is ApiError ? e.message : 'Erreur lors de la mise à jour',
+        );
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
