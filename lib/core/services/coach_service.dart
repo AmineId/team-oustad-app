@@ -88,6 +88,23 @@ class CoachService {
     return ApiService.listFrom(r.body, 'members');
   }
 
+  /// Entrées en salle du jour (`GET /check-in/today`) : coach = ses salles
+  /// (ou [gymId]) avec `isMyMember` et `nextSessionToday` ; manager = sa
+  /// salle ; owner = toutes ou [gymId].
+  Future<List<Map<String, dynamic>>?> getTodayCheckIns(
+    String token, {
+    int? gymId,
+  }) async {
+    final r = await _api.sendJson(
+      'GET',
+      '/check-in/today',
+      token,
+      query: gymId == null ? null : {'gymId': '$gymId'},
+    );
+    if (r.status != 200) return null;
+    return ApiService.listFrom(r.body, 'checkIns');
+  }
+
   static String? _errorOf(dynamic body) {
     if (body is! Map) return null;
     final value = body['message'] ?? body['error'];
