@@ -43,16 +43,16 @@ class _SplashScreenState extends State<SplashScreen> {
     // Vérifier en arrière-plan si une nouvelle version est disponible
     _checkForUpdates();
 
-    // After health check, if we have a stored JWT validate it and
-    // navigate directly to Home when valid. Otherwise go to Login.
+    // Session enregistrée : l'accueil seulement si le serveur la confirme
+    // (GET /auth/me). Serveur injoignable ou jeton refusé → connexion.
     if (!mounted) return;
     try {
       final auth = AuthService(_apiService);
       await auth.clearStaleTokenOnFreshInstall();
-      final token = await auth.loadToken();
-      if (token != null) {
-        final valid = _apiService.verifyToken(token);
-        if (valid) {
+      if (_dbHealthy) {
+        final session = await auth.validateSession();
+        if (session == SessionCheck.unreachable) _dbHealthy = false;
+        if (session == SessionCheck.valid) {
           if (!mounted) return;
 
           // Determine which home screen based on user type

@@ -11,6 +11,18 @@ import 'api_service.dart';
 import 'fcm_service.dart';
 
 /// Outcome of a biometric authentication attempt that includes an API login step.
+/// Résultat de la validation d'une session enregistrée auprès du serveur.
+enum SessionCheck {
+  /// Jeton accepté par le serveur, profil mis en cache.
+  valid,
+
+  /// Pas de jeton, jeton expiré, ou refusé par le serveur (supprimé).
+  invalid,
+
+  /// Serveur injoignable : on ne peut pas confirmer la session.
+  unreachable,
+}
+
 enum AuthStatus {
   success,
   noSavedCredentials,
@@ -394,14 +406,9 @@ class AuthService {
             }
           }
 
-          debugPrint(
-            '⚠️ [Biometric] Profile fetch failed, defaulting to needs onboarding',
-          );
-          return {
-            'status': AuthStatus.success,
-            'needsOnboarding': true,
-            'userType': userType ?? 'member',
-          };
+          // Profil injoignable : pas d'entrée dans l'app sans serveur.
+          debugPrint('⚠️ [Biometric] Profile fetch failed, server unavailable');
+          return {'status': AuthStatus.serverUnavailable};
         }
         // token invalid -> fallthrough to credential-based flow
       } catch (e) {
@@ -567,6 +574,32 @@ class AuthService {
     };
   }
 
+  /// Valide le jeton enregistré auprès du serveur (`GET /auth/me`) : sans
+  /// serveur, pas d'accès à l'app, même avec un jeton encore valide
+  /// localement. Un jeton refusé (401/403, session révoquée) est supprimé.
+  Future<SessionCheck> validateSession() async {
+    final token = await loadToken();
+    if (token == null || !_apiService.verifyToken(token)) {
+      return SessionCheck.invalid;
+    }
+    final r = await _apiService.sendJson(
+      'GET',
+      '/auth/me',
+      token,
+      timeout: const Duration(seconds: 8),
+    );
+    final body = r.body;
+    if (r.status == 200 && body is Map<String, dynamic>) {
+      await _cacheProfile(body);
+      return SessionCheck.valid;
+    }
+    if (r.status == 401 || r.status == 403) {
+      await _secureStorage.delete(key: 'auth_token');
+      return SessionCheck.invalid;
+    }
+    return SessionCheck.unreachable;
+  }
+
   /// On Android, flutter_secure_storage survives uninstall but SharedPreferences
   /// does not. Detect a fresh install by checking a sentinel in SharedPreferences;
   /// if absent, wipe the stale token so the user lands on the login screen.
@@ -712,6 +745,16 @@ class AuthService {
   /// affichent le profil en cache l'écoutent pour se mettre à jour.
   static final ValueNotifier<int> profileVersion = ValueNotifier<int>(0);
 
+  Future<void> _cacheProfile(Map<String, dynamic> profileData) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('user_profile_cache', jsonEncode(profileData));
+    await prefs.setInt(
+      'user_profile_cache_time',
+      DateTime.now().millisecondsSinceEpoch,
+    );
+    profileVersion.value++;
+  }
+
   /// Refresh user profile (fetch from API and update cache)
   Future<Map<String, dynamic>?> refreshUserProfile() async {
     try {
@@ -720,13 +763,7 @@ class AuthService {
 
       final profileData = await _apiService.getUserProfile(token);
       if (profileData != null) {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('user_profile_cache', jsonEncode(profileData));
-        await prefs.setInt(
-          'user_profile_cache_time',
-          DateTime.now().millisecondsSinceEpoch,
-        );
-        profileVersion.value++;
+        await _cacheProfile(profileData);
         return profileData;
       }
       return null;

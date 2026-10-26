@@ -78,7 +78,7 @@ class ApiService {
       debugPrint(
         'ApiService.healthCheck -> $uri (timeout: ${timeout.inSeconds}s)',
       );
-      final resp = await http.get(uri);
+      final resp = await http.get(uri).timeout(timeout);
       return resp.statusCode == 200;
     } catch (exception) {
       // ignore: avoid_print
