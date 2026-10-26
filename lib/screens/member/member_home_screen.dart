@@ -380,26 +380,6 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
   }
 
   Widget _buildProfileAvatar(bool isActive) {
-    // Try to get photo from root level first (from /me endpoint)
-    String? profileImageBase64;
-
-    // Safe extraction without casting
-    final rootImage = _profileData?['profileImage'];
-    if (rootImage is String && rootImage.isNotEmpty) {
-      profileImageBase64 = rootImage;
-    }
-
-    // Fallback to member.profileImage if not found at root level
-    if (profileImageBase64 == null || profileImageBase64.isEmpty) {
-      final member = _profileData?['member'];
-      if (member is Map<String, dynamic>) {
-        final memberImage = member['profileImage'];
-        if (memberImage is String && memberImage.isNotEmpty) {
-          profileImageBase64 = memberImage;
-        }
-      }
-    }
-
     return Container(
       width: 36,
       height: 36,
@@ -410,34 +390,17 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
           width: 2,
         ),
       ),
-      child: ClipOval(
-        child: profileImageBase64 != null && profileImageBase64.isNotEmpty
-            ? Image.memory(
-                base64Decode(
-                  profileImageBase64.contains('base64,')
-                      ? profileImageBase64.split('base64,')[1]
-                      : profileImageBase64,
-                ),
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: AppColors.primary.withValues(alpha: 0.2),
-                    child: Icon(
-                      Icons.person,
-                      color: isActive ? context.palette.primary : Colors.grey,
-                      size: 24,
-                    ),
-                  );
-                },
-              )
-            : Container(
-                color: AppColors.primary.withValues(alpha: 0.2),
-                child: Icon(
-                  Icons.person,
-                  color: isActive ? context.palette.primary : Colors.grey,
-                  size: 24,
-                ),
-              ),
+      child: ProfileAvatar(
+        userId: ProfilePhotos.userIdOf(_profileData),
+        size: 32,
+        placeholder: Container(
+          color: AppColors.primary.withValues(alpha: 0.2),
+          child: Icon(
+            Icons.person,
+            color: isActive ? context.palette.primary : Colors.grey,
+            size: 24,
+          ),
+        ),
       ),
     );
   }
@@ -573,6 +536,18 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
   void initState() {
     super.initState();
     _authService = AuthService(_apiService);
+    AuthService.profileVersion.addListener(_onProfileChanged);
+  }
+
+  @override
+  void dispose() {
+    AuthService.profileVersion.removeListener(_onProfileChanged);
+    super.dispose();
+  }
+
+  // Les blocs du tableau de bord relisent le profil en cache à chaque build.
+  void _onProfileChanged() {
+    if (mounted) setState(() {});
   }
 
   String _formatDate(String? dateStr) {
@@ -5526,17 +5501,6 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
     final profession = memberData?['profession']?.toString() ?? '';
     final fitnessLevel = memberData?['fitnessLevel']?.toString() ?? '';
 
-    // Safe profile image extraction
-    String? profileImageBase64;
-    final rootImage = _profileData?['profileImage'];
-    if (rootImage is String && rootImage.isNotEmpty) {
-      profileImageBase64 = rootImage;
-    } else {
-      final memberImage = memberData?['profileImage'];
-      if (memberImage is String && memberImage.isNotEmpty) {
-        profileImageBase64 = memberImage;
-      }
-    }
 
     // Format birth date
     String formattedBirthDate = AppLocalizations.of(context).notSpecified;
@@ -5607,35 +5571,21 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
                       children: [
                         Stack(
                           children: [
-                            CircleAvatar(
-                              radius: 50,
-                              backgroundColor: context.palette.primaryFill,
-                              backgroundImage:
-                                  profileImageBase64 != null &&
-                                      profileImageBase64.isNotEmpty
-                                  ? MemoryImage(
-                                      base64Decode(
-                                        profileImageBase64.contains('base64,')
-                                            ? profileImageBase64.split(
-                                                'base64,',
-                                              )[1]
-                                            : profileImageBase64,
-                                      ),
-                                    )
-                                  : null,
-                              child:
-                                  (profileImageBase64 == null ||
-                                      profileImageBase64.isEmpty)
-                                  ? Icon(
-                                      Icons.person,
-                                      size: 50,
-                                      color:
-                                          (Theme.of(context).brightness ==
-                                              Brightness.dark
-                                          ? AppColors.darkTextPrimary
-                                          : AppColors.lightTextPrimary),
-                                    )
-                                  : null,
+                            ProfileAvatar(
+                              userId: ProfilePhotos.userIdOf(_profileData),
+                              size: 100,
+                              placeholder: Container(
+                                color: context.palette.primaryFill,
+                                child: Icon(
+                                  Icons.person,
+                                  size: 50,
+                                  color:
+                                      (Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? AppColors.darkTextPrimary
+                                      : AppColors.lightTextPrimary),
+                                ),
+                              ),
                             ),
                             Positioned(
                               bottom: 0,

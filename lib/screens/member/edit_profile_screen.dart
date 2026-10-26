@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
 import '../../widgets/common/glass.dart';
+import '../../widgets/common/profile_avatar.dart';
 import '../../core/theme/theme.dart';
 
 class EditProfileScreen extends StatefulWidget {
@@ -36,7 +37,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   String _selectedFitnessLevel = '';
   
   File? _newProfileImage;
-  String? _currentProfileImageBase64;
   bool _isLoading = false;
 
   @override
@@ -79,9 +79,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     } else {
       _birthDateController = TextEditingController();
     }
-    
-    // Store current profile image
-    _currentProfileImageBase64 = member?['profileImage'];
+
   }
 
   @override
@@ -225,6 +223,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       }
 
       await _apiService.updateMemberProfile(userId, updateData, token);
+      if (_newProfileImage != null) ProfilePhotos.invalidate(userId);
       
       // Refresh profile data
       await _authService.refreshUserProfile();
@@ -296,30 +295,32 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     onTap: _pickImage,
                     child: Stack(
                       children: [
-                        CircleAvatar(
-                          radius: 60,
-                          backgroundColor: context.palette.primaryFill,
-                          backgroundImage: _newProfileImage != null
-                              ? FileImage(_newProfileImage!)
-                              : (_currentProfileImageBase64 != null && _currentProfileImageBase64!.isNotEmpty
-                                  ? MemoryImage(
-                                      base64Decode(
-                                        _currentProfileImageBase64!.contains('base64,')
-                                            ? _currentProfileImageBase64!.split('base64,')[1]
-                                            : _currentProfileImageBase64!,
-                                      ),
-                                    )
-                                  : null) as ImageProvider?,
-                          child: (_newProfileImage == null && (_currentProfileImageBase64 == null || _currentProfileImageBase64!.isEmpty))
-                              ? Icon(
-                                  Icons.person,
-                                  size: 60,
-                                  color: (Theme.of(context).brightness == Brightness.dark
-                                      ? AppColors.darkTextPrimary
-                                      : AppColors.lightTextPrimary),
-                                )
-                              : null,
-                        ),
+                        _newProfileImage != null
+                            ? ClipOval(
+                                child: Image.file(
+                                  _newProfileImage!,
+                                  width: 120,
+                                  height: 120,
+                                  fit: BoxFit.cover,
+                                ),
+                              )
+                            : ProfileAvatar(
+                                userId: ProfilePhotos.userIdOf(
+                                  widget.profileData,
+                                ),
+                                size: 120,
+                                placeholder: Container(
+                                  color: context.palette.primaryFill,
+                                  child: Icon(
+                                    Icons.person,
+                                    size: 60,
+                                    color: (Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? AppColors.darkTextPrimary
+                                        : AppColors.lightTextPrimary),
+                                  ),
+                                ),
+                              ),
                         Positioned(
                           bottom: 0,
                           right: 0,

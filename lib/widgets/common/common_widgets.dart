@@ -17,3 +17,4 @@ export 'carousel_scroll_behavior.dart';
 export 'secure_screen.dart';
 export 'update_available_dialog.dart';
 export 'support_bottom_sheet.dart';
+export 'profile_avatar.dart';
