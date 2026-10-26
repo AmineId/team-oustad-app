@@ -88,6 +88,12 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
   late AnimationController _pulseCtrl;
 
   static const _resetDuration = Duration(seconds: 5);
+
+  // Anti-rebond : un code resté dans le cadre de la webcam après le retour
+  // à l'état idle ne doit pas relancer un scan tout de suite.
+  static const _sameCodeCooldown = Duration(seconds: 8);
+  String? _lastCode;
+  DateTime? _lastCodeAt;
   static const _qrFrameSize = 168.0;
 
   @override
@@ -169,6 +175,14 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
   Future<void> _handleQrInput(String raw) async {
     final qrCode = raw.trim();
     if (qrCode.isEmpty || _status == _ScanStatus.processing) return;
+    final now = DateTime.now();
+    if (qrCode == _lastCode &&
+        _lastCodeAt != null &&
+        now.difference(_lastCodeAt!) < _sameCodeCooldown) {
+      return;
+    }
+    _lastCode = qrCode;
+    _lastCodeAt = now;
 
     _qrCtrl.clear();
     _refocusQr();
@@ -190,6 +204,10 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
     try {
       // Step 1: validate QR + get member/subscription details
       final scanResult = await _api.scanQrCode(qrCode, _token!);
+      if (ApiService.isSessionExpired(scanResult)) {
+        await _expireSession();
+        return;
+      }
 
       if (scanResult == null) {
         _setError('Erreur de connexion');
@@ -228,6 +246,10 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
         gymId: _gymId!,
         token: _token!,
       );
+      if (ApiService.isSessionExpired(checkInResult)) {
+        await _expireSession();
+        return;
+      }
 
       if (checkInResult == null || (checkInResult['success'] == false)) {
         setState(() {
@@ -315,6 +337,10 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
       notes: 'Check-in manuel (borne)',
     );
     if (!mounted) return;
+    if (ApiService.isSessionExpired(result)) {
+      await _expireSession();
+      return;
+    }
     if (result == null) {
       _setError('Erreur de connexion');
       return;
@@ -359,11 +385,33 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
     _scheduleReset();
   }
 
+  /// 401 du serveur : on arrête de scanner (le scanner n'est monté qu'avec un
+  /// token) et on revient au formulaire de connexion de la borne.
+  Future<void> _expireSession() async {
+    _resetTimer?.cancel();
+    _refreshTimer?.cancel();
+    _countdownCtrl.stop();
+    await _auth.clearAll();
+    if (!mounted) return;
+    setState(() {
+      _token = null;
+      _gymId = null;
+      _status = _ScanStatus.idle;
+      _scanResult = null;
+      _checkInResult = null;
+      _memberPhoto = null;
+      _errorMessage = null;
+      _loginError = 'Session expirée — reconnectez-vous';
+    });
+  }
+
   void _scheduleReset() {
     _resetTimer?.cancel();
     _countdownCtrl.forward(from: 0);
     _resetTimer = Timer(_resetDuration, () {
       if (mounted) {
+        // Le délai anti-rebond repart du retour à l'état idle.
+        if (_lastCode != null) _lastCodeAt = DateTime.now();
         setState(() {
           _status = _ScanStatus.idle;
           _scanResult = null;

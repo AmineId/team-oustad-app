@@ -488,6 +488,17 @@ class ApiService {
     }
   }
 
+  /// Réponse de [scanQrCode]/[checkInScan] sur un 401 : le JWT n'est plus
+  /// valide (session remplacée par une connexion ailleurs, reseed…). Le
+  /// scanner doit alors s'arrêter et renvoyer au login, pas réessayer.
+  static const Map<String, dynamic> sessionExpiredResult = {
+    'success': false,
+    'sessionExpired': true,
+  };
+
+  static bool isSessionExpired(Map<String, dynamic>? result) =>
+      result?['sessionExpired'] == true;
+
   /// Scan a QR code and validate gym access.
   /// Returns validation result with access status.
   /// Expected backend endpoint: POST /auth/scan-qr
@@ -516,6 +527,8 @@ class ApiService {
         } catch (_) {
           return null;
         }
+      } else if (resp.statusCode == 401) {
+        return sessionExpiredResult;
       } else if (resp.statusCode == 400 ||
           resp.statusCode == 403 ||
           resp.statusCode == 404) {
@@ -568,6 +581,8 @@ class ApiService {
         } catch (_) {
           return null;
         }
+      } else if (resp.statusCode == 401) {
+        return sessionExpiredResult;
       } else if (resp.statusCode == 400 || resp.statusCode == 403) {
         // Return error details
         try {

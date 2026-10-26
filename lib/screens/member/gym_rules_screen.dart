@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/theme/theme.dart';
+import '../../widgets/common/profile_avatar.dart';
 import '../common/session_guard.dart';
 import 'member_home_screen.dart';
 
@@ -61,6 +62,15 @@ class _GymRulesScreenState extends State<GymRulesScreen> {
     return frenchDate; // Return as-is if conversion fails
   }
 
+  static const _measurementDoneKey = 'onboarding_measurement_done';
+  static const _goalDoneKey = 'onboarding_goal_done';
+
+  void _throwIfError(Map<String, dynamic>? result, String fallback) {
+    if (result == null || result['error'] != null) {
+      throw Exception(result?['error'] ?? fallback);
+    }
+  }
+
   Future<void> _acceptRules() async {
     if (!_isAccepted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -100,88 +110,84 @@ class _GymRulesScreenState extends State<GymRulesScreen> {
         throw Exception('Photo de profil manquante');
       }
 
-      // 1. Update member profile with all data and mark onboarding as completed
       final imageBytes = await imageFile.readAsBytes();
       final base64Image = base64Encode(imageBytes);
-      
-      final profileUpdateData = {
+
+      String? text(String key) {
+        final v = (savedData[key] as String?)?.trim();
+        return v == null || v.isEmpty ? null : v;
+      }
+
+      // « 72,5 » comme « 72.5 » ; une saisie illisible n'est pas envoyée.
+      double? number(String key) =>
+          double.tryParse(text(key)?.replaceAll(',', '.') ?? '');
+
+      // Tout le formulaire est enregistré. L'onboarding n'est clôturé qu'à
+      // la fin (étape 5) : si une étape échoue, le membre peut réessayer,
+      // et les étapes de création déjà faites ne sont pas rejouées.
+
+      // 1. Identité, contact et adresse sur le User (PUT /users/:id) : la
+      //    route /members/:id/profile les ignore.
+      await _apiService.updateUserProfile(userId, {
+        'firstName': ?text('firstName'),
+        'lastName': ?text('lastName'),
+        'phoneNumber': ?text('phone'),
+        'email': ?text('email'),
+        'address': ?text('address'),
+      }, token);
+
+      // 2. Profil membre : naissance, profession, niveau, taille, photo,
+      //    préférences d'entraînement.
+      final profileResponse = await _apiService.updateMemberProfile(userId, {
         'birthDate': _convertFrenchDateToISO(savedData['birthDate']),
-        'phone': savedData['phone'],
         'profession': savedData['profession'],
         'fitnessLevel': savedData['fitnessLevel'],
+        'height': ?number('height'),
         'profileImage': 'data:image/jpeg;base64,$base64Image',
-        'onboarding': false, // Mark onboarding as completed
-        'cgAccepted': true, // Accept gym rules
         'preferredTrainingDays': savedData['preferredTrainingDays'],
         'workoutNotificationsEnabled': savedData['workoutNotificationsEnabled'],
-      };
-      
-      // Add email if provided
-      if (savedData['email'] != null && (savedData['email'] as String).trim().isNotEmpty) {
-        profileUpdateData['email'] = savedData['email'];
+      }, token);
+      _throwIfError(profileResponse, 'Erreur lors de la mise à jour du profil');
+
+      final weight = number('weight');
+      final waist = number('waist');
+
+      // 3. Mesure initiale (poids, tour de taille)
+      if ((weight != null || waist != null) &&
+          !(prefs.getBool(_measurementDoneKey) ?? false)) {
+        final measurement = await _apiService.createMemberMeasurement(userId, {
+          'weight': ?weight,
+          'waist': ?waist,
+        }, token);
+        _throwIfError(measurement, 'Erreur lors de l\'enregistrement des mesures');
+        await prefs.setBool(_measurementDoneKey, true);
       }
 
-      final profileResponse = await _apiService.updateMemberProfile(
-        userId,
-        profileUpdateData,
-        token,
-      );
-
-      if (profileResponse == null || profileResponse['error'] != null) {
-        throw Exception(profileResponse?['error'] ?? 'Erreur lors de la mise à jour du profil');
+      // 4. Objectif initial
+      final goalTitle = text('goalTitle');
+      if (goalTitle != null && !(prefs.getBool(_goalDoneKey) ?? false)) {
+        final goal = await _apiService.createMemberGoal(userId, {
+          'title': goalTitle,
+          'description': text('goalDescription') ?? '',
+          'startWeight': ?weight,
+          'startWaist': ?waist,
+        }, token);
+        _throwIfError(goal, 'Erreur lors de l\'enregistrement de l\'objectif');
+        await prefs.setBool(_goalDoneKey, true);
       }
 
-      // 2. Create initial measurement
-      if (savedData['weight'] != null && (savedData['weight'] as String).isNotEmpty || 
-          savedData['waist'] != null && (savedData['waist'] as String).isNotEmpty || 
-          savedData['height'] != null && (savedData['height'] as String).isNotEmpty) {
-        final measurementData = <String, dynamic>{};
-        
-        if (savedData['weight'] != null && (savedData['weight'] as String).isNotEmpty) {
-          measurementData['weight'] = double.parse(savedData['weight']);
-        }
-        if (savedData['waist'] != null && (savedData['waist'] as String).isNotEmpty) {
-          measurementData['waist'] = double.parse(savedData['waist']);
-        }
-        if (savedData['height'] != null && (savedData['height'] as String).isNotEmpty) {
-          measurementData['height'] = double.parse(savedData['height']);
-        }
+      // 5. Règlement accepté, onboarding terminé
+      final done = await _apiService.updateMemberProfile(userId, {
+        'onboarding': false,
+        'cgAccepted': true,
+      }, token);
+      _throwIfError(done, 'Erreur lors de la validation du règlement');
+      await prefs.remove(_measurementDoneKey);
+      await prefs.remove(_goalDoneKey);
 
-        if (measurementData.isNotEmpty) {
-          await _apiService.createMemberMeasurement(
-            userId,
-            measurementData,
-            token,
-          );
-        }
-      }
-
-      // 3. Create initial goal if user has defined one
-      if (savedData['goalTitle'] != null && (savedData['goalTitle'] as String).isNotEmpty) {
-        final goalData = <String, dynamic>{
-          'title': savedData['goalTitle'],
-          'description': savedData['goalDescription'] ?? '',
-        };
-
-        // Add measurements if available
-        if (savedData['weight'] != null && (savedData['weight'] as String).isNotEmpty) {
-          goalData['startWeight'] = double.parse(savedData['weight']);
-        }
-        if (savedData['waist'] != null && (savedData['waist'] as String).isNotEmpty) {
-          goalData['startWaist'] = double.parse(savedData['waist']);
-        }
-
-        try {
-          await _apiService.createMemberGoal(
-            userId,
-            goalData,
-            token,
-          );
-        } catch (e) {
-          debugPrint('⚠️ Goal creation failed (server issue): $e');
-          // Don't block the onboarding if goal creation fails
-        }
-      }
+      // Le profil affiché ensuite doit refléter ce qui vient d'être saisi.
+      ProfilePhotos.invalidate(userId);
+      await _authService.refreshUserProfile();
 
       // 4. Clear saved onboarding data
       await prefs.remove('onboarding_data');
