@@ -817,6 +817,11 @@ class ApiService {
   // ==================== MEMBERS MANAGEMENT ====================
 
   /// Update member profile (birthDate, phone, profession, fitnessLevel, profileImage).
+  static const _memberUpdateErrors = {
+    'invalid_height': 'Taille invalide (entre 50 et 260 cm)',
+    'Invalid profession value': 'Profession invalide',
+  };
+
   Future<Map<String, dynamic>?> updateMemberProfile(
     int memberId,
     Map<String, dynamic> profileData,
@@ -858,7 +863,18 @@ class ApiService {
           return null;
         }
       }
-      return {'error': 'Status code: ${resp.statusCode}'};
+      // Code d'erreur du serveur traduit, sinon le statut HTTP.
+      String? code;
+      try {
+        final body = jsonDecode(resp.body);
+        if (body is Map) code = body['error'] as String?;
+      } catch (_) {}
+      return {
+        'error':
+            _memberUpdateErrors[code] ??
+            code ??
+            'Erreur lors de la mise à jour (${resp.statusCode})',
+      };
     } catch (e) {
       // ignore: avoid_print
       debugPrint('ApiService.updateMemberProfile exception: $e');
@@ -1309,6 +1325,9 @@ class ApiService {
     'gym_change_forbidden': 'Vous ne pouvez pas changer cette salle',
     'gym_not_found': 'Salle introuvable',
     'super_owner_protected': 'Ce compte est protégé (super-owner)',
+    'invalid_email': 'Adresse email invalide',
+    'email_taken': 'Cette adresse email est déjà utilisée',
+    'invalid_address': 'Adresse invalide',
   };
 
   Future<Map<String, dynamic>?> updateUserProfile(
