@@ -20,7 +20,7 @@ info:
       (`GET /gyms`, `/gyms/{id}`, horaires, image). Pour un coach, se baser sur `gyms` et non sur `gymId`
       (salle principale).
     - Programmes : l'owner crée des modèles (`/programs`), affectés aux membres
-      (`POST /programs/{id}/assignments`) par l'owner, le manager (sa salle) ou le coach (ses membres).
+      (`POST /programs/{id}/assignments`) par l'owner ou le coach (ses membres) ; le manager les consulte en lecture seule.
       Les routes `/plannings` en lecture (`/member/{id}`, `/next-day/{id}`, `GET /plannings`) gardent leur
       forme et sont alimentées par les affectations (`planning.id` = id de l'affectation) ; les écritures
       `/plannings` renvoient **410** `plannings_deprecated`.
@@ -743,7 +743,8 @@ components:
           nullable: true
         type:
           type: string
-          nullable: true
+          enum: [discovery, training, group_class, assessment, private]
+          description: "discovery = découverte, training = entraînement, group_class = cours collectif, assessment = bilan, private = coaching individuel"
         notes:
           type: string
           nullable: true
@@ -777,7 +778,7 @@ components:
       properties:
         error:
           type: string
-          description: "missing_fields, invalid_date, invalid_time_range, invalid_capacity, invalid_repeat, too_many_occurrences, invalid_scope, range_too_large, coach_not_found, coach_not_in_gym, outside_opening_hours, gym_closed, session_overlap, capacity_below_booked, session_not_found, session_not_open, member_ids_required, booking_rejected, session_full, member_not_in_session, member_id_required, no_active_subscription, quota_exhausted, subscription_expired, gym_id_required, member_not_found, forbidden"
+          description: "missing_fields, invalid_type, invalid_date, invalid_time_range, invalid_capacity, invalid_repeat, too_many_occurrences, invalid_scope, range_too_large, coach_not_found, coach_not_in_gym, outside_opening_hours, gym_closed, session_overlap, capacity_below_booked, session_not_found, session_not_open, member_ids_required, booking_rejected, session_full, member_not_in_session, member_id_required, no_active_subscription, quota_exhausted, subscription_expired, gym_id_required, member_not_found, forbidden"
         message:
           type: string
         conflicts:
@@ -820,6 +821,8 @@ components:
         id:
           type: integer
         incidentId:
+          type: integer
+        authorId:
           type: integer
         author:
           $ref: '#/components/schemas/IncidentAuthor'
@@ -873,6 +876,14 @@ components:
           $ref: '#/components/schemas/CoachRef'
         messagesCount:
           type: integer
+        lastMessage:
+          allOf:
+            - $ref: '#/components/schemas/IncidentMessage'
+          nullable: true
+          description: "Dernier message du chat (null si aucun)"
+        unreadCount:
+          type: integer
+          description: "Messages des autres postérieurs au dernier lu par l'appelant (voir POST /incidents/{id}/read)"
         createdAt:
           type: string
           format: date-time
@@ -890,7 +901,7 @@ components:
       properties:
         error:
           type: string
-          description: "missing_fields, invalid_field, invalid_photo, gym_id_required, kiosk_forbidden_role, incident_not_found, photo_not_found, incident_closed, invalid_id, forbidden"
+          description: "missing_fields, invalid_field, invalid_photo, gym_id_required, kiosk_forbidden_role, incident_not_found, photo_not_found, incident_closed, invalid_id, invalid_cursor, forbidden"
         message:
           type: string
 
@@ -9365,9 +9376,9 @@ paths:
 
   /programs/{id}/assignments:
     post:
-      summary: Affecter un programme à des membres (Owner / Manager / Coach)
+      summary: Affecter un programme à des membres (Owner / Coach)
       description: |
-        Tout ou rien. Owner : tous les membres ; manager : membres de sa salle ; coach : ses membres affectés.
+        Tout ou rien. Owner : tous les membres ; coach : ses membres affectés. Manager : 403 forbidden.
         Un membre n'a qu'une affectation active : les précédentes passent en `completed` (`replaced`).
         Chaque membre reçoit un FCM `data: { type: "program", assignmentId, programId }`.
       tags: [Programs]
@@ -9431,7 +9442,7 @@ paths:
 
   /program-assignments/{id}:
     delete:
-      summary: Annuler une affectation (Owner / Manager / Coach)
+      summary: Annuler une affectation (Owner / Coach)
       description: "Passe le statut à `cancelled` (historique conservé). Mêmes droits que l'affectation."
       tags: [Programs]
       security:
@@ -9495,6 +9506,12 @@ paths:
         - bearerAuth: []
       parameters:
         - in: query
+          name: type
+          schema:
+            type: string
+            enum: [discovery, training, group_class, assessment, private]
+          description: "Filtre par type de séance (400 invalid_type si inconnu)"
+        - in: query
           name: gymId
           schema:
             type: integer
@@ -9550,7 +9567,7 @@ paths:
           application/json:
             schema:
               type: object
-              required: [gymId, coachId, startAt, endAt]
+              required: [gymId, coachId, type, startAt, endAt]
               properties:
                 gymId:
                   type: integer
@@ -9570,6 +9587,7 @@ paths:
                   type: string
                 type:
                   type: string
+                  enum: [discovery, training, group_class, assessment, private]
                 notes:
                   type: string
                 repeat:
@@ -9618,6 +9636,12 @@ paths:
       security:
         - bearerAuth: []
       parameters:
+        - in: query
+          name: type
+          schema:
+            type: string
+            enum: [discovery, training, group_class, assessment, private]
+          description: "Filtre par type de séance (400 invalid_type si inconnu)"
         - in: query
           name: gymId
           schema:
@@ -9721,6 +9745,7 @@ paths:
                   type: string
                 type:
                   type: string
+                  enum: [discovery, training, group_class, assessment, private]
                 notes:
                   type: string
       responses:
@@ -9917,6 +9942,12 @@ paths:
       security:
         - bearerAuth: []
       parameters:
+        - in: query
+          name: type
+          schema:
+            type: string
+            enum: [discovery, training, group_class, assessment, private]
+          description: "Filtre par type de séance (400 invalid_type si inconnu)"
         - in: query
           name: status
           schema:
@@ -10194,11 +10225,62 @@ paths:
           description: Pas owner
 
   /incidents/{id}/messages:
-    post:
-      summary: Répondre dans le fil (Owner / créateur)
+    get:
+      summary: Messages du chat, paginés par curseur (lecteurs de l'incident)
       description: |
-        Réponse de l'owner : le créateur est notifié ; réponse du créateur : les owners sont notifiés
-        (FCM `action: "message"`). 409 `incident_closed` une fois clôturé.
+        Réponse `{ messages, hasMore }`, messages toujours en ordre chronologique (id croissant).
+        - `after=<messageId>` (exclusif) : messages suivants, pour le polling ; `hasMore` = d'autres plus récents.
+        - `before=<messageId>` (exclusif) : messages précédents ; `hasMore` = d'autres plus anciens.
+        - sans curseur : les `limit` plus récents ; `hasMore` = d'autres plus anciens.
+        `after` et `before` sont exclusifs entre eux (400 `invalid_cursor`). Ne marque pas comme lu.
+      tags: [Incidents]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - in: query
+          name: after
+          schema:
+            type: integer
+        - in: query
+          name: before
+          schema:
+            type: integer
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+      responses:
+        '200':
+          description: Page de messages
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  messages:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/IncidentMessage'
+                  hasMore:
+                    type: boolean
+        '400':
+          description: invalid_cursor
+        '403':
+          description: Hors portée
+    post:
+      summary: Écrire dans le chat (Owner / créateur)
+      description: |
+        Message de l'owner : le créateur est notifié ; message du créateur : les owners sont notifiés
+        (FCM `data: { type: "incident", incidentId, action: "message", messageId }`).
+        Écrire marque tout le fil comme lu pour l'auteur. 409 `incident_closed` une fois clôturé.
       tags: [Incidents]
       security:
         - bearerAuth: []
@@ -10234,6 +10316,49 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/IncidentError'
+
+  /incidents/{id}/read:
+    post:
+      summary: Marquer le chat comme lu (lecteurs de l'incident)
+      description: |
+        Avance le curseur de lecture de l'appelant jusqu'à `lastMessageId` (défaut : dernier message).
+        Le curseur ne recule jamais. Ouvert à tout lecteur de l'incident (owner, manager de la salle, créateur).
+      tags: [Incidents]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                lastMessageId:
+                  type: integer
+      responses:
+        '200':
+          description: État de lecture
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  incidentId:
+                    type: integer
+                  lastReadMessageId:
+                    type: integer
+                  unreadCount:
+                    type: integer
+        '400':
+          description: invalid_cursor
+        '403':
+          description: Hors portée
 
   /incidents/{id}/photo:
     get:
