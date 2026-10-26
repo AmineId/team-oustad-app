@@ -1,0 +1,253 @@
+{
+ "entries": [
+  {
+   "id": 57,
+   "createdAt": "2026-10-26T13:52:12.960Z",
+   "action": "delete",
+   "entity": "Member",
+   "entityId": "20715",
+   "entityDisplayId": null,
+   "label": "Robert Martin",
+   "gym": {
+    "displayId": "GYM-1",
+    "name": "Salle Centre"
+   },
+   "actor": {
+    "displayId": "USR-1",
+    "firstName": "Sam",
+    "lastName": "Super",
+    "role": "owner"
+   },
+   "actorLabel": "Sam Super",
+   "actorRole": "owner",
+   "source": "DELETE /users/3",
+   "changes": {
+    "phone": {
+     "to": null,
+     "from": "+1234567890"
+    },
+    "userId": {
+     "to": null,
+     "from": 20715,
+     "fromLabel": "Robert Martin"
+    },
+    "joinedAt": {
+     "to": null,
+     "from": "2026-10-26T13:52:12.885Z"
+    },
+    "birthDate": {
+     "to": null,
+     "from": "1990-01-01T00:00:00.000Z"
+    },
+    "onboarding": {
+     "to": null,
+     "from": false
+    },
+    "profession": {
+     "to": null,
+     "from": "Actif"
+    },
+    "fitnessLevel": {
+     "to": null,
+     "from": "intermediaire"
+    },
+    "preferredTrainingDays": {
+     "to": null,
+     "from": [
+      1,
+      3,
+      5
+     ]
+    },
+    "workoutNotificationsEnabled": {
+     "to": null,
+     "from": true
+    }
+   }
+  },
+  {
+   "id": 56,
+   "createdAt": "2026-10-26T13:52:12.953Z",
+   "action": "create",
+   "entity": "Exercise",
+   "entityId": null,
+   "entityDisplayId": null,
+   "label": "201 lignes",
+   "gym": null,
+   "actor": null,
+   "actorLabel": "Système (seedExercises)",
+   "actorRole": null,
+   "source": "cron:seedExercises",
+   "changes": {
+    "_count": {
+     "to": 201,
+     "from": null
+    }
+   }
+  },
+  {
+   "id": 55,
+   "createdAt": "2026-10-26T13:52:12.926Z",
+   "action": "update",
+   "entity": "Gym",
+   "entityId": "5900",
+   "entityDisplayId": "GYM-1",
+   "label": "Salle Centre",
+   "gym": {
+    "displayId": "GYM-1",
+    "name": "Salle Centre"
+   },
+   "actor": null,
+   "actorLabel": "Système (autoCheckOut)",
+   "actorRole": null,
+   "source": "cron:autoCheckOut",
+   "changes": {
+    "phone": {
+     "to": "0600000000",
+     "from": "+1234567890"
+    }
+   }
+  },
+  {
+   "id": 54,
+   "createdAt": "2026-10-26T13:52:12.925Z",
+   "action": "create",
+   "entity": "Incident",
+   "entityId": "185",
+   "entityDisplayId": "INC-1",
+   "label": "Tapis cassé",
+   "gym": {
+    "displayId": "GYM-1",
+    "name": "Salle Centre"
+   },
+   "actor": {
+    "displayId": "USR-2",
+    "firstName": "Max",
+    "lastName": "Manager",
+    "role": "manager"
+   },
+   "actorLabel": "Max Manager",
+   "actorRole": "manager",
+   "source": "POST /incidents",
+   "changes": {
+    "gymId": {
+     "to": 5900,
+     "from": null,
+     "toLabel": "Salle Centre"
+    },
+    "photo": {
+     "to": "[masqué]",
+     "from": null
+    },
+    "title": {
+     "to": "Tapis cassé",
+     "from": null
+    },
+    "source": {
+     "to": "app",
+     "from": null
+    },
+    "status": {
+     "to": "open",
+     "from": null
+    },
+    "category": {
+     "to": "equipment",
+     "from": null
+    },
+    "severity": {
+     "to": "high",
+     "from": null
+    },
+    "createdAt": {
+     "to": "2026-10-26T13:52:12.911Z",
+     "from": null
+    },
+    "createdBy": {
+     "to": 20714,
+     "from": null,
+     "toLabel": "Max Manager"
+    },
+    "displayId": {
+     "to": "INC-1",
+     "from": null
+    },
+    "photoMime": {
+     "to": "image/png",
+     "from": null
+    },
+    "creatorRole": {
+     "to": "manager",
+     "from": null
+    },
+    "description": {
+     "to": "Le tapis 3 ne démarre plus",
+     "from": null
+    }
+   }
+  },
+  {
+   "id": 53,
+   "createdAt": "2026-10-26T13:52:12.916Z",
+   "action": "update",
+   "entity": "User",
+   "entityId": "20714",
+   "entityDisplayId": "USR-2",
+   "label": "Max Manager",
+   "gym": {
+    "displayId": "GYM-2",
+    "name": "Salle Nord"
+   },
+   "actor": {
+    "displayId": "USR-1",
+    "firstName": "Sam",
+    "lastName": "Super",
+    "role": "owner"
+   },
+   "actorLabel": "Sam Super",
+   "actorRole": "owner",
+   "source": "PUT /users/2",
+   "changes": {
+    "gymId": {
+     "to": 5901,
+     "from": 5900,
+     "toLabel": "Salle Nord",
+     "fromLabel": "Salle Centre"
+    }
+   }
+  },
+  {
+   "id": 52,
+   "createdAt": "2026-10-26T13:52:12.901Z",
+   "action": "update",
+   "entity": "User",
+   "entityId": "20715",
+   "entityDisplayId": "USR-3",
+   "label": "Robert Martin",
+   "gym": {
+    "displayId": "GYM-1",
+    "name": "Salle Centre"
+   },
+   "actor": {
+    "displayId": "USR-2",
+    "firstName": "Max",
+    "lastName": "Manager",
+    "role": "manager"
+   },
+   "actorLabel": "Max Manager",
+   "actorRole": "manager",
+   "source": "PUT /users/3",
+   "changes": {
+    "password": {
+     "to": "[masqué]",
+     "from": "[masqué]"
+    },
+    "firstName": {
+     "to": "Robert",
+     "from": "Bob"
+    }
+   }
+  }
+ ],
+ "hasMore": false
+}

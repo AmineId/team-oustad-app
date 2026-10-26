@@ -11,6 +11,7 @@ import 'admin_subscription_details_screen.dart';
 import 'admin_create_subscription_screen.dart';
 import '../programs/programs_screen.dart';
 import '../sessions/find_slot_screen.dart';
+import '../audit/audit_log_screen.dart';
 
 class AdminMemberDetailsScreen extends StatefulWidget {
   final int memberId;
@@ -41,12 +42,16 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
   // Seuls l'owner et le coach affectent des programmes ; le manager planifie
   // des séances et ne voit les programmes qu'en lecture.
   bool _isOwner = false;
+  bool _isSuperOwner = false;
 
   @override
   void initState() {
     super.initState();
     _authService.isOwner().then((v) {
       if (mounted) setState(() => _isOwner = v);
+    });
+    _authService.isSuperOwner().then((v) {
+      if (mounted) setState(() => _isSuperOwner = v);
     });
     _loadMemberDetails();
   }
@@ -553,6 +558,25 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
               ),
               icon: const Icon(Icons.event_available),
               label: const Text('Trouver un créneau'),
+            ),
+          ],
+
+          // Tout ce qui concerne le membre : fiche, abonnements, paiements,
+          // entrées, séances (super-owner).
+          if (_isSuperOwner && _member!['displayId'] is String) ...[
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => AuditLogScreen(
+                    userId: _member!['displayId'] as String,
+                    title: 'Historique · ${getUserFullName(_member)}',
+                  ),
+                ),
+              ),
+              icon: const Icon(Icons.history),
+              label: const Text('Voir l\'historique'),
             ),
           ],
 

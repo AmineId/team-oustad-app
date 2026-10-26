@@ -19,6 +19,7 @@ import 'admin_members_screen.dart';
 import '../programs/program_screens.dart';
 import '../sessions/session_screens.dart';
 import '../incidents/incident_screens.dart';
+import '../audit/audit_screens.dart';
 import 'admin_member_details_screen.dart';
 import '../common/security_settings_screen.dart';
 import '../common/about_screen.dart';
@@ -1421,6 +1422,7 @@ class _GestionGlobalePageState extends State<GestionGlobalePage> {
   final AuthService _authService = AuthService(ApiService.fromEnv());
   bool _canManageAdmins = false;
   bool _canManageGyms = false;
+  bool _isSuperOwner = false;
 
   @override
   void initState() {
@@ -1431,10 +1433,12 @@ class _GestionGlobalePageState extends State<GestionGlobalePage> {
   Future<void> _loadPermissions() async {
     final admins = await _authService.ownerCan('canManageManagers');
     final gyms = await _authService.ownerCan('canManageGyms');
+    final superOwner = await _authService.isSuperOwner();
     if (!mounted) return;
     setState(() {
       _canManageAdmins = admins;
       _canManageGyms = gyms;
+      _isSuperOwner = superOwner;
     });
   }
 
@@ -1619,6 +1623,22 @@ class _GestionGlobalePageState extends State<GestionGlobalePage> {
                 ),
               ),
               const SizedBox(height: 16),
+
+              // Historique d'audit (super-owner uniquement)
+              if (_isSuperOwner) ...[
+                _buildGlobalOption(
+                  context,
+                  icon: Icons.history,
+                  title: 'Historique',
+                  description:
+                      'Qui a modifié quoi et quand, sur toutes les salles',
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const AuditLogScreen()),
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
 
               // WhatsApp
               _buildGlobalOption(
@@ -2862,6 +2882,15 @@ class _GymDetailsView extends StatefulWidget {
 class _GymDetailsViewState extends State<_GymDetailsView> {
   final ApiService _apiService = ApiService.fromEnv();
   final AuthService _authService = AuthService(ApiService.fromEnv());
+  bool _isSuperOwner = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _authService.isSuperOwner().then((v) {
+      if (mounted) setState(() => _isSuperOwner = v);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -3086,6 +3115,27 @@ class _GymDetailsViewState extends State<_GymDetailsView> {
                       ],
                     ),
                     const SizedBox(height: 12),
+
+                    // Historique de la salle (super-owner)
+                    if (_isSuperOwner && widget.gym['displayId'] is String) ...[
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => AuditLogScreen(
+                                gymId: widget.gym['displayId'] as String,
+                                title: 'Historique · $name',
+                              ),
+                            ),
+                          ),
+                          icon: const Icon(Icons.history),
+                          label: const Text('Voir l\'historique'),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
 
                     // Bouton galerie photos (page vitrine)
                     SizedBox(

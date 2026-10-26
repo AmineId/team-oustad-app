@@ -1293,6 +1293,7 @@ class ApiService {
     'phone_taken': 'Ce numéro de téléphone est déjà utilisé',
     'gym_change_forbidden': 'Vous ne pouvez pas changer cette salle',
     'gym_not_found': 'Salle introuvable',
+    'super_owner_protected': 'Ce compte est protégé (super-owner)',
   };
 
   Future<Map<String, dynamic>?> updateUserProfile(
