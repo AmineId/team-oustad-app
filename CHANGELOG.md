@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.120](https://github.com/AmineId/team-oustad-app/compare/v1.0.0-beta.119...v1.0.0-beta.120) (2026-10-26)
+
+
+### 🐛 Bug Fixes
+
+* **auth:** pas d'accès à l'app sans confirmation du serveur ([18a3d94](https://github.com/AmineId/team-oustad-app/commit/18a3d94037d81ac58f1bbfe516ccaac335410566))
+
 ## [1.0.0-beta.119](https://github.com/AmineId/team-oustad-app/compare/v1.0.0-beta.118...v1.0.0-beta.119) (2026-10-26)
 
 
