@@ -1,5 +1,6 @@
 // Common Screens Barrel File
 export 'splash_screen.dart';
+export 'session_guard.dart';
 export 'about_screen.dart';
 export 'security_settings_screen.dart';
 export 'notification_test_screen.dart';
