@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.126](https://github.com/AmineId/team-oustad-app/compare/v1.0.0-beta.125...v1.0.0-beta.126) (2026-10-26)
+
+
+### 🐛 Bug Fixes
+
+* **session:** revérification au retour au premier plan, bandeau hors ligne ([822af7c](https://github.com/AmineId/team-oustad-app/commit/822af7cb277e193957f542b4f7d1d20e9fe113f7))
+* **session:** surveillance permanente du réseau et de la session ([fccfec6](https://github.com/AmineId/team-oustad-app/commit/fccfec6a89a99ed1f6780cd50b5446620ac3b242))
+
 ## [1.0.0-beta.125](https://github.com/AmineId/team-oustad-app/compare/v1.0.0-beta.124...v1.0.0-beta.125) (2026-10-26)
 
 
