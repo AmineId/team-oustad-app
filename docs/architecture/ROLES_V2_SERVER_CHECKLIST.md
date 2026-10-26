@@ -29,10 +29,10 @@
 | Affecter un coach à un membre | ✅ | ✅ (coach rattaché à sa salle) | ❌ |
 | Stock produits (`/store/products` CRUD) | ✅ | ✅ **sa salle uniquement** | ❌ |
 | Vitrine / promo : `/showcase/*`, `/banners` (écriture), `/gyms/{id}` champs vitrine, `/gyms/{id}/photos`, `/gyms/{id}/image` | ✅ | **❌ 403** | ❌ |
-| Horaires d'ouverture salle | ✅ | à trancher (proposition : ❌) | ❌ |
+| Horaires d'ouverture salle | ✅ | ❌ | ❌ |
 | Créer manager / coach | ✅ | ❌ | ❌ |
 | Programmes (CRUD) | ✅ | ❌ (lecture) | ❌ (lecture) |
-| Affecter un programme à un membre | ✅ | à trancher (proposition : ✅) | ✅ **ses membres affectés uniquement** |
+| Affecter un programme à un membre | ✅ | **❌ 403** (lecture seule) | ✅ **ses membres affectés uniquement** |
 | Planning coachs / séances (CRUD) | ✅ | ✅ sa salle | lecture de ses séances |
 | Check-in membre à une séance | ✅ | ✅ | ✅ **ses séances uniquement** |
 | Check-ins du jour | ✅ | ✅ sa salle | ✅ ses salles |
@@ -94,12 +94,17 @@ Une **séance = une plage horaire de travail d'un coach, avec un ou plusieurs me
 - [ ] Mettre à jour `swagger.yml` (enum `role` = `[member, coach, manager, owner]`, nouveaux schémas/routes) et le transmettre au client.
 - [ ] Ordre de livraison suggéré (aligné sur les tranches client) : 1) renommage manager + matrice vitrine/promo + login kiosk ; 2) coach + affectation coach↔membre ; 3) programmes + assignations + migration ; 4) séances + recherche de créneaux + check-in séance ; 5) check-ins du jour coach ; 6) incidents.
 
-## Choix provisoires (à confirmer par l'utilisateur en relecture de PR)
+## Choix provisoires — arbitrés par l'utilisateur (2026-10-26)
 
-1. Le manager **peut** affecter un programme aux membres de sa salle.
-2. Le manager **ne peut pas** modifier les horaires d'ouverture.
-3. Le check-in séance crée une entrée salle (quota) **au plus une fois par jour**.
-4. Le créateur d'un incident **peut** répondre dans le fil ; seul l'owner change le statut.
+1. ~~Le manager peut affecter un programme~~ → **inversé** : le manager **n'affecte pas** de programmes (403 sur `POST /programs/{id}/assignments` et `DELETE /program-assignments/{id}`). Son rôle est de planifier des séances avec un coach. Seuls l'owner et le coach (ses membres) affectent. Client : PR #31.
+2. ✅ Le manager **ne peut pas** modifier les horaires d'ouverture.
+3. ✅ Le check-in séance crée une entrée salle (quota) **au plus une fois par jour**.
+4. ✅ Le créateur d'un incident **peut** répondre ; seul l'owner change le statut. **En plus** : un vrai chat sur le fil d'incident (voir ci-dessous).
+
+### Ajouts issus de l'arbitrage
+
+- **Séances typées** (server tranche 4) : champ `type` requis en `POST /sessions`, modifiable en `PATCH`, renvoyé partout, filtrable `?type=` sur `GET /sessions`, `/sessions/available`, `/coaches/me/sessions`. Enum : `discovery` (découverte), `training` (entraînement), `group_class` (cours collectif), `assessment` (bilan), `private` (coaching individuel). Défaut de migration : `training`.
+- **Chat incident** (server tranche 6) : `GET /incidents/{id}/messages?after=<messageId>` (polling incrémental), `POST /incidents/{id}/read`, `unreadCount` + `lastMessage` dans `GET /incidents` et `GET /incidents/{id}`, FCM `incident` à chaque message avec `incidentId`. Pas de websocket : polling (~10 s fil ouvert) + push.
 
 ## Ajustements validés avec Claude serveur (2026-10-26)
 
