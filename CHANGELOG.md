@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.123](https://github.com/AmineId/team-oustad-app/compare/v1.0.0-beta.122...v1.0.0-beta.123) (2026-10-26)
+
+
+### ✨ New Features
+
+* **audit:** écran Historique pour le super-owner ([c748966](https://github.com/AmineId/team-oustad-app/commit/c74896641f56b2a529a01adfebd5fc742434f2fa))
+
 ## [1.0.0-beta.122](https://github.com/AmineId/team-oustad-app/compare/v1.0.0-beta.121...v1.0.0-beta.122) (2026-10-26)
 
 
