@@ -328,7 +328,14 @@ class _AdminBannersScreenState extends State<AdminBannersScreen>
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      // Marge basse : le bouton « Nouveau » ne doit pas masquer les actions
+      // de la dernière carte.
+      padding: EdgeInsets.fromLTRB(
+        16,
+        16,
+        16,
+        96 + MediaQuery.of(context).padding.bottom,
+      ),
       itemCount: banners.length,
       itemBuilder: (context, index) => _BannerCard(
         banner: banners[index],

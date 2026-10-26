@@ -298,7 +298,7 @@ class _AdminMembersScreenState extends State<AdminMembersScreen> {
                         onRefresh: _loadMembers,
                         color: context.palette.primary,
                         child: ListView.builder(
-                          padding: EdgeInsets.fromLTRB(16, 0, 16, 16 + MediaQuery.of(context).padding.bottom),
+                          padding: EdgeInsets.fromLTRB(16, 0, 16, 96 + MediaQuery.of(context).padding.bottom),
                           itemCount: _filteredMembers.length,
                           itemBuilder: (context, index) {
                             final member = _filteredMembers[index];

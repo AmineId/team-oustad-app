@@ -323,7 +323,14 @@ class _AdminProductsScreenState extends State<AdminProductsScreen>
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      // Marge basse : le bouton « Nouveau » ne doit pas masquer les actions
+      // de la dernière carte.
+      padding: EdgeInsets.fromLTRB(
+        16,
+        16,
+        16,
+        96 + MediaQuery.of(context).padding.bottom,
+      ),
       itemCount: products.length,
       itemBuilder: (context, index) => _ProductCard(
         product: products[index],
