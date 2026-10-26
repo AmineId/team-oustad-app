@@ -1315,27 +1315,35 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                 ),
                 const SizedBox(height: 16),
               ],
-              ModernTextField(
-                controller: _emailController,
-                label: AppLocalizations.of(context).emailOrPhone,
-                prefixIcon: Icons.person,
-                keyboardType: TextInputType.text,
+              // Les `identifier` deviennent des resource-id Android : le robot
+              // du rapport de pré-lancement Play s'en sert pour se connecter.
+              Semantics(
+                identifier: 'login_email',
+                child: ModernTextField(
+                  controller: _emailController,
+                  label: AppLocalizations.of(context).emailOrPhone,
+                  prefixIcon: Icons.person,
+                  keyboardType: TextInputType.text,
+                ),
               ),
               const SizedBox(height: 16),
-              ModernTextField(
-                controller: _passwordController,
-                label: AppLocalizations.of(context).password,
-                prefixIcon: Icons.lock,
-                obscureText: _obscurePassword,
-                suffixIcon: _obscurePassword
-                    ? Icons.visibility
-                    : Icons.visibility_off,
-                onSuffixIconPressed: () {
-                  setState(() {
-                    _obscurePassword = !_obscurePassword;
-                  });
-                },
-                onChanged: (_) {},
+              Semantics(
+                identifier: 'login_password',
+                child: ModernTextField(
+                  controller: _passwordController,
+                  label: AppLocalizations.of(context).password,
+                  prefixIcon: Icons.lock,
+                  obscureText: _obscurePassword,
+                  suffixIcon: _obscurePassword
+                      ? Icons.visibility
+                      : Icons.visibility_off,
+                  onSuffixIconPressed: () {
+                    setState(() {
+                      _obscurePassword = !_obscurePassword;
+                    });
+                  },
+                  onChanged: (_) {},
+                ),
               ),
               Align(
                 alignment: Alignment.centerRight,
@@ -1345,11 +1353,14 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                 ),
               ),
               const SizedBox(height: 24),
-              ModernButton(
-                text: AppLocalizations.of(context).signIn,
-                onPressed: _submitPassword,
-                isLoading: _isAuthenticating,
-                fullWidth: true,
+              Semantics(
+                identifier: 'login_submit',
+                child: ModernButton(
+                  text: AppLocalizations.of(context).signIn,
+                  onPressed: _submitPassword,
+                  isLoading: _isAuthenticating,
+                  fullWidth: true,
+                ),
               ),
               const SizedBox(height: 16),
               ModernButton(
