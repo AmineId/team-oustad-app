@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.121](https://github.com/AmineId/team-oustad-app/compare/v1.0.0-beta.120...v1.0.0-beta.121) (2026-10-26)
+
+
+### ✨ New Features
+
+* **auth:** identifiants Android sur le formulaire de connexion (rapport de pré-lancement) ([cfca9c3](https://github.com/AmineId/team-oustad-app/commit/cfca9c3c26a18d646c7d2b78b7b2f1dd1341a207))
+
 ## [1.0.0-beta.120](https://github.com/AmineId/team-oustad-app/compare/v1.0.0-beta.119...v1.0.0-beta.120) (2026-10-26)
 
 
