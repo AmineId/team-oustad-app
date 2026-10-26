@@ -14,6 +14,7 @@ import '../../core/theme/app_palette.dart';
 import '../incidents/incident_create_screen.dart';
 import 'kiosk_audio.dart';
 import 'kiosk_links.dart';
+import 'kiosk_member_search.dart';
 
 enum _ScanStatus { idle, processing, success, denied, error }
 
@@ -52,6 +53,8 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
   _ScanStatus _status = _ScanStatus.idle;
   Map<String, dynamic>? _scanResult;
   Map<String, dynamic>? _checkInResult;
+  // Photo du membre lors d'un check-in manuel (le scan QR n'en fournit pas).
+  Uint8List? _memberPhoto;
   String? _errorMessage;
 
   int _todayCount = 0;
@@ -174,6 +177,7 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
       _status = _ScanStatus.processing;
       _scanResult = null;
       _checkInResult = null;
+      _memberPhoto = null;
       _errorMessage = null;
     });
     _countdownCtrl.stop();
@@ -197,10 +201,15 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
       final canCheckIn = quota?['canCheckIn'] as bool? ?? false;
 
       if (!canCheckIn) {
-        final reason = _resolveReason(
-          scanResult['reason'] as String?,
-          scanResult['message'] as String?,
-        );
+        // 200 avec quota.canCheckIn=false : quota épuisé (le message est
+        // alors « Access granted », à ne pas afficher).
+        final reason = quota != null
+            ? 'Quota de séances épuisé'
+            : _resolveReason(
+                scanResult['reason'] as String?,
+                scanResult['error'] as String? ??
+                    scanResult['message'] as String?,
+              );
         setState(() {
           _status = _ScanStatus.denied;
           _errorMessage = reason;
@@ -221,13 +230,9 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
       );
 
       if (checkInResult == null || (checkInResult['success'] == false)) {
-        final msg =
-            checkInResult?['message'] ??
-            checkInResult?['error'] ??
-            'Check-in échoué';
         setState(() {
           _status = _ScanStatus.denied;
-          _errorMessage = msg as String;
+          _errorMessage = _checkInError(checkInResult);
           _scanResult = scanResult;
         });
         playKioskBeep(success: false);
@@ -250,6 +255,101 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
     }
   }
 
+  // ── Check-in manuel (sans QR code) ────────────────────────────────────────
+
+  Future<void> _openManualCheckIn() async {
+    if (_status == _ScanStatus.processing) return;
+    if (_token == null || _gymId == null) {
+      _setError('Session expirée — reconnectez-vous');
+      return;
+    }
+    final pick = await showKioskMemberSearch(
+      context,
+      api: _api,
+      token: _token!,
+      gymId: _gymId!,
+    );
+    _refocusQr();
+    if (pick != null && mounted) await _manualCheckIn(pick);
+  }
+
+  /// Même enregistrement que le scan (`/check-in/scan` avec le displayId du
+  /// membre), puis même écran de résultat, avec la photo de la fiche.
+  Future<void> _manualCheckIn(KioskManualPick pick) async {
+    final member = pick.member;
+    final displayId = member['displayId'] as String?;
+    if (displayId == null || displayId.isEmpty) {
+      _setError('Identifiant du membre manquant');
+      return;
+    }
+    _resetTimer?.cancel();
+    _countdownCtrl.stop();
+
+    final sub = member['activeSubscription'] as Map<String, dynamic>?;
+    final subType = sub?['type'];
+    // Forme attendue par l'écran de résultat (comme la réponse du scan QR).
+    final shown = <String, dynamic>{
+      'id': member['id'],
+      'displayId': displayId,
+      'firstName': member['firstName'],
+      'lastName': member['lastName'],
+      if (sub != null)
+        'subscription': {
+          'status': sub['status'],
+          'endDate': sub['endDate'],
+          if (subType is String) 'subscriptionType': {'name': subType},
+        },
+    };
+    setState(() {
+      _status = _ScanStatus.processing;
+      _scanResult = {'member': shown};
+      _checkInResult = null;
+      _memberPhoto = pick.photo;
+      _errorMessage = null;
+    });
+
+    final result = await _api.checkInScan(
+      qrCode: displayId,
+      gymId: _gymId!,
+      token: _token!,
+      notes: 'Check-in manuel (borne)',
+    );
+    if (!mounted) return;
+    if (result == null) {
+      _setError('Erreur de connexion');
+      return;
+    }
+    final ok = result['success'] == true;
+    setState(() {
+      _status = ok ? _ScanStatus.success : _ScanStatus.denied;
+      _checkInResult = ok ? result : null;
+      _errorMessage = ok ? null : _checkInError(result);
+      if (ok) _todayCount++;
+    });
+    playKioskBeep(success: ok);
+    _addSessionEntry(shown, allowed: ok);
+    _scheduleReset();
+  }
+
+  /// Message lisible pour un refus de `/check-in/scan` (erreurs serveur en
+  /// anglais dans `message`).
+  String _checkInError(Map<String, dynamic>? result) {
+    final raw = '${result?['message'] ?? result?['error'] ?? ''}';
+    final msg = raw.toLowerCase();
+    if (msg.contains('already scanned')) return 'Déjà enregistré aujourd\'hui';
+    if (msg.contains('quota exhausted')) return 'Quota de séances épuisé';
+    if (msg.contains('expired')) return 'Abonnement expiré';
+    if (msg.contains('no active subscription')) {
+      return 'Aucun abonnement actif';
+    }
+    if (msg.contains('subscription is')) return 'Abonnement inactif';
+    if (msg.contains('member not found')) return 'Membre introuvable';
+    if (msg.contains('does not belong')) return 'Membre d\'une autre salle';
+    if (msg.contains('not for a member')) return 'QR code non reconnu';
+    if (msg.contains('forbidden')) return 'Action non autorisée';
+    return raw.isEmpty ? 'Check-in échoué' : raw;
+  }
+
   void _setError(String msg) {
     setState(() {
       _status = _ScanStatus.error;
@@ -268,6 +368,7 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
           _status = _ScanStatus.idle;
           _scanResult = null;
           _checkInResult = null;
+          _memberPhoto = null;
           _errorMessage = null;
         });
         _countdownCtrl.stop();
@@ -286,6 +387,7 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
     if (reason != null) {
       switch (reason) {
         case 'no_subscription':
+        case 'no_active_subscription':
           return 'Aucun abonnement actif';
         case 'subscription_expired':
           return 'Abonnement expiré';
@@ -294,10 +396,10 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
         case 'already_checked_in':
           return 'Déjà enregistré aujourd\'hui';
         default:
-          return message ?? 'Accès refusé';
+          return _checkInError({'message': message ?? 'Accès refusé'});
       }
     }
-    return message ?? 'Accès refusé';
+    return _checkInError({'message': message ?? 'Accès refusé'});
   }
 
   void _addSessionEntry(Map<String, dynamic>? member, {required bool allowed}) {
@@ -1269,6 +1371,21 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
               color: AppColors.darkTextTertiary,
             ),
           ),
+          const SizedBox(height: 28),
+          OutlinedButton.icon(
+            onPressed: _openManualCheckIn,
+            icon: const Icon(Icons.person_search_rounded),
+            label: const Text('Pas de QR code ? Rechercher un membre'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.white,
+              side: const BorderSide(color: AppColors.darkTextTertiary),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+              textStyle: GoogleFonts.barlow(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -1466,7 +1583,12 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
                     ),
                   ),
                   const SizedBox(height: 20),
-                  _buildAvatar(profileUrl, initials, 100),
+                  _buildAvatar(
+                    profileUrl,
+                    initials,
+                    100,
+                    bytes: _memberPhoto,
+                  ),
                 ],
               ),
               const SizedBox(width: 36),
@@ -2048,7 +2170,12 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
 
   // ── Helpers ──────────────────────────────────────────────────────────────────
 
-  Widget _buildAvatar(String? imageUrl, String initials, double size) {
+  Widget _buildAvatar(
+    String? imageUrl,
+    String initials,
+    double size, {
+    Uint8List? bytes,
+  }) {
     return Container(
       width: size,
       height: size,
@@ -2065,7 +2192,13 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
           ),
         ],
       ),
-      child: imageUrl != null && imageUrl.isNotEmpty
+      child: bytes != null
+          ? Image.memory(
+              bytes,
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) => _buildInitials(initials, size),
+            )
+          : imageUrl != null && imageUrl.isNotEmpty
           ? Image.network(
               imageUrl,
               fit: BoxFit.cover,
