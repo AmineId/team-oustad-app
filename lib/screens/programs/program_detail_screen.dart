@@ -53,13 +53,20 @@ class _ProgramDetailScreenState extends State<ProgramDetailScreen> {
 
   late Map<String, dynamic> _program = widget.program;
   bool _isOwner = false;
+  bool _canAssign = false;
   bool _changed = false;
 
   @override
   void initState() {
     super.initState();
-    _authService.isOwner().then((v) {
-      if (mounted) setState(() => _isOwner = v);
+    Future.wait([_authService.isOwner(), _authService.isCoach()]).then((r) {
+      // Le manager consulte les programmes sans pouvoir les affecter.
+      if (mounted) {
+        setState(() {
+          _isOwner = r[0];
+          _canAssign = r[0] || r[1];
+        });
+      }
     });
   }
 
@@ -154,11 +161,13 @@ class _ProgramDetailScreenState extends State<ProgramDetailScreen> {
             ],
           ],
         ),
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: _assign,
-          icon: const Icon(Icons.group_add_outlined),
-          label: const Text('Affecter'),
-        ),
+        floatingActionButton: _canAssign
+            ? FloatingActionButton.extended(
+                onPressed: _assign,
+                icon: const Icon(Icons.group_add_outlined),
+                label: const Text('Affecter'),
+              )
+            : null,
         body: ListView(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
           children: [

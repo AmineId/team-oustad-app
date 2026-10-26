@@ -8,7 +8,7 @@ import 'program_detail_screen.dart';
 import 'program_editor_screen.dart';
 
 /// Catalogue des programmes (owner, manager, coach). L'owner crée et modifie ;
-/// tout le monde peut affecter. Avec [assignToMemberIds], un tap mène
+/// l'owner et le coach affectent, le manager consulte. Avec [assignToMemberIds], un tap mène
 /// directement à l'affectation pour ces membres (depuis une fiche membre).
 class ProgramsScreen extends StatefulWidget {
   final List<int>? assignToMemberIds;

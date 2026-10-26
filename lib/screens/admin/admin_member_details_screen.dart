@@ -38,10 +38,16 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
   List<Map<String, dynamic>> _plannings = [];
   bool _isLoading = true;
   String _errorMessage = '';
+  // Seuls l'owner et le coach affectent des programmes ; le manager planifie
+  // des séances et ne voit les programmes qu'en lecture.
+  bool _isOwner = false;
 
   @override
   void initState() {
     super.initState();
+    _authService.isOwner().then((v) {
+      if (mounted) setState(() => _isOwner = v);
+    });
     _loadMemberDetails();
   }
 
@@ -381,7 +387,8 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                               color: Theme.of(context).colorScheme.onSurface,
                             ),
                           ),
-                          IconButton(
+                          if (_isOwner)
+                            IconButton(
                             onPressed: () async {
                               final assigned = await Navigator.push<bool>(
                                 context,
@@ -1193,18 +1200,19 @@ class _AdminMemberDetailsScreenState extends State<AdminMemberDetailsScreen> {
                     const SizedBox(height: 24),
 
                     // Bouton supprimer
+                    if (_isOwner)
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
                         onPressed: () {
                           Navigator.pop(context);
                           _confirmDeletePlanning(
-                            planning['_id'] as String? ?? '',
+                            '${planning['id'] ?? planning['_id'] ?? ''}',
                             title,
                           );
                         },
                         icon: const Icon(Icons.delete_outline),
-                        label: const Text('Supprimer le planning'),
+                        label: const Text('Annuler le programme'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.red.withValues(alpha: 0.2),
                           foregroundColor: context.palette.error,
