@@ -9,6 +9,7 @@ import '../../core/services/auth_service.dart';
 import '../../core/services/notification_service.dart';
 import '../../core/services/app_version_service.dart';
 import '../../core/utils/app_navigator.dart';
+import 'session_guard.dart';
 import '../../widgets/common/update_available_dialog.dart';
 import '../../core/theme/theme.dart';
 
@@ -68,7 +69,9 @@ class _SplashScreenState extends State<SplashScreen> {
 
           if (mounted) {
             Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (context) => homeScreen),
+              MaterialPageRoute(
+                builder: (context) => SessionGuard(child: homeScreen),
+              ),
             );
           }
           return;

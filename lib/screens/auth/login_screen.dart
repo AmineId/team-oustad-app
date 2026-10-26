@@ -10,6 +10,7 @@ import '../admin/admin_home_screen.dart';
 import '../coach/coach_home_screen.dart';
 import '../member/member_home_screen.dart';
 import '../member/onboarding_screen.dart';
+import '../common/session_guard.dart';
 import 'forgot_password_screen.dart';
 import 'setup_password_screen.dart';
 import '../../core/services/api_service.dart';
@@ -877,9 +878,12 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
       homeScreen = const MemberHomeScreen();
     }
 
-    Navigator.of(
-      context,
-    ).pushReplacement(MaterialPageRoute(builder: (context) => homeScreen));
+    // Connexion réussie : le serveur répond (un démarrage hors ligne avait
+    // pu laisser le bandeau « Hors ligne » armé).
+    AuthService.serverReachable.value = true;
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (context) => SessionGuard(child: homeScreen)),
+    );
   }
 
   @override

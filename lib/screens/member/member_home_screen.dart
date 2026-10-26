@@ -20,6 +20,7 @@ import 'subscription_details_screen.dart';
 import 'edit_profile_screen.dart';
 import '../common/security_settings_screen.dart';
 import '../common/about_screen.dart';
+import '../common/session_guard.dart';
 import '../common/store_screen.dart';
 
 Widget _memberSectionTitle(BuildContext context, String title) {
@@ -604,8 +605,22 @@ class _MemberDashboardPageState extends State<MemberDashboardPage> {
         return;
       }
 
-      // Refresh user profile from API
-      await _authService.refreshUserProfile();
+      // Le rafraîchissement revérifie la session : « à jour » seulement si le
+      // serveur a répondu (hors ligne → bandeau + avertissement ; jeton
+      // refusé → retour au login via SessionGuard).
+      if (!mounted) return;
+      final session = await SessionGuard.check(context);
+      if (session == SessionCheck.unreachable) {
+        if (mounted) {
+          AppSnackBar.show(
+            context,
+            'Hors ligne — impossible de rafraîchir, données du cache',
+            type: SnackBarType.warning,
+          );
+        }
+        return;
+      }
+      if (session == SessionCheck.invalid) return;
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

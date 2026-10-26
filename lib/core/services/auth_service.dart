@@ -601,13 +601,16 @@ class AuthService {
     );
     final body = r.body;
     if (r.status == 200 && body is Map<String, dynamic>) {
+      serverReachable.value = true;
       await _cacheProfile(body);
       return SessionCheck.valid;
     }
     if (r.status == 401 || r.status == 403) {
+      serverReachable.value = true;
       await _secureStorage.delete(key: 'auth_token');
       return SessionCheck.invalid;
     }
+    serverReachable.value = false;
     return SessionCheck.unreachable;
   }
 
@@ -755,6 +758,10 @@ class AuthService {
   /// Incrémenté à chaque profil rechargé depuis l'API : les écrans qui
   /// affichent le profil en cache l'écoutent pour se mettre à jour.
   static final ValueNotifier<int> profileVersion = ValueNotifier<int>(0);
+
+  /// Faux quand la dernière [validateSession] n'a pas joint le serveur :
+  /// les écrans d'accueil affichent alors le bandeau « Hors ligne ».
+  static final ValueNotifier<bool> serverReachable = ValueNotifier<bool>(true);
 
   Future<void> _cacheProfile(Map<String, dynamic> profileData) async {
     final prefs = await SharedPreferences.getInstance();

@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/theme/theme.dart';
+import '../common/session_guard.dart';
 import 'member_home_screen.dart';
 
 class GymRulesScreen extends StatefulWidget {
@@ -192,7 +193,8 @@ class _GymRulesScreenState extends State<GymRulesScreen> {
       // Navigate to member home screen
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (context) => const MemberHomeScreen(),
+          builder: (context) =>
+              const SessionGuard(child: MemberHomeScreen()),
         ),
       );
 
