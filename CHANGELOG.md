@@ -6,6 +6,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.118](https://github.com/AmineId/team-oustad-app/compare/v1.0.0-beta.117...v1.0.0-beta.118) (2026-10-26)
+
+
+### ✨ New Features
+
+* **kiosk:** check-in manuel sans QR code (recherche membre, fiche avec photo) ([6c8ab06](https://github.com/AmineId/team-oustad-app/commit/6c8ab0665e84dda1b47e04ec22164391bee2a9d8))
+
+
+### 🐛 Bug Fixes
+
+* **kiosk:** scan QR aligné sur scan-qr corrigé (quota, refus 403/404 lisibles) ([2fc5405](https://github.com/AmineId/team-oustad-app/commit/2fc54058fdeee8a327583903b69a15344c89782a))
+
+
+### 📚 Documentation
+
+* **architecture:** contrat serveur Rôles V2 (owner/manager/coach) ([c445d93](https://github.com/AmineId/team-oustad-app/commit/c445d932b9dd29c9df4803f50ebf0a03b82ddb0d))
+* **roles:** arbitrage des choix provisoires (manager sans affectation, séances typées, chat incident) ([82d9b07](https://github.com/AmineId/team-oustad-app/commit/82d9b071270bf669f2938bc80747d6da348fa982))
+
 ## [1.0.0-beta.117](https://github.com/AmineId/team-oustad-app/compare/v1.0.0-beta.116...v1.0.0-beta.117) (2026-10-26)
 
 
