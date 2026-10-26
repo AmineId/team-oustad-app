@@ -201,10 +201,15 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
       final canCheckIn = quota?['canCheckIn'] as bool? ?? false;
 
       if (!canCheckIn) {
-        final reason = _resolveReason(
-          scanResult['reason'] as String?,
-          scanResult['message'] as String?,
-        );
+        // 200 avec quota.canCheckIn=false : quota épuisé (le message est
+        // alors « Access granted », à ne pas afficher).
+        final reason = quota != null
+            ? 'Quota de séances épuisé'
+            : _resolveReason(
+                scanResult['reason'] as String?,
+                scanResult['error'] as String? ??
+                    scanResult['message'] as String?,
+              );
         setState(() {
           _status = _ScanStatus.denied;
           _errorMessage = reason;
@@ -339,6 +344,8 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
     }
     if (msg.contains('subscription is')) return 'Abonnement inactif';
     if (msg.contains('member not found')) return 'Membre introuvable';
+    if (msg.contains('does not belong')) return 'Membre d\'une autre salle';
+    if (msg.contains('not for a member')) return 'QR code non reconnu';
     if (msg.contains('forbidden')) return 'Action non autorisée';
     return raw.isEmpty ? 'Check-in échoué' : raw;
   }
@@ -380,6 +387,7 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
     if (reason != null) {
       switch (reason) {
         case 'no_subscription':
+        case 'no_active_subscription':
           return 'Aucun abonnement actif';
         case 'subscription_expired':
           return 'Abonnement expiré';
@@ -388,10 +396,10 @@ class _CheckinTerminalScreenState extends State<CheckinTerminalScreen>
         case 'already_checked_in':
           return 'Déjà enregistré aujourd\'hui';
         default:
-          return message ?? 'Accès refusé';
+          return _checkInError({'message': message ?? 'Accès refusé'});
       }
     }
-    return message ?? 'Accès refusé';
+    return _checkInError({'message': message ?? 'Accès refusé'});
   }
 
   void _addSessionEntry(Map<String, dynamic>? member, {required bool allowed}) {

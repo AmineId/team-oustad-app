@@ -516,8 +516,11 @@ class ApiService {
         } catch (_) {
           return null;
         }
-      } else if (resp.statusCode == 400) {
-        // Return error details for invalid QR or access denied
+      } else if (resp.statusCode == 400 ||
+          resp.statusCode == 403 ||
+          resp.statusCode == 404) {
+        // Détail du refus (QR invalide, sans abonnement, autre salle,
+        // membre inconnu)
         try {
           final body = jsonDecode(resp.body);
           return body as Map<String, dynamic>;
