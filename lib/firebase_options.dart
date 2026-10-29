@@ -1,9 +1,10 @@
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
-import 'package:flutter/foundation.dart' show defaultTargetPlatform, kIsWeb, TargetPlatform;
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, kIsWeb, TargetPlatform;
 
 /// Configuration Firebase multi-environnement
 /// Lit la variable ENVIRONMENT depuis --dart-define pour sélectionner la bonne config
-/// 
+///
 /// Environnements supportés:
 /// - dev: Développement local (pprod config)
 /// - pprod: Pré-production
@@ -11,12 +12,15 @@ import 'package:flutter/foundation.dart' show defaultTargetPlatform, kIsWeb, Tar
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     // Lire l'environnement depuis --dart-define
-    const environment = String.fromEnvironment('ENVIRONMENT', defaultValue: 'dev');
-    
+    const environment = String.fromEnvironment(
+      'ENVIRONMENT',
+      defaultValue: 'dev',
+    );
+
     if (kIsWeb) {
       return _getWebOptions(environment);
     }
-    
+
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
         return _getAndroidOptions(environment);
@@ -44,29 +48,12 @@ class DefaultFirebaseOptions {
     }
   }
 
-  // Configuration Android selon l'environnement
-  static FirebaseOptions _getAndroidOptions(String environment) {
-    switch (environment) {
-      case 'prod':
-        return _androidProd;
-      case 'pprod':
-      case 'dev':
-      default:
-        return _androidPprod;
-    }
-  }
+  // Android et iOS : un seul projet Firebase (team-fitness-app-29fa1) pour
+  // tous les environnements, comme les google-services-*.json identiques.
+  static FirebaseOptions _getAndroidOptions(String environment) =>
+      _androidPprod;
 
-  // Configuration iOS selon l'environnement
-  static FirebaseOptions _getIosOptions(String environment) {
-    switch (environment) {
-      case 'prod':
-        return _iosProd;
-      case 'pprod':
-      case 'dev':
-      default:
-        return _iosPprod;
-    }
-  }
+  static FirebaseOptions _getIosOptions(String environment) => _iosPprod;
 
   // Configuration Web selon l'environnement
   static FirebaseOptions _getWebOptions(String environment) {
@@ -81,7 +68,7 @@ class DefaultFirebaseOptions {
   }
 
   // === PRE-PRODUCTION CONFIGS ===
-  
+
   static const FirebaseOptions _webPprod = FirebaseOptions(
     apiKey: 'YOUR_WEB_API_KEY',
     appId: 'YOUR_WEB_APP_ID',
@@ -109,7 +96,7 @@ class DefaultFirebaseOptions {
   );
 
   // === PRODUCTION CONFIGS ===
-  
+
   static const FirebaseOptions _webProd = FirebaseOptions(
     apiKey: 'YOUR_WEB_PROD_API_KEY',
     appId: 'YOUR_WEB_PROD_APP_ID',
@@ -118,24 +105,4 @@ class DefaultFirebaseOptions {
     authDomain: 'YOUR_PROD_PROJECT_ID.firebaseapp.com',
     storageBucket: 'YOUR_PROD_PROJECT_ID.appspot.com',
   );
-
-  static const FirebaseOptions _androidProd = FirebaseOptions(
-    apiKey: 'YOUR_ANDROID_PROD_API_KEY',
-    appId: 'YOUR_ANDROID_PROD_APP_ID',
-    messagingSenderId: 'YOUR_PROD_SENDER_ID',
-    projectId: 'YOUR_PROD_PROJECT_ID',
-    storageBucket: 'YOUR_PROD_PROJECT_ID.appspot.com',
-  );
-
-  static const FirebaseOptions _iosProd = FirebaseOptions(
-    apiKey: 'YOUR_IOS_PROD_API_KEY',
-    appId: 'YOUR_IOS_PROD_APP_ID',
-    messagingSenderId: 'YOUR_PROD_SENDER_ID',
-    projectId: 'YOUR_PROD_PROJECT_ID',
-    storageBucket: 'YOUR_PROD_PROJECT_ID.appspot.com',
-    iosBundleId: 'com.teamfitness.app.prod',
-  );
 }
-
-
-
