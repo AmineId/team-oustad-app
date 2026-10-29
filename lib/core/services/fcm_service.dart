@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'notification_service.dart';
 import 'notification_router.dart';
@@ -196,6 +197,8 @@ class FCMService {
         NotificationRouter.incidentIdOf(message.data) ==
             NotificationRouter.openIncidentId) {
       // Fil déjà affiché : il se met à jour, pas de notification.
+    } else if (type == 'banner' && message.notification != null) {
+      await _showBannerNotification(message);
     } else if (message.notification != null) {
       // Notification standard
       await _localNotifications.showNotification(
@@ -205,6 +208,46 @@ class FCMService {
         payload: jsonEncode(message.data),
       );
     }
+  }
+
+  /// Push `banner` au premier plan : notification avec l'image de la
+  /// bannière (en arrière-plan, Android l'affiche seul). Sans image ou si le
+  /// téléchargement échoue, notification standard.
+  Future<void> _showBannerNotification(RemoteMessage message) async {
+    final notification = message.notification!;
+    final title = notification.title ?? 'Notification';
+    final body = notification.body ?? '';
+    final payload = jsonEncode(message.data);
+    final imageUrl =
+        notification.android?.imageUrl ?? notification.apple?.imageUrl;
+
+    if (imageUrl != null) {
+      try {
+        final resp = await http
+            .get(Uri.parse(imageUrl))
+            .timeout(const Duration(seconds: 10));
+        if (resp.statusCode == 200) {
+          await _localNotifications.showImageNotification(
+            id: message.hashCode,
+            title: title,
+            body: body,
+            image: resp.bodyBytes,
+            payload: payload,
+          );
+          return;
+        }
+      } catch (e) {
+        // ignore: avoid_print
+        debugPrint('⚠️ Image de la bannière non chargée: $e');
+      }
+    }
+
+    await _localNotifications.showNotification(
+      id: message.hashCode,
+      title: title,
+      body: body,
+      payload: payload,
+    );
   }
 
   /// Gère la réponse à une demande d'aide

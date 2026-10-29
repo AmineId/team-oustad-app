@@ -123,6 +123,9 @@ class BannerAction {
 /// Modèle complet de bannière/événement
 class BannerModel {
   final int? id;
+
+  /// Identifiant public, envoyé dans les push `banner` (`data.bannerId`).
+  final String? displayId;
   final String title;
   final String? description;
   final String? imageUrl;
@@ -138,11 +141,18 @@ class BannerModel {
   final String? textColor;
   final int viewCount;
   final int clickCount;
+
+  /// Push envoyé aux membres quand la bannière devient visible.
+  final bool notifyMembers;
+
+  /// Date d'envoi de ce push (lecture seule, posée par le serveur).
+  final DateTime? notifiedAt;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
   const BannerModel({
     this.id,
+    this.displayId,
     required this.title,
     this.description,
     this.imageUrl,
@@ -158,6 +168,8 @@ class BannerModel {
     this.textColor,
     this.viewCount = 0,
     this.clickCount = 0,
+    this.notifyMembers = false,
+    this.notifiedAt,
     this.createdAt,
     this.updatedAt,
   });
@@ -197,6 +209,7 @@ class BannerModel {
   factory BannerModel.fromJson(Map<String, dynamic> json) {
     return BannerModel(
       id: json['id'] as int?,
+      displayId: json['displayId'] as String?,
       title: json['title'] as String,
       description: json['description'] as String?,
       imageUrl: json['imageUrl'] as String?,
@@ -214,6 +227,10 @@ class BannerModel {
       textColor: json['textColor'] as String?,
       viewCount: json['viewCount'] as int? ?? 0,
       clickCount: json['clickCount'] as int? ?? 0,
+      notifyMembers: json['notifyMembers'] as bool? ?? false,
+      notifiedAt: json['notifiedAt'] != null
+          ? DateTime.parse(json['notifiedAt'] as String)
+          : null,
       createdAt: json['createdAt'] != null
           ? DateTime.parse(json['createdAt'] as String)
           : null,
@@ -237,6 +254,7 @@ class BannerModel {
       if (action != null) 'action': action!.toJson(),
       'priority': priority,
       'isActive': isActive,
+      'notifyMembers': notifyMembers,
       if (gymId != null) 'gymId': gymId,
       if (backgroundColor != null) 'backgroundColor': backgroundColor,
       if (textColor != null) 'textColor': textColor,
@@ -246,6 +264,7 @@ class BannerModel {
   /// Copie avec modifications
   BannerModel copyWith({
     int? id,
+    String? displayId,
     String? title,
     String? description,
     String? imageUrl,
@@ -261,11 +280,14 @@ class BannerModel {
     String? textColor,
     int? viewCount,
     int? clickCount,
+    bool? notifyMembers,
+    DateTime? notifiedAt,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
     return BannerModel(
       id: id ?? this.id,
+      displayId: displayId ?? this.displayId,
       title: title ?? this.title,
       description: description ?? this.description,
       imageUrl: imageUrl ?? this.imageUrl,
@@ -281,6 +303,8 @@ class BannerModel {
       textColor: textColor ?? this.textColor,
       viewCount: viewCount ?? this.viewCount,
       clickCount: clickCount ?? this.clickCount,
+      notifyMembers: notifyMembers ?? this.notifyMembers,
+      notifiedAt: notifiedAt ?? this.notifiedAt,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
