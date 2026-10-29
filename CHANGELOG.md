@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.130](https://github.com/AmineId/team-oustad-app/compare/v1.0.0-beta.129...v1.0.0-beta.130) (2026-10-29)
+
+
+### ✨ New Features
+
+* **sessions:** planning des séances en calendrier (semaine et mois) ([050d6e7](https://github.com/AmineId/team-oustad-app/commit/050d6e71618d9fc48c6ee562b771797ac12fd4b1))
+
 ## [1.0.0-beta.129](https://github.com/AmineId/team-oustad-app/compare/v1.0.0-beta.128...v1.0.0-beta.129) (2026-10-29)
 
 
