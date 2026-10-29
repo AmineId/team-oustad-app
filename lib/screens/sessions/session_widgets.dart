@@ -23,6 +23,27 @@ const _months = [
 String sessionTime(DateTime d) =>
     '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
 
+const _monthNames = [
+  'janvier',
+  'février',
+  'mars',
+  'avril',
+  'mai',
+  'juin',
+  'juillet',
+  'août',
+  'septembre',
+  'octobre',
+  'novembre',
+  'décembre',
+];
+
+/// « lun. »
+String sessionWeekday(DateTime d) => _weekdays[d.weekday - 1];
+
+/// « octobre »
+String sessionMonth(DateTime d) => _monthNames[d.month - 1];
+
 /// « lun. 27 oct. »
 String sessionDay(DateTime d) =>
     '${_weekdays[d.weekday - 1]} ${d.day} ${_months[d.month - 1]}';
@@ -50,6 +71,18 @@ IconData sessionTypeIcon(String type) => switch (type) {
   'private' => Icons.person_outline,
   _ => Icons.fitness_center,
 };
+
+/// Couleur d'un type de séance (calendrier).
+Color sessionTypeColor(BuildContext context, String type) {
+  final palette = context.palette;
+  return switch (type) {
+    'discovery' => palette.info,
+    'group_class' => palette.premium,
+    'assessment' => palette.warning,
+    'private' => palette.success,
+    _ => palette.primary,
+  };
+}
 
 /// Puces de filtre par type de séance ; [value] null = tous les types.
 class SessionTypeFilter extends StatelessWidget {
@@ -191,20 +224,24 @@ class SessionCard extends StatelessWidget {
         onTap: onTap,
         leading: SizedBox(
           width: 56,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                start == null ? '--:--' : sessionTime(start),
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: context.palette.primary,
+          // Grandes polices : réduire plutôt que déborder.
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  start == null ? '--:--' : sessionTime(start),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: context.palette.primary,
+                  ),
                 ),
-              ),
-              if (end != null)
-                Text(sessionTime(end), style: const TextStyle(fontSize: 12)),
-              Icon(sessionTypeIcon(type), size: 14),
-            ],
+                if (end != null)
+                  Text(sessionTime(end), style: const TextStyle(fontSize: 12)),
+                Icon(sessionTypeIcon(type), size: 14),
+              ],
+            ),
           ),
         ),
         title: Text(

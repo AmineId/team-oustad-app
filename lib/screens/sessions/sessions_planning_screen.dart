@@ -3,11 +3,12 @@ import 'package:flutter/material.dart';
 import '../../core/core.dart';
 import '../../core/utils/user_utils.dart';
 import 'find_slot_screen.dart';
+import 'session_calendar.dart';
 import 'session_detail_screen.dart';
 import 'session_editor_screen.dart';
 import 'session_widgets.dart';
 
-/// Planning hebdomadaire des coachs (owner : salle au choix ; manager : sa
+/// Calendrier des séances des coachs (owner : salle au choix ; manager : sa
 /// salle). Création de séances, filtre par coach, recherche de créneaux.
 class SessionsPlanningScreen extends StatefulWidget {
   const SessionsPlanningScreen({super.key});
@@ -28,15 +29,8 @@ class _SessionsPlanningScreenState extends State<SessionsPlanningScreen> {
   List<Map<String, dynamic>> _coaches = [];
   int? _coachId;
   String? _type;
-  List<Map<String, dynamic>>? _sessions;
-  bool _isLoading = true;
-
-  late DateTime _weekStart = _mondayOf(DateTime.now());
-
-  static DateTime _mondayOf(DateTime d) {
-    final day = DateUtils.dateOnly(d);
-    return day.subtract(Duration(days: day.weekday - 1));
-  }
+  bool _ready = false;
+  final _calendarKey = GlobalKey<SessionCalendarState>();
 
   @override
   void initState() {
@@ -58,7 +52,7 @@ class _SessionsPlanningScreenState extends State<SessionsPlanningScreen> {
       _gymId = gymId is int ? gymId : null;
     }
     await _loadCoaches(token);
-    await _load();
+    if (mounted) setState(() => _ready = true);
   }
 
   Future<void> _loadCoaches(String token) async {
@@ -67,44 +61,36 @@ class _SessionsPlanningScreenState extends State<SessionsPlanningScreen> {
     if (_coaches.every((c) => c['id'] != _coachId)) _coachId = null;
   }
 
-  Future<void> _load() async {
-    if (mounted) setState(() => _isLoading = true);
+  Future<List<Map<String, dynamic>>?> _loadRange(
+    DateTime from,
+    DateTime to,
+  ) async {
     final token = await _authService.loadToken();
-    final sessions = (token == null || _gymId == null)
-        ? null
-        : await _sessionService.getSessions(
-            token,
-            gymId: _gymId,
-            coachId: _coachId,
-            type: _type,
-            from: _weekStart,
-            to: _weekStart.add(const Duration(days: 7)),
-          );
-    if (!mounted) return;
-    setState(() {
-      _sessions = sessions;
-      _isLoading = false;
-    });
-  }
-
-  void _shiftWeek(int weeks) {
-    setState(() => _weekStart = _weekStart.add(Duration(days: 7 * weeks)));
-    _load();
-  }
-
-  Future<void> _push(Widget screen) async {
-    final changed = await Navigator.push<bool>(
-      context,
-      MaterialPageRoute(builder: (_) => screen),
+    if (token == null || _gymId == null) return null;
+    return _sessionService.getSessions(
+      token,
+      gymId: _gymId,
+      coachId: _coachId,
+      type: _type,
+      from: from,
+      to: to,
     );
-    if (changed == true) _load();
   }
+
+  Future<bool?> _push(Widget screen) =>
+      Navigator.push<bool>(context, MaterialPageRoute(builder: (_) => screen));
+
+  /// Écran qui crée ou modifie des séances : recharger le calendrier.
+  Future<void> _pushAndReload(Widget screen) async {
+    if (await _push(screen) == true) _calendarKey.currentState?.reload();
+  }
+
+  void _create([DateTime? slot]) => _pushAndReload(
+    SessionEditorScreen(gymId: _gymId!, coaches: _coaches, initialDay: slot),
+  );
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final sessions = _sessions ?? [];
-    final weekEnd = _weekStart.add(const Duration(days: 6));
     return Scaffold(
       appBar: AppBar(
         title: const Text('Planning des coachs'),
@@ -114,20 +100,14 @@ class _SessionsPlanningScreenState extends State<SessionsPlanningScreen> {
             tooltip: 'Trouver un créneau',
             onPressed: _gymId == null
                 ? null
-                : () => _push(FindSlotScreen(gymId: _gymId!)),
+                : () => _pushAndReload(FindSlotScreen(gymId: _gymId!)),
           ),
         ],
       ),
       floatingActionButton: _gymId == null
           ? null
           : FloatingActionButton.extended(
-              onPressed: () => _push(
-                SessionEditorScreen(
-                  gymId: _gymId!,
-                  coaches: _coaches,
-                  initialDay: _weekStart,
-                ),
-              ),
+              onPressed: _create,
               icon: const Icon(Icons.add),
               label: const Text('Séance'),
             ),
@@ -148,10 +128,10 @@ class _SessionsPlanningScreenState extends State<SessionsPlanningScreen> {
                       ),
                 ],
                 onChanged: (v) async {
-                  _gymId = v;
                   final token = await _authService.loadToken();
+                  _gymId = v;
                   if (token != null) await _loadCoaches(token);
-                  _load();
+                  setState(() {});
                 },
               ),
             ),
@@ -170,97 +150,29 @@ class _SessionsPlanningScreenState extends State<SessionsPlanningScreen> {
                       child: Text(getUserFullName(c)),
                     ),
               ],
-              onChanged: (v) {
-                _coachId = v;
-                _load();
-              },
+              onChanged: (v) => setState(() => _coachId = v),
             ),
           ),
           Padding(
             padding: const EdgeInsets.only(top: 8),
             child: SessionTypeFilter(
               value: _type,
-              onChanged: (v) {
-                setState(() => _type = v);
-                _load();
-              },
+              onChanged: (v) => setState(() => _type = v),
             ),
-          ),
-          Row(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.chevron_left),
-                onPressed: () => _shiftWeek(-1),
-              ),
-              Expanded(
-                child: Text(
-                  '${sessionDay(_weekStart)} – ${sessionDay(weekEnd)}',
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.titleMedium,
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.chevron_right),
-                onPressed: () => _shiftWeek(1),
-              ),
-            ],
           ),
           Expanded(
-            child: RefreshIndicator(
-              onRefresh: _load,
-              child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : _sessions == null
-                  ? ListView(
-                      children: const [
-                        Padding(
-                          padding: EdgeInsets.all(32),
-                          child: Text(
-                            'Impossible de charger le planning',
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ],
-                    )
-                  : ListView(
-                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 96),
-                      children: [
-                        for (var i = 0; i < 7; i++)
-                          ..._buildDay(
-                            _weekStart.add(Duration(days: i)),
-                            sessions,
-                            theme,
-                          ),
-                      ],
-                    ),
-            ),
+            child: _ready
+                ? SessionCalendar(
+                    key: _calendarKey,
+                    filters: (_gymId, _coachId, _type),
+                    loader: _loadRange,
+                    onSessionTap: (s) => _push(SessionDetailScreen(session: s)),
+                    onSlotTap: _gymId == null ? null : _create,
+                  )
+                : const Center(child: CircularProgressIndicator()),
           ),
         ],
       ),
     );
-  }
-
-  List<Widget> _buildDay(
-    DateTime day,
-    List<Map<String, dynamic>> sessions,
-    ThemeData theme,
-  ) {
-    final ofDay = sessions.where((s) {
-      final start = SessionService.startOf(s);
-      return start != null && DateUtils.isSameDay(start, day);
-    }).toList();
-    return [
-      Padding(
-        padding: const EdgeInsets.only(top: 16, bottom: 4),
-        child: Text(sessionDay(day), style: theme.textTheme.titleSmall),
-      ),
-      if (ofDay.isEmpty)
-        Text('Aucune séance', style: theme.textTheme.bodySmall),
-      for (final s in ofDay)
-        SessionCard(
-          session: s,
-          onTap: () => _push(SessionDetailScreen(session: s)),
-        ),
-    ];
   }
 }
