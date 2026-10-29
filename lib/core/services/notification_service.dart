@@ -219,6 +219,48 @@ class NotificationService {
     await _notifications.show(id, title, body, details, payload: payload);
   }
 
+  /// Affiche une notification avec une grande image (push `banner` reçu au
+  /// premier plan). Sur iOS, l'image n'est pas affichée.
+  Future<void> showImageNotification({
+    required int id,
+    required String title,
+    required String body,
+    required Uint8List image,
+    String? payload,
+  }) async {
+    if (!_initialized) await initialize();
+
+    final androidDetails = AndroidNotificationDetails(
+      'team_fitness_channel',
+      'Team Oustad',
+      channelDescription: 'Notifications de l\'application Team Oustad',
+      importance: Importance.high,
+      priority: Priority.high,
+      showWhen: true,
+      largeIcon: ByteArrayAndroidBitmap(image),
+      styleInformation: BigPictureStyleInformation(
+        ByteArrayAndroidBitmap(image),
+        contentTitle: title,
+        summaryText: body,
+        hideExpandedLargeIcon: true,
+      ),
+    );
+
+    const iosDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
+
+    await _notifications.show(
+      id,
+      title,
+      body,
+      NotificationDetails(android: androidDetails, iOS: iosDetails),
+      payload: payload,
+    );
+  }
+
   /// Affiche une notification avec des boutons d'action
   /// Utilisé pour les demandes d'aide où l'admin peut répondre directement
   Future<void> showNotificationWithActions({

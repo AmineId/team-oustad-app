@@ -41,6 +41,7 @@ class _AdminCreateBannerScreenState extends State<AdminCreateBannerScreen> {
   DateTime _endDate = DateTime.now().add(const Duration(days: 7));
   int _priority = 0;
   bool _isActive = true;
+  bool _notifyMembers = false;
   String? _imageBase64;
   File? _imageFile;
   bool _isLoading = false;
@@ -72,6 +73,7 @@ class _AdminCreateBannerScreenState extends State<AdminCreateBannerScreen> {
       _endDate = widget.banner!.endDate;
       _priority = widget.banner!.priority;
       _isActive = widget.banner!.isActive;
+      _notifyMembers = widget.banner!.notifyMembers;
       _imageBase64 = widget.banner!.imageBase64;
       // Restaurer les couleurs
       if (widget.banner!.backgroundColor != null) {
@@ -214,6 +216,7 @@ class _AdminCreateBannerScreenState extends State<AdminCreateBannerScreen> {
             : null,
         priority: _priority,
         isActive: _isActive,
+        notifyMembers: _notifyMembers,
         backgroundColor: _colorToHex(_backgroundColor),
         textColor: _colorToHex(_textColor),
       );
@@ -488,6 +491,34 @@ class _AdminCreateBannerScreenState extends State<AdminCreateBannerScreen> {
                     activeThumbColor: context.palette.primary,
                     contentPadding: EdgeInsets.zero,
                   ),
+                  // Push aux membres : envoyé une seule fois par le serveur.
+                  SwitchListTile(
+                    value: _notifyMembers,
+                    onChanged: widget.banner?.notifiedAt != null
+                        ? null
+                        : (v) => setState(() => _notifyMembers = v),
+                    title: Text(
+                      'Notifier les membres',
+                      style: TextStyle(
+                        color: isDark
+                            ? AppColors.darkTextPrimary
+                            : AppColors.lightTextPrimary,
+                      ),
+                    ),
+                    subtitle: Text(
+                      widget.banner?.notifiedAt != null
+                          ? 'Notification envoyée le ${DateFormat('dd/MM/yyyy à HH:mm').format(widget.banner!.notifiedAt!.toLocal())}'
+                          : 'Une notification push (avec l\'image si elle a une URL) part une seule fois, quand la bannière devient visible',
+                      style: TextStyle(
+                        color: isDark
+                            ? AppColors.darkTextSecondary
+                            : AppColors.lightTextSecondary,
+                        fontSize: 12,
+                      ),
+                    ),
+                    activeThumbColor: context.palette.primary,
+                    contentPadding: EdgeInsets.zero,
+                  ),
                 ],
               ),
             ),
@@ -644,8 +675,7 @@ class _AdminCreateBannerScreenState extends State<AdminCreateBannerScreen> {
                           Image.network(
                             _imageUrlController.text,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, _, _) =>
-                                _buildImagePlaceholder(),
+                            errorBuilder: (_, _, _) => _buildImagePlaceholder(),
                           ),
                         Container(
                           color: Colors.black.withValues(alpha: 0.3),
@@ -830,7 +860,9 @@ class _AdminCreateBannerScreenState extends State<AdminCreateBannerScreen> {
                   : AppColors.lightBackground,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: isSelected ? context.palette.primary : Colors.transparent,
+                color: isSelected
+                    ? context.palette.primary
+                    : Colors.transparent,
                 width: 2,
               ),
             ),

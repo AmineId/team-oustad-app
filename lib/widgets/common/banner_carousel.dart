@@ -114,20 +114,7 @@ class _BannerCarouselState extends State<BannerCarousel> {
       return;
     }
 
-    // Default action handling using BannerAction
-    final action = banner.action;
-    if (action != null && action.data != null && action.data!.isNotEmpty) {
-      if (action.type == BannerActionType.externalUrl) {
-        final url = Uri.parse(action.data!);
-        if (await canLaunchUrl(url)) {
-          await launchUrl(url, mode: LaunchMode.externalApplication);
-        }
-      } else if (action.type == BannerActionType.navigate) {
-        if (mounted) {
-          Navigator.pushNamed(context, action.data!);
-        }
-      }
-    }
+    if (mounted) await openBannerAction(context, banner);
   }
 
   @override
@@ -184,6 +171,76 @@ class _BannerCarouselState extends State<BannerCarousel> {
       ),
     );
   }
+}
+
+/// Action de la bannière : lien externe ou route interne.
+Future<void> openBannerAction(BuildContext context, BannerModel banner) async {
+  final action = banner.action;
+  if (action == null || action.data == null || action.data!.isEmpty) return;
+  if (action.type == BannerActionType.externalUrl) {
+    final url = Uri.parse(action.data!);
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    }
+  } else if (action.type == BannerActionType.navigate && context.mounted) {
+    Navigator.pushNamed(context, action.data!);
+  }
+}
+
+/// Bannière ouverte depuis un push `banner` : retrouve la bannière par son
+/// `displayId` parmi les bannières actives et l'affiche en feuille du bas.
+Future<void> showBannerFromNotification(
+  BuildContext context,
+  String? displayId,
+) async {
+  if (displayId == null) return;
+  final service = BannerService(ApiService.fromEnv());
+  final banners = await service.getActiveBanners();
+  final matches = banners.where((b) => b.displayId == displayId);
+  // Bannière expirée ou retirée depuis l'envoi : rien à ouvrir.
+  if (matches.isEmpty || !context.mounted) return;
+  final banner = matches.first;
+  if (banner.id != null) service.trackClick(banner.id!);
+
+  await showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    showDragHandle: true,
+    builder: (sheetContext) => SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            BannerCard(banner: banner, height: 200),
+            if (banner.description != null && banner.description!.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                child: Text(
+                  banner.description!,
+                  style: Theme.of(sheetContext).textTheme.bodyLarge,
+                ),
+              ),
+            if (banner.action != null &&
+                banner.action!.type != BannerActionType.none &&
+                banner.action!.data != null &&
+                banner.action!.data!.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                child: FilledButton.icon(
+                  onPressed: () {
+                    Navigator.pop(sheetContext);
+                    openBannerAction(context, banner);
+                  },
+                  icon: const Icon(Icons.arrow_forward_rounded),
+                  label: const Text('Voir'),
+                ),
+              ),
+          ],
+        ),
+      ),
+    ),
+  );
 }
 
 /// Carte de bannière individuelle

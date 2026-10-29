@@ -96,6 +96,12 @@ class _MemberHomeScreenState extends State<MemberHomeScreen> {
     });
     // Paiement / abonnement : l'état affiché sur l'accueil a pu changer.
     if (type == 'payment' || type == 'subscription') _loadData();
+    if (type == 'banner') {
+      showBannerFromNotification(
+        context,
+        NotificationRouter.data['bannerId'] as String?,
+      );
+    }
   }
 
   Future<void> _loadData() async {
