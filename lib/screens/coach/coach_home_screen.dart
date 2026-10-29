@@ -6,6 +6,7 @@ import '../../core/utils/user_utils.dart';
 import '../auth/login_screen.dart';
 import '../incidents/incidents_screen.dart';
 import '../programs/programs_screen.dart';
+import '../sessions/session_calendar.dart';
 import '../sessions/session_detail_screen.dart';
 import '../sessions/session_widgets.dart';
 
@@ -25,7 +26,6 @@ class _CoachHomeScreenState extends State<CoachHomeScreen> {
   late final SessionService _sessionService = SessionService(_apiService);
 
   List<Map<String, dynamic>>? _members;
-  List<Map<String, dynamic>>? _sessions;
   List<Map<String, dynamic>>? _checkIns;
   bool _onlyMyMembers = false;
   int? _myId;
@@ -70,16 +70,10 @@ class _CoachHomeScreenState extends State<CoachHomeScreen> {
   Future<void> _load() async {
     setState(() => _isLoading = true);
     final token = await _authService.loadToken();
-    final today = DateUtils.dateOnly(DateTime.now());
     final results = token == null
         ? null
         : await Future.wait([
             _coachService.getMyMembers(token),
-            _sessionService.getMySessions(
-              token,
-              from: today,
-              to: today.add(const Duration(days: 7)),
-            ),
             _coachService.getTodayCheckIns(token),
           ]);
     final profile = await _authService.getCachedUserProfile();
@@ -87,8 +81,7 @@ class _CoachHomeScreenState extends State<CoachHomeScreen> {
     if (!mounted) return;
     setState(() {
       _members = results?[0];
-      _sessions = results?[1];
-      _checkIns = results?[2];
+      _checkIns = results?[1];
       _myId = myId is int ? myId : int.tryParse('$myId');
       _isLoading = false;
     });
@@ -207,18 +200,17 @@ class _CoachHomeScreenState extends State<CoachHomeScreen> {
     );
   }
 
-  Widget _buildSessions(AppLocalizations l10n) {
-    final sessions = _sessions;
-    if (sessions == null) return _message('Impossible de charger vos séances');
-    if (sessions.isEmpty) return _message(l10n.coachNoSessions);
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        for (final s in sessions)
-          SessionCard(session: s, showDay: true, onTap: () => _openSession(s)),
-      ],
-    );
-  }
+  Widget _buildSessions() => SessionCalendar(
+    loader: (from, to) async {
+      final token = await _authService.loadToken();
+      if (token == null) return null;
+      return _sessionService.getMySessions(token, from: from, to: to);
+    },
+    onSessionTap: (s) => Navigator.push<bool>(
+      context,
+      MaterialPageRoute(builder: (_) => SessionDetailScreen(session: s)),
+    ),
+  );
 
   Widget _buildMembers(AppLocalizations l10n) {
     final members = _members;
@@ -284,10 +276,7 @@ class _CoachHomeScreenState extends State<CoachHomeScreen> {
             : TabBarView(
                 children: [
                   RefreshIndicator(onRefresh: _load, child: _buildToday(l10n)),
-                  RefreshIndicator(
-                    onRefresh: _load,
-                    child: _buildSessions(l10n),
-                  ),
+                  _buildSessions(),
                   RefreshIndicator(
                     onRefresh: _load,
                     child: _buildMembers(l10n),
