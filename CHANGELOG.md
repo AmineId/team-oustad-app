@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.0.0-beta.129](https://github.com/AmineId/team-oustad-app/compare/v1.0.0-beta.128...v1.0.0-beta.129) (2026-10-29)
+
+
+### ✨ New Features
+
+* **push:** notifications des bannières aux membres ([3443f56](https://github.com/AmineId/team-oustad-app/commit/3443f56c16cdf43ce4829ef24348f2a9f31d466a))
+
 ## [1.0.0-beta.128](https://github.com/AmineId/team-oustad-app/compare/v1.0.0-beta.127...v1.0.0-beta.128) (2026-10-29)
 
 

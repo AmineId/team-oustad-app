@@ -1,6 +1,6 @@
 {
-  "version_name": "1.0.0-beta.128",
-  "version_code": 133,
+  "version_name": "1.0.0-beta.129",
+  "version_code": 134,
   "changelog": "Version update",
   "force_update": false,
   "min_supported_version": 1,
@@ -18,7 +18,7 @@
   },
   "build_info": {
     "environment": "pprod",
-    "build_date": "2026-10-29T14:32:09.854Z",
+    "build_date": "2026-10-29T14:35:24.707Z",
     "flutter_version": "3.24.5",
     "dart_version": "3.5.4"
   }
