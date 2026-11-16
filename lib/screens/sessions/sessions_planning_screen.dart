@@ -107,7 +107,7 @@ class _SessionsPlanningScreenState extends State<SessionsPlanningScreen> {
       floatingActionButton: _gymId == null
           ? null
           : FloatingActionButton.extended(
-              onPressed: _create,
+              onPressed: () => _create(_calendarKey.currentState?.anchor),
               icon: const Icon(Icons.add),
               label: const Text('Séance'),
             ),

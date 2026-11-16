@@ -8,7 +8,7 @@ import 'session_widgets.dart';
 typedef SessionRangeLoader =
     Future<List<Map<String, dynamic>>?> Function(DateTime from, DateTime to);
 
-enum SessionCalendarView { week, month }
+enum _View { week, month }
 
 /// Calendrier des séances : semaine en grille horaire ou mois en grille de
 /// jours (les séances du jour choisi s'affichent dessous). Charge lui-même
@@ -38,12 +38,14 @@ class SessionCalendar extends StatefulWidget {
 }
 
 class SessionCalendarState extends State<SessionCalendar> {
-  static const _firstHour = 6;
-  static const _lastHour = 23;
+  // Journée complète : une séance tôt ou tard n'est jamais collée au bord.
+  static const _firstHour = 0;
+  static const _lastHour = 24;
+  static const _minBlock = _hourHeight / 2;
   static const _hourHeight = 56.0;
   static const _gutter = 40.0;
 
-  SessionCalendarView _view = SessionCalendarView.week;
+  _View _view = _View.week;
   DateTime _anchor = DateUtils.dateOnly(DateTime.now());
   late DateTime _selectedDay = _anchor;
   List<Map<String, dynamic>>? _sessions;
@@ -51,8 +53,11 @@ class SessionCalendarState extends State<SessionCalendar> {
   int _request = 0;
 
   final ScrollController _hoursController = ScrollController(
-    initialScrollOffset: (8 - _firstHour) * _hourHeight,
+    initialScrollOffset: (7 - _firstHour) * _hourHeight,
   );
+
+  /// Jour de référence affiché (création depuis le bouton « Séance »).
+  DateTime get anchor => _anchor;
 
   @override
   void initState() {
@@ -77,7 +82,7 @@ class SessionCalendarState extends State<SessionCalendar> {
 
   /// Premier jour affiché et lendemain du dernier.
   (DateTime, DateTime) get _range {
-    if (_view == SessionCalendarView.week) {
+    if (_view == _View.week) {
       final start = _mondayOf(_anchor);
       return (start, DateUtils.addDaysToDate(start, 7));
     }
@@ -102,10 +107,10 @@ class SessionCalendarState extends State<SessionCalendar> {
 
   void _shift(int step) {
     setState(() {
-      _anchor = _view == SessionCalendarView.week
+      _anchor = _view == _View.week
           ? DateUtils.addDaysToDate(_anchor, 7 * step)
           : DateTime(_anchor.year, _anchor.month + step);
-      _selectedDay = _view == SessionCalendarView.week
+      _selectedDay = _view == _View.week
           ? DateUtils.addDaysToDate(_selectedDay, 7 * step)
           : _anchor;
     });
@@ -118,7 +123,7 @@ class SessionCalendarState extends State<SessionCalendar> {
     reload();
   }
 
-  void _setView(SessionCalendarView view) {
+  void _setView(_View view) {
     setState(() {
       _view = view;
       _anchor = _selectedDay;
@@ -143,7 +148,7 @@ class SessionCalendarState extends State<SessionCalendar> {
   }
 
   String get _title {
-    if (_view == SessionCalendarView.month) {
+    if (_view == _View.month) {
       return '${sessionMonth(_anchor)} ${_anchor.year}';
     }
     final (start, end) = _range;
@@ -182,16 +187,16 @@ class SessionCalendarState extends State<SessionCalendar> {
                 tooltip: 'Suivant',
                 onPressed: () => _shift(1),
               ),
-              _view == SessionCalendarView.week
+              _view == _View.week
                   ? IconButton(
                       icon: const Icon(Icons.calendar_month),
                       tooltip: 'Vue mois',
-                      onPressed: () => _setView(SessionCalendarView.month),
+                      onPressed: () => _setView(_View.month),
                     )
                   : IconButton(
                       icon: const Icon(Icons.calendar_view_week),
                       tooltip: 'Vue semaine',
-                      onPressed: () => _setView(SessionCalendarView.week),
+                      onPressed: () => _setView(_View.week),
                     ),
             ],
           ),
@@ -206,9 +211,7 @@ class SessionCalendarState extends State<SessionCalendar> {
             ),
           ),
         Expanded(
-          child: _view == SessionCalendarView.week
-              ? _buildWeek(theme)
-              : _buildMonth(theme),
+          child: _view == _View.week ? _buildWeek(theme) : _buildMonth(theme),
         ),
       ],
     );
@@ -228,7 +231,11 @@ class SessionCalendarState extends State<SessionCalendar> {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.only(left: _gutter, top: 4, bottom: 4),
+          padding: const EdgeInsetsDirectional.only(
+            start: _gutter,
+            top: 4,
+            bottom: 4,
+          ),
           child: Row(
             children: [
               for (final day in days)
@@ -254,9 +261,9 @@ class SessionCalendarState extends State<SessionCalendar> {
                       child: Stack(
                         children: [
                           for (var h = _firstHour; h < _lastHour; h++)
-                            Positioned(
+                            PositionedDirectional(
                               top: (h - _firstHour) * _hourHeight + 2,
-                              right: 6,
+                              end: 6,
                               child: Text(
                                 '${h.toString().padLeft(2, '0')}h',
                                 style: theme.textTheme.labelSmall,
@@ -318,14 +325,17 @@ class SessionCalendarState extends State<SessionCalendar> {
                   // Créneau à l'heure pleine sous le doigt.
                   final hour =
                       _firstHour + (d.localPosition.dy / _hourHeight).floor();
-                  widget.onSlotTap!(day.add(Duration(hours: hour)));
+                  // Pas day.add(hours) : faux les jours de changement d'heure.
+                  widget.onSlotTap!(
+                    DateTime(day.year, day.month, day.day, hour),
+                  );
                 },
           child: Container(
             decoration: BoxDecoration(
               color: isToday
                   ? context.palette.primary.withValues(alpha: 0.05)
                   : null,
-              border: Border(left: BorderSide(color: divider)),
+              border: BorderDirectional(start: BorderSide(color: divider)),
             ),
             child: Stack(
               children: [
@@ -337,10 +347,10 @@ class SessionCalendarState extends State<SessionCalendar> {
                     child: Divider(height: 1, color: divider),
                   ),
                 for (final p in placed)
-                  Positioned(
+                  PositionedDirectional(
                     top: p.top,
                     height: p.height,
-                    left: width * p.lane / p.lanes + 1,
+                    start: width * p.lane / p.lanes + 1,
                     width: width / p.lanes - 2,
                     child: _SessionBlock(
                       session: p.session,
@@ -389,9 +399,9 @@ class SessionCalendarState extends State<SessionCalendar> {
       final dayStart = DateTime(start.year, start.month, start.day, _firstHour);
       const maxTop = (_lastHour - _firstHour) * _hourHeight;
       final top = (start.difference(dayStart).inMinutes / 60 * _hourHeight)
-          .clamp(0.0, maxTop - 20);
+          .clamp(0.0, maxTop - _minBlock);
       final height = (end.difference(start).inMinutes / 60 * _hourHeight).clamp(
-        20.0,
+        _minBlock,
         maxTop - top,
       );
       cluster.add(_Placed(s, top, height, lane));
@@ -581,7 +591,9 @@ class _SessionBlock extends StatelessWidget {
         onTap: onTap,
         child: Container(
           decoration: BoxDecoration(
-            border: Border(left: BorderSide(color: color, width: 3)),
+            border: BorderDirectional(
+              start: BorderSide(color: color, width: 3),
+            ),
           ),
           padding: const EdgeInsets.fromLTRB(3, 2, 2, 2),
           child: Column(
