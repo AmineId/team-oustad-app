@@ -7,7 +7,12 @@ void main() {
     test('accepte un tableau brut ou un objet enveloppé', () {
       final item = {'id': 1};
       expect(ApiService.listFrom([item], 'coaches'), [item]);
-      expect(ApiService.listFrom({'coaches': [item]}, 'coaches'), [item]);
+      expect(
+        ApiService.listFrom({
+          'coaches': [item],
+        }, 'coaches'),
+        [item],
+      );
     });
 
     test('ignore les réponses inattendues', () {

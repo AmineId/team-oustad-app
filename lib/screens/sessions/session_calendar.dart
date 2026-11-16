@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../../core/core.dart';
+import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/theme.dart';
 import 'session_widgets.dart';
 
@@ -147,18 +149,23 @@ class SessionCalendarState extends State<SessionCalendar> {
     return list;
   }
 
+  String get _locale => Localizations.localeOf(context).toString();
+
   String get _title {
     if (_view == _View.month) {
-      return '${sessionMonth(_anchor)} ${_anchor.year}';
+      return DateFormat.yMMMM(_locale).format(_anchor);
     }
     final (start, end) = _range;
-    return '${sessionDay(start)} – '
-        '${sessionDay(DateUtils.addDaysToDate(end, -1))}';
+    final day = DateFormat.MMMEd(_locale);
+    return '${day.format(start)} – '
+        '${day.format(DateUtils.addDaysToDate(end, -1))}';
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
+    final material = MaterialLocalizations.of(context);
     return Column(
       children: [
         Padding(
@@ -167,12 +174,12 @@ class SessionCalendarState extends State<SessionCalendar> {
             children: [
               IconButton(
                 icon: const Icon(Icons.today),
-                tooltip: 'Aujourd\'hui',
+                tooltip: l10n.today,
                 onPressed: _goToday,
               ),
               IconButton(
                 icon: const Icon(Icons.chevron_left),
-                tooltip: 'Précédent',
+                tooltip: material.previousPageTooltip,
                 onPressed: () => _shift(-1),
               ),
               Expanded(
@@ -184,18 +191,18 @@ class SessionCalendarState extends State<SessionCalendar> {
               ),
               IconButton(
                 icon: const Icon(Icons.chevron_right),
-                tooltip: 'Suivant',
+                tooltip: material.nextPageTooltip,
                 onPressed: () => _shift(1),
               ),
               _view == _View.week
                   ? IconButton(
                       icon: const Icon(Icons.calendar_month),
-                      tooltip: 'Vue mois',
+                      tooltip: l10n.calendarMonthView,
                       onPressed: () => _setView(_View.month),
                     )
                   : IconButton(
                       icon: const Icon(Icons.calendar_view_week),
-                      tooltip: 'Vue semaine',
+                      tooltip: l10n.calendarWeekView,
                       onPressed: () => _setView(_View.week),
                     ),
             ],
@@ -206,7 +213,7 @@ class SessionCalendarState extends State<SessionCalendar> {
           Padding(
             padding: const EdgeInsets.all(16),
             child: Text(
-              'Impossible de charger le planning',
+              l10n.planningLoadError,
               style: TextStyle(color: context.palette.error),
             ),
           ),
@@ -288,7 +295,13 @@ class SessionCalendarState extends State<SessionCalendar> {
     final palette = context.palette;
     return Column(
       children: [
-        Text(sessionWeekday(day), style: theme.textTheme.labelSmall),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            DateFormat.E(_locale).format(day),
+            style: theme.textTheme.labelSmall,
+          ),
+        ),
         const SizedBox(height: 2),
         Container(
           width: 28,
@@ -429,10 +442,12 @@ class SessionCalendarState extends State<SessionCalendar> {
             children: [
               for (final d in days.take(7))
                 Expanded(
-                  child: Text(
-                    sessionWeekday(d),
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.labelSmall,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      DateFormat.E(_locale).format(d),
+                      style: theme.textTheme.labelSmall,
+                    ),
                   ),
                 ),
             ],
@@ -456,14 +471,17 @@ class SessionCalendarState extends State<SessionCalendar> {
           Padding(
             padding: const EdgeInsets.fromLTRB(8, 16, 8, 4),
             child: Text(
-              sessionDay(_selectedDay),
+              DateFormat.MMMEd(_locale).format(_selectedDay),
               style: theme.textTheme.titleSmall,
             ),
           ),
           if (selected.isEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Text('Aucune séance', style: theme.textTheme.bodySmall),
+              child: Text(
+                AppLocalizations.of(context).noSessions,
+                style: theme.textTheme.bodySmall,
+              ),
             ),
           for (final s in selected)
             SessionCard(session: s, onTap: () => _open(s)),

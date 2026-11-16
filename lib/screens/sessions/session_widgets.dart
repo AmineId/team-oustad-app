@@ -23,27 +23,6 @@ const _months = [
 String sessionTime(DateTime d) =>
     '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
 
-const _monthNames = [
-  'janvier',
-  'février',
-  'mars',
-  'avril',
-  'mai',
-  'juin',
-  'juillet',
-  'août',
-  'septembre',
-  'octobre',
-  'novembre',
-  'décembre',
-];
-
-/// « lun. »
-String sessionWeekday(DateTime d) => _weekdays[d.weekday - 1];
-
-/// « octobre »
-String sessionMonth(DateTime d) => _monthNames[d.month - 1];
-
 /// « lun. 27 oct. »
 String sessionDay(DateTime d) =>
     '${_weekdays[d.weekday - 1]} ${d.day} ${_months[d.month - 1]}';

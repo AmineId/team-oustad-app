@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:team_oustad_app/core/l10n/app_localizations.dart';
 import 'package:team_oustad_app/core/theme/app_palette.dart';
 import 'package:team_oustad_app/screens/sessions/session_calendar.dart';
 import 'package:team_oustad_app/screens/sessions/session_editor_screen.dart';
@@ -39,7 +41,7 @@ void main() {
   Future<void> pump(
     WidgetTester tester, {
     ValueChanged<DateTime>? onSlot,
-    TextDirection direction = TextDirection.ltr,
+    Locale locale = const Locale('fr'),
   }) async {
     tester.view.physicalSize = const Size(360, 740);
     tester.view.devicePixelRatio = 1;
@@ -47,14 +49,19 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: ThemeData(extensions: const [AppPalette.light]),
-        home: Directionality(
-          textDirection: direction,
-          child: Scaffold(
-            body: SessionCalendar(
-              loader: (from, to) async => sessions,
-              onSessionTap: (_) async => false,
-              onSlotTap: onSlot,
-            ),
+        locale: locale,
+        supportedLocales: const [Locale('fr'), Locale('en'), Locale('ar')],
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        home: Scaffold(
+          body: SessionCalendar(
+            loader: (from, to) async => sessions,
+            onSessionTap: (_) async => false,
+            onSlotTap: onSlot,
           ),
         ),
       ),
@@ -98,7 +105,12 @@ void main() {
   testWidgets('arabe (RTL) : la séance est sous l\'en-tête de son jour', (
     tester,
   ) async {
-    await pump(tester, direction: TextDirection.rtl);
+    await pump(tester, locale: const Locale('ar'));
+    await tester.tap(find.byTooltip('عرض الشهر'));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    await tester.tap(find.byTooltip('عرض الأسبوع'));
+    await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
     final header = tester.getCenter(find.text('${today.day}').first).dx;
     final block = tester.getRect(find.text('18:00'));
