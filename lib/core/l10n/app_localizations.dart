@@ -136,7 +136,8 @@ class AppLocalizations {
       'whatsapp_get_code': 'Obtenir le code',
       'whatsapp_pairing_code': 'Code d\'appairage',
       'whatsapp_phone_helper': 'Format international, ex : 212600123456',
-      'whatsapp_enter_phone': 'Entrez votre numéro pour recevoir le code sur WhatsApp',
+      'whatsapp_enter_phone':
+          'Entrez votre numéro pour recevoir le code sur WhatsApp',
       'my_plannings': 'Mes Plannings',
       'starting_measurements': 'Mesures de départ',
       'member_since': 'Membre depuis: {date}',
@@ -190,7 +191,10 @@ class AppLocalizations {
       'coach_my_members': 'Mes membres',
       'coach_my_sessions': 'Mes séances',
       'coach_today': 'Aujourd\'hui',
-      'coach_no_sessions': 'Aucune séance dans les 7 prochains jours.',
+      'no_sessions': 'Aucune séance',
+      'calendar_week_view': 'Vue semaine',
+      'calendar_month_view': 'Vue mois',
+      'planning_load_error': 'Impossible de charger le planning',
       'coach_no_members': 'Aucun membre ne vous est encore affecté.',
     },
     'en': {
@@ -309,7 +313,8 @@ class AppLocalizations {
       'whatsapp_get_code': 'Get code',
       'whatsapp_pairing_code': 'Pairing code',
       'whatsapp_phone_helper': 'International format, e.g. 212600123456',
-      'whatsapp_enter_phone': 'Enter your number to receive the code on WhatsApp',
+      'whatsapp_enter_phone':
+          'Enter your number to receive the code on WhatsApp',
       'my_plannings': 'My Schedules',
       'starting_measurements': 'Starting measurements',
       'member_since': 'Member since: {date}',
@@ -361,7 +366,10 @@ class AppLocalizations {
       'coach_my_members': 'My members',
       'coach_my_sessions': 'My sessions',
       'coach_today': 'Today',
-      'coach_no_sessions': 'No sessions in the next 7 days.',
+      'no_sessions': 'No sessions',
+      'calendar_week_view': 'Week view',
+      'calendar_month_view': 'Month view',
+      'planning_load_error': 'Could not load the schedule',
       'coach_no_members': 'No members are assigned to you yet.',
     },
     'ar': {
@@ -529,7 +537,10 @@ class AppLocalizations {
       'coach_my_members': 'أعضائي',
       'coach_my_sessions': 'حصصي',
       'coach_today': 'اليوم',
-      'coach_no_sessions': 'لا توجد حصص خلال الأيام السبعة القادمة.',
+      'no_sessions': 'لا توجد حصص',
+      'calendar_week_view': 'عرض الأسبوع',
+      'calendar_month_view': 'عرض الشهر',
+      'planning_load_error': 'تعذّر تحميل الجدول',
       'coach_no_members': 'لم يتم تعيين أي عضو لك بعد.',
     },
   };
@@ -728,7 +739,10 @@ class AppLocalizations {
   String get coachMyMembers => translate('coach_my_members');
   String get coachMySessions => translate('coach_my_sessions');
   String get coachToday => translate('coach_today');
-  String get coachNoSessions => translate('coach_no_sessions');
+  String get noSessions => translate('no_sessions');
+  String get calendarWeekView => translate('calendar_week_view');
+  String get calendarMonthView => translate('calendar_month_view');
+  String get planningLoadError => translate('planning_load_error');
   String get coachNoMembers => translate('coach_no_members');
 }
 

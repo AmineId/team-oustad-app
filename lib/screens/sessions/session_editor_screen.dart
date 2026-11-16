@@ -66,16 +66,18 @@ class _SessionEditorScreenState extends State<SessionEditorScreen> {
     _day = start == null
         ? (initial.isBefore(today) ? today : initial)
         : DateUtils.dateOnly(start);
-    // Créneau touché dans le calendrier : son heure, sinon 9 h.
+    // Créneau touché dans le calendrier : son heure ; jour seul (minuit) : 9 h.
     final slot = widget.initialDay;
-    final slotHour = slot != null && slot.hour > 0 && slot.hour < 23
-        ? slot.hour
-        : 9;
+    final slotHour = slot == null || slot == DateUtils.dateOnly(slot)
+        ? 9
+        : slot.hour;
     _start = start == null
         ? TimeOfDay(hour: slotHour, minute: 0)
         : TimeOfDay.fromDateTime(start);
     _end = end == null
-        ? TimeOfDay(hour: slotHour + 1, minute: 0)
+        ? (slotHour == 23
+              ? const TimeOfDay(hour: 23, minute: 59)
+              : TimeOfDay(hour: slotHour + 1, minute: 0))
         : TimeOfDay.fromDateTime(end);
   }
 
